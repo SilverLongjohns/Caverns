@@ -1,4 +1,7 @@
 import { createServer } from 'http';
+import { readFileSync, existsSync, statSync } from 'fs';
+import { join, extname } from 'path';
+import { fileURLToPath } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
 import type { ClientMessage, ServerMessage } from '@caverns/shared';
 import { Lobby } from './Lobby.js';
@@ -6,7 +9,41 @@ import { GameSession } from './GameSession.js';
 
 const PORT = Number(process.env.PORT) || 3001;
 
-const server = createServer();
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const CLIENT_DIR = join(__dirname, '..', '..', 'client', 'dist');
+
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+};
+
+const server = createServer((req, res) => {
+  const url = req.url?.split('?')[0] ?? '/';
+  let filePath = join(CLIENT_DIR, url === '/' ? 'index.html' : url);
+
+  if (existsSync(filePath) && statSync(filePath).isFile()) {
+    const ext = extname(filePath);
+    res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+    res.end(readFileSync(filePath));
+  } else {
+    // SPA fallback — serve index.html for any unknown route
+    const indexPath = join(CLIENT_DIR, 'index.html');
+    if (existsSync(indexPath)) {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(readFileSync(indexPath));
+    } else {
+      res.writeHead(404);
+      res.end('Not found');
+    }
+  }
+});
 const wss = new WebSocketServer({ server });
 
 const clients = new Map<string, WebSocket>();
