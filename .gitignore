@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+/tmp
+/out-tsc
+dist/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Package manager
+/.pnp
+.pnp.js
+
+# IDE
+.vscode/*
+.idea/
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
