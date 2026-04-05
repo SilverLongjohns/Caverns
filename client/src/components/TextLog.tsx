@@ -2,10 +2,10 @@ import { useEffect, useRef } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 
 const LOG_COLORS: Record<string, string> = {
-  narration: '#e0e0e0',
-  combat: '#ff6b6b',
-  loot: '#ffd93d',
-  system: '#888',
+  narration: '#c8b89a',
+  combat: '#cc4444',
+  loot: '#d4a857',
+  system: '#7a6e5a',
 };
 
 export function TextLog() {

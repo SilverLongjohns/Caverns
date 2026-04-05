@@ -16,6 +16,13 @@ export interface JoinLobbyMessage {
 
 export interface StartGameMessage {
   type: 'start_game';
+  apiKey?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+}
+
+export interface SetDifficultyMessage {
+  type: 'set_difficulty';
+  difficulty: 'easy' | 'medium' | 'hard';
 }
 
 export interface MoveMessage {
@@ -29,6 +36,7 @@ export interface CombatActionMessage {
   targetId?: string;
   itemIndex?: number;
   fleeDirection?: Direction;
+  critMultiplier?: number;
 }
 
 export interface LootChoiceMessage {
@@ -52,15 +60,28 @@ export interface DropItemMessage {
   inventoryIndex: number;
 }
 
+export interface UseConsumableMessage {
+  type: 'use_consumable';
+  consumableIndex: number;
+}
+
+export interface DefendResultMessage {
+  type: 'defend_result';
+  damageReduction: number;
+}
+
 export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
+  | SetDifficultyMessage
   | MoveMessage
   | CombatActionMessage
   | LootChoiceMessage
   | ReviveMessage
   | EquipItemMessage
-  | DropItemMessage;
+  | DropItemMessage
+  | UseConsumableMessage
+  | DefendResultMessage;
 
 // === Server -> Client ===
 
@@ -69,6 +90,13 @@ export interface LobbyStateMessage {
   players: { id: string; name: string }[];
   hostId: string;
   yourId: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+export interface GenerationStatusMessage {
+  type: 'generation_status';
+  status: 'generating' | 'failed';
+  reason?: string;
 }
 
 export interface GameStartMessage {
@@ -117,6 +145,9 @@ export interface CombatActionResultMessage {
   targetDowned?: boolean;
   fled?: boolean;
   fleeDirection?: Direction;
+  critMultiplier?: number;
+  defendQte?: true;
+  pendingDamage?: number;
 }
 
 export interface CombatEndMessage {
@@ -162,6 +193,7 @@ export interface ErrorMessage {
 export type ServerMessage =
   | LobbyStateMessage
   | GameStartMessage
+  | GenerationStatusMessage
   | RoomRevealMessage
   | PlayerMovedMessage
   | CombatStartMessage

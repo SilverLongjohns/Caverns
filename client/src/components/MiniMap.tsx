@@ -7,7 +7,7 @@ const ROOM_H = 50;
 const GAP_X = 140;
 const GAP_Y = 80;
 
-const PLAYER_COLORS = ['#4ecdc4', '#ff6b6b', '#ffd93d', '#a29bfe'];
+const PLAYER_COLORS = ['#d4a857', '#cc4444', '#5599cc', '#88cc66'];
 
 const DIR_OFFSET: Record<Direction, { dx: number; dy: number }> = {
   north: { dx: 0, dy: -1 },
@@ -82,7 +82,7 @@ export function MiniMap() {
             <line key={`${from}-${to}`}
               x1={p1.x * GAP_X + ROOM_W / 2} y1={p1.y * GAP_Y + ROOM_H / 2}
               x2={p2.x * GAP_X + ROOM_W / 2} y2={p2.y * GAP_Y + ROOM_H / 2}
-              stroke="#555" strokeWidth={2}
+              stroke="#4a3d2a" strokeWidth={2}
             />
           );
         })}
@@ -93,12 +93,12 @@ export function MiniMap() {
           return (
             <g key={roomId}>
               <rect x={pos.x * GAP_X} y={pos.y * GAP_Y} width={ROOM_W} height={ROOM_H} rx={4}
-                fill={isCurrent ? '#2d4a3e' : '#1e1e2e'}
-                stroke={isCurrent ? '#4ecdc4' : '#444'}
+                fill={isCurrent ? '#2a2010' : '#1a1410'}
+                stroke={isCurrent ? '#d4a857' : '#3d3122'}
                 strokeWidth={isCurrent ? 2 : 1}
               />
               <text x={pos.x * GAP_X + ROOM_W / 2} y={pos.y * GAP_Y + ROOM_H / 2}
-                textAnchor="middle" dominantBaseline="middle" fill="#ccc" fontSize={10}
+                textAnchor="middle" dominantBaseline="middle" fill="#c8b89a" fontSize={10}
               >
                 {room?.name ?? roomId}
               </text>
@@ -109,7 +109,7 @@ export function MiniMap() {
                     <text key={dir}
                       x={pos.x * GAP_X + ROOM_W / 2 + offset.dx * (ROOM_W / 2 + 12)}
                       y={pos.y * GAP_Y + ROOM_H / 2 + offset.dy * (ROOM_H / 2 + 12)}
-                      textAnchor="middle" dominantBaseline="middle" fill="#666" fontSize={14}
+                      textAnchor="middle" dominantBaseline="middle" fill="#5a4530" fontSize={14}
                     >?</text>
                   );
                 }

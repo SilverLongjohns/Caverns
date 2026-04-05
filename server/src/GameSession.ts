@@ -5,9 +5,12 @@ import {
   type Item,
   type Direction,
   type Player,
+  type DungeonContent,
   type ServerMessage,
   DRIPPING_HALLS,
-  MOB_ASCII_ART,
+  clampCritMultiplier,
+  clampDamageReduction,
+  QTE_CONFIG,
 } from '@caverns/shared';
 import { PlayerManager } from './PlayerManager.js';
 import { CombatManager, type CombatPlayerInfo } from './CombatManager.js';
@@ -22,16 +25,25 @@ export class GameSession {
   private combats = new Map<string, CombatManager>();
   private playerManager = new PlayerManager();
   private lootManager: LootManager;
+  private content: DungeonContent;
   private broadcast: (msg: ServerMessage) => void;
   private sendTo: (playerId: string, msg: ServerMessage) => void;
   private broadcastToRoom: (roomId: string, msg: ServerMessage) => void;
   private playerIds: string[] = [];
   private playerNames = new Map<string, string>();
   private started = false;
+  private pendingDefend: {
+    roomId: string;
+    targetId: string;
+    mobId: string;
+    rawDamage: number;
+    timeout: ReturnType<typeof setTimeout>;
+  } | null = null;
 
   constructor(
     broadcast: (msg: ServerMessage) => void,
-    sendTo: (playerId: string, msg: ServerMessage) => void
+    sendTo: (playerId: string, msg: ServerMessage) => void,
+    content?: DungeonContent
   ) {
     this.broadcast = broadcast;
     this.sendTo = sendTo;
@@ -40,13 +52,37 @@ export class GameSession {
         this.sendTo(p.id, msg);
       }
     };
-    const content = DRIPPING_HALLS;
-    this.rooms = new Map(content.rooms.map((r) => [r.id, r]));
-    this.mobs = new Map(content.mobs.map((m) => [m.id, m]));
-    this.items = new Map(content.items.map((i) => [i.id, i]));
-    this.lootManager = new LootManager((itemId, winnerId) => {
-      this.handleLootAwarded(itemId, winnerId);
-    });
+    this.content = content ?? DRIPPING_HALLS;
+    this.rooms = new Map(this.content.rooms.map((r) => [r.id, r]));
+    this.mobs = new Map(this.content.mobs.map((m) => [m.id, m]));
+    this.items = new Map(this.content.items.map((i) => [i.id, i]));
+    this.lootManager = new LootManager(
+      (item, winnerId) => { this.handleLootAwarded(item, winnerId); },
+      () => { this.broadcast({ type: 'loot_prompt', items: [], timeout: 0 }); },
+      (playerId, itemName, choice) => {
+        const player = this.playerManager.getPlayer(playerId);
+        if (!player) return;
+        this.broadcastToRoom(player.roomId, {
+          type: 'text_log',
+          message: `${player.name} selects ${choice.toUpperCase()} on ${itemName}.`,
+          logType: 'loot',
+        });
+      },
+      (itemName, rolls, winnerId) => {
+        if (rolls.length === 0) return;
+        const roomId = this.playerManager.getPlayer(rolls[0].playerId)?.roomId;
+        if (!roomId) return;
+        const rollLines = rolls.map((r) => {
+          const name = this.playerManager.getPlayer(r.playerId)?.name ?? 'Unknown';
+          return `  ${name} rolled ${r.roll}`;
+        }).join('\n');
+        this.broadcastToRoom(roomId, {
+          type: 'text_log',
+          message: `Roll-off for ${itemName}:\n${rollLines}`,
+          logType: 'loot',
+        });
+      },
+    );
   }
 
   addPlayer(id: string, name: string): void {
@@ -56,7 +92,7 @@ export class GameSession {
 
   startGame(): void {
     this.started = true;
-    const entranceId = DRIPPING_HALLS.entranceRoomId;
+    const entranceId = this.content.entranceRoomId;
     for (const pid of this.playerIds) {
       this.playerManager.addPlayer(pid, this.playerNames.get(pid)!, entranceId);
     }
@@ -166,11 +202,9 @@ export class GameSession {
     const combat = new CombatManager(roomId, combatPlayers, [mobInstance]);
     this.combats.set(roomId, combat);
     const skulls = '\u2620'.repeat(template.skullRating);
-    const art = MOB_ASCII_ART[template.id] ?? '';
-    const artBlock = art ? `\n${art}\n` : '';
     this.broadcastToRoom(roomId, {
       type: 'text_log',
-      message: `A ${template.name} appears! (${skulls})\n${artBlock}${template.description}`,
+      message: `A ${template.name} appears! (${skulls})\n${template.description}`,
       logType: 'combat',
     });
     this.broadcastToRoom(roomId, { type: 'combat_start', combat: combat.getState() });
@@ -200,7 +234,8 @@ export class GameSession {
   handleCombatAction(
     playerId: string,
     action: 'attack' | 'defend' | 'use_item' | 'flee',
-    targetId?: string, itemIndex?: number, fleeDirection?: Direction
+    targetId?: string, itemIndex?: number, fleeDirection?: Direction,
+    critMultiplier?: number
   ): void {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
@@ -218,9 +253,12 @@ export class GameSession {
       itemHealing = consumeResult.healing;
       this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
     }
+    const clampedCrit = action === 'attack' && critMultiplier !== undefined
+      ? clampCritMultiplier(critMultiplier) : undefined;
     const combatRoomId = player.roomId;
     const result = combat.resolvePlayerAction(playerId, {
       action, targetId, itemDamage, itemHealing, fleeDirection,
+      critMultiplier: clampedCrit,
     });
     if (result) {
       this.broadcastToRoom(combatRoomId, { type: 'combat_action_result', ...result } as any);
@@ -228,6 +266,9 @@ export class GameSession {
     }
     if (action === 'flee' && result?.fled) {
       this.playerManager.setStatus(playerId, 'exploring');
+      // Send combat_end to the fleeing player before moving them out of the room,
+      // since broadcastToRoom in afterCombatTurn won't reach them after the move.
+      this.sendTo(playerId, { type: 'combat_end', result: 'flee' });
       if (result.actorDowned) {
         this.playerManager.takeDamage(playerId, 999);
       } else {
@@ -255,51 +296,103 @@ export class GameSession {
     this.afterCombatTurn(combatRoomId, combat);
   }
 
+  handleDefendResult(playerId: string, damageReduction: number): void {
+    if (!this.pendingDefend || this.pendingDefend.targetId !== playerId) return;
+    clearTimeout(this.pendingDefend.timeout);
+    const { roomId, rawDamage } = this.pendingDefend;
+    const clamped = clampDamageReduction(damageReduction);
+    this.resolveDefend(roomId, playerId, rawDamage, clamped);
+  }
+
+  private resolveDefend(roomId: string, targetId: string, rawDamage: number, damageReduction: number): void {
+    this.pendingDefend = null;
+    const combat = this.combats.get(roomId);
+    if (!combat) return;
+    const damageResult = combat.applyDefendDamage(targetId, rawDamage, damageReduction);
+    if (damageResult) {
+      this.broadcastToRoom(roomId, { type: 'combat_action_result', ...damageResult, action: 'defend' } as any);
+      this.narrateDefendResult(roomId, damageResult, damageReduction);
+      if (damageResult.targetId && damageResult.damage) {
+        const targetPlayer = this.playerManager.getPlayer(damageResult.targetId);
+        if (targetPlayer) {
+          this.playerManager.takeDamage(damageResult.targetId, damageResult.damage);
+          this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(damageResult.targetId)! });
+        }
+      }
+    }
+    combat.advanceTurn();
+    this.afterCombatTurn(roomId, combat);
+  }
+
   private afterCombatTurn(roomId: string, combat: CombatManager): void {
     if (combat.isComplete()) {
       const result = combat.getResult();
-      this.broadcastToRoom(roomId, { type: 'combat_end', result: result as 'victory' | 'flee' | 'wipe' });
-      this.combats.delete(roomId);
-      for (const p of this.playerManager.getPlayersInRoom(roomId)) {
-        if (p.status === 'in_combat') {
-          this.playerManager.setStatus(p.id, 'exploring');
-          this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(p.id)! });
-        }
-      }
-      if (result === 'victory') {
-        this.clearRoom(roomId);
-        this.broadcastToRoom(roomId, { type: 'text_log', message: 'The enemies have been defeated!', logType: 'combat' });
-        this.dropLoot(roomId);
-        const room = this.rooms.get(roomId);
-        if (room?.type === 'boss') {
-          this.broadcast({ type: 'game_over', result: 'victory' });
-        }
-      }
-      if (this.playerManager.allPlayersDowned()) {
-        this.broadcast({ type: 'game_over', result: 'wipe' });
-      }
+      // Delay combat end on victory so the client disintegration animation plays
+      const delay = result === 'victory' ? 1000 : 0;
+      setTimeout(() => this.finishCombat(roomId, result as 'victory' | 'flee' | 'wipe'), delay);
       return;
     }
     const currentId = combat.getCurrentTurnId();
     if (combat.isMobTurn(currentId)) {
-      this.processMobTurn(roomId, combat);
+      // Delay mob turns so attack animations play out before the next action
+      setTimeout(() => this.processMobTurn(roomId, combat), 600);
     } else {
       this.broadcastTurnPrompt(combat);
+    }
+  }
+
+  private finishCombat(roomId: string, result: 'victory' | 'flee' | 'wipe'): void {
+    this.broadcastToRoom(roomId, { type: 'combat_end', result });
+    this.combats.delete(roomId);
+    for (const p of this.playerManager.getPlayersInRoom(roomId)) {
+      if (p.status === 'in_combat') {
+        this.playerManager.setStatus(p.id, 'exploring');
+        this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(p.id)! });
+      }
+    }
+    if (result === 'victory') {
+      this.clearRoom(roomId);
+      this.broadcastToRoom(roomId, { type: 'text_log', message: 'The enemies have been defeated!', logType: 'combat' });
+      this.dropLoot(roomId);
+      const room = this.rooms.get(roomId);
+      if (room?.type === 'boss') {
+        this.broadcast({ type: 'game_over', result: 'victory' });
+      }
+    }
+    if (this.playerManager.allPlayersDowned()) {
+      this.broadcast({ type: 'game_over', result: 'wipe' });
     }
   }
 
   private processMobTurn(roomId: string, combat: CombatManager): void {
     const mobId = combat.getCurrentTurnId();
     const result = combat.resolveMobTurn(mobId);
-    if (result) {
+    if (!result) {
+      combat.advanceTurn();
+      this.afterCombatTurn(roomId, combat);
+      return;
+    }
+
+    if (result.defendQte && result.targetId && result.pendingDamage !== undefined) {
       this.broadcastToRoom(roomId, { type: 'combat_action_result', ...result } as any);
-      this.narrateCombatAction(roomId, result);
-      if (result.targetId && result.damage) {
-        const targetPlayer = this.playerManager.getPlayer(result.targetId);
-        if (targetPlayer) {
-          this.playerManager.takeDamage(result.targetId, result.damage);
-          this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(result.targetId)! });
-        }
+      this.narrateDefendQteStart(roomId, result);
+      const timeout = setTimeout(() => {
+        this.resolveDefend(roomId, result.targetId!, result.pendingDamage!, 0);
+      }, QTE_CONFIG.defendTimeoutMs);
+      this.pendingDefend = {
+        roomId, targetId: result.targetId, mobId,
+        rawDamage: result.pendingDamage, timeout,
+      };
+      return;
+    }
+
+    this.broadcastToRoom(roomId, { type: 'combat_action_result', ...result } as any);
+    this.narrateCombatAction(roomId, result);
+    if (result.targetId && result.damage) {
+      const targetPlayer = this.playerManager.getPlayer(result.targetId);
+      if (targetPlayer) {
+        this.playerManager.takeDamage(result.targetId, result.damage);
+        this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(result.targetId)! });
       }
     }
     combat.advanceTurn();
@@ -314,10 +407,19 @@ export class GameSession {
   private narrateCombatAction(roomId: string, result: any): void {
     let message = '';
     switch (result.action) {
-      case 'attack':
-        message = `${result.actorName} attacks ${result.targetName} for ${result.damage} damage!`;
+      case 'attack': {
+        if (result.critMultiplier && result.critMultiplier >= 2.0) {
+          message = `${result.actorName} lands a PERFECT hit on ${result.targetName} for ${result.damage} damage!`;
+        } else if (result.critMultiplier && result.critMultiplier >= 1.5) {
+          message = `${result.actorName} lands a critical hit on ${result.targetName} for ${result.damage} damage!`;
+        } else if (result.critMultiplier && result.critMultiplier <= 0.75) {
+          message = `${result.actorName}'s strike goes wide — ${result.damage} damage to ${result.targetName}.`;
+        } else {
+          message = `${result.actorName} attacks ${result.targetName} for ${result.damage} damage!`;
+        }
         if (result.targetDowned) message += ` ${result.targetName} goes down!`;
         break;
+      }
       case 'defend':
         message = `${result.actorName} takes a defensive stance.`;
         break;
@@ -333,6 +435,28 @@ export class GameSession {
     if (message) this.broadcastToRoom(roomId, { type: 'text_log', message, logType: 'combat' });
   }
 
+  private narrateDefendQteStart(roomId: string, result: any): void {
+    const message = `${result.actorName} attacks ${result.targetName}! Brace for impact...`;
+    this.broadcastToRoom(roomId, { type: 'text_log', message, logType: 'combat' });
+  }
+
+  private narrateDefendResult(roomId: string, result: any, reduction: number): void {
+    let message: string;
+    if (reduction >= 0.75) {
+      message = `${result.targetName} perfectly blocks the attack! Takes only ${result.damage} damage.`;
+    } else if (reduction >= 0.5) {
+      message = `${result.targetName} blocks the attack well! Takes ${result.damage} damage.`;
+    } else if (reduction >= 0.25) {
+      message = `${result.targetName} grazes the block — takes ${result.damage} damage.`;
+    } else {
+      message = `${result.targetName} fails to block — takes ${result.damage} damage!`;
+    }
+    if (result.targetDowned) message += ` ${result.targetName} goes down!`;
+    this.broadcastToRoom(roomId, { type: 'text_log', message, logType: 'combat' });
+  }
+
+  private nextLootInstanceId = 1;
+
   private dropLoot(roomId: string): void {
     const room = this.rooms.get(roomId);
     if (!room) return;
@@ -340,7 +464,7 @@ export class GameSession {
     if (room.loot) {
       for (const lootEntry of room.loot) {
         const item = this.items.get(lootEntry.itemId);
-        if (item) droppedItems.push(item);
+        if (item) droppedItems.push({ ...item, id: `${item.id}_${this.nextLootInstanceId++}` });
       }
     }
     if (room.encounter) {
@@ -348,7 +472,7 @@ export class GameSession {
       if (template && template.lootTable.length > 0) {
         const randomId = template.lootTable[Math.floor(Math.random() * template.lootTable.length)];
         const item = this.items.get(randomId);
-        if (item) droppedItems.push(item);
+        if (item) droppedItems.push({ ...item, id: `${item.id}_${this.nextLootInstanceId++}` });
       }
     }
     if (droppedItems.length === 0) return;
@@ -364,9 +488,7 @@ export class GameSession {
     this.lootManager.startLootRound(roomId, droppedItems, playerIds);
   }
 
-  private handleLootAwarded(itemId: string, winnerId: string): void {
-    const item = this.items.get(itemId);
-    if (!item) return;
+  private handleLootAwarded(item: Item, winnerId: string): void {
     const winner = this.playerManager.getPlayer(winnerId);
     const winnerName = winner?.name ?? 'Unknown';
     const roomId = winner?.roomId;
@@ -432,6 +554,25 @@ export class GameSession {
     this.broadcastToRoom(player.roomId, {
       type: 'text_log', message: `${player.name} discards ${item.name}.`, logType: 'system',
     });
+    this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+  }
+
+  handleUseConsumable(playerId: string, consumableIndex: number): void {
+    const player = this.playerManager.getPlayer(playerId);
+    if (!player) return;
+    if (player.status === 'in_combat') {
+      this.sendTo(playerId, { type: 'error', message: 'Use items through combat actions during combat.' });
+      return;
+    }
+    const item = player.consumables[consumableIndex];
+    if (!item) return;
+    const result = this.playerManager.useConsumable(playerId, consumableIndex);
+    if (!result) return;
+    if (result.healing) {
+      this.broadcastToRoom(player.roomId, {
+        type: 'text_log', message: `${player.name} uses ${item.name} and recovers ${result.healing} HP.`, logType: 'system',
+      });
+    }
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
   }
 

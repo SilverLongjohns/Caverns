@@ -3,14 +3,17 @@ import { useGameStore } from '../store/gameStore.js';
 
 interface LobbyProps {
   onJoin: (name: string) => void;
-  onStart: () => void;
+  onStart: (apiKey?: string, difficulty?: 'easy' | 'medium' | 'hard') => void;
+  onSetDifficulty: (difficulty: 'easy' | 'medium' | 'hard') => void;
 }
 
-export function Lobby({ onJoin, onStart }: LobbyProps) {
+export function Lobby({ onJoin, onStart, onSetDifficulty }: LobbyProps) {
   const [name, setName] = useState('');
   const [joined, setJoined] = useState(false);
+  const [apiKey, setApiKey] = useState('');
   const lobbyPlayers = useGameStore((s) => s.lobbyPlayers);
   const isHost = useGameStore((s) => s.isHost);
+  const difficulty = useGameStore((s) => s.lobbyDifficulty);
   const inputRef = useRef<HTMLDivElement>(null);
 
   const handleJoin = useCallback(() => {
@@ -63,10 +66,44 @@ export function Lobby({ onJoin, onStart }: LobbyProps) {
           </div>
         ))}
       </div>
+
+      <div className="lobby-difficulty">
+        <span className="lobby-label">Difficulty:</span>
+        <div className="difficulty-buttons">
+          {(['easy', 'medium', 'hard'] as const).map((d) => (
+            <button
+              key={d}
+              className={`difficulty-btn ${d === difficulty ? 'active' : ''}`}
+              onClick={() => onSetDifficulty(d)}
+              disabled={!isHost}
+            >
+              {d.charAt(0).toUpperCase() + d.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {isHost && (
+        <div className="lobby-apikey">
+          <label className="lobby-label" htmlFor="apikey-input">
+            API Key (optional):
+          </label>
+          <input
+            id="apikey-input"
+            type="password"
+            className="apikey-input"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="sk-ant-..."
+          />
+          <p className="apikey-hint">Leave empty to play the static dungeon</p>
+        </div>
+      )}
+
       {isHost && (
         <button
           className="lobby-start"
-          onClick={onStart}
+          onClick={() => onStart(apiKey || undefined, difficulty)}
           disabled={lobbyPlayers.length === 0}
         >
           Enter the Caverns

@@ -53,6 +53,7 @@ export class PlayerManager {
     const slot = item.slot as EquipmentSlot;
     const replaced = player.equipment[slot];
     player.equipment[slot] = item;
+    this.recalcMaxHp(player);
     return replaced;
   }
 
@@ -99,6 +100,7 @@ export class PlayerManager {
     const replaced = player.equipment[slot];
     player.equipment[slot] = item;
     player.inventory[inventoryIndex] = replaced;
+    this.recalcMaxHp(player);
     return true;
   }
 
@@ -146,5 +148,18 @@ export class PlayerManager {
   allPlayersDowned(): boolean {
     const players = this.getAllPlayers();
     return players.length > 0 && players.every((p) => p.status === 'downed');
+  }
+
+  private recalcMaxHp(player: Player): void {
+    const stats = computePlayerStats(player);
+    const oldMax = player.maxHp;
+    player.maxHp = stats.maxHp;
+    if (stats.maxHp > oldMax) {
+      // Gained maxHp — grant the bonus as current hp too
+      player.hp += stats.maxHp - oldMax;
+    } else if (player.hp > stats.maxHp) {
+      // Lost maxHp — clamp current hp
+      player.hp = stats.maxHp;
+    }
   }
 }

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(/home/jakeh/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.6/scripts/start-server.sh --project-dir /mnt/c/Users/jakeh/WebstormProjects/Caverns)",
       "Bash(npx tsc:*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

@@ -29,9 +29,10 @@ function ItemDisplay({ item, label }: { item: Item | null; label: string }) {
 interface PlayerHUDProps {
   onEquipItem: (inventoryIndex: number) => void;
   onDropItem: (inventoryIndex: number) => void;
+  onUseConsumable: (consumableIndex: number) => void;
 }
 
-export function PlayerHUD({ onEquipItem, onDropItem }: PlayerHUDProps) {
+export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable }: PlayerHUDProps) {
   const playerId = useGameStore((s) => s.playerId);
   const players = useGameStore((s) => s.players);
   const player = players[playerId];
@@ -39,7 +40,7 @@ export function PlayerHUD({ onEquipItem, onDropItem }: PlayerHUDProps) {
   if (!player) return null;
 
   const hpPercent = (player.hp / player.maxHp) * 100;
-  const hpColor = hpPercent > 50 ? '#4ecdc4' : hpPercent > 25 ? '#ffd93d' : '#ff6b6b';
+  const hpColor = hpPercent > 50 ? '#8b2020' : hpPercent > 25 ? '#8b5a20' : '#cc3333';
   const inCombat = player.status === 'in_combat';
 
   return (
@@ -61,9 +62,14 @@ export function PlayerHUD({ onEquipItem, onDropItem }: PlayerHUDProps) {
           {player.consumables.map((item, i) => (
             <div key={i} className="consumable-slot">
               {item ? (
-                <span className={`rarity-${item.rarity}`} title={item.description}>
-                  {item.name} <span className="item-stats">{formatStats(item.stats)}</span>
-                </span>
+                <div className="consumable-item">
+                  <span className={`rarity-${item.rarity}`} title={item.description}>
+                    {item.name} <span className="item-stats">{formatStats(item.stats)}</span>
+                  </span>
+                  {!inCombat && (
+                    <button className="equip-btn" onClick={() => onUseConsumable(i)}>Use</button>
+                  )}
+                </div>
               ) : (
                 <span className="empty">-</span>
               )}

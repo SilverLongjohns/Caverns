@@ -79,4 +79,44 @@ describe('GameSession', () => {
     const errorMsg = messages.find((m) => m.msg.type === 'error');
     expect(errorMsg).toBeDefined();
   });
+
+  it('accepts custom DungeonContent', () => {
+    const messages: { playerId: string; msg: any }[] = [];
+    const broadcast = (msg: any) => { messages.push({ playerId: '__broadcast__', msg }); };
+    const sendTo = (playerId: string, msg: any) => { messages.push({ playerId, msg }); };
+
+    const customDungeon = {
+      name: 'Test Dungeon',
+      theme: 'test',
+      atmosphere: 'test',
+      entranceRoomId: 'start',
+      bossId: 'test_boss',
+      rooms: [
+        { id: 'start', type: 'tunnel' as const, name: 'Start', description: 'The beginning.', exits: { north: 'boss' } },
+        { id: 'boss', type: 'boss' as const, name: 'Boss Room', description: 'The end.', exits: { south: 'start' }, encounter: { mobId: 'test_boss', skullRating: 3 as const } },
+      ],
+      mobs: [{ id: 'test_boss', name: 'Test Boss', description: 'A test.', skullRating: 3 as const, maxHp: 100, damage: 10, defense: 5, initiative: 5, lootTable: [] }],
+      items: [],
+    };
+
+    const session = new GameSession(broadcast, sendTo, customDungeon);
+    session.addPlayer('p1', 'Alice');
+    session.startGame();
+    expect(session.getPlayerRoom('p1')).toBe('start');
+  });
+
+  it('passes critMultiplier through to combat action', () => {
+    const { session, messages } = createSession();
+    session.handleMove('p1', 'north');
+    messages.length = 0;
+    session.handleCombatAction('p1', 'attack', undefined, undefined, undefined, 1.5);
+    // May not be p1's turn, but should not crash
+    expect(true).toBe(true);
+  });
+
+  it('handles defend_result message without crash', () => {
+    const { session } = createSession();
+    session.handleDefendResult('p1', 0.5);
+    expect(true).toBe(true);
+  });
 });

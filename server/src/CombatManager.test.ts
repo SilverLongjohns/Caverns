@@ -43,7 +43,7 @@ describe('CombatManager', () => {
     expect(result!.damage).toBe(8);
   });
 
-  it('resolves a defend action (doubles defense until next turn)', () => {
+  it('resolves a defend action and triggers QTE path when mob attacks defender', () => {
     const players = [
       { id: 'p1', name: 'Alice', hp: 50, maxHp: 50, damage: 10, defense: 4, initiative: 10 },
     ];
@@ -51,8 +51,10 @@ describe('CombatManager', () => {
     const cm = new CombatManager('room1', players, mobs);
     cm.resolvePlayerAction('p1', { action: 'defend' });
     const mobResult = cm.resolveMobTurn('mob1');
-    // mob damage 8 - player defense 8 (4*2) = min 1
-    expect(mobResult!.damage).toBeLessThanOrEqual(8);
+    // defending player triggers QTE path: pendingDamage returned, hp unchanged
+    expect(mobResult!.defendQte).toBe(true);
+    expect(mobResult!.pendingDamage).toBeDefined();
+    expect(mobResult!.targetHp).toBe(50);
   });
 
   it('kills a mob and marks it dead', () => {
@@ -106,5 +108,74 @@ describe('CombatManager', () => {
     cm.advanceTurn();
     expect(cm.getState().roundNumber).toBe(2);
     expect(cm.getCurrentTurnId()).toBe('p1');
+  });
+
+  it('applies crit multiplier to attack damage', () => {
+    const players = [
+      { id: 'p1', name: 'Alice', hp: 50, maxHp: 50, damage: 10, defense: 2, initiative: 10 },
+    ];
+    const mobs = [makeMob()];
+    const cm = new CombatManager('room1', players, mobs);
+    const result = cm.resolvePlayerAction('p1', { action: 'attack', targetId: 'mob1', critMultiplier: 1.5 });
+    expect(result!.damage).toBe(12);
+    expect(result!.critMultiplier).toBe(1.5);
+  });
+
+  it('applies 0.75x miss penalty to attack damage', () => {
+    const players = [
+      { id: 'p1', name: 'Alice', hp: 50, maxHp: 50, damage: 10, defense: 2, initiative: 10 },
+    ];
+    const mobs = [makeMob()];
+    const cm = new CombatManager('room1', players, mobs);
+    const result = cm.resolvePlayerAction('p1', { action: 'attack', targetId: 'mob1', critMultiplier: 0.75 });
+    expect(result!.damage).toBe(6);
+  });
+
+  it('defaults to 1.0x when no critMultiplier provided', () => {
+    const players = [
+      { id: 'p1', name: 'Alice', hp: 50, maxHp: 50, damage: 10, defense: 2, initiative: 10 },
+    ];
+    const mobs = [makeMob()];
+    const cm = new CombatManager('room1', players, mobs);
+    const result = cm.resolvePlayerAction('p1', { action: 'attack', targetId: 'mob1' });
+    expect(result!.damage).toBe(8);
+  });
+
+  it('records taunt on defend and forces mob to target defender', () => {
+    const players = [
+      { id: 'p1', name: 'Alice', hp: 50, maxHp: 50, damage: 10, defense: 4, initiative: 10 },
+      { id: 'p2', name: 'Bob', hp: 50, maxHp: 50, damage: 8, defense: 2, initiative: 5 },
+    ];
+    const mobs = [makeMob()];
+    const cm = new CombatManager('room1', players, mobs);
+    cm.resolvePlayerAction('p1', { action: 'defend' });
+    const result = cm.resolveMobTurn('mob1');
+    expect(result!.targetId).toBe('p1');
+  });
+
+  it('clears taunt after taunted mob attacks', () => {
+    const players = [
+      { id: 'p1', name: 'Alice', hp: 50, maxHp: 50, damage: 10, defense: 4, initiative: 10 },
+      { id: 'p2', name: 'Bob', hp: 50, maxHp: 50, damage: 8, defense: 2, initiative: 5 },
+    ];
+    const mobs = [makeMob(), makeMob({ instanceId: 'mob2', name: 'Crawler 2' })];
+    const cm = new CombatManager('room1', players, mobs);
+    cm.resolvePlayerAction('p1', { action: 'defend' });
+    cm.resolveMobTurn('mob1');
+    const result2 = cm.resolveMobTurn('mob2');
+    expect(result2).not.toBeNull();
+  });
+
+  it('resolveMobTurn returns pendingDamage when target is defending', () => {
+    const players = [
+      { id: 'p1', name: 'Alice', hp: 50, maxHp: 50, damage: 10, defense: 4, initiative: 10 },
+    ];
+    const mobs = [makeMob()];
+    const cm = new CombatManager('room1', players, mobs);
+    cm.resolvePlayerAction('p1', { action: 'defend' });
+    const result = cm.resolveMobTurn('mob1');
+    expect(result!.defendQte).toBe(true);
+    expect(result!.pendingDamage).toBeDefined();
+    expect(result!.targetHp).toBe(50);
   });
 });

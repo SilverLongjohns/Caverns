@@ -8,6 +8,7 @@ interface LobbyPlayer {
 export class Lobby {
   private players: LobbyPlayer[] = [];
   private hostId: string | null = null;
+  private difficulty: 'easy' | 'medium' | 'hard' = 'medium';
   private broadcast: (msg: ServerMessage) => void;
   private sendTo: (playerId: string, msg: ServerMessage) => void;
 
@@ -41,6 +42,16 @@ export class Lobby {
     return this.players;
   }
 
+  getDifficulty(): 'easy' | 'medium' | 'hard' {
+    return this.difficulty;
+  }
+
+  setDifficulty(playerId: string, difficulty: 'easy' | 'medium' | 'hard'): void {
+    if (this.hostId !== playerId) return;
+    this.difficulty = difficulty;
+    this.broadcastState();
+  }
+
   private broadcastState(): void {
     for (const p of this.players) {
       this.sendTo(p.id, {
@@ -48,6 +59,7 @@ export class Lobby {
         players: this.players,
         hostId: this.hostId!,
         yourId: p.id,
+        difficulty: this.difficulty,
       });
     }
   }

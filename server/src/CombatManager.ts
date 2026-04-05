@@ -35,6 +35,7 @@ export class CombatManager {
   private turnOrder: string[] = [];
   private turnIndex = 0;
   private roundNumber = 1;
+  private tauntedBy: Map<string, string> = new Map(); // mobId -> playerId who taunted
 
   constructor(roomId: string, players: CombatPlayerInfo[], mobs: MobInstance[]) {
     this.roomId = roomId;
@@ -76,6 +77,7 @@ export class CombatManager {
     if (this.turnIndex >= this.turnOrder.length) {
       this.roundNumber++;
       for (const p of this.participants.values()) { p.isDefending = false; }
+      this.tauntedBy.clear();
       this.rollInitiativeOrder();
     }
   }
@@ -92,6 +94,7 @@ export class CombatManager {
   resolvePlayerAction(playerId: string, action: {
     action: 'attack' | 'defend' | 'use_item' | 'flee';
     targetId?: string; itemDamage?: number; itemHealing?: number; fleeDirection?: Direction;
+    critMultiplier?: number;
   }): Partial<CombatActionResultMessage> | null {
     const actor = this.participants.get(playerId);
     if (!actor || !actor.alive) return null;
@@ -101,7 +104,8 @@ export class CombatManager {
         const target = this.participants.get(action.targetId!);
         if (!target || !target.alive) return null;
         const effectiveDefense = target.isDefending ? target.defense * 2 : target.defense;
-        const damage = Math.max(1, actor.damage - effectiveDefense);
+        const multiplier = action.critMultiplier ?? 1.0;
+        const damage = Math.max(1, Math.floor((actor.damage - effectiveDefense) * multiplier));
         target.hp = Math.max(0, target.hp - damage);
         const targetDowned = target.hp === 0;
         if (targetDowned) target.alive = false;
@@ -109,10 +113,16 @@ export class CombatManager {
           actorId: playerId, actorName: actor.name, action: 'attack',
           targetId: target.id, targetName: target.name, damage,
           targetHp: target.hp, targetMaxHp: target.maxHp, targetDowned,
+          critMultiplier: multiplier,
         };
       }
       case 'defend': {
         actor.isDefending = true;
+        const aliveMobs = Array.from(this.participants.values()).filter((p) => p.type === 'mob' && p.alive);
+        if (aliveMobs.length > 0) {
+          const tauntTarget = aliveMobs[Math.floor(Math.random() * aliveMobs.length)];
+          this.tauntedBy.set(tauntTarget.id, playerId);
+        }
         return { actorId: playerId, actorName: actor.name, action: 'defend' };
       }
       case 'use_item': {
@@ -157,15 +167,47 @@ export class CombatManager {
     if (!mob || !mob.alive || mob.type !== 'mob') return null;
     const alivePlayers = Array.from(this.participants.values()).filter((p) => p.type === 'player' && p.alive);
     if (alivePlayers.length === 0) return null;
-    const target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
-    const effectiveDefense = target.isDefending ? target.defense * 2 : target.defense;
-    const damage = Math.max(1, mob.damage - effectiveDefense);
-    target.hp = Math.max(0, target.hp - damage);
+
+    const tauntedPlayerId = this.tauntedBy.get(mobId);
+    let target: InternalParticipant;
+    if (tauntedPlayerId) {
+      const taunter = this.participants.get(tauntedPlayerId);
+      this.tauntedBy.delete(mobId);
+      target = taunter && taunter.alive ? taunter : alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+    } else {
+      target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+    }
+
+    const rawDamage = Math.max(1, mob.damage - target.defense);
+
+    if (target.isDefending) {
+      return {
+        actorId: mobId, actorName: mob.name, action: 'attack',
+        targetId: target.id, targetName: target.name,
+        pendingDamage: rawDamage, defendQte: true,
+        targetHp: target.hp, targetMaxHp: target.maxHp,
+      };
+    }
+
+    target.hp = Math.max(0, target.hp - rawDamage);
     const targetDowned = target.hp === 0;
     if (targetDowned) target.alive = false;
     return {
       actorId: mobId, actorName: mob.name, action: 'attack',
-      targetId: target.id, targetName: target.name, damage,
+      targetId: target.id, targetName: target.name, damage: rawDamage,
+      targetHp: target.hp, targetMaxHp: target.maxHp, targetDowned,
+    };
+  }
+
+  applyDefendDamage(targetId: string, rawDamage: number, damageReduction: number): Partial<CombatActionResultMessage> | null {
+    const target = this.participants.get(targetId);
+    if (!target || !target.alive) return null;
+    const finalDamage = Math.max(1, Math.floor(rawDamage * (1 - damageReduction)));
+    target.hp = Math.max(0, target.hp - finalDamage);
+    const targetDowned = target.hp === 0;
+    if (targetDowned) target.alive = false;
+    return {
+      targetId: target.id, targetName: target.name, damage: finalDamage,
       targetHp: target.hp, targetMaxHp: target.maxHp, targetDowned,
     };
   }

@@ -11,15 +11,26 @@ interface PendingLootRound {
 
 export class LootManager {
   private pendingRound: PendingLootRound | null = null;
-  private onItemAwarded: (itemId: string, winnerId: string) => void;
+  private onItemAwarded: (item: Item, winnerId: string) => void;
+  private onRoundComplete: (() => void) | null;
+  private onChoiceMade: ((playerId: string, itemName: string, choice: LootChoice) => void) | null;
+  private onRollResult: ((itemName: string, rolls: { playerId: string; roll: number }[], winnerId: string) => void) | null;
 
-  constructor(onItemAwarded: (itemId: string, winnerId: string) => void) {
+  constructor(
+    onItemAwarded: (item: Item, winnerId: string) => void,
+    onRoundComplete?: () => void,
+    onChoiceMade?: (playerId: string, itemName: string, choice: LootChoice) => void,
+    onRollResult?: (itemName: string, rolls: { playerId: string; roll: number }[], winnerId: string) => void,
+  ) {
     this.onItemAwarded = onItemAwarded;
+    this.onRoundComplete = onRoundComplete ?? null;
+    this.onChoiceMade = onChoiceMade ?? null;
+    this.onRollResult = onRollResult ?? null;
   }
 
   startLootRound(roomId: string, items: Item[], playerIds: string[]): void {
     if (playerIds.length === 1) {
-      for (const item of items) { this.onItemAwarded(item.id, playerIds[0]); }
+      for (const item of items) { this.onItemAwarded(item, playerIds[0]); }
       return;
     }
     const choices = new Map<string, Map<string, LootChoice>>();
@@ -35,6 +46,10 @@ export class LootManager {
     const itemChoices = this.pendingRound.choices.get(itemId);
     if (!itemChoices) return;
     itemChoices.set(playerId, choice);
+    const item = this.pendingRound.items.find((i) => i.id === itemId);
+    if (item) {
+      this.onChoiceMade?.(playerId, item.name, choice);
+    }
     const allSubmitted = Array.from(this.pendingRound.choices.values()).every(
       (ic) => this.pendingRound!.playerIds.every((pid) => ic.has(pid))
     );
@@ -61,9 +76,13 @@ export class LootManager {
       }
       const pool = needPlayers.length > 0 ? needPlayers : greedPlayers;
       if (pool.length > 0) {
-        const winner = pool[Math.floor(Math.random() * pool.length)];
-        this.onItemAwarded(item.id, winner);
+        const rolls = pool.map((pid) => ({ playerId: pid, roll: Math.floor(Math.random() * 100) + 1 }));
+        rolls.sort((a, b) => b.roll - a.roll);
+        const winner = rolls[0].playerId;
+        this.onRollResult?.(item.name, rolls, winner);
+        this.onItemAwarded(item, winner);
       }
     }
+    this.onRoundComplete?.();
   }
 }

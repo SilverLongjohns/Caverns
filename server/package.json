@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
     "@caverns/shared": "*",
     "ws": "^8.18.0"
   },

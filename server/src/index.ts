@@ -6,6 +6,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { ClientMessage, ServerMessage } from '@caverns/shared';
 import { Lobby } from './Lobby.js';
 import { GameSession } from './GameSession.js';
+import { generateDungeon } from './DungeonGenerator.js';
 
 const PORT = Number(process.env.PORT) || 3001;
 
@@ -85,16 +86,56 @@ wss.on('connection', (ws) => {
         lobby.addPlayer(playerId, msg.playerName);
         break;
       }
+      case 'set_difficulty': {
+        lobby.setDifficulty(playerId, msg.difficulty);
+        break;
+      }
       case 'start_game': {
         if (!lobby.isHost(playerId)) {
           sendTo(playerId, { type: 'error', message: 'Only the host can start the game.' });
           break;
         }
-        gameSession = new GameSession(broadcast, sendTo);
-        for (const p of lobby.getPlayers()) {
-          gameSession.addPlayer(p.id, p.name);
+
+        const difficulty = msg.difficulty ?? lobby.getDifficulty();
+        const apiKey = msg.apiKey;
+
+        if (!apiKey) {
+          // No API key — use static dungeon immediately
+          gameSession = new GameSession(broadcast, sendTo);
+          for (const p of lobby.getPlayers()) {
+            gameSession.addPlayer(p.id, p.name);
+          }
+          gameSession.startGame();
+          break;
         }
-        gameSession.startGame();
+
+        // Start generation
+        broadcast({ type: 'generation_status', status: 'generating' });
+
+        generateDungeon(apiKey, difficulty).then((result) => {
+          if (!result.generated) {
+            broadcast({
+              type: 'generation_status',
+              status: 'failed',
+              reason: result.error ?? 'Generation failed',
+            });
+          }
+
+          gameSession = new GameSession(broadcast, sendTo, result.dungeon);
+          for (const p of lobby.getPlayers()) {
+            gameSession.addPlayer(p.id, p.name);
+          }
+          gameSession.startGame();
+
+          if (!result.generated) {
+            broadcast({
+              type: 'text_log',
+              message: 'Dungeon generation failed \u2014 playing The Dripping Halls instead.',
+              logType: 'system',
+            });
+          }
+        });
+
         break;
       }
       case 'move': {
@@ -102,7 +143,11 @@ wss.on('connection', (ws) => {
         break;
       }
       case 'combat_action': {
-        gameSession?.handleCombatAction(playerId, msg.action, msg.targetId, msg.itemIndex, msg.fleeDirection);
+        gameSession?.handleCombatAction(playerId, msg.action, msg.targetId, msg.itemIndex, msg.fleeDirection, msg.critMultiplier);
+        break;
+      }
+      case 'defend_result': {
+        gameSession?.handleDefendResult(playerId, msg.damageReduction);
         break;
       }
       case 'loot_choice': {
@@ -119,6 +164,10 @@ wss.on('connection', (ws) => {
       }
       case 'drop_item': {
         gameSession?.handleDropItem(playerId, msg.inventoryIndex);
+        break;
+      }
+      case 'use_consumable': {
+        gameSession?.handleUseConsumable(playerId, msg.consumableIndex);
         break;
       }
     }

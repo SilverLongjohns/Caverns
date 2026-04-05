@@ -19,7 +19,7 @@ export function PartyPanel() {
       <h3>Party</h3>
       {otherPlayers.map((player) => {
         const hpPercent = (player.hp / player.maxHp) * 100;
-        const hpColor = hpPercent > 50 ? '#4ecdc4' : hpPercent > 25 ? '#ffd93d' : '#ff6b6b';
+        const hpColor = hpPercent > 50 ? '#8b2020' : hpPercent > 25 ? '#8b5a20' : '#cc3333';
         const room = rooms[player.roomId];
         return (
           <div key={player.id} className="party-member">
