@@ -1036,7 +1036,7 @@ export class GameSession {
     }
 
     // Create secret room on reveal_room outcome
-    if (result.outcomeType === 'reveal_room' && !this.secretRoomLinks.has(interactableId)) {
+    if ((result.outcomeType === 'reveal_room' || result.outcomeType === 'secret') && !this.secretRoomLinks.has(interactableId)) {
       this.createSecretRoom(interactableId, player.roomId);
       this.broadcastToRoom(player.roomId, {
         type: 'text_log',

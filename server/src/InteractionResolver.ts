@@ -115,8 +115,8 @@ export class InteractionResolver {
       case 'intel':
         return this.resolveIntel(definition, action, outcomeType, room);
       case 'reveal_room':
-        return this.resolveRevealRoom(definition, action, outcomeType);
       case 'secret':
+        return this.resolveRevealRoom(definition, action, outcomeType);
       case 'flavor':
         return this.resolveFlavor(definition, action, outcomeType);
     }

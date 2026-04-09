@@ -32,6 +32,6 @@ COPY --from=build /app/shared/package.json shared/
 COPY --from=build /app/server/dist server/dist
 COPY --from=build /app/client/dist client/dist
 
-EXPOSE 3001
+EXPOSE 8080
 
 CMD ["node", "server/dist/index.js"]

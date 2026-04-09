@@ -200,7 +200,11 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
 
   const isTargeting = effectiveState.mode === 'target';
   const isReviveTargeting = isTargeting && effectiveState.afterSelect === 'item_effect';
-  const isEnemyTargeting = isTargeting && !isReviveTargeting;
+  const isAllyAbilityTargeting = isTargeting && effectiveState.afterSelect === 'ability' && (() => {
+    const ability = playerAbilities.find(a => a.id === effectiveState.abilityId);
+    return ability?.targetType === 'ally';
+  })();
+  const isEnemyTargeting = isTargeting && !isReviveTargeting && !isAllyAbilityTargeting;
 
   return (
     <div className="combat-view">
@@ -213,7 +217,8 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
             const isActive = currentTurnId === member.id;
             const isAttacking = combatAnim?.attackerId === member.id;
             const isHit = combatAnim?.targetId === member.id;
-            const canTarget = isReviveTargeting && isDowned && member.id !== playerId;
+            const canTarget = (isReviveTargeting && isDowned && member.id !== playerId)
+              || (isAllyAbilityTargeting && !isDowned && member.id !== playerId);
             return (
               <div
                 key={member.id}
