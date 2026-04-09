@@ -1,5 +1,5 @@
 import type { InteractableDefinition } from './types.js';
-import interactablesJson from './data/interactables.json';
+import interactablesJson from './data/interactables.json' with { type: 'json' };
 
 const RETURN_PORTAL: InteractableDefinition = {
   id: '_return_portal',

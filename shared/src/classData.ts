@@ -1,5 +1,5 @@
 import type { ClassDefinition } from './classTypes.js';
-import classesJson from './data/classes.json';
+import classesJson from './data/classes.json' with { type: 'json' };
 
 export const CLASS_DEFINITIONS: ClassDefinition[] = classesJson as ClassDefinition[];
 

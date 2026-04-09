@@ -3,6 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true
   },
   "include": ["src"]
