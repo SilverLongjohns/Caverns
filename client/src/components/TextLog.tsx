@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 
 const LOG_COLORS: Record<string, string> = {
@@ -11,8 +11,8 @@ const LOG_COLORS: Record<string, string> = {
 
 const RARITY_PATTERN = /\{(common|uncommon|rare|legendary|unique):([^}]+)\}/g;
 
-function renderLine(text: string): (string | JSX.Element)[] {
-  const parts: (string | JSX.Element)[] = [];
+function renderLine(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
