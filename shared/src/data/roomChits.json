@@ -1,0 +1,4107 @@
+[
+  {
+    "id": "starter_rubble_nook_01",
+    "type": "dead_end",
+    "name": "Rubble-Choked Nook",
+    "description": "A collapsed side tunnel packed with fallen stone. A narrow gap at the top lets in a faint draft, but there is no way through. Something glints between the rocks.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "starter_abandoned_camp_01",
+    "type": "dead_end",
+    "name": "Abandoned Campsite",
+    "description": "A circle of sooty stones surrounds a long-dead fire. Bedrolls have been shredded by claws, and scattered supplies lie half-buried in dirt.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor",
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 4
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "starter_rat_nest_01",
+    "type": "dead_end",
+    "name": "Rat Nest",
+    "description": "The tunnel ends in a heap of gnawed cloth, bones, and filth. The stench is overwhelming. Dozens of tiny eyes watch from the tangled mass.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "starter_shallow_pool_01",
+    "type": "dead_end",
+    "name": "Dripping Pool",
+    "description": "A shallow pool of clear water fed by a slow drip from the ceiling. The walls are slick with moisture and pale mineral deposits.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "starter_caved_shaft_01",
+    "type": "dead_end",
+    "name": "Collapsed Mine Shaft",
+    "description": "Rotting timbers and heaped stone mark where a mine shaft caved in. Rusted tools poke from the debris, and the air tastes of old dust.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 22,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "starter_rough_tunnel_01",
+    "type": "tunnel",
+    "name": "Rough-Hewn Passage",
+    "description": "A crude tunnel hacked through soft stone by picks long abandoned. Tool marks cover every surface, and the ceiling is uncomfortably low.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_root_tunnel_01",
+    "type": "tunnel",
+    "name": "Root-Tangled Corridor",
+    "description": "Tree roots push through the ceiling and walls, cracking the stone apart. You duck under thick tendrils and step over gnarled stumps.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_rubble_corridor_01",
+    "type": "tunnel",
+    "name": "Rubble-Strewn Corridor",
+    "description": "Loose stones litter the floor of this uneven passage. Every step sends pebbles skittering into the darkness ahead, announcing your presence.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_draft_tunnel_01",
+    "type": "tunnel",
+    "name": "Drafty Tunnel",
+    "description": "A cold wind funnels through this narrow passage, carrying the smell of earth and rain. Somewhere above, there is an opening to the surface.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 14,
+          "y": 2
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 32,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_cobweb_tunnel_01",
+    "type": "tunnel",
+    "name": "Cobweb Passage",
+    "description": "Thick webs stretch from wall to wall in dusty curtains. You push through them with each step, trailing silk behind you like a bridal train.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_cart_tunnel_01",
+    "type": "tunnel",
+    "name": "Mine Cart Track",
+    "description": "Rusted iron rails run along the floor, partially buried in dirt. A derailed mine cart lies on its side, its contents long looted.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_seep_tunnel_01",
+    "type": "tunnel",
+    "name": "Seeping Corridor",
+    "description": "Water oozes from every crack in the walls, leaving the floor a muddy slick. Boot prints from some earlier visitor have filled with brown water.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_torch_tunnel_01",
+    "type": "tunnel",
+    "name": "Torchlit Passage",
+    "description": "Spent torches line the walls in crude iron brackets. One still gutters with a feeble orange flame, as if someone passed through only hours ago.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_supply_room_01",
+    "type": "chamber",
+    "name": "Old Supply Room",
+    "description": "A widened chamber with rough-cut shelves carved into the walls. Rotting sacks and smashed crates litter the floor, but a few containers remain sealed.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 8
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_junction_01",
+    "type": "chamber",
+    "name": "Three-Way Junction",
+    "description": "The tunnel opens into a low-ceilinged chamber where three passages converge. Scratched arrows on the walls point in contradictory directions.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 3,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 7
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_goblin_den_01",
+    "type": "chamber",
+    "name": "Goblin Squatters' Den",
+    "description": "A chamber strewn with crude bedding, gnawed bones, and graffiti scratched into the walls in a language you cannot read. The goblins may return.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_mushroom_patch_01",
+    "type": "chamber",
+    "name": "Mushroom Patch",
+    "description": "A damp chamber where pale mushrooms carpet the floor in clusters. The air is earthy and close. Some of these may be edible, but you would rather not guess.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 22,
+          "y": 8
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "starter_echo_chamber_01",
+    "type": "chamber",
+    "name": "Echoing Chamber",
+    "description": "A round chamber where every sound bounces endlessly off the domed ceiling. Whispered words come back as shouts, and dripping water sounds like drumbeats.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 2
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_ore_vein_01",
+    "type": "chamber",
+    "name": "Exposed Ore Vein",
+    "description": "Picks and chisels lie abandoned around a seam of dull metal exposed in the wall. Someone started mining here and stopped in a hurry.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 4
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_well_room_01",
+    "type": "chamber",
+    "name": "The Old Well",
+    "description": "A stone well sits in the center of this chamber, its rope frayed and its bucket missing. The water far below reflects your torchlight back as a single cold eye.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 5,
+          "y": 6
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "starter_bone_pile_01",
+    "type": "chamber",
+    "name": "Bone Heap",
+    "description": "Animal bones are heaped in the corner of this chamber — the leavings of something with a healthy appetite. Claw marks score the walls at shoulder height.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 16,
+          "y": 9
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 34,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_crossroads_01",
+    "type": "cavern",
+    "name": "Warren Crossroads",
+    "description": "A broad cavern where multiple tunnels converge. Cairns of stacked stones mark each exit, left by explorers who may or may not have found their way out.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 4
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 8
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_sinkhole_01",
+    "type": "cavern",
+    "name": "Sinkhole Cavern",
+    "description": "The floor has partially collapsed into a deeper level, leaving a jagged sinkhole at the center. Tunnels branch off at different heights around the rim.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 6
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 40,
+          "y": 10
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "starter_pillar_hall_01",
+    "type": "cavern",
+    "name": "Pillar Hall",
+    "description": "Natural stone pillars hold up a high ceiling in this spacious cavern. Torchlight barely reaches the walls, and your footsteps echo from every direction.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "starter_gravel_slide_01",
+    "type": "cavern",
+    "name": "Gravel Slide",
+    "description": "A wide cavern where the floor slopes steeply in loose gravel. Tunnels open at various heights along the walls, connected by the unstable scree.",
+    "biomes": [
+      "starter"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 8
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 42,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_alcove",
+    "type": "dead_end",
+    "name": "Spore-Choked Alcove",
+    "description": "A cramped hollow thick with luminescent spores. The air is almost too dense to breathe. Something glints beneath a carpet of tiny mushrooms.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "fungal_dead_end",
+    "type": "dead_end",
+    "name": "Collapsed Mycelium Den",
+    "description": "A cave-in has sealed this chamber on three sides. Fungal tendrils probe through the rubble, slowly reclaiming the space.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 4
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "fungal_corridor_1",
+    "type": "tunnel",
+    "name": "Bioluminescent Passage",
+    "description": "A narrow tunnel lined with pulsing blue-green fungi. The walls breathe with a slow, rhythmic glow that makes your shadow dance.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_corridor_2",
+    "type": "tunnel",
+    "name": "Dripping Spore Tunnel",
+    "description": "Moisture beads on every surface. Fat drops of spore-laden water fall from the ceiling at irregular intervals, splashing into shallow puddles.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_corridor_3",
+    "type": "tunnel",
+    "name": "Root-Woven Corridor",
+    "description": "Thick mycelium roots crisscross the passage like a web. You have to push through curtains of dangling tendrils that leave a phosphorescent residue on your skin.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_chamber_1",
+    "type": "chamber",
+    "name": "Mushroom Garden",
+    "description": "An open chamber where mushrooms grow in organized clusters, almost like someone planted them. Caps range from fist-sized to taller than a man.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 8
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_chamber_2",
+    "type": "chamber",
+    "name": "Spore Nursery",
+    "description": "Thick clouds of luminescent spores drift through the air in lazy spirals. Massive mushroom caps form a canopy overhead, dripping with condensation.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 7
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_hub",
+    "type": "cavern",
+    "name": "Fungal Cathedral",
+    "description": "An enormous cavern where towering mushroom stalks rise like pillars to a ceiling lost in darkness. A deep thrumming vibration fills the space, as if the entire cave is breathing.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 4
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 8
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_dead_end_03",
+    "type": "dead_end",
+    "name": "Puffball Pocket",
+    "description": "A cramped hollow filled with enormous puffball mushrooms. The slightest touch sends clouds of choking spores into the air.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "fungal_dead_end_04",
+    "type": "dead_end",
+    "name": "Rot Pit",
+    "description": "The tunnel ends at a pit of decomposing organic matter. Fungal threads web across the surface, slowly breaking down something large and unidentifiable.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "fungal_dead_end_05",
+    "type": "dead_end",
+    "name": "Phosphor Grotto",
+    "description": "A tiny grotto where every surface glows with intense blue-green light. The brightness is almost painful after the dark tunnels.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 22,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "fungal_corridor_04",
+    "type": "tunnel",
+    "name": "Slime Vein Passage",
+    "description": "A tunnel where thick veins of luminescent slime run along the walls like arteries. They pulse rhythmically, pushing something viscous deeper into the cave system.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 14,
+          "y": 2
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 32,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_corridor_05",
+    "type": "tunnel",
+    "name": "Canopy Crawl",
+    "description": "Mushroom caps have grown together overhead, forming a living ceiling. You crawl through a tunnel of stems and gills, spores raining down with each bump.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_corridor_06",
+    "type": "tunnel",
+    "name": "Tendril Walk",
+    "description": "Long fungal tendrils dangle from the ceiling like a bead curtain. They retract when touched, then slowly reach out again once you pass.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_corridor_07",
+    "type": "tunnel",
+    "name": "Decomposition Lane",
+    "description": "The floor is soft and spongy, composed entirely of decomposing fungal matter. Each step sinks ankle-deep, releasing the sweet stench of rot.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_chamber_03",
+    "type": "chamber",
+    "name": "Sporefall Chamber",
+    "description": "A wide chamber where spores fall from the ceiling in a constant gentle rain. They drift like snow, accumulating in soft drifts against the walls.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_chamber_04",
+    "type": "chamber",
+    "name": "Lichen Throne Room",
+    "description": "A natural throne of stone sits at the back of this chamber, completely covered in luminous lichen. The seat is warm to the touch.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 22,
+          "y": 8
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "fungal_chamber_05",
+    "type": "chamber",
+    "name": "Feeding Hollow",
+    "description": "A chamber where fungal growths have engulfed the remains of some large creature. Bones jut from the mycelium, slowly being dissolved and absorbed.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 2
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_hub_02",
+    "type": "cavern",
+    "name": "The Bloom Cavern",
+    "description": "An immense cavern where the fungal growth has exploded into riotous variety. Thousands of species compete for space on every surface in a kaleidoscope of color and light.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 6
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 40,
+          "y": 10
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "fungal_hub_03",
+    "type": "cavern",
+    "name": "Mycelium Nexus",
+    "description": "A sprawling cavern where thick mycelium roots converge from every tunnel into a central mass. The ground throbs with a slow heartbeat.",
+    "biomes": [
+      "fungal"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "hidden",
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "crystal_dead_end_1",
+    "type": "dead_end",
+    "name": "Crystal Cul-de-Sac",
+    "description": "The tunnel ends at a wall of solid crystal. Your reflection stares back at you from a hundred facets, each slightly wrong.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 4
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_dead_end_2",
+    "type": "dead_end",
+    "name": "Shattered Geode",
+    "description": "A massive geode split open by some ancient force. Amethyst crystals line the interior, and something metallic glints near the back.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "crystal_corridor_1",
+    "type": "tunnel",
+    "name": "Refraction Gallery",
+    "description": "Light from an unknown source bounces between crystal formations, filling the tunnel with shifting prismatic patterns. Shadows have color here.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 34,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_corridor_2",
+    "type": "tunnel",
+    "name": "Singing Passage",
+    "description": "Air moving through the crystal formations produces an eerie, harmonious tone. The pitch changes with the wind, creating an unsettling melody.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 26,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_corridor_3",
+    "type": "tunnel",
+    "name": "Mirror Tunnel",
+    "description": "Every surface is polished crystal. The tunnel seems to extend infinitely in every direction, reflections within reflections making navigation disorienting.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_chamber_1",
+    "type": "chamber",
+    "name": "Amethyst Vault",
+    "description": "A chamber lined with deep purple amethyst. The crystals hum with stored energy, and the air tastes metallic and charged.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 8
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_chamber_2",
+    "type": "chamber",
+    "name": "Lattice Chamber",
+    "description": "Interlocking crystal formations create a complex lattice throughout the room. Moving through requires careful navigation between razor-sharp edges.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 7
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_hub",
+    "type": "cavern",
+    "name": "The Prism Vault",
+    "description": "A vast open space where enormous crystal columns support the ceiling. A single beam of light from above splits into a thousand colors, illuminating the chamber in perpetual rainbow.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 7
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 40,
+          "y": 4
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 10
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 10
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_dead_end_03",
+    "type": "dead_end",
+    "name": "Quartz Tomb",
+    "description": "A figure lies encased in solid quartz at the back of this alcove, perfectly preserved. Its expression is peaceful, and one hand clutches something bright.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_dead_end_04",
+    "type": "dead_end",
+    "name": "Fractured Lens",
+    "description": "A single massive crystal has cracked into a dozen pieces, scattering light into chaotic patterns. The fragments are sharp and unstable.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "crystal_dead_end_05",
+    "type": "dead_end",
+    "name": "Resonance Pocket",
+    "description": "A tiny chamber where the crystals hum at a frequency you can feel in your teeth. Standing here too long makes your vision blur.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 4
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "crystal_corridor_04",
+    "type": "tunnel",
+    "name": "Shard Gauntlet",
+    "description": "Crystal spikes jut from the walls at irregular angles, narrowing the passable space to a winding path. One wrong step means a nasty cut.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_corridor_05",
+    "type": "tunnel",
+    "name": "Chime Passage",
+    "description": "Thin crystal stalactites hang from the ceiling like wind chimes. Your passing sets off a cascade of ringing notes that echo far ahead.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_corridor_06",
+    "type": "tunnel",
+    "name": "Dichroic Drift",
+    "description": "The crystals here shift color depending on the angle of view — green from one direction, purple from another. Navigating by sight alone is treacherous.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 14,
+          "y": 2
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 32,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_corridor_07",
+    "type": "tunnel",
+    "name": "Geode Squeeze",
+    "description": "The tunnel passes through the hollow interior of an enormous geode. Amethyst and citrine line every surface in sparkling abundance.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_corridor_08",
+    "type": "tunnel",
+    "name": "Frosted Crystal Tube",
+    "description": "A smooth-walled tube of milky white crystal, cold to the touch. Your breath fogs in the chill air, and ice crystals form on every surface.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_chamber_03",
+    "type": "chamber",
+    "name": "Harmonic Gallery",
+    "description": "Crystals of varying sizes are arranged in concentric rings, each producing a different tone when struck. Something intelligent placed them this way.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_chamber_04",
+    "type": "chamber",
+    "name": "Growth Chamber",
+    "description": "Crystals are still actively growing here, fed by mineral-rich water seeping through the rock. New formations sprout visibly over minutes.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 22,
+          "y": 8
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "crystal_chamber_05",
+    "type": "chamber",
+    "name": "Kaleidoscope Room",
+    "description": "Polished crystal surfaces on every wall turn the chamber into a living kaleidoscope. Moving your torch creates a dizzying whirl of reflected light.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 2
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_hub_02",
+    "type": "cavern",
+    "name": "The Crystal Garden",
+    "description": "A vast cavern where crystal formations grow in delicate, plant-like shapes — trees, flowers, ferns, all rendered in gleaming mineral. Beautiful and utterly silent.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 4
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 8
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "crystal_hub_03",
+    "type": "cavern",
+    "name": "Faceted Dome",
+    "description": "A dome-shaped cavern where every surface is a flat crystal facet. Light enters from a crack above and bounces infinitely, filling the space with blinding brilliance.",
+    "biomes": [
+      "crystal"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 6
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 40,
+          "y": 10
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_dead_end_1",
+    "type": "dead_end",
+    "name": "Sunken Storeroom",
+    "description": "A flooded room with shelves of waterlogged supplies. Crates bob in the waist-deep water, their contents long ruined — but not all of them.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "flooded_dead_end_2",
+    "type": "dead_end",
+    "name": "Tidal Pool",
+    "description": "A dead-end chamber with a deep pool in its center. The water is crystal clear, revealing smooth stones and something glinting at the bottom.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "flooded_corridor_1",
+    "type": "tunnel",
+    "name": "Waterfall Passage",
+    "description": "Water cascades down one wall in a thin sheet, filling the tunnel with a constant roar. The floor is slick with algae and treacherous underfoot.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_corridor_2",
+    "type": "tunnel",
+    "name": "Drowned Corridor",
+    "description": "Knee-deep water fills this passage. Things bump against your legs in the murky current — driftwood, hopefully, though they feel too smooth.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_corridor_3",
+    "type": "tunnel",
+    "name": "Brackish Channel",
+    "description": "A canal of dark, salt-smelling water runs through the center of this passage. Barnacles coat the lower walls in thick clusters.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 34,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_chamber_1",
+    "type": "chamber",
+    "name": "Flooded Shrine",
+    "description": "An ancient shrine half-submerged in dark water. Corroded statues reach upward from beneath the surface, their features worn smooth by centuries of submersion.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 4
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_chamber_2",
+    "type": "chamber",
+    "name": "Kelp Forest",
+    "description": "Impossibly tall kelp grows from the flooded floor to the ceiling. The fronds sway in unseen currents, and things move between the stalks.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 5,
+          "y": 6
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "flooded_hub",
+    "type": "cavern",
+    "name": "The Drowned Atrium",
+    "description": "A vast chamber where the water reaches your chest. Ancient pillars rise from the flood, supporting a vaulted ceiling dripping with moisture. Multiple passages branch off at different water levels.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "flooded_dead_end_03",
+    "type": "dead_end",
+    "name": "Drowned Larder",
+    "description": "A pantry chamber where preserved food floats in sealed clay jars. The water has been here long enough for blind fish to colonize the shelves.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 22,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "flooded_dead_end_04",
+    "type": "dead_end",
+    "name": "Sump Hole",
+    "description": "The tunnel slopes downward into a completely flooded sump. The water is black and still, and something large moved beneath the surface just now.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 4
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_dead_end_05",
+    "type": "dead_end",
+    "name": "Fossil Pool",
+    "description": "A still pool where ancient fossils are visible in the rock beneath the water. Spiral shells and strange bones frozen in stone for millennia.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "flooded_corridor_04",
+    "type": "tunnel",
+    "name": "Spillway",
+    "description": "Water rushes through this sloped tunnel in a fast-moving sheet. You brace against the walls to avoid being swept off your feet.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 26,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_corridor_05",
+    "type": "tunnel",
+    "name": "Condensation Tunnel",
+    "description": "Every surface weeps with condensation. Droplets gather and run in rivulets down the walls, and the air is so humid it feels like breathing water.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_corridor_06",
+    "type": "tunnel",
+    "name": "Pipe Gallery",
+    "description": "Ancient clay pipes run along the ceiling, most cracked and pouring water. This was once part of a drainage system for something built long ago.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_corridor_07",
+    "type": "tunnel",
+    "name": "Algae Chute",
+    "description": "A steep passage coated in thick green algae. The footing is treacherous, and a thin stream of water makes the descent even more perilous.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_chamber_03",
+    "type": "chamber",
+    "name": "Cistern",
+    "description": "A vaulted chamber that once served as a water cistern. The water level has risen to fill it halfway, and stone walkways ring the edges above the flood.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 16,
+          "y": 9
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 34,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_chamber_04",
+    "type": "chamber",
+    "name": "Bioluminescent Pool",
+    "description": "A wide chamber with a glowing turquoise pool. Tiny luminous creatures drift through the water, casting wavering light on the ceiling.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 8
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_chamber_05",
+    "type": "chamber",
+    "name": "Cascade Hall",
+    "description": "Water falls from a crack in the high ceiling in a thin cascade, filling the chamber with white noise. Mist hangs in the air like fog.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 7
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_hub_02",
+    "type": "cavern",
+    "name": "The Sunken Forum",
+    "description": "A vast flooded hall with the remains of carved stone benches arranged in tiers. Whatever met here is long gone, but the architecture speaks of purpose and ceremony.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 8
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 42,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_dead_end_1",
+    "type": "dead_end",
+    "name": "Burial Niche",
+    "description": "A small alcove packed with neatly stacked bones. In the center, a single skeleton sits upright, hands folded around something.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_dead_end_2",
+    "type": "dead_end",
+    "name": "Collapsed Crypt",
+    "description": "A crypt whose ceiling has partially caved in. Broken sarcophagi spill their contents across the floor. Among the bones, something catches the light.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "bone_corridor_1",
+    "type": "tunnel",
+    "name": "Skull-Lined Passage",
+    "description": "Every inch of wall is set with skulls, staring with empty sockets. The passage is narrow enough that you brush against them as you pass.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 14,
+          "y": 2
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 32,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_corridor_2",
+    "type": "tunnel",
+    "name": "Whispering Gallery",
+    "description": "A long corridor where the dry air carries faint whispers. The bones in the walls seem to shift when you are not looking directly at them.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_corridor_3",
+    "type": "tunnel",
+    "name": "Vertebrae Arch",
+    "description": "The ceiling is formed from interlocking vertebrae, creating a ribbed arch that creaks and groans as you pass beneath it.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_chamber_1",
+    "type": "chamber",
+    "name": "Ossuary Chapel",
+    "description": "A chapel built entirely from human remains. A chandelier of femurs hangs from the ceiling. Candles of pale wax burn without flickering.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_chamber_2",
+    "type": "chamber",
+    "name": "Bone Mill",
+    "description": "A chamber with a massive stone wheel in its center, caked with ancient bone dust. Channels in the floor once directed ground marrow somewhere deeper.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 22,
+          "y": 8
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "bone_hub",
+    "type": "cavern",
+    "name": "The Great Ossuary",
+    "description": "A cathedral-sized chamber where bones form everything — walls, pillars, arches, and a grotesque altar at its center. The air is perfectly dry and carries the faintest scent of incense.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 7
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 40,
+          "y": 4
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 10
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 10
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_dead_end_03",
+    "type": "dead_end",
+    "name": "Sealed Sarcophagus",
+    "description": "A single stone sarcophagus sits in this cramped chamber, its lid slightly ajar. The scratches on the inside of the lid suggest its occupant tried to get out.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 4
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "bone_dead_end_04",
+    "type": "dead_end",
+    "name": "Marrow Font",
+    "description": "A stone basin filled with dark liquid stands against the back wall. The fluid is warm and smells of iron. Bones line the walls in devotional patterns.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "bone_dead_end_05",
+    "type": "dead_end",
+    "name": "Tooth Grotto",
+    "description": "Thousands of teeth have been pressed into the walls of this tiny chamber in spiraling patterns. The floor crunches underfoot with loose molars.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "bone_corridor_04",
+    "type": "tunnel",
+    "name": "Ribcage Corridor",
+    "description": "Enormous ribcages arch over the passage like the skeleton of a great beast. You walk through its chest cavity, bones creaking overhead.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_corridor_05",
+    "type": "tunnel",
+    "name": "Dust Walk",
+    "description": "The floor is thick with powdered bone. Your footprints fill in slowly behind you, as if something is smoothing them away.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_corridor_06",
+    "type": "tunnel",
+    "name": "Clicking Passage",
+    "description": "Finger bones dangle from sinew threads in the ceiling, clicking against each other as you pass. The sound follows you down the corridor.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 34,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_corridor_07",
+    "type": "tunnel",
+    "name": "Pelvis Arch Walk",
+    "description": "The tunnel passes through a series of massive pelvis bones arranged as arches. Each is from a different and increasingly larger creature.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 26,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_corridor_08",
+    "type": "tunnel",
+    "name": "Cartilage Squeeze",
+    "description": "A narrow passage where the walls are lined with ancient cartilage, still rubbery after centuries. It flexes as you push through.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_chamber_03",
+    "type": "chamber",
+    "name": "Reliquary",
+    "description": "A chamber of niches, each holding a single skull on a stone shelf. Some have offerings placed before them — coins, beads, dried flowers turned to dust.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 2
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_chamber_04",
+    "type": "chamber",
+    "name": "Charnel Pit",
+    "description": "A deep pit in the center of this chamber is filled with jumbled bones. Arm bones, leg bones, and skulls all tossed in without ceremony. Something moves at the bottom.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 4
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "bone_chamber_05",
+    "type": "chamber",
+    "name": "Scrimshaw Gallery",
+    "description": "Every bone surface in this room has been carved with intricate scenes — battles, feasts, births, and deaths. A civilization's history etched into its own remains.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 5,
+          "y": 6
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "bone_hub_02",
+    "type": "cavern",
+    "name": "The Catacomb Atrium",
+    "description": "A towering atrium where stacked burial shelves rise to dizzying heights. Ladders of lashed bones connect the levels, and tunnels open at every tier.",
+    "biomes": [
+      "bone"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 4
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 8
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_dead_end_1",
+    "type": "dead_end",
+    "name": "Cooled Lava Tube",
+    "description": "A lava tube that has cooled and sealed at the far end. The walls are smooth obsidian, and trapped gas pockets pop and hiss occasionally.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 22,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_dead_end_2",
+    "type": "dead_end",
+    "name": "Forge Alcove",
+    "description": "A natural alcove where the heat is intense enough to have been used as a forge. Abandoned tools and half-finished metalwork litter the ground.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 4
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_corridor_1",
+    "type": "tunnel",
+    "name": "Magma Vein",
+    "description": "A narrow passage with a crack of flowing magma running down its center. The heat is oppressive, and the air shimmers with convection.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_corridor_2",
+    "type": "tunnel",
+    "name": "Cinder Drift",
+    "description": "A tunnel choked with volcanic ash. Each step sends up clouds of grey dust. The walls are warm to the touch and crumble if pressed.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_corridor_3",
+    "type": "tunnel",
+    "name": "Obsidian Gullet",
+    "description": "A passage lined with smooth volcanic glass. Your reflection walks alongside you, distorted by the curved surfaces into something barely recognizable.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 14,
+          "y": 2
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 32,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_chamber_1",
+    "type": "chamber",
+    "name": "Sulfur Vent Chamber",
+    "description": "A wide chamber where sulfurous gas vents from cracks in the floor. Yellow crystals have formed around the vents. The stench is overwhelming.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 16,
+          "y": 9
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 34,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_chamber_2",
+    "type": "chamber",
+    "name": "Basalt Pillars",
+    "description": "Hexagonal basalt columns rise from floor to ceiling in geometric perfection. Lava flows between them in narrow channels, casting everything in amber light.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 8
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_hub",
+    "type": "cavern",
+    "name": "The Crucible",
+    "description": "A massive cavern dominated by a lake of slowly churning magma. Basalt islands connected by natural stone bridges create a treacherous network above the molten rock.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 6
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 40,
+          "y": 10
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_dead_end_03",
+    "type": "dead_end",
+    "name": "Slag Heap",
+    "description": "A chamber choked with cooled slag and volcanic debris. The heat still radiates from deeper layers, and the air shimmers above the pile.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_dead_end_04",
+    "type": "dead_end",
+    "name": "Fumarole Vent",
+    "description": "A dead end where superheated steam jets from cracks in the floor. Yellow sulfur crystals crust the vent edges. The heat is barely tolerable.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_dead_end_05",
+    "type": "dead_end",
+    "name": "Petrified Forge",
+    "description": "An ancient smithy sealed by a lava flow. The anvil, tongs, and half-finished blade are all perfectly preserved in stone, frozen mid-swing.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_corridor_04",
+    "type": "tunnel",
+    "name": "Ember Drift",
+    "description": "Glowing embers float through the air like fireflies, carried on thermals from below. They wink out against your skin with tiny stings.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_corridor_05",
+    "type": "tunnel",
+    "name": "Pumice Corridor",
+    "description": "The walls are rough pumice that crumbles at a touch. The floor is littered with lightweight volcanic stone that crunches underfoot.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_corridor_06",
+    "type": "tunnel",
+    "name": "Lava Tube",
+    "description": "A smooth-walled tube carved by ancient lava flow. The stone is glassy and dark, reflecting your torchlight in warped ribbons.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_corridor_07",
+    "type": "tunnel",
+    "name": "Sulfur Stink",
+    "description": "A passage where the sulfur stench is so thick your eyes water. Yellow deposits coat the walls, and the air burns in your throat.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_corridor_08",
+    "type": "tunnel",
+    "name": "Heat Shimmer Passage",
+    "description": "The air here is so hot it shimmers and bends. Distances are impossible to judge, and the far end of the tunnel seems to ripple like a mirage.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 34,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_chamber_03",
+    "type": "chamber",
+    "name": "Lava Blister",
+    "description": "A dome-shaped chamber formed by a trapped gas bubble in ancient lava. The walls are smooth obsidian, and the floor is uncomfortably warm.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 7
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 25,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_chamber_04",
+    "type": "chamber",
+    "name": "Scoria Garden",
+    "description": "A chamber where jagged scoria formations rise from the floor like a petrified garden. Veins of glowing magma thread between them like irrigation channels.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_chamber_05",
+    "type": "chamber",
+    "name": "Ash Fall Chamber",
+    "description": "Fine volcanic ash drifts from cracks in the ceiling in a slow, constant fall. It coats everything in grey and muffles all sound.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 22,
+          "y": 8
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_hub_02",
+    "type": "cavern",
+    "name": "The Caldera",
+    "description": "An immense cavern shaped like a volcanic crater. Magma churns far below, and stone ledges spiral down the inner walls like a descending staircase. Tunnels open at every level.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "volcanic_hub_03",
+    "type": "cavern",
+    "name": "Obsidian Atrium",
+    "description": "A vast chamber of polished obsidian where your reflection walks beside you in every surface. Lava pools glow at the perimeter, and the heat radiates from below.",
+    "biomes": [
+      "volcanic"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 8
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 42,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_fungal_crystal_grotto",
+    "type": "chamber",
+    "name": "Crystallized Fungal Grotto",
+    "description": "A transitional space where bioluminescent fungi grow on crystalline walls. The crystals amplify the glow into blinding patterns. Mushrooms sprout from cracks in the formations.",
+    "biomes": [
+      "fungal",
+      "crystal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 4
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_crystal_flooded_pool",
+    "type": "chamber",
+    "name": "Submerged Crystal Garden",
+    "description": "Crystal formations grow beneath clear water, creating an underwater garden of sharp beauty. The light refracts through the water, painting the ceiling in shifting colors.",
+    "biomes": [
+      "crystal",
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 12,
+          "y": 2
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_flooded_bone_catacomb",
+    "type": "tunnel",
+    "name": "Flooded Catacombs",
+    "description": "Brackish water fills an ancient catacomb. Bones float in the murky current, occasionally assembling into shapes before drifting apart.",
+    "biomes": [
+      "flooded",
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 26,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_bone_volcanic_kiln",
+    "type": "chamber",
+    "name": "The Bone Kiln",
+    "description": "A chamber where volcanic heat has calcified everything. Skeletons are fused to the walls in twisted poses, baked into the stone itself. The heat is stifling.",
+    "biomes": [
+      "bone",
+      "volcanic"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 4
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 38,
+          "y": 7
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_volcanic_fungal_vent",
+    "type": "tunnel",
+    "name": "Thermal Bloom Tunnel",
+    "description": "Volcanic heat feeds enormous fungi that thrive in the warmth. Giant mushrooms glow orange instead of blue, heated from within by geothermal vents.",
+    "biomes": [
+      "volcanic",
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_all_nexus",
+    "type": "cavern",
+    "name": "The Confluence",
+    "description": "A vast natural crossroads where all biomes meet. Crystals jut from bone walls, water trickles over volcanic rock, and mushrooms grow in every crevice. The air tastes of everything and nothing.",
+    "biomes": [
+      "fungal",
+      "crystal",
+      "flooded",
+      "bone",
+      "volcanic"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 30,
+          "y": 5
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 8
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 42,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_crystal_volcanic_forge",
+    "type": "dead_end",
+    "name": "Crystal Forge",
+    "description": "A chamber where volcanic heat has forged enormous crystals. They glow from within with trapped magma, creating pillars of frozen fire.",
+    "biomes": [
+      "crystal",
+      "volcanic"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "chest",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 4
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "multi_fungal_flooded_marsh",
+    "type": "chamber",
+    "name": "Subterranean Marsh",
+    "description": "Ankle-deep stagnant water supports a forest of pale mushrooms. Bioluminescent algae paints the water's surface in shifting green patterns.",
+    "biomes": [
+      "fungal",
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 5,
+          "y": 6
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "multi_bone_flooded_gravepool",
+    "type": "dead_end",
+    "name": "The Gravepool",
+    "description": "A still pool of dark water in a bone-lined chamber. Skeletons lie submerged beneath the surface, their eye sockets staring upward through the murk.",
+    "biomes": [
+      "bone",
+      "flooded"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "multi_fungal_bone_compost",
+    "type": "tunnel",
+    "name": "Rot Garden",
+    "description": "Mushrooms feed on ancient remains here, sprouting from skulls and ribcages. The cycle of death and growth has been repeating for centuries.",
+    "biomes": [
+      "fungal",
+      "bone"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_fungal_threshold",
+    "type": "tunnel",
+    "name": "Mold-Creep Tunnel",
+    "description": "Rough-hewn stone gives way to thick mold growth. The surface transitions sharply — bare rock on one side, living carpet on the other.",
+    "biomes": [
+      "starter",
+      "fungal"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_crystal_seam",
+    "type": "chamber",
+    "name": "Quartz Seam Chamber",
+    "description": "A rough cave where a seam of raw quartz has been partially mined. Crystal fragments litter the floor among rusted tools and abandoned crates.",
+    "biomes": [
+      "starter",
+      "crystal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "chest",
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 5,
+          "y": 6
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_flooded_well",
+    "type": "dead_end",
+    "name": "Flooded Mine Shaft",
+    "description": "A vertical shaft descends into black water. A frayed rope and a broken winch hang over the edge. Whatever they were mining is now under ten feet of flood.",
+    "biomes": [
+      "starter",
+      "flooded"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 15,
+          "y": 5
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_bone_crypt",
+    "type": "chamber",
+    "name": "Shallow Crypt",
+    "description": "A crude burial chamber just below the surface. Wooden coffins have rotted away, spilling their contents across the dirt floor. The bones are old but not ancient.",
+    "biomes": [
+      "starter",
+      "bone"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 16,
+          "y": 9
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 34,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_volcanic_vent",
+    "type": "tunnel",
+    "name": "Warm Draft Passage",
+    "description": "A tunnel where the air is unexpectedly warm. Cracks in the floor glow faintly orange, and the rough stone walls are hot to the touch. Something burns far below.",
+    "biomes": [
+      "starter",
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_fungal_crystal",
+    "type": "chamber",
+    "name": "Mossy Crystal Hollow",
+    "description": "A chamber where small crystals push through beds of green moss. The soft glow of luminescent fungus mixes with prismatic sparkle in eerie beauty.",
+    "biomes": [
+      "starter",
+      "fungal",
+      "crystal"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 16,
+          "y": 9
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 34,
+          "y": 4
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_flooded_bone",
+    "type": "dead_end",
+    "name": "Sunken Grave Pit",
+    "description": "A mass grave that has flooded. Bones float in brown water, bumping against the walls with the current. Mud and death share this space equally.",
+    "biomes": [
+      "starter",
+      "flooded",
+      "bone"
+    ],
+    "maxExits": 1,
+    "lootLocations": [
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 22,
+          "y": 3
+        },
+        "size": "medium"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_crystal_volcanic",
+    "type": "tunnel",
+    "name": "Scorched Vein",
+    "description": "A narrow passage where heat-cracked crystals line one wall and the other radiates volcanic warmth. Mineral deposits glow where the two forces meet.",
+    "biomes": [
+      "starter",
+      "crystal",
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 28,
+          "y": 2
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_fungal_flooded",
+    "type": "chamber",
+    "name": "Swamp Hollow",
+    "description": "A low-ceilinged chamber where standing water has allowed pale mushrooms to colonize every surface. The water is murky and the fungal smell mixes with decay.",
+    "biomes": [
+      "starter",
+      "fungal",
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 8
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_bone_volcanic",
+    "type": "tunnel",
+    "name": "Charred Ossuary Passage",
+    "description": "A narrow corridor where bones have been baked into the walls by ancient heat. Some are blackened and cracked, others fused into the rock itself.",
+    "biomes": [
+      "starter",
+      "bone",
+      "volcanic"
+    ],
+    "maxExits": 2,
+    "lootLocations": [
+      "floor"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "multi_starter_all",
+    "type": "cavern",
+    "name": "The Threshold",
+    "description": "A crossroads cavern at the boundary of the upper warrens and the deeper caves. Each tunnel mouth is different — one drips, one glows, one steams, one rattles. The choice of which way to go feels permanent.",
+    "biomes": [
+      "starter",
+      "fungal",
+      "crystal",
+      "flooded",
+      "bone",
+      "volcanic"
+    ],
+    "maxExits": 4,
+    "lootLocations": [
+      "chest",
+      "floor",
+      "hidden"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 18,
+          "y": 7
+        },
+        "size": "large"
+      },
+      {
+        "position": {
+          "x": 40,
+          "y": 4
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 10
+        },
+        "size": "small"
+      },
+      {
+        "position": {
+          "x": 35,
+          "y": 10
+        },
+        "size": "small"
+      }
+    ]
+  },
+  {
+    "id": "flooded_grotto",
+    "type": "chamber",
+    "name": "Echo Grotto",
+    "description": "A domed chamber where every sound bounces endlessly. Water drips from stalactites into a shallow pool, each drop amplified into a thunderclap.",
+    "biomes": [
+      "flooded"
+    ],
+    "maxExits": 3,
+    "lootLocations": [
+      "floor",
+      "chest"
+    ],
+    "interactableSlots": [
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "size": "medium"
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 8
+        },
+        "size": "small"
+      }
+    ]
+  }
+]

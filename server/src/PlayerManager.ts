@@ -5,7 +5,8 @@ import {
   type EquipmentSlot,
   createPlayer,
   computePlayerStats,
-  STARTER_WEAPON,
+  CLASS_STARTER_ITEMS,
+  getClassDefinition,
   STARTER_POTION,
   CONSUMABLE_SLOTS,
   INVENTORY_SLOTS,
@@ -14,9 +15,30 @@ import {
 export class PlayerManager {
   private players = new Map<string, Player>();
 
-  addPlayer(id: string, name: string, roomId: string): Player {
-    const player = createPlayer(id, name, roomId);
-    player.equipment.weapon = { ...STARTER_WEAPON };
+  addPlayer(id: string, name: string, roomId: string, className: string = 'vanguard'): Player {
+    const classDef = getClassDefinition(className);
+    const player = createPlayer(id, name, roomId, className);
+
+    // Apply class base stats
+    if (classDef) {
+      player.maxHp = classDef.baseStats.maxHp;
+      player.hp = classDef.baseStats.maxHp;
+    }
+
+    // Equip class-specific starter gear
+    const starterItems = CLASS_STARTER_ITEMS[className];
+    if (starterItems) {
+      player.equipment.weapon = { ...starterItems.weapon };
+      player.equipment.offhand = { ...starterItems.offhand };
+    }
+
+    // Initialize ability cooldowns (all start at 0 = ready)
+    if (classDef) {
+      player.cooldowns = classDef.abilities
+        .filter(a => !a.passive)
+        .map(a => ({ abilityId: a.id, turnsRemaining: 0 }));
+    }
+
     player.consumables[0] = { ...STARTER_POTION };
     player.consumables[1] = { ...STARTER_POTION };
     this.players.set(id, player);
@@ -132,11 +154,19 @@ export class PlayerManager {
     }
   }
 
-  revivePlayer(playerId: string): void {
+  revivePlayer(playerId: string, hp?: number): void {
     const player = this.players.get(playerId);
     if (!player) throw new Error(`Player ${playerId} not found`);
-    player.hp = Math.floor(player.maxHp / 2);
+    player.hp = hp ?? Math.floor(player.maxHp / 2);
     player.status = 'exploring';
+  }
+
+  healPlayer(playerId: string, amount: number): number {
+    const player = this.players.get(playerId);
+    if (!player) return 0;
+    const healed = Math.min(amount, player.maxHp - player.hp);
+    player.hp += healed;
+    return healed;
   }
 
   setStatus(playerId: string, status: Player['status']): void {
@@ -148,6 +178,42 @@ export class PlayerManager {
   allPlayersDowned(): boolean {
     const players = this.getAllPlayers();
     return players.length > 0 && players.every((p) => p.status === 'downed');
+  }
+
+  addKeyToAll(keyId: string): void {
+    for (const player of this.players.values()) {
+      if (!player.keychain.includes(keyId)) {
+        player.keychain.push(keyId);
+      }
+    }
+  }
+
+  hasKey(playerId: string, keyId: string): boolean {
+    const player = this.players.get(playerId);
+    return player?.keychain.includes(keyId) ?? false;
+  }
+
+  tickCooldowns(playerId: string, amount: number = 1): void {
+    const player = this.players.get(playerId);
+    if (!player) return;
+    player.cooldowns = player.cooldowns.map(cd => ({
+      ...cd,
+      turnsRemaining: Math.max(0, cd.turnsRemaining - amount),
+    }));
+  }
+
+  setCooldown(playerId: string, abilityId: string, turns: number): void {
+    const player = this.players.get(playerId);
+    if (!player) return;
+    const cd = player.cooldowns.find(c => c.abilityId === abilityId);
+    if (cd) cd.turnsRemaining = turns;
+  }
+
+  isAbilityReady(playerId: string, abilityId: string): boolean {
+    const player = this.players.get(playerId);
+    if (!player) return false;
+    const cd = player.cooldowns.find(c => c.abilityId === abilityId);
+    return cd ? cd.turnsRemaining === 0 : false;
   }
 
   private recalcMaxHp(player: Player): void {

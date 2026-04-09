@@ -1,0 +1,816 @@
+[
+  {
+    "id": "starter_sword",
+    "name": "Rusty Shortsword",
+    "description": "A dull blade with flecks of rust. Better than bare fists.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 5 }
+  },
+  {
+    "id": "minor_hp_potion",
+    "name": "Minor Health Potion",
+    "description": "A small vial of red liquid. Restores a bit of health.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 15 }
+  },
+  {
+    "id": "spore_dagger",
+    "name": "Spore-Crusted Dagger",
+    "description": "A short blade with a faintly glowing fungal growth along the edge.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 8 }
+  },
+  {
+    "id": "lurker_fang",
+    "name": "Lurker Fang Blade",
+    "description": "A jagged blade fashioned from a Cave Lurker's oversized fang.",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "stats": { "damage": 12 }
+  },
+  {
+    "id": "brute_hammer",
+    "name": "Sporecap War Hammer",
+    "description": "A massive hammer made from a petrified mushroom stalk. Slow but devastating.",
+    "rarity": "rare",
+    "slot": "weapon",
+    "stats": { "damage": 18 }
+  },
+  {
+    "id": "mycelium_staff",
+    "name": "Staff of the Deep Mycelium",
+    "description": "A twisted staff of living fungal matter. It pulses with a warm, healing light.",
+    "rarity": "rare",
+    "slot": "weapon",
+    "stats": { "damage": 6, "maxHp": 15 }
+  },
+  {
+    "id": "mycelium_blade",
+    "name": "Blade of the Mycelium King",
+    "description": "A sword formed from the King's own tendrils. It writhes in your grip.",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "stats": { "damage": 22, "initiative": 2 }
+  },
+  {
+    "id": "fungal_shield",
+    "name": "Fungal Buckler",
+    "description": "A small shield grown from hardened mushroom caps. Surprisingly tough.",
+    "rarity": "uncommon",
+    "slot": "offhand",
+    "stats": { "defense": 4 }
+  },
+  {
+    "id": "glowing_orb",
+    "name": "Bioluminescent Orb",
+    "description": "A glass sphere containing living fungi. Pulses with a soothing glow.",
+    "rarity": "rare",
+    "slot": "offhand",
+    "stats": { "maxHp": 10, "initiative": 2 }
+  },
+  {
+    "id": "fungal_wrap",
+    "name": "Fungal Fiber Wrap",
+    "description": "A crude wrapping of woven fungal fibers. Offers minimal protection.",
+    "rarity": "common",
+    "slot": "armor",
+    "stats": { "defense": 2 }
+  },
+  {
+    "id": "shadow_cloak",
+    "name": "Lurker-Skin Cloak",
+    "description": "A cloak made from pale lurker hide. Light and easy to move in.",
+    "rarity": "uncommon",
+    "slot": "armor",
+    "stats": { "defense": 3, "initiative": 2 }
+  },
+  {
+    "id": "chain_vest",
+    "name": "Rusted Chain Vest",
+    "description": "Ancient chainmail found deep in the caves. Still holds together.",
+    "rarity": "uncommon",
+    "slot": "armor",
+    "stats": { "defense": 5 }
+  },
+  {
+    "id": "sporecap_plate",
+    "name": "Sporecap Plate Armor",
+    "description": "Armor crafted from petrified mushroom caps. Heavy but incredibly durable.",
+    "rarity": "rare",
+    "slot": "armor",
+    "stats": { "defense": 8, "maxHp": 10, "initiative": -2 }
+  },
+  {
+    "id": "bone_amulet",
+    "name": "Bone Charm Amulet",
+    "description": "A necklace of small bones that rattles faintly. You feel tougher wearing it.",
+    "rarity": "common",
+    "slot": "accessory",
+    "stats": { "maxHp": 10 }
+  },
+  {
+    "id": "vitality_ring",
+    "name": "Ring of Vitality",
+    "description": "A moss-covered ring that pulses with life energy.",
+    "rarity": "rare",
+    "slot": "accessory",
+    "stats": { "maxHp": 15, "defense": 2 }
+  },
+  {
+    "id": "kings_crown",
+    "name": "Crown of the Mycelium King",
+    "description": "A living crown of fungal tendrils. It whispers secrets of the deep.",
+    "rarity": "legendary",
+    "slot": "accessory",
+    "stats": { "maxHp": 20, "defense": 3, "initiative": 3 }
+  },
+  {
+    "id": "spore_heart",
+    "name": "Spore Heart",
+    "description": "A pulsing organ from the Mycelium King. Warm to the touch.",
+    "rarity": "legendary",
+    "slot": "accessory",
+    "stats": { "maxHp": 25, "damage": 5 }
+  },
+  {
+    "id": "leather_scraps",
+    "name": "Leather Scrap Bandage",
+    "description": "Makeshift bandages from old leather. Not great, but better than bleeding.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 10 }
+  },
+  {
+    "id": "hp_potion",
+    "name": "Health Potion",
+    "description": "A standard healing draught. Tastes like mushroom soup.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "healAmount": 25 }
+  },
+  {
+    "id": "hp_potion_large",
+    "name": "Greater Health Potion",
+    "description": "A large flask of potent healing liquid. Glows faintly.",
+    "rarity": "rare",
+    "slot": "consumable",
+    "stats": { "healAmount": 40 }
+  },
+  {
+    "id": "elixir",
+    "name": "Fungal Elixir",
+    "description": "A shimmering elixir distilled from rare bioluminescent fungi.",
+    "rarity": "rare",
+    "slot": "consumable",
+    "stats": { "healAmount": 50 }
+  },
+  {
+    "id": "throwing_spore",
+    "name": "Volatile Spore Pod",
+    "description": "A bulging spore pod that explodes on impact. Handle with care.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "damage": 20 }
+  },
+
+  {
+    "id": "crystal_shard_blade",
+    "name": "Crystal Shard Blade",
+    "description": "A crude weapon fashioned from a broken crystal. Sharp but fragile.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 7 }
+  },
+  {
+    "id": "prism_rapier",
+    "name": "Prismatic Rapier",
+    "description": "A slender blade of translucent crystal that splits light into rainbows as it moves.",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "stats": { "damage": 11, "initiative": 2 }
+  },
+  {
+    "id": "geode_maul",
+    "name": "Geode Maul",
+    "description": "A massive crystalline growth on a stone handle. The hollow interior rings when it strikes.",
+    "rarity": "rare",
+    "slot": "weapon",
+    "stats": { "damage": 16, "defense": 2 }
+  },
+  {
+    "id": "resonance_blade",
+    "name": "Resonance Blade",
+    "description": "A sword of pure crystal that hums at a frequency that makes your teeth ache. Devastating to crystalline foes.",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "stats": { "damage": 20, "initiative": 3 }
+  },
+  {
+    "id": "crystal_buckler",
+    "name": "Crystal Buckler",
+    "description": "A small shield cut from a single amethyst formation. Light refracts off its surface.",
+    "rarity": "uncommon",
+    "slot": "offhand",
+    "stats": { "defense": 3, "initiative": 1 }
+  },
+  {
+    "id": "prism_focus",
+    "name": "Prismatic Focus",
+    "description": "A multifaceted crystal held in a wire frame. It concentrates ambient light into a warm glow.",
+    "rarity": "rare",
+    "slot": "offhand",
+    "stats": { "maxHp": 8, "damage": 4 }
+  },
+  {
+    "id": "crystal_lattice_mail",
+    "name": "Crystal Lattice Mail",
+    "description": "Interlocking crystal plates that chime softly with each step.",
+    "rarity": "common",
+    "slot": "armor",
+    "stats": { "defense": 3 }
+  },
+  {
+    "id": "geode_plate",
+    "name": "Geode Plate Armor",
+    "description": "Thick armor carved from the walls of enormous geodes. Beautiful and resilient.",
+    "rarity": "rare",
+    "slot": "armor",
+    "stats": { "defense": 7, "maxHp": 8 }
+  },
+  {
+    "id": "refraction_pendant",
+    "name": "Refraction Pendant",
+    "description": "A crystal pendant that bends light around the wearer. Harder to hit than you'd expect.",
+    "rarity": "uncommon",
+    "slot": "accessory",
+    "stats": { "defense": 2, "initiative": 2 }
+  },
+  {
+    "id": "crystal_heart_gem",
+    "name": "Heart of the Geode",
+    "description": "A perfect sphere of living crystal, warm and pulsing. Found only in the deepest formations.",
+    "rarity": "legendary",
+    "slot": "accessory",
+    "stats": { "maxHp": 20, "defense": 4 }
+  },
+  {
+    "id": "crystal_dust",
+    "name": "Crushed Crystal Dust",
+    "description": "A handful of finely ground crystal. When inhaled, it sharpens the senses painfully.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 12 }
+  },
+  {
+    "id": "prism_flask",
+    "name": "Prismatic Flask",
+    "description": "A potion that shimmers with every color. Restores body and mind.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "healAmount": 28 }
+  },
+  {
+    "id": "crystal_grenade",
+    "name": "Shatter Bomb",
+    "description": "A fragile crystal sphere packed with pressurized shards. Explodes violently on impact.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "damage": 22 }
+  },
+
+  {
+    "id": "corroded_cutlass",
+    "name": "Corroded Cutlass",
+    "description": "A sailor's blade claimed by the depths. Still cuts, though it smells terrible.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 7 }
+  },
+  {
+    "id": "barbed_harpoon",
+    "name": "Barbed Harpoon",
+    "description": "A cruel harpoon with backward-facing barbs. Designed to hook flesh and hold.",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "stats": { "damage": 13 }
+  },
+  {
+    "id": "trident_of_the_deep",
+    "name": "Trident of the Deep",
+    "description": "A three-pronged spear encrusted with barnacles. The tines glow faintly beneath the water.",
+    "rarity": "rare",
+    "slot": "weapon",
+    "stats": { "damage": 15, "initiative": 3 }
+  },
+  {
+    "id": "leviathan_tooth",
+    "name": "Leviathan Tooth",
+    "description": "A massive fang pulled from something that should not exist. Heavier than stone.",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "stats": { "damage": 24, "maxHp": 5 }
+  },
+  {
+    "id": "driftwood_shield",
+    "name": "Driftwood Shield",
+    "description": "A shield cobbled from waterlogged planks. It floats, which is sometimes useful.",
+    "rarity": "common",
+    "slot": "offhand",
+    "stats": { "defense": 2 }
+  },
+  {
+    "id": "shell_aegis",
+    "name": "Shell Aegis",
+    "description": "A shield fashioned from a giant nautilus shell. Impossibly hard.",
+    "rarity": "rare",
+    "slot": "offhand",
+    "stats": { "defense": 6, "maxHp": 5 }
+  },
+  {
+    "id": "kelp_wrap",
+    "name": "Woven Kelp Wrap",
+    "description": "Layers of dried kelp bound tightly. Smells of the sea but turns blades surprisingly well.",
+    "rarity": "common",
+    "slot": "armor",
+    "stats": { "defense": 2 }
+  },
+  {
+    "id": "barnacle_mail",
+    "name": "Barnacle Mail",
+    "description": "Armor covered in calcified barnacles. Each hit chips off a few, but there are always more.",
+    "rarity": "uncommon",
+    "slot": "armor",
+    "stats": { "defense": 5, "initiative": -1 }
+  },
+  {
+    "id": "abyssal_plate",
+    "name": "Abyssal Plate",
+    "description": "Armor forged from materials found only in the deepest trenches. Cold to the touch.",
+    "rarity": "rare",
+    "slot": "armor",
+    "stats": { "defense": 9, "maxHp": 8, "initiative": -2 }
+  },
+  {
+    "id": "pearl_earring",
+    "name": "Black Pearl Earring",
+    "description": "A single black pearl on a corroded hook. It seems to drink the light around it.",
+    "rarity": "uncommon",
+    "slot": "accessory",
+    "stats": { "initiative": 3, "damage": 2 }
+  },
+  {
+    "id": "tidecaller_ring",
+    "name": "Tidecaller Ring",
+    "description": "A ring of polished coral that is always wet. The water rises and falls with your heartbeat.",
+    "rarity": "rare",
+    "slot": "accessory",
+    "stats": { "maxHp": 12, "defense": 3 }
+  },
+  {
+    "id": "leviathan_eye",
+    "name": "Eye of the Leviathan",
+    "description": "A preserved eye the size of your fist. It still moves, tracking things you cannot see.",
+    "rarity": "legendary",
+    "slot": "accessory",
+    "stats": { "maxHp": 18, "damage": 5, "initiative": 2 }
+  },
+  {
+    "id": "brine_tonic",
+    "name": "Brine Tonic",
+    "description": "A concentrated salt solution that stings going down but closes wounds fast.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 10 }
+  },
+  {
+    "id": "sea_foam_salve",
+    "name": "Sea Foam Salve",
+    "description": "A thick paste of crushed shells and sea foam. Numbs pain on contact.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "healAmount": 25 }
+  },
+  {
+    "id": "depth_charge",
+    "name": "Depth Charge",
+    "description": "A sealed bladder of compressed gas from the deep. Detonates with concussive force.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "damage": 18 }
+  },
+
+  {
+    "id": "sharpened_femur",
+    "name": "Sharpened Femur",
+    "description": "A large bone sharpened to a wicked point. Crude but effective.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 6 }
+  },
+  {
+    "id": "rib_cage_flail",
+    "name": "Ribcage Flail",
+    "description": "A spine segment with a ribcage swinging from a chain of vertebrae. Horrific and effective.",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "stats": { "damage": 11, "maxHp": 3 }
+  },
+  {
+    "id": "skull_crusher",
+    "name": "Skull Crusher Mace",
+    "description": "A mace topped with a petrified giant skull. It grins as you swing it.",
+    "rarity": "rare",
+    "slot": "weapon",
+    "stats": { "damage": 17, "defense": 1 }
+  },
+  {
+    "id": "death_rattle_scythe",
+    "name": "Death Rattle Scythe",
+    "description": "A scythe assembled from countless small bones. It sings a rattling dirge when swung.",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "stats": { "damage": 22, "initiative": 3 }
+  },
+  {
+    "id": "skull_cap_shield",
+    "name": "Skull Cap Shield",
+    "description": "Half a giant's skull, repurposed. The empty eye socket stares at your enemies.",
+    "rarity": "uncommon",
+    "slot": "offhand",
+    "stats": { "defense": 4, "maxHp": 3 }
+  },
+  {
+    "id": "ossuary_lantern",
+    "name": "Ossuary Lantern",
+    "description": "A lantern made from a skull with pale fire burning inside. It illuminates things better left unseen.",
+    "rarity": "rare",
+    "slot": "offhand",
+    "stats": { "damage": 5, "initiative": 2 }
+  },
+  {
+    "id": "bone_weave_armor",
+    "name": "Bone Weave Armor",
+    "description": "Overlapping bones stitched with sinew. Rattles with every step.",
+    "rarity": "common",
+    "slot": "armor",
+    "stats": { "defense": 3 }
+  },
+  {
+    "id": "ossified_carapace",
+    "name": "Ossified Carapace",
+    "description": "A full suit of fused bone. It feels alive, growing warmer the longer you wear it.",
+    "rarity": "rare",
+    "slot": "armor",
+    "stats": { "defense": 8, "maxHp": 5 }
+  },
+  {
+    "id": "finger_bone_ring",
+    "name": "Finger Bone Ring",
+    "description": "A ring carved from a single knuckle bone. It twitches occasionally.",
+    "rarity": "common",
+    "slot": "accessory",
+    "stats": { "damage": 3 }
+  },
+  {
+    "id": "vertebrae_necklace",
+    "name": "Vertebrae Necklace",
+    "description": "A necklace of small vertebrae that clicks and shifts on its own.",
+    "rarity": "uncommon",
+    "slot": "accessory",
+    "stats": { "maxHp": 8, "defense": 2 }
+  },
+  {
+    "id": "death_shroud_amulet",
+    "name": "Death Shroud Amulet",
+    "description": "An amulet containing a fragment of something that was once alive and refuses to stop. Wreathed in pale mist.",
+    "rarity": "legendary",
+    "slot": "accessory",
+    "stats": { "maxHp": 22, "defense": 3, "damage": 3 }
+  },
+  {
+    "id": "marrow_paste",
+    "name": "Marrow Paste",
+    "description": "A thick paste extracted from ancient bones. Smells awful, heals well.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 12 }
+  },
+  {
+    "id": "spirit_draught",
+    "name": "Spirit Draught",
+    "description": "A ghostly liquid in a bone vial. It evaporates as you drink it, but the healing is real.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "healAmount": 28 }
+  },
+  {
+    "id": "bone_shard_bomb",
+    "name": "Bone Shard Bomb",
+    "description": "A hollowed skull packed with razor-sharp bone fragments. Gruesome but effective.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "damage": 20 }
+  },
+
+  {
+    "id": "slag_cleaver",
+    "name": "Slag Cleaver",
+    "description": "A blade of cooled slag with an edge that glows faintly orange. Burns what it cuts.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 8 }
+  },
+  {
+    "id": "obsidian_edge",
+    "name": "Obsidian Edge",
+    "description": "A sword of volcanic glass, impossibly sharp. Handle with extreme care.",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "stats": { "damage": 14 }
+  },
+  {
+    "id": "magma_forged_axe",
+    "name": "Magma-Forged Axe",
+    "description": "An axe forged in flowing lava. The blade still radiates heat and glows at the edge.",
+    "rarity": "rare",
+    "slot": "weapon",
+    "stats": { "damage": 17, "maxHp": 5 }
+  },
+  {
+    "id": "inferno_greatsword",
+    "name": "Inferno Greatsword",
+    "description": "A massive blade wreathed in perpetual flame. The hilt is uncomfortably warm.",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "stats": { "damage": 25, "initiative": 1 }
+  },
+  {
+    "id": "basalt_bulwark",
+    "name": "Basalt Bulwark",
+    "description": "A thick slab of basalt carved into a shield. Incredibly heavy but nearly indestructible.",
+    "rarity": "uncommon",
+    "slot": "offhand",
+    "stats": { "defense": 5, "initiative": -1 }
+  },
+  {
+    "id": "ember_ward",
+    "name": "Ember Ward",
+    "description": "A shield of blackened iron that absorbs flame. Embers dance across its surface.",
+    "rarity": "rare",
+    "slot": "offhand",
+    "stats": { "defense": 5, "maxHp": 8 }
+  },
+  {
+    "id": "cinder_mail",
+    "name": "Cinder Mail",
+    "description": "Chainmail forged from volcanic iron. Warm to the touch and smells of sulfur.",
+    "rarity": "common",
+    "slot": "armor",
+    "stats": { "defense": 3 }
+  },
+  {
+    "id": "volcanic_plate",
+    "name": "Volcanic Plate Armor",
+    "description": "Plates of cooled lava hammered into shape. Cracks glow orange when struck.",
+    "rarity": "uncommon",
+    "slot": "armor",
+    "stats": { "defense": 6, "maxHp": 5 }
+  },
+  {
+    "id": "magma_core_armor",
+    "name": "Magma Core Armor",
+    "description": "Armor with veins of molten rock running through it. The heat cauterizes wounds on contact.",
+    "rarity": "rare",
+    "slot": "armor",
+    "stats": { "defense": 9, "maxHp": 10, "initiative": -1 }
+  },
+  {
+    "id": "ember_band",
+    "name": "Ember Band",
+    "description": "A ring of blackened iron with a tiny eternal flame inside. Warm and comforting.",
+    "rarity": "common",
+    "slot": "accessory",
+    "stats": { "damage": 3 }
+  },
+  {
+    "id": "cinderstone_pendant",
+    "name": "Cinderstone Pendant",
+    "description": "A pendant containing a stone that never stops smoldering. The heat is strangely invigorating.",
+    "rarity": "uncommon",
+    "slot": "accessory",
+    "stats": { "damage": 4, "maxHp": 5 }
+  },
+  {
+    "id": "heart_of_the_forge",
+    "name": "Heart of the Forge",
+    "description": "A fragment of the primordial forge that burns at the world's core. It reshapes the wielder.",
+    "rarity": "legendary",
+    "slot": "accessory",
+    "stats": { "damage": 8, "maxHp": 15, "defense": 2 }
+  },
+  {
+    "id": "magma_salve",
+    "name": "Magma Salve",
+    "description": "A paste that burns, then heals. The process is agonizing but effective.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 12 }
+  },
+  {
+    "id": "volcanic_tonic",
+    "name": "Volcanic Tonic",
+    "description": "A bubbling red liquid that tastes like liquid fire. Restores vigor rapidly.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "healAmount": 30 }
+  },
+  {
+    "id": "fire_bomb",
+    "name": "Volatile Fire Bomb",
+    "description": "A clay pot filled with a volatile alchemical mixture. Shatters into a ball of flame.",
+    "rarity": "uncommon",
+    "slot": "consumable",
+    "stats": { "damage": 24 }
+  },
+  {
+    "id": "superior_elixir",
+    "name": "Superior Elixir",
+    "description": "A masterfully brewed potion of extraordinary potency. Shimmers with golden light.",
+    "rarity": "rare",
+    "slot": "consumable",
+    "stats": { "healAmount": 55 }
+  },
+
+  {
+    "id": "iron_dagger",
+    "name": "Iron Dagger",
+    "description": "A short blade of hammered iron. Cheap, common, and gets the job done.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 6 }
+  },
+  {
+    "id": "wooden_club",
+    "name": "Wooden Club",
+    "description": "A heavy length of hardwood, splintered at one end. Simple but brutal.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 5 }
+  },
+  {
+    "id": "wooden_shield",
+    "name": "Wooden Shield",
+    "description": "A round shield of rough-cut planks bound with iron bands. Dented but functional.",
+    "rarity": "common",
+    "slot": "offhand",
+    "stats": { "defense": 2 }
+  },
+  {
+    "id": "cloth_armor",
+    "name": "Padded Cloth Armor",
+    "description": "Layers of quilted cloth stuffed with wool. Barely qualifies as armor.",
+    "rarity": "common",
+    "slot": "armor",
+    "stats": { "defense": 1 }
+  },
+  {
+    "id": "scavenged_leather",
+    "name": "Scavenged Leather Vest",
+    "description": "A patchwork vest of mismatched leather scraps. Smells like a tannery.",
+    "rarity": "common",
+    "slot": "armor",
+    "stats": { "defense": 2 }
+  },
+  {
+    "id": "rat_fang_necklace",
+    "name": "Rat Fang Necklace",
+    "description": "A string of yellowed rat fangs. Wearing it feels vaguely disgusting but oddly empowering.",
+    "rarity": "common",
+    "slot": "accessory",
+    "stats": { "damage": 2 }
+  },
+  {
+    "id": "crude_bandage",
+    "name": "Crude Bandage",
+    "description": "A strip of torn cloth. Better than nothing for stanching a wound.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 8 }
+  },
+  {
+    "id": "goblin_shortbow",
+    "name": "Goblin Shortbow",
+    "description": "A small bow of bent wood and frayed gut-string. Inaccurate but usable.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 7 }
+  },
+  {
+    "id": "miners_pick",
+    "name": "Miner's Pick",
+    "description": "A rusted pick left behind by some long-dead prospector. The point is still sharp enough.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 8 }
+  },
+  {
+    "id": "tin_buckler",
+    "name": "Tin Buckler",
+    "description": "A battered buckler of thin tin. Dents easily but deflects just enough.",
+    "rarity": "common",
+    "slot": "offhand",
+    "stats": { "defense": 1, "initiative": 1 }
+  },
+  {
+    "id": "lucky_rabbit_foot",
+    "name": "Lucky Rabbit's Foot",
+    "description": "A dried rabbit's foot on a leather cord. Lucky for you, less so for the rabbit.",
+    "rarity": "uncommon",
+    "slot": "accessory",
+    "stats": { "initiative": 2, "maxHp": 5 }
+  },
+
+  {
+    "id": "chipped_handaxe",
+    "name": "Chipped Handaxe",
+    "description": "A small axe with a cracked stone head lashed to a stick. Splits firewood and skulls alike.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 6 }
+  },
+  {
+    "id": "rusted_mace",
+    "name": "Rusted Mace",
+    "description": "A flanged mace covered in orange rust. The weight still does the talking.",
+    "rarity": "common",
+    "slot": "weapon",
+    "stats": { "damage": 7 }
+  },
+  {
+    "id": "bandit_sabre",
+    "name": "Bandit's Sabre",
+    "description": "A curved blade with notches from hard use. Taken from someone who no longer needed it.",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "stats": { "damage": 10, "initiative": 1 }
+  },
+  {
+    "id": "plank_shield",
+    "name": "Plank Shield",
+    "description": "Two boards nailed together with a leather grip. It will stop exactly one good hit.",
+    "rarity": "common",
+    "slot": "offhand",
+    "stats": { "defense": 2 }
+  },
+  {
+    "id": "hide_tunic",
+    "name": "Hide Tunic",
+    "description": "A stiff tunic of poorly cured animal hide. Reeks, but absorbs punishment.",
+    "rarity": "common",
+    "slot": "armor",
+    "stats": { "defense": 2 }
+  },
+  {
+    "id": "iron_chain_scraps",
+    "name": "Iron Chain Scraps",
+    "description": "Loose rings of iron chain sewn onto a cloth backing. Improvised but functional.",
+    "rarity": "uncommon",
+    "slot": "armor",
+    "stats": { "defense": 4 }
+  },
+  {
+    "id": "spider_fang_pendant",
+    "name": "Spider Fang Pendant",
+    "description": "A venom-stained fang on a cord of spider silk. It throbs with a faint, toxic warmth.",
+    "rarity": "common",
+    "slot": "accessory",
+    "stats": { "damage": 2, "initiative": 1 }
+  },
+  {
+    "id": "tarnished_locket",
+    "name": "Tarnished Locket",
+    "description": "A dented silver locket with the portrait inside worn smooth. Holding it steadies your nerves.",
+    "rarity": "uncommon",
+    "slot": "accessory",
+    "stats": { "maxHp": 8, "defense": 1 }
+  },
+  {
+    "id": "cave_moss_poultice",
+    "name": "Cave Moss Poultice",
+    "description": "A wad of damp cave moss packed with healing herbs. Apply directly to wounds.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 10 }
+  },
+  {
+    "id": "rot_gut_flask",
+    "name": "Rot-Gut Flask",
+    "description": "A dented tin flask of foul homebrew. Numbs everything, including the pain.",
+    "rarity": "common",
+    "slot": "consumable",
+    "stats": { "healAmount": 12 }
+  }
+]

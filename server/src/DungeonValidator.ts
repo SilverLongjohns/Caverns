@@ -75,6 +75,17 @@ export function validateDungeon(dungeon: DungeonContent, constraints: Validation
     }
   }
 
+  // Locked exits validation
+  for (const room of dungeon.rooms) {
+    if (room.lockedExits) {
+      for (const [dir, keyId] of Object.entries(room.lockedExits)) {
+        if (!room.exits[dir as keyof typeof room.exits]) {
+          errors.push(`Room "${room.id}" has lockedExit ${dir} but no corresponding exit`);
+        }
+      }
+    }
+  }
+
   // Graph connectivity (BFS from entrance)
   if (roomIds.has(dungeon.entranceRoomId)) {
     const visited = new Set<string>();
@@ -111,6 +122,41 @@ export function validateDungeon(dungeon: DungeonContent, constraints: Validation
   const bossRooms = dungeon.rooms.filter((r) => r.type === 'boss');
   if (bossRooms.length !== 1) {
     errors.push(`Expected exactly 1 boss room, found ${bossRooms.length}`);
+  }
+
+  // Boss room must have the boss encounter
+  if (bossRooms.length === 1) {
+    const boss = bossRooms[0];
+    if (!boss.encounter) {
+      errors.push(`Boss room "${boss.id}" has no encounter`);
+    } else if (boss.encounter.mobId !== dungeon.bossId) {
+      errors.push(`Boss room encounter mob "${boss.encounter.mobId}" does not match bossId "${dungeon.bossId}"`);
+    }
+    // Boss room must be reachable (already covered by connectivity check above,
+    // but verify it has at least one exit)
+    if (Object.keys(boss.exits).length === 0) {
+      errors.push(`Boss room "${boss.id}" has no exits — it is disconnected`);
+    }
+  }
+
+  // At least one room must contain the key item that unlocks the boss room
+  const lockedDirs = dungeon.rooms.flatMap(r =>
+    r.lockedExits ? Object.values(r.lockedExits) : []
+  );
+  for (const keyItemId of lockedDirs) {
+    const keyExists = dungeon.rooms.some(r =>
+      r.loot?.some(l => l.itemId === keyItemId)
+    );
+    if (!keyExists) {
+      errors.push(`Key item "${keyItemId}" required by a locked exit is not placed in any room`);
+    }
+  }
+
+  // Puzzle density: no more than ~1 per 8 rooms
+  const puzzleRooms = dungeon.rooms.filter(r => r.puzzle);
+  const maxPuzzles = Math.max(2, Math.ceil(dungeon.rooms.length / 8));
+  if (puzzleRooms.length > maxPuzzles) {
+    errors.push(`Too many puzzle rooms: ${puzzleRooms.length} (max ${maxPuzzles} for ${dungeon.rooms.length} rooms)`);
   }
 
   return errors;

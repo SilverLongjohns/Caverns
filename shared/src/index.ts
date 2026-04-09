@@ -2,3 +2,8 @@ export * from './types.js';
 export * from './messages.js';
 export * from './content.js';
 export * from './qteConfig.js';
+export * from './data/types.js';
+export * from './classTypes.js';
+export * from './classData.js';
+export * from './interactableData.js';
+export * from './data/roomTemplates.js';

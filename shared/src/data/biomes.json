@@ -1,0 +1,117 @@
+[
+  {
+    "id": "starter",
+    "name": "The Shallow Warrens",
+    "transitionText": "Daylight fades behind you. The tunnel walls are rough-hewn and familiar — the upper caves, where creatures are small and the darkness is not yet absolute.",
+    "roomCount": { "min": 10, "max": 15 },
+    "mobDensity": 0.4,
+    "skull1Weight": 0.9,
+    "skull2Weight": 0.1,
+    "lootDensity": 0.35,
+    "isStarter": true,
+    "bossRoom": {
+      "name": "The Warren Den",
+      "description": "A wide chamber littered with bones and scraps. Something larger than the vermin outside has made this its home."
+    },
+    "keyItem": {
+      "id": "starter_vault_key",
+      "name": "Tarnished Iron Key",
+      "description": "A plain iron key, blackened with age. It still turns."
+    }
+  },
+  {
+    "id": "fungal",
+    "name": "Fungal Depths",
+    "transitionText": "The air grows thick with spores. Bioluminescent fungi line the walls ahead.",
+    "roomCount": { "min": 10, "max": 20 },
+    "mobDensity": 0.5,
+    "skull1Weight": 0.8,
+    "skull2Weight": 0.2,
+    "lootDensity": 0.4,
+    "bossRoom": {
+      "name": "Throne of the Mycelium King",
+      "description": "A vast domed chamber pulsing with bioluminescence. At its center, a towering mass of interwoven fungal tendrils shaped vaguely like a seated figure on a throne of living mushroom."
+    },
+    "keyItem": {
+      "id": "fungal_vault_key",
+      "name": "Spore-Encrusted Key",
+      "description": "A heavy iron key coated in luminous fungal growth. It pulses faintly in your hand."
+    }
+  },
+  {
+    "id": "crystal",
+    "name": "Crystal Caverns",
+    "transitionText": "The fungal growth gives way to glittering crystalline formations. Light refracts in dazzling patterns.",
+    "roomCount": { "min": 10, "max": 18 },
+    "mobDensity": 0.5,
+    "skull1Weight": 0.75,
+    "skull2Weight": 0.25,
+    "lootDensity": 0.45,
+    "bossRoom": {
+      "name": "The Prismatic Heart",
+      "description": "An enormous geode cracked open from within. A creature of living crystal sits at the center, light bending around it in impossible ways."
+    },
+    "keyItem": {
+      "id": "crystal_shard_key",
+      "name": "Resonating Crystal Shard",
+      "description": "A shard of pure crystal that hums when brought near locked stone. It fits perfectly into the carved slot."
+    }
+  },
+  {
+    "id": "flooded",
+    "name": "Drowned Passages",
+    "transitionText": "Water seeps through every crack. The floor is slick and the air tastes of salt and rot.",
+    "roomCount": { "min": 12, "max": 20 },
+    "mobDensity": 0.55,
+    "skull1Weight": 0.7,
+    "skull2Weight": 0.3,
+    "lootDensity": 0.35,
+    "bossRoom": {
+      "name": "The Sunken Throne",
+      "description": "A vast flooded chamber where the water reaches your waist. Something enormous stirs beneath the dark surface, displacing waves against the ancient pillars."
+    },
+    "keyItem": {
+      "id": "drowned_key",
+      "name": "Barnacle-Crusted Key",
+      "description": "A corroded bronze key dragged from the depths. Sea life clings to it stubbornly."
+    }
+  },
+  {
+    "id": "bone",
+    "name": "Ossuary Halls",
+    "transitionText": "The walls become bone. Skulls stare from every surface. The air is dry and carries whispers.",
+    "roomCount": { "min": 10, "max": 18 },
+    "mobDensity": 0.6,
+    "skull1Weight": 0.65,
+    "skull2Weight": 0.35,
+    "lootDensity": 0.4,
+    "bossRoom": {
+      "name": "The Bone Throne",
+      "description": "A cathedral of fused skeletons. At its apex, a massive figure assembled from thousands of bones sits upon a throne of ribcages, eye sockets burning with pale fire."
+    },
+    "keyItem": {
+      "id": "bone_key",
+      "name": "Skeleton Key",
+      "description": "A key carved from a single femur. The teeth are sharpened finger bones. It rattles softly on its own."
+    }
+  },
+  {
+    "id": "volcanic",
+    "name": "Magma Rifts",
+    "transitionText": "The temperature rises sharply. Cracks in the floor glow orange, and the stone radiates heat.",
+    "roomCount": { "min": 10, "max": 16 },
+    "mobDensity": 0.6,
+    "skull1Weight": 0.6,
+    "skull2Weight": 0.4,
+    "lootDensity": 0.35,
+    "bossRoom": {
+      "name": "The Molten Core",
+      "description": "A cavern split by rivers of lava. On a basalt island at the center, a creature of slag and flame rises from the magma, its body crackling with volcanic fury."
+    },
+    "keyItem": {
+      "id": "volcanic_key",
+      "name": "Obsidian Key",
+      "description": "A key of volcanic glass, still warm to the touch. Veins of magma pulse within it."
+    }
+  }
+]

@@ -12,7 +12,8 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
   );
 
   return {
-    joinLobby: (playerName: string) => send({ type: 'join_lobby', playerName }),
+    joinLobby: (playerName: string, roomCode?: string, className?: string) =>
+      send({ type: 'join_lobby', playerName, roomCode, className }),
     startGame: (apiKey?: string, difficulty?: 'easy' | 'medium' | 'hard') =>
       send({ type: 'start_game', apiKey, difficulty }),
     setDifficulty: (difficulty: 'easy' | 'medium' | 'hard') =>
@@ -29,5 +30,14 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     equipItem: (inventoryIndex: number) => send({ type: 'equip_item', inventoryIndex }),
     dropItem: (inventoryIndex: number) => send({ type: 'drop_item', inventoryIndex }),
     useConsumable: (consumableIndex: number) => send({ type: 'use_consumable', consumableIndex }),
+    puzzleAnswer: (roomId: string, answerIndex: number) => send({ type: 'puzzle_answer', roomId, answerIndex }),
+    interact: (interactableId: string) => send({ type: 'interact', interactableId }),
+    interactAction: (interactableId: string, actionId: string) =>
+      send({ type: 'interact_action', interactableId, actionId }),
+    useAbility: (abilityId: string, targetId?: string) =>
+      send({ type: 'combat_action', action: 'use_ability', abilityId, targetId }),
+    useItemEffect: (effectId: string, targetId?: string) =>
+      send({ type: 'combat_action', action: 'use_item_effect', effectId, targetId }),
+    chat: (text: string) => send({ type: 'chat', text }),
   };
 }

@@ -12,13 +12,13 @@ function getZoneForPosition(position: number): { name: string; multiplier: CritM
       return { name: zone.name, multiplier: zone.multiplier as CritMultiplier };
     }
   }
-  return { name: 'red', multiplier: 0.75 };
+  return { name: 'normal', multiplier: 1.0 };
 }
 
 function getZoneLabel(name: string): string {
   if (name === 'perfect') return 'PERFECT 2x';
   if (name === 'green') return 'CRIT 1.5x';
-  if (name === 'red') return 'MISS 0.75x';
+  if (name === 'normal') return '';
   return '';
 }
 
@@ -85,7 +85,7 @@ export const AttackQTE = memo(function AttackQTE({ initiative, onComplete }: Att
           <div className="qte-zone qte-zone-green" style={{ left: '45%', width: '20%' }} />
           <div className="qte-zone qte-zone-perfect" style={{ left: '65%', width: '7%' }} />
           <div className="qte-zone qte-zone-green" style={{ left: '72%', width: '10%' }} />
-          <div className="qte-zone qte-zone-red" style={{ left: '82%', width: '18%' }} />
+          <div className="qte-zone qte-zone-normal" style={{ left: '82%', width: '18%' }} />
           <div ref={cursorRef} className="qte-cursor-line" style={{ left: 0 }} />
         </div>
         {result && (

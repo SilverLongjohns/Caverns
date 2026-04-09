@@ -9,7 +9,7 @@ import type {
 
 export interface TextLogEntry {
   message: string;
-  logType: 'narration' | 'combat' | 'loot' | 'system';
+  logType: 'narration' | 'combat' | 'loot' | 'system' | 'chat';
   id: number;
 }
 
@@ -18,7 +18,7 @@ let logIdCounter = 0;
 export interface GameStore {
   connectionStatus: 'disconnected' | 'connected' | 'in_lobby' | 'in_game';
   setConnectionStatus: (status: GameStore['connectionStatus']) => void;
-  lobbyPlayers: { id: string; name: string }[];
+  lobbyPlayers: { id: string; name: string; className: string }[];
   isHost: boolean;
   playerId: string;
   players: Record<string, Player>;
@@ -33,9 +33,26 @@ export interface GameStore {
   pendingDefendQte: { pendingDamage: number; actorName: string } | null;
   combatAnim: { attackerId: string; targetId: string } | null;
   dyingMobIds: Set<string>;
+  activePuzzle: { roomId: string; puzzleId: string; description: string; options: string[] } | null;
   generationStatus: 'idle' | 'generating' | 'failed';
   generationError: string | null;
   lobbyDifficulty: 'easy' | 'medium' | 'hard';
+  roomCode: string;
+  scoutThreats: Record<string, Partial<Record<string, boolean>>>;
+  selectedInteractableId: string | null;
+  selectInteractable: (id: string | null) => void;
+  pendingInteractActions: {
+    interactableId: string;
+    interactableName: string;
+    actions: {
+      id: string;
+      label: string;
+      locked: boolean;
+      lockReason?: string;
+      used: boolean;
+      usedBy?: string;
+    }[];
+  } | null;
   handleServerMessage: (msg: ServerMessage) => void;
   setLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
   reset: () => void;
@@ -58,15 +75,21 @@ const initialState = {
   pendingDefendQte: null,
   combatAnim: null,
   dyingMobIds: new Set<string>(),
+  activePuzzle: null,
   generationStatus: 'idle' as const,
   generationError: null,
   lobbyDifficulty: 'medium' as const,
+  roomCode: '',
+  scoutThreats: {},
+  selectedInteractableId: null,
+  pendingInteractActions: null,
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
   ...initialState,
 
   setConnectionStatus: (status) => set({ connectionStatus: status }),
+  selectInteractable: (id) => set({ selectedInteractableId: id }),
   setLootChoice: (itemId, choice) => set((state) => ({
     lootChoices: { ...state.lootChoices, [itemId]: choice },
   })),
@@ -74,13 +97,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   handleServerMessage: (msg: ServerMessage) => {
     switch (msg.type) {
       case 'lobby_state':
-        set({
-          connectionStatus: 'in_lobby',
+        set((state) => ({
+          connectionStatus: state.gameOver ? state.connectionStatus : 'in_lobby',
           lobbyPlayers: msg.players,
           isHost: msg.hostId === msg.yourId,
           playerId: msg.yourId,
           lobbyDifficulty: msg.difficulty,
-        });
+          roomCode: msg.roomCode,
+        }));
         break;
 
       case 'game_start':
@@ -108,12 +132,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case 'player_moved': {
         const { playerId } = get();
+        const isMe = msg.playerId === playerId;
         set((state) => ({
           players: {
             ...state.players,
             [msg.playerId]: { ...state.players[msg.playerId], roomId: msg.roomId },
           },
-          currentRoomId: msg.playerId === playerId ? msg.roomId : state.currentRoomId,
+          currentRoomId: isMe ? msg.roomId : state.currentRoomId,
+          // Clear room-specific UI state when we move
+          ...(isMe ? {
+            activePuzzle: null,
+            selectedInteractableId: null,
+            pendingInteractActions: null,
+          } : {}),
         }));
         break;
       }
@@ -212,7 +243,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'game_over':
-        set({ gameOver: { result: msg.result }, activeCombat: null });
+        set({
+          gameOver: { result: msg.result },
+          activeCombat: null,
+          currentTurnId: null,
+          pendingLoot: null,
+          pendingDefendQte: null,
+          combatAnim: null,
+          dyingMobIds: new Set(),
+        });
         break;
 
       case 'text_log':
@@ -227,10 +266,73 @@ export const useGameStore = create<GameStore>((set, get) => ({
         }));
         break;
 
+      case 'puzzle_prompt':
+        set({
+          activePuzzle: {
+            roomId: msg.roomId,
+            puzzleId: msg.puzzleId,
+            description: msg.description,
+            options: msg.options,
+          },
+        });
+        break;
+
+      case 'puzzle_result':
+        set({ activePuzzle: null });
+        break;
+
       case 'generation_status':
         set({
           generationStatus: msg.status,
           generationError: msg.reason ?? null,
+        });
+        break;
+
+      case 'scout_result':
+        set((state) => ({
+          scoutThreats: { ...state.scoutThreats, [(msg as any).roomId]: (msg as any).adjacentThreats },
+        }));
+        break;
+
+      case 'interact_actions':
+        set({
+          pendingInteractActions: {
+            interactableId: msg.interactableId,
+            interactableName: msg.interactableName,
+            actions: msg.actions,
+          },
+        });
+        break;
+
+      case 'interact_result':
+        set((state) => ({
+          textLog: [
+            ...state.textLog,
+            { message: msg.narration, logType: 'narration' as const, id: ++logIdCounter },
+          ],
+          selectedInteractableId: null,
+          pendingInteractActions: null,
+        }));
+        break;
+
+      case 'interactable_state':
+        set((state) => {
+          const roomId = state.currentRoomId;
+          const room = state.rooms[roomId];
+          if (!room?.interactables) return {};
+          const updatedInteractables = room.interactables.map(i => {
+            if (i.instanceId !== msg.interactableId) return i;
+            return {
+              ...i,
+              usedActions: { ...i.usedActions, [msg.actionId]: msg.usedBy },
+            };
+          });
+          return {
+            rooms: {
+              ...state.rooms,
+              [roomId]: { ...room, interactables: updatedInteractables },
+            },
+          };
         });
         break;
     }

@@ -5,6 +5,7 @@ import type {
   Item,
   CombatState,
   CombatParticipant,
+  OutcomeType,
 } from './types.js';
 
 // === Client -> Server ===
@@ -12,6 +13,8 @@ import type {
 export interface JoinLobbyMessage {
   type: 'join_lobby';
   playerName: string;
+  roomCode?: string;
+  className?: string;
 }
 
 export interface StartGameMessage {
@@ -32,11 +35,13 @@ export interface MoveMessage {
 
 export interface CombatActionMessage {
   type: 'combat_action';
-  action: 'attack' | 'defend' | 'use_item' | 'flee';
+  action: 'attack' | 'defend' | 'use_item' | 'flee' | 'use_ability' | 'use_item_effect';
   targetId?: string;
   itemIndex?: number;
   fleeDirection?: Direction;
   critMultiplier?: number;
+  abilityId?: string;
+  effectId?: string;
 }
 
 export interface LootChoiceMessage {
@@ -70,6 +75,28 @@ export interface DefendResultMessage {
   damageReduction: number;
 }
 
+export interface PuzzleAnswerMessage {
+  type: 'puzzle_answer';
+  roomId: string;
+  answerIndex: number;
+}
+
+export interface InteractMessage {
+  type: 'interact';
+  interactableId: string;
+}
+
+export interface InteractActionMessage {
+  type: 'interact_action';
+  interactableId: string;
+  actionId: string;
+}
+
+export interface ChatMessage {
+  type: 'chat';
+  text: string;
+}
+
 export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
@@ -81,16 +108,21 @@ export type ClientMessage =
   | EquipItemMessage
   | DropItemMessage
   | UseConsumableMessage
-  | DefendResultMessage;
+  | DefendResultMessage
+  | PuzzleAnswerMessage
+  | InteractMessage
+  | InteractActionMessage
+  | ChatMessage;
 
 // === Server -> Client ===
 
 export interface LobbyStateMessage {
   type: 'lobby_state';
-  players: { id: string; name: string }[];
+  players: { id: string; name: string; className: string }[];
   hostId: string;
   yourId: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  roomCode: string;
 }
 
 export interface GenerationStatusMessage {
@@ -133,7 +165,7 @@ export interface CombatActionResultMessage {
   type: 'combat_action_result';
   actorId: string;
   actorName: string;
-  action: 'attack' | 'defend' | 'use_item' | 'flee';
+  action: 'attack' | 'defend' | 'use_item' | 'flee' | 'use_ability' | 'use_item_effect';
   targetId?: string;
   targetName?: string;
   damage?: number;
@@ -148,6 +180,12 @@ export interface CombatActionResultMessage {
   critMultiplier?: number;
   defendQte?: true;
   pendingDamage?: number;
+  abilityId?: string;
+  abilityName?: string;
+  buffsApplied?: string[];
+  itemEffect?: string;
+  itemEffectDamage?: number;
+  itemEffectHealing?: number;
 }
 
 export interface CombatEndMessage {
@@ -182,7 +220,65 @@ export interface GameOverMessage {
 export interface TextLogMessage {
   type: 'text_log';
   message: string;
-  logType: 'narration' | 'combat' | 'loot' | 'system';
+  logType: 'narration' | 'combat' | 'loot' | 'system' | 'chat';
+}
+
+export interface PuzzlePromptMessage {
+  type: 'puzzle_prompt';
+  roomId: string;
+  puzzleId: string;
+  description: string;
+  options: string[];
+}
+
+export interface PuzzleResultMessage {
+  type: 'puzzle_result';
+  roomId: string;
+  correct: boolean;
+}
+
+export interface ScoutResultMessage {
+  type: 'scout_result';
+  roomId: string;
+  adjacentThreats: Partial<Record<Direction, boolean>>;
+}
+
+export interface InteractActionsMessage {
+  type: 'interact_actions';
+  interactableId: string;
+  interactableName: string;
+  actions: {
+    id: string;
+    label: string;
+    locked: boolean;
+    lockReason?: string;
+    used: boolean;
+    usedBy?: string;
+  }[];
+}
+
+export interface InteractResultMessage {
+  type: 'interact_result';
+  interactableId: string;
+  actionId: string;
+  narration: string;
+  outcome: {
+    type: OutcomeType;
+    loot?: Item;
+    damage?: number;
+    intel?: {
+      targetRoomId: string;
+      text: string;
+    };
+    revealedRoom?: Room;
+  };
+}
+
+export interface InteractableStateMessage {
+  type: 'interactable_state';
+  interactableId: string;
+  actionId: string;
+  usedBy: string;
 }
 
 export interface ErrorMessage {
@@ -205,4 +301,10 @@ export type ServerMessage =
   | PlayerUpdateMessage
   | GameOverMessage
   | TextLogMessage
+  | PuzzlePromptMessage
+  | PuzzleResultMessage
+  | ScoutResultMessage
+  | InteractActionsMessage
+  | InteractResultMessage
+  | InteractableStateMessage
   | ErrorMessage;

@@ -1,0 +1,128 @@
+[
+  {
+    "id": "starter_shadow_riddle",
+    "biomes": ["starter"],
+    "description": "Scratched into the tunnel wall at eye level, worn but legible: 'Many have read me on their way in. Few have read me on their way out.' Below the words, four symbols are carved into the rock, each beside a small lever.",
+    "options": ["The wall itself", "A map", "A gravestone", "A torch"],
+    "correctIndex": 2
+  },
+  {
+    "id": "starter_creature_sequence",
+    "biomes": ["starter"],
+    "description": "A stone tablet is propped against the wall, clearly left by some previous explorer. It shows a sequence of crude carvings: rat, rat, spider, rat, rat, spider, rat, rat... and then a blank space with a question mark scratched beside it. Four answers are etched beneath.",
+    "options": ["Rat", "Spider", "Bat", "Snake"],
+    "correctIndex": 1
+  },
+  {
+    "id": "starter_torch_logic",
+    "biomes": ["starter"],
+    "description": "Three unlit torch sconces line the wall, each labeled with a rune: Moon, Sun, Star. A faded parchment pinned beside them reads: 'Light the one that guides lost travelers home, but shines no light of its own.' One of the three will open the passage ahead.",
+    "options": ["Moon", "Sun", "Star", "All three"],
+    "correctIndex": 0
+  },
+  {
+    "id": "fungal_spore_riddle",
+    "biomes": ["fungal"],
+    "description": "A cluster of bioluminescent mushrooms pulses in a rhythmic pattern, illuminating words etched into the damp stone: 'I spread without walking. I grow without eating. I cover the dead and feed the living. What am I?' Four answer glyphs glow softly on the wall.",
+    "options": ["Darkness", "Water", "Shadow", "Mycelium"],
+    "correctIndex": 3
+  },
+  {
+    "id": "fungal_cap_sequence",
+    "biomes": ["fungal"],
+    "description": "Five stone pedestals hold carved mushroom caps in sequence: small, medium, large, small, medium... The sixth pedestal is empty, with four replacement caps laid out before it. A whispering voice drifts through the spore-thick air: 'Complete the pattern, or wake what sleeps.'",
+    "options": ["Small", "Large", "Extra Large", "Medium"],
+    "correctIndex": 1
+  },
+  {
+    "id": "fungal_spore_color_logic",
+    "biomes": ["fungal"],
+    "description": "Four fungi glow different colors in the chamber: red, blue, green, yellow. A fresco on the wall depicts a long-dead mycologist's notes: 'Red spreads death. Blue feeds the colony. Green heals wounds. Yellow blinds the eye.' The passage door is sealed with a symbol of a wounded traveler seeking aid.",
+    "options": ["Red", "Yellow", "Blue", "Green"],
+    "correctIndex": 3
+  },
+  {
+    "id": "crystal_refraction_riddle",
+    "biomes": ["crystal"],
+    "description": "Light refracts through an enormous crystal formation, casting a rainbow across the far wall. Carved into the prismatic surface in precise letters: 'I have no mouth, yet I split voice into color. I hold no fire, yet I carry every hue. Strike me and I sing. What am I?' Four facets of the crystal bear answer glyphs.",
+    "options": ["A prism", "A mirror", "A diamond", "Glass"],
+    "correctIndex": 0
+  },
+  {
+    "id": "crystal_number_sequence",
+    "biomes": ["crystal"],
+    "description": "Six crystal pillars of increasing height stand in a row, their tops etched with numbers: 1, 1, 2, 3, 5, 8... A seventh pillar stands uncarved before you, and four number plates lean against the wall. The crystal structures hum a resonant chord that changes pitch as you consider each.",
+    "options": ["10", "12", "13", "11"],
+    "correctIndex": 2
+  },
+  {
+    "id": "crystal_mirror_logic",
+    "biomes": ["crystal"],
+    "description": "Three crystal mirrors face a single beam of light entering from a crack above. The beam must strike the sealed door to open it. The mirrors are labeled: Left deflects right, Center deflects forward, Right deflects left. The beam currently enters from the top-left and the door is directly ahead.",
+    "options": ["Left, then Center", "Right, then Center", "Center only", "Left only"],
+    "correctIndex": 0
+  },
+  {
+    "id": "flooded_depth_riddle",
+    "biomes": ["flooded"],
+    "description": "Words bubble up from somewhere below the black water's surface, spoken by no visible source: 'The deeper I go, the heavier I become — yet I weigh nothing. I fill every space given to me, but I cannot be held. What am I?' Four stones inscribed with answers float in wooden bowls on a ledge.",
+    "options": ["Silence", "Water", "Darkness", "Cold"],
+    "correctIndex": 0
+  },
+  {
+    "id": "flooded_tide_sequence",
+    "biomes": ["flooded"],
+    "description": "Water marks on the wall record the tide cycle in a flooded chamber: High, Low, High, Low, High... but the fifth mark is smudged, and the sixth clearly reads High. A gate blocks the passage, its mechanism tied to a dial with four positions. The inscription reads: 'Know the tide to pass.'",
+    "options": ["High", "Low", "Flood", "Ebb"],
+    "correctIndex": 1
+  },
+  {
+    "id": "flooded_drowned_logic",
+    "biomes": ["flooded"],
+    "description": "Three sealed chests rest on submerged ledges at different depths. A barnacle-covered plaque reads: 'The drowned king hid his key where light cannot reach, where pressure is greatest, where the cold is absolute.' The chests are labeled Shallow, Midwater, and Deep.",
+    "options": ["Shallow", "Midwater", "Deep", "On the surface"],
+    "correctIndex": 2
+  },
+  {
+    "id": "bone_death_riddle",
+    "biomes": ["bone"],
+    "description": "A skull set in the wall speaks in a dry, rattling voice — or perhaps it is only the wind: 'All kings fear me. The brave seek me. The coward runs from me. I come for the powerful and the meek alike, yet I am not a blade, nor a plague, nor old age.' Four answers are carved into adjacent ribs.",
+    "options": ["Judgment", "Battle", "Death", "Darkness"],
+    "correctIndex": 0
+  },
+  {
+    "id": "bone_skeleton_sequence",
+    "biomes": ["bone"],
+    "description": "Skeletons are arranged along the wall in a deliberate pattern: whole skeleton, missing skull, whole skeleton, missing skull, whole skeleton... The next alcove holds a skeleton with four possible skull types to place: human, animal, cracked, or crowned. Pale fire flickers in the eyes of each choice.",
+    "options": ["Human", "Cracked", "Crowned", "Animal"],
+    "correctIndex": 3
+  },
+  {
+    "id": "bone_crypt_logic",
+    "biomes": ["bone"],
+    "description": "Four burial niches are sealed with stone, each bearing an inscription: 'I died by flood.' 'I died by flame.' 'I died by steel.' 'I died by the one who died by flood.' A fifth niche has a lever and the inscription: 'Open the one who could not have killed himself.' The passage requires the correct choice.",
+    "options": ["Died by flood", "Died by flame", "Died by steel", "Died by flood's killer"],
+    "correctIndex": 2
+  },
+  {
+    "id": "volcanic_fire_riddle",
+    "biomes": ["volcanic"],
+    "description": "Glowing runes seared directly into the basalt wall pulse with internal heat, readable only by squinting against the orange glow: 'I consume without hunger. I warm without caring. I destroy what I touch, yet all things need me. The oldest forge and the newest star — I am the same. What am I?' Four rune-answers burn on the rock face.",
+    "options": ["Lava", "The Sun", "Heat", "Fire"],
+    "correctIndex": 3
+  },
+  {
+    "id": "volcanic_pressure_sequence",
+    "biomes": ["volcanic"],
+    "description": "Vents in the cavern floor erupt in a timed sequence. Watching carefully, you note the pattern: vent 1, vent 3, vent 1, vent 3, vent 2, vent 1, vent 3, vent 1, vent 3... The next eruption will determine which floor plate is safe to cross. Four choices are marked on stones ahead.",
+    "options": ["Vent 1", "Vent 3", "Vent 2", "None"],
+    "correctIndex": 1
+  },
+  {
+    "id": "volcanic_forge_logic",
+    "biomes": ["volcanic"],
+    "description": "An ancient forge dominates the chamber, surrounded by four levers labeled with materials: Iron, Bronze, Obsidian, Copper. The sealed vault door bears a motto burned into the metal: 'Only what survives the deepest heat may open what the deep earth guards.' A plaque lists melting points: Iron is highest, then Copper, then Bronze, then Obsidian — which shatters rather than melts.",
+    "options": ["Bronze", "Iron", "Copper", "Obsidian"],
+    "correctIndex": 1
+  }
+]

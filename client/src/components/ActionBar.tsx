@@ -1,5 +1,5 @@
 import { useGameStore } from '../store/gameStore.js';
-import type { Direction, ItemStats } from '@caverns/shared';
+import type { ItemStats } from '@caverns/shared';
 
 function formatStats(stats: ItemStats): string {
   const parts: string[] = [];
@@ -12,12 +12,13 @@ function formatStats(stats: ItemStats): string {
 }
 
 interface ActionBarProps {
-  onMove: (direction: Direction) => void;
   onLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
   onRevive: (targetPlayerId: string) => void;
+  onPuzzleAnswer: (roomId: string, answerIndex: number) => void;
+  onInteractAction: (interactableId: string, actionId: string) => void;
 }
 
-export function ActionBar({ onMove, onLootChoice, onRevive }: ActionBarProps) {
+export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAction }: ActionBarProps) {
   const playerId = useGameStore((s) => s.playerId);
   const players = useGameStore((s) => s.players);
   const rooms = useGameStore((s) => s.rooms);
@@ -25,11 +26,35 @@ export function ActionBar({ onMove, onLootChoice, onRevive }: ActionBarProps) {
   const pendingLoot = useGameStore((s) => s.pendingLoot);
   const lootChoices = useGameStore((s) => s.lootChoices);
   const setLootChoice = useGameStore((s) => s.setLootChoice);
+  const activePuzzle = useGameStore((s) => s.activePuzzle);
+  const selectedInteractableId = useGameStore((s) => s.selectedInteractableId);
+  const selectInteractable = useGameStore((s) => s.selectInteractable);
+  const pendingInteractActions = useGameStore((s) => s.pendingInteractActions);
 
   const player = players[playerId];
   const currentRoom = rooms[currentRoomId];
 
   if (!player || !currentRoom) return null;
+
+  // Puzzle prompt
+  if (activePuzzle) {
+    return (
+      <div className="action-bar puzzle-bar">
+        <div className="puzzle-description">{activePuzzle.description}</div>
+        <div className="puzzle-options">
+          {activePuzzle.options.map((option, i) => (
+            <button
+              key={i}
+              className="puzzle-btn"
+              onClick={() => onPuzzleAnswer(activePuzzle.roomId, i)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   // Loot prompt
   if (pendingLoot && pendingLoot.items.length > 0) {
@@ -72,35 +97,60 @@ export function ActionBar({ onMove, onLootChoice, onRevive }: ActionBarProps) {
     );
   }
 
-  // Exploration
-  const directions: Direction[] = ['north', 'south', 'east', 'west'];
+  // Interact actions — server sent available actions for a clicked interactable
+  if (pendingInteractActions) {
+    return (
+      <div className="action-bar interact-bar">
+        <div className="interact-header">{pendingInteractActions.interactableName}</div>
+        <div className="interact-actions">
+          {pendingInteractActions.actions.map((action) => {
+            const lockedClass = action.lockReason?.replace('Requires ', '') ?? '';
+            return (
+              <button
+                key={action.id}
+                className={`interact-btn${action.locked ? ' interact-locked' : ''}${action.used ? ' interact-used' : ''}`}
+                disabled={action.locked || action.used}
+                onClick={() => onInteractAction(pendingInteractActions.interactableId, action.id)}
+                title={action.locked ? action.lockReason : action.used ? `Used by ${action.usedBy}` : undefined}
+              >
+                {action.label}
+                {action.locked && (
+                  <span className={`lock-reason class-color-${lockedClass}`}> {lockedClass}</span>
+                )}
+                {action.used && <span className="used-label"> (used)</span>}
+              </button>
+            );
+          })}
+          <button
+            className="interact-btn interact-cancel"
+            onClick={() => {
+              selectInteractable(null);
+              useGameStore.setState({ pendingInteractActions: null });
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Exploration — revive downed allies
   const downedInRoom = Object.values(players).filter(
     (p) => p.id !== playerId && p.status === 'downed' && p.roomId === currentRoomId
   );
 
+  if (downedInRoom.length === 0) return null;
+
   return (
     <div className="action-bar explore-bar">
-      <div className="move-buttons">
-        {directions.map((dir) => (
-          <button
-            key={dir}
-            onClick={() => onMove(dir)}
-            disabled={!currentRoom.exits[dir]}
-            className={`move-btn move-${dir}`}
-          >
-            {dir.charAt(0).toUpperCase() + dir.slice(1)}
+      <div className="revive-actions">
+        {downedInRoom.map((ally) => (
+          <button key={ally.id} onClick={() => onRevive(ally.id)}>
+            Revive {ally.name}
           </button>
         ))}
       </div>
-      {downedInRoom.length > 0 && (
-        <div className="revive-actions">
-          {downedInRoom.map((ally) => (
-            <button key={ally.id} onClick={() => onRevive(ally.id)}>
-              Revive {ally.name}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

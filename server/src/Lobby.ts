@@ -3,6 +3,7 @@ import type { ServerMessage } from '@caverns/shared';
 interface LobbyPlayer {
   id: string;
   name: string;
+  className: string;
 }
 
 export class Lobby {
@@ -11,17 +12,20 @@ export class Lobby {
   private difficulty: 'easy' | 'medium' | 'hard' = 'medium';
   private broadcast: (msg: ServerMessage) => void;
   private sendTo: (playerId: string, msg: ServerMessage) => void;
+  private roomCode: string;
 
   constructor(
+    roomCode: string,
     broadcast: (msg: ServerMessage) => void,
     sendTo: (playerId: string, msg: ServerMessage) => void
   ) {
+    this.roomCode = roomCode;
     this.broadcast = broadcast;
     this.sendTo = sendTo;
   }
 
-  addPlayer(id: string, name: string): void {
-    this.players.push({ id, name });
+  addPlayer(id: string, name: string, className: string = 'vanguard'): void {
+    this.players.push({ id, name, className });
     if (!this.hostId) this.hostId = id;
     this.broadcastState();
   }
@@ -42,6 +46,14 @@ export class Lobby {
     return this.players;
   }
 
+  getPlayerCount(): number {
+    return this.players.length;
+  }
+
+  getPlayerName(id: string): string | undefined {
+    return this.players.find(p => p.id === id)?.name;
+  }
+
   getDifficulty(): 'easy' | 'medium' | 'hard' {
     return this.difficulty;
   }
@@ -52,14 +64,15 @@ export class Lobby {
     this.broadcastState();
   }
 
-  private broadcastState(): void {
+  broadcastState(): void {
     for (const p of this.players) {
       this.sendTo(p.id, {
         type: 'lobby_state',
-        players: this.players,
+        players: this.players.map(pl => ({ id: pl.id, name: pl.name, className: pl.className })),
         hostId: this.hostId!,
         yourId: p.id,
         difficulty: this.difficulty,
+        roomCode: this.roomCode,
       });
     }
   }

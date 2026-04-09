@@ -1,0 +1,262 @@
+[
+  {
+    "id": "worldsplitter",
+    "name": "Worldsplitter",
+    "description": "An ancient blade that hums with barely contained power. Each swing tears the air itself, striking everything nearby.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 20, "initiative": 2 },
+    "effect": "cleave",
+    "effectParams": { "splashPercent": 0.5 }
+  },
+  {
+    "id": "lifedrinker",
+    "name": "Lifedrinker",
+    "description": "A dark blade that pulses with a hungry crimson light. Each wound it inflicts feeds vitality back to the wielder.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 18, "maxHp": 5 },
+    "effect": "vampiric",
+    "effectParams": { "leechPercent": 0.25 }
+  },
+  {
+    "id": "aegis_of_the_fallen",
+    "name": "Aegis of the Fallen",
+    "description": "A shield bearing the crest of a forgotten order. Once per delve, it can pull a fallen ally back from the brink of death.",
+    "rarity": "unique",
+    "slot": "offhand",
+    "stats": { "defense": 6, "maxHp": 10 },
+    "effect": "revive_once",
+    "effectParams": { "revivePercent": 0.3 }
+  },
+  {
+    "id": "mantle_of_thorns",
+    "name": "Mantle of Thorns",
+    "description": "Armor woven from petrified brambles. Anything that strikes the wearer is cut in return.",
+    "rarity": "unique",
+    "slot": "armor",
+    "stats": { "defense": 10, "maxHp": 8 },
+    "effect": "thorns",
+    "effectParams": { "flatDamage": 7 }
+  },
+  {
+    "id": "phoenix_plume",
+    "name": "Phoenix Plume",
+    "description": "A single feather that radiates impossible warmth. When death comes, the plume ignites and the wearer rises from the ashes — once.",
+    "rarity": "unique",
+    "slot": "accessory",
+    "stats": { "maxHp": 15, "initiative": 3 },
+    "effect": "self_revive",
+    "effectParams": { "revivePercent": 0.25 }
+  },
+  {
+    "id": "crown_of_command",
+    "name": "Crown of Command",
+    "description": "A circlet of dark iron that compels obedience. Allies near the wearer fight with renewed purpose and vigor.",
+    "rarity": "unique",
+    "slot": "accessory",
+    "stats": { "maxHp": 12, "damage": 3, "defense": 2 },
+    "effect": "party_buff",
+    "effectParams": { "bonusDamage": 3 }
+  },
+  {
+    "id": "mirror_guard",
+    "name": "Mirror Guard",
+    "description": "A shield of perfectly polished crystal that reflects hostile intent. A portion of incoming damage is redirected back at the attacker.",
+    "rarity": "unique",
+    "slot": "offhand",
+    "stats": { "defense": 5, "initiative": 2 },
+    "effect": "reflect",
+    "effectParams": { "reflectPercent": 0.5 }
+  },
+  {
+    "id": "berserker_harness",
+    "name": "Berserker Harness",
+    "description": "Spiked armor that channels pain into fury. The lower your health, the harder you strike.",
+    "rarity": "unique",
+    "slot": "armor",
+    "stats": { "defense": 6, "damage": 5, "maxHp": 10 },
+    "effect": "berserk",
+    "effectParams": { "maxBonusDamage": 12 }
+  },
+  {
+    "id": "venom_fang",
+    "name": "Venom Fang",
+    "description": "A curved blade dripping with an oily green substance. Each cut leaves a lingering poison that eats at the victim.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 14, "initiative": 3 },
+    "effect": "venomous",
+    "effectParams": { "poisonDamage": 4, "duration": 3 }
+  },
+  {
+    "id": "windrunner_greaves",
+    "name": "Windrunner Greaves",
+    "description": "Boots so light they barely touch the ground. The wearer strikes with blinding speed, landing a flurry of blows.",
+    "rarity": "unique",
+    "slot": "armor",
+    "stats": { "defense": 4, "initiative": 5 },
+    "effect": "flurry",
+    "effectParams": { "hitsPerInitiativeThreshold": 5, "bonusHitPercent": 0.3 }
+  },
+  {
+    "id": "executioners_axe",
+    "name": "Executioner's Axe",
+    "description": "A massive axe with a blade stained permanently red. It hungers for the wounded.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 16, "maxHp": 5 },
+    "effect": "executioner",
+    "effectParams": { "hpThresholdPercent": 0.3, "bonusDamage": 10 }
+  },
+  {
+    "id": "ironwall_bulwark",
+    "name": "Ironwall Bulwark",
+    "description": "A shield that grows heavier — and stronger — the more vital the wielder becomes. Built for those who stack endurance.",
+    "rarity": "unique",
+    "slot": "offhand",
+    "stats": { "defense": 4, "maxHp": 15 },
+    "effect": "fortify",
+    "effectParams": { "defensePerHpPercent": 0.08 }
+  },
+  {
+    "id": "glass_cannon_ring",
+    "name": "Ring of Shattered Wards",
+    "description": "A ring that devours your defenses and channels them into pure destructive force. Wear it if you dare.",
+    "rarity": "unique",
+    "slot": "accessory",
+    "stats": { "damage": 8, "maxHp": 10 },
+    "effect": "glass_cannon",
+    "effectParams": { "damagePerDefense": 2.0 }
+  },
+  {
+    "id": "guardian_plate",
+    "name": "Guardian's Oath Plate",
+    "description": "Armor inscribed with ancient vows. The wearer instinctively steps between allies and danger.",
+    "rarity": "unique",
+    "slot": "armor",
+    "stats": { "defense": 9, "maxHp": 15 },
+    "effect": "guardian",
+    "effectParams": { "interceptPercent": 0.3 }
+  },
+  {
+    "id": "deathward_amulet",
+    "name": "Amulet of Last Resort",
+    "description": "When death draws near, the amulet erupts with protective energy, buying precious seconds.",
+    "rarity": "unique",
+    "slot": "accessory",
+    "stats": { "maxHp": 12, "defense": 3 },
+    "effect": "deathward",
+    "effectParams": { "hpThresholdPercent": 0.25, "bonusDefense": 10, "duration": 2 }
+  },
+  {
+    "id": "momentum_blade",
+    "name": "Blade of Endless Strikes",
+    "description": "A sword that accelerates with each swing. Stop attacking and it grows heavy again.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 12, "initiative": 2 },
+    "effect": "momentum",
+    "effectParams": { "damagePerStack": 2, "maxStacks": 5 }
+  },
+  {
+    "id": "overcharge_gauntlet",
+    "name": "Gauntlet of Ruin",
+    "description": "A spiked gauntlet that can be charged with devastating force — at a cost to the wearer's body.",
+    "rarity": "unique",
+    "slot": "offhand",
+    "stats": { "damage": 6, "maxHp": 8 },
+    "effect": "overcharge",
+    "effectParams": { "damageMultiplier": 2.5, "selfDamagePercent": 0.15 }
+  },
+  {
+    "id": "first_strike_dagger",
+    "name": "Ambush Stiletto",
+    "description": "A needle-thin blade designed for the opening blow. Strike first, strike hard.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 10, "initiative": 5 },
+    "effect": "first_strike",
+    "effectParams": { "bonusDamage": 8 }
+  },
+  {
+    "id": "siphon_armor_ring",
+    "name": "Bloodforged Band",
+    "description": "A ring that hardens your skin with each blow you land. Offense becomes defense.",
+    "rarity": "unique",
+    "slot": "accessory",
+    "stats": { "damage": 4, "defense": 2 },
+    "effect": "siphon_armor",
+    "effectParams": { "defensePerHit": 1, "maxStacks": 5, "duration": 2 }
+  },
+  {
+    "id": "rally_horn",
+    "name": "Horn of the Warband",
+    "description": "A battered war horn that, when sounded, fills allies with renewed vigor.",
+    "rarity": "unique",
+    "slot": "offhand",
+    "stats": { "defense": 3, "maxHp": 12 },
+    "effect": "rally",
+    "effectParams": { "healPercent": 0.15, "cooldown": 3 }
+  },
+  {
+    "id": "undying_fury_helm",
+    "name": "Helm of Undying Fury",
+    "description": "A helm forged in rage. Even death cannot stop the wearer immediately — they fight on, burning the last of their life force.",
+    "rarity": "unique",
+    "slot": "armor",
+    "stats": { "damage": 6, "defense": 5, "maxHp": 8 },
+    "effect": "undying_fury",
+    "effectParams": { "extraTurns": 2 }
+  },
+  {
+    "id": "predator_claws",
+    "name": "Predator's Claws",
+    "description": "Gauntlets tipped with serrated claws. Each kill sharpens the wearer's instincts, letting them act faster.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 14, "initiative": 2 },
+    "effect": "predator",
+    "effectParams": { "initiativePerKill": 3 }
+  },
+  {
+    "id": "brutal_impact_hammer",
+    "name": "Cataclysm Hammer",
+    "description": "An impossibly heavy hammer. When you time the swing perfectly, the impact is catastrophic.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 20 },
+    "effect": "brutal_impact",
+    "effectParams": { "critBonusPerDamage": 0.02 }
+  },
+  {
+    "id": "overwhelm_gauntlets",
+    "name": "Gauntlets of Rending",
+    "description": "Clawed gauntlets that tear through armor with each hit, leaving the target increasingly vulnerable.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 15, "initiative": 1 },
+    "effect": "overwhelm",
+    "effectParams": { "defenseReductionPercent": 0.15, "duration": 2 }
+  },
+  {
+    "id": "blade_storm_katana",
+    "name": "Gale Katana",
+    "description": "A blade forged from wind-tempered steel. The faster you are than your foe, the deeper it cuts.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 12, "initiative": 4 },
+    "effect": "blade_storm",
+    "effectParams": { "damagePerInitiativeDiff": 1.0 }
+  },
+  {
+    "id": "rampage_cleaver",
+    "name": "Butcher's Momentum",
+    "description": "A cleaver that feeds on carnage. The more damage you deal, the more it wants to deal.",
+    "rarity": "unique",
+    "slot": "weapon",
+    "stats": { "damage": 14, "maxHp": 8 },
+    "effect": "rampage",
+    "effectParams": { "damagePerPointDealt": 0.02, "maxBonus": 10 }
+  }
+]

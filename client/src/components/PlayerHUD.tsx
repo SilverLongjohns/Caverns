@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import type { Item, ItemStats } from '@caverns/shared';
+import { CLASS_DEFINITIONS } from '@caverns/shared';
 
 function formatStats(stats: ItemStats): string {
   const parts: string[] = [];
@@ -18,6 +20,9 @@ function ItemDisplay({ item, label }: { item: Item | null; label: string }) {
       {item ? (
         <span className={`rarity-${item.rarity}`} title={item.description}>
           {item.name} <span className="item-stats">{formatStats(item.stats)}</span>
+          {item.effect && (
+            <span className="item-effect"> [{item.effect.replace(/_/g, ' ')}]</span>
+          )}
         </span>
       ) : (
         <span className="empty">Empty</span>
@@ -37,6 +42,12 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable }: PlayerHU
   const players = useGameStore((s) => s.players);
   const player = players[playerId];
 
+  const playerAbilities = useMemo(() => {
+    const classDef = CLASS_DEFINITIONS.find(c => c.id === player?.className);
+    if (!classDef) return [];
+    return classDef.abilities.filter(a => !a.passive);
+  }, [player?.className]);
+
   if (!player) return null;
 
   const hpPercent = (player.hp / player.maxHp) * 100;
@@ -46,6 +57,24 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable }: PlayerHU
   return (
     <div className="player-hud">
       <h3>{player.name}</h3>
+      <div className="hud-class">{player.className}</div>
+
+      {playerAbilities.length > 0 && (
+        <div className="hud-cooldowns">
+          {playerAbilities.map((ability) => {
+            const cd = player.cooldowns?.find(c => c.abilityId === ability.id);
+            const ready = !cd || cd.turnsRemaining === 0;
+            return (
+              <div key={ability.id} className={`hud-ability ${ready ? 'ability-ready' : 'ability-cooldown'}`}>
+                <span className="ability-label">{ability.name}</span>
+                {!ready && <span className="ability-cd">{cd!.turnsRemaining}</span>}
+                {ready && <span className="ability-cd ready">{'\u2713'}</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <div className="hp-bar-container">
         <div className="hp-bar" style={{ width: `${hpPercent}%`, backgroundColor: hpColor }} />
         <span className="hp-text">{player.hp} / {player.maxHp}</span>
@@ -104,6 +133,18 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable }: PlayerHU
           ))}
         </div>
       </div>
+      {player.keychain.length > 0 && (
+        <div className="keychain-section">
+          <div className="section-label">Keychain</div>
+          <div className="keychain-items">
+            {player.keychain.map((keyId) => (
+              <span key={keyId} className="key-item" title={keyId}>
+                🗝 {keyId.replace(/_/g, ' ')}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useGameStore } from './store/gameStore.js';
 import { useWebSocket } from './hooks/useWebSocket.js';
 import { useGameActions } from './hooks/useGameActions.js';
+import { useKeyboardMovement } from './hooks/useKeyboardMovement.js';
 import { Lobby } from './components/Lobby.js';
 import { TextLog } from './components/TextLog.js';
 import { MiniMap } from './components/MiniMap.js';
@@ -8,6 +9,9 @@ import { PlayerHUD } from './components/PlayerHUD.js';
 import { PartyPanel } from './components/PartyPanel.js';
 import { ActionBar } from './components/ActionBar.js';
 import { CombatView } from './components/CombatView.js';
+import { RoomView } from './components/RoomView.js';
+import { Compass } from './components/Compass.js';
+import { ChatInput } from './components/ChatInput.js';
 
 export function App() {
   const wsRef = useWebSocket();
@@ -17,6 +21,14 @@ export function App() {
   const generationStatus = useGameStore((s) => s.generationStatus);
   const generationError = useGameStore((s) => s.generationError);
   const activeCombat = useGameStore((s) => s.activeCombat);
+  const rooms = useGameStore((s) => s.rooms);
+  const currentRoomId = useGameStore((s) => s.currentRoomId);
+
+  const inExploration = connectionStatus === 'in_game' && !gameOver && !activeCombat;
+  const currentRoom = rooms[currentRoomId];
+  const availableExits = currentRoom?.exits ?? {};
+
+  useKeyboardMovement(actions.move, inExploration);
 
   let content;
 
@@ -55,6 +67,12 @@ export function App() {
             ? 'The dungeon has been conquered!'
             : 'Your party has fallen in the darkness...'}
         </p>
+        <button
+          className="lobby-return-btn"
+          onClick={() => useGameStore.setState({ gameOver: null, connectionStatus: 'in_lobby' })}
+        >
+          Return to Lobby
+        </button>
       </div>
     );
   } else {
@@ -66,14 +84,22 @@ export function App() {
               onCombatAction={actions.combatAction}
               onRevive={actions.revive}
               onDefendResult={actions.defendResult}
+              onUseAbility={actions.useAbility}
+              onUseItemEffect={actions.useItemEffect}
             />
           ) : (
             <>
+              <div className="room-area">
+                <Compass exits={availableExits} />
+                <RoomView onInteract={actions.interact} />
+              </div>
               <TextLog />
+              <ChatInput onSend={actions.chat} />
               <ActionBar
-                onMove={actions.move}
                 onLootChoice={actions.lootChoice}
                 onRevive={actions.revive}
+                onPuzzleAnswer={actions.puzzleAnswer}
+                onInteractAction={actions.interactAction}
               />
             </>
           )}

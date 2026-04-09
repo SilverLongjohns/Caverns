@@ -4,7 +4,19 @@
       "Bash(/home/jakeh/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.6/scripts/start-server.sh --project-dir /mnt/c/Users/jakeh/WebstormProjects/Caverns)",
       "Bash(npx tsc:*)",
       "Bash(npx vitest:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(node.exe node_modules/.bin/vitest run)",
+      "Bash(node.exe node_modules/vitest/vitest.mjs run)",
+      "Bash(npx.cmd vitest:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(node:*)",
+      "Bash(node.exe:*)",
+      "Bash(npx.exe vitest:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(ls /mnt/c/Users/jakeh/WebstormProjects/Caverns/server/node_modules/.bin/vitest*)",
+      "Bash(ls /mnt/c/Users/jakeh/WebstormProjects/Caverns/node_modules/.bin/vitest*)",
+      "Bash(/mnt/c/Users/jakeh/WebstormProjects/Caverns/node_modules/.bin/vitest run:*)",
+      "Bash(npx vite:*)"
     ]
   }
 }

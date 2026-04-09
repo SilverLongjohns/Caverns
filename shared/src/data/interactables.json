@@ -1,0 +1,2639 @@
+[
+  {
+    "id": "fungal_glowing_cluster",
+    "name": "Glowing cluster",
+    "asciiChar": "♧",
+    "biomes": ["fungal"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 10, "intel": 15, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The bioluminescent caps pulse gently as you reach between them.",
+            "One of the fungi has crystallised at its base. Something glints inside."
+          ],
+          "hazard": [
+            "You brush a cap and it bursts, spraying acrid spores into your face.",
+            "The cluster flares bright. The light burns — it's not just light."
+          ],
+          "intel": [
+            "The glow shifts in waves, rhythmic, pointing toward a nearby passage.",
+            "In the soft light you notice drag marks on the stone floor, leading somewhere."
+          ],
+          "flavor": [
+            "The fungi hum faintly, a sound felt more than heard. Then silence.",
+            "Pale light plays across your hands. Beautiful, but useless.",
+            "The cluster seems to lean toward you, curious. It offers nothing."
+          ]
+        }
+      },
+      {
+        "id": "commune",
+        "label": "Commune",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 50, "hazard": 3, "intel": 25, "flavor": 22 } },
+        "narration": {
+          "loot": [
+            "You press your palm to the largest cap. The mycelium network responds, pushing something to the surface.",
+            "The fungi recognize your gift. The ground splits and offers what it has been holding."
+          ],
+          "intel": [
+            "Through the root network, you sense a pulse — something living, waiting, in a nearby chamber.",
+            "The mycelium whispers warnings. Something dangerous stirs close by."
+          ],
+          "flavor": [
+            "The network acknowledges you. A warmth spreads through your hand, but nothing more.",
+            "You feel the vast web beneath the floor. It is ancient, and it is tired."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_spore_vent",
+    "name": "Spore vent",
+    "asciiChar": "○",
+    "biomes": ["fungal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 15, "hazard": 40, "intel": 10, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "Between eruptions you spot something wedged in the vent opening.",
+            "A previous explorer wasn't so lucky. Their pack lies half-buried in spore residue."
+          ],
+          "hazard": [
+            "The vent erupts just as you lean in. Choking clouds engulf you.",
+            "A geyser of burning spores catches you full in the chest.",
+            "The vent hisses. You pull back — not fast enough."
+          ],
+          "intel": [
+            "The spore plumes drift in one direction, carried by air from a nearby opening.",
+            "You notice the vent cycles in rhythm with something deeper in the caves."
+          ],
+          "flavor": [
+            "The vent exhales softly, like a sleeping animal. You leave it be.",
+            "Spores drift lazily upward, catching faint light. Nothing here for you."
+          ]
+        }
+      },
+      {
+        "id": "analyze",
+        "label": "Analyze mechanism",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 35, "hazard": 5, "intel": 40, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "You trace the pressure channels. There — a natural pocket, sealed by mineral buildup. You crack it open.",
+            "Understanding the eruption cycle, you time your reach perfectly into the vent shaft."
+          ],
+          "intel": [
+            "The air pressure differential tells you there's a larger cavity connected nearby.",
+            "You calculate the spore dispersal pattern. It reveals the tunnel layout beyond this room."
+          ],
+          "flavor": [
+            "Fascinating engineering — if it were engineered. The geology is remarkable but reveals nothing useful.",
+            "You map the vent's internal structure. Impressive, but practically useless right now."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_mycelium_corpse",
+    "name": "Overgrown remains",
+    "asciiChar": "¤",
+    "biomes": ["fungal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 50, "hazard": 15, "intel": 5, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "Beneath the fungal growth, the body still clutches something in its stiff fingers.",
+            "You peel back layers of mycelium. A belt pouch, still sealed against the damp."
+          ],
+          "hazard": [
+            "As you disturb the body, something in the fungal mass contracts and bites.",
+            "The remains collapse inward. A cloud of decay-spores blooms from the cavity."
+          ],
+          "intel": [
+            "The corpse points toward a passage, one arm outstretched. Running from something, or toward it."
+          ],
+          "flavor": [
+            "Whoever this was, the cavern has claimed them completely. No face. No name. Just growth.",
+            "The remains are old. Older than you expected. How long has this place been hungry?",
+            "Fungal threads have woven through the bones like embroidery. The cave makes art of death."
+          ]
+        }
+      },
+      {
+        "id": "last_rites",
+        "label": "Last rites",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 40, "hazard": 2, "intel": 30, "flavor": 28 } },
+        "narration": {
+          "loot": [
+            "As you speak the words, the fungal growth recedes, releasing what it consumed. A final gift from the dead.",
+            "The remains settle peacefully. Something falls free — the cave gives back what it took."
+          ],
+          "intel": [
+            "In the quiet after the rite, impressions flood in — this person's last moments, what they saw.",
+            "The departed's final memory surfaces: a warning about what lies in the next chamber."
+          ],
+          "flavor": [
+            "You speak the old words. The air grows still. There is no answer, but the tension eases.",
+            "The rite is done. You hope it mattered to someone."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_hollow_stump",
+    "name": "Hollow stump",
+    "asciiChar": "Ω",
+    "biomes": ["fungal"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 35, "hazard": 15, "intel": 10, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The stump's interior is larger than it looks. Someone has been using it as a cache.",
+            "You reach into the hollow and feel leather — a pack, stashed and forgotten."
+          ],
+          "hazard": [
+            "Something inside the stump moves. Fast. It bites before you can pull your hand back.",
+            "The wood is rotten. Your arm plunges through and something sharp catches your forearm."
+          ],
+          "intel": [
+            "Scratch marks inside the hollow spell out crude directions. A previous explorer's trail.",
+            "Peering into the hollow, you see it connects to a gap beneath the floor."
+          ],
+          "flavor": [
+            "The hollow is deep and dark and empty. Wind murmurs through it like a flute.",
+            "Old bark crumbles at your touch. Whatever this tree was, it died long before the cave took it.",
+            "The stump smells of damp earth and old wood. A familiar scent in an unfamiliar place."
+          ]
+        }
+      },
+      {
+        "id": "search_shadows",
+        "label": "Search the shadows",
+        "requiresClass": "shadowblade",
+        "outcomes": { "weights": { "loot": 50, "hazard": 2, "intel": 18, "secret": 15, "flavor": 15 } },
+        "narration": {
+          "loot": [
+            "Your hands find what eyes can't. A hidden compartment, carved into the heartwood.",
+            "In the deepest shadow of the hollow, your fingers trace a seam — a concealed pocket."
+          ],
+          "intel": [
+            "The shadows inside the stump connect to others across the room. You read the dark like a map.",
+            "From within the hollow, you hear air moving — there are passages nearby not shown on any map."
+          ],
+          "secret": [
+            "The darkness inside is deeper than the stump should allow. There's a passage hidden here.",
+            "Your shadow-sense tingles. This stump connects to somewhere that shouldn't exist."
+          ],
+          "flavor": [
+            "You melt into the shadow of the stump. Nothing here, but the darkness is comfortable.",
+            "The shadows welcome you but offer nothing. Sometimes darkness is just darkness."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_dripping_cap",
+    "name": "Dripping cap",
+    "asciiChar": "♠",
+    "biomes": ["fungal"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 25, "intel": 5, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The liquid pooling beneath the cap has crystallised into something valuable.",
+            "Droplets have eroded a small hollow in the stone below. Something shiny sits in the pool."
+          ],
+          "hazard": [
+            "A fat drop lands on your hand. It burns — acidic, not water.",
+            "You taste the liquid. Mistake. Your mouth goes numb immediately.",
+            "The cap shudders at your touch and weeps caustic sap down your arm."
+          ],
+          "flavor": [
+            "Drip. Drip. Drip. The cap sweats endlessly. It means nothing.",
+            "The liquid is faintly sweet-smelling. Probably poisonous. You leave it alone.",
+            "A fat mushroom, weeping in the dark. You feel a strange kinship."
+          ]
+        }
+      },
+      {
+        "id": "disturb",
+        "label": "Disturb",
+        "outcomes": { "weights": { "loot": 20, "hazard": 45, "intel": 5, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "You shake the cap roughly. Something dislodges from its underside and clatters to the ground.",
+            "The cap tears free and rolls aside, revealing a small stash beneath."
+          ],
+          "hazard": [
+            "The cap ruptures, drenching you in foul liquid that burns on contact.",
+            "You grab the cap. Bad idea — the underside is lined with barbed filaments.",
+            "The whole fungus collapses in a wet, toxic heap. You breathe in something awful."
+          ],
+          "flavor": [
+            "You kick the cap over. It flops wetly. Nothing underneath but damp stone.",
+            "The cap bounces once and lies still. The cave doesn't care about your vandalism."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_web_sac",
+    "name": "Silk cocoon",
+    "asciiChar": "§",
+    "biomes": ["fungal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 35, "hazard": 25, "intel": 10, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "The silk is impossibly fine. You peel back a layer and find something wrapped inside, preserved.",
+            "Whatever made this cocoon was wrapping something for later. Finder's keepers."
+          ],
+          "hazard": [
+            "The cocoon twitches. Something inside is not dead.",
+            "You pull a thread and the whole sac convulses. Tiny legs pour from the opening.",
+            "Sticky filaments cling to your hands. The more you pull, the tighter they grip."
+          ],
+          "intel": [
+            "The cocoon contains husks — several small creatures, drained. Whatever hunts here is close."
+          ],
+          "flavor": [
+            "The silk sways gently in a breeze you can't feel. Beautiful and deeply unsettling.",
+            "You stare at the cocoon. It does not stare back. Probably.",
+            "Dense white silk, carefully wound. The architect is absent. For now."
+          ]
+        }
+      },
+      {
+        "id": "cut_open",
+        "label": "Cut open",
+        "requiresClass": "vanguard",
+        "outcomes": { "weights": { "loot": 55, "hazard": 10, "intel": 15, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "Your blade parts the silk cleanly. Inside — supplies, wrapped and preserved by the silk's properties.",
+            "One clean cut. The cocoon spills its contents: something useful, wrapped in something dead."
+          ],
+          "hazard": [
+            "You slash the sac open. The occupant was alive, and angry.",
+            "The blade cuts true but the tension in the silk snaps it back like a whip across your arm."
+          ],
+          "intel": [
+            "Inside the cocoon you find the remains of a scout — and their annotated map.",
+            "Cut open, the sac reveals markings on the wall behind it, hidden from casual view."
+          ],
+          "flavor": [
+            "Your blade hisses through the silk. Nothing inside but dust and old chitin.",
+            "You cut it open because you could. It contained nothing. Not everything does."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_mossy_pool",
+    "name": "Still pool",
+    "asciiChar": "≈",
+    "biomes": ["fungal"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 15, "intel": 20, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The water is shallow. Your hand touches something solid on the bottom — not stone.",
+            "Coins glint beneath the surface film. An offering, or a trap? Either way, they're yours now."
+          ],
+          "hazard": [
+            "The water is warm. Too warm. Your skin prickles where it touched.",
+            "Something in the pool wraps around your wrist. Thin, strong, and pulling downward."
+          ],
+          "intel": [
+            "The pool's surface ripples in one direction. Underground current — another passage feeds this.",
+            "In the still water you see a reflection that doesn't match the ceiling. An illusion, or a warning."
+          ],
+          "flavor": [
+            "The pool is glass-still and utterly dark. Your reflection stares back, looking tired.",
+            "You cup the water. It tastes of iron and old stone. Drinkable, but barely.",
+            "Tiny translucent creatures swim in lazy circles. They ignore you completely."
+          ]
+        }
+      },
+      {
+        "id": "test_sample",
+        "label": "Test a sample",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 35, "hazard": 3, "intel": 40, "flavor": 22 } },
+        "narration": {
+          "loot": [
+            "The mineral composition is unusual — the sediment contains refined material. Not natural. You extract it.",
+            "Your analysis reveals trace metals in the silt. You filter the pool and recover something valuable."
+          ],
+          "intel": [
+            "The water chemistry tells a story: this pool is fed by runoff from a larger chamber nearby.",
+            "Dissolved compounds in the water match those found near active creature nests. Be careful ahead.",
+            "The mineral signature is distinct. You can trace it to map the water table — and the rooms above."
+          ],
+          "flavor": [
+            "Clean water, mild mineral content, no toxins. Scientifically uninteresting.",
+            "The sample tells you this pool has been here for centuries. That's all it tells you."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_puffball_ring",
+    "name": "Puffball ring",
+    "asciiChar": "◊",
+    "biomes": ["fungal"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 15, "hazard": 15, "intel": 5, "flavor": 65 } },
+        "narration": {
+          "loot": [
+            "One of the puffballs has grown around something. You peel it apart carefully.",
+            "The ring has formed over an old campsite. A buried pouch peeks through the soil."
+          ],
+          "hazard": [
+            "You step into the ring. Every puffball detonates simultaneously. You can't breathe.",
+            "The ring is a trap — pressure-sensitive. Spores erupt in a choking wall."
+          ],
+          "intel": [
+            "The ring is a perfect circle. This is territorial marking. Something claims this room."
+          ],
+          "flavor": [
+            "The puffballs sit in perfect formation, soft and round and completely pointless.",
+            "You crouch beside the ring. The fungi are arranged with geometric precision. Nature is showing off.",
+            "A fairy ring. In a cave. Without fairies. Just damp and silence.",
+            "You resist the urge to kick one. Barely."
+          ]
+        }
+      },
+      {
+        "id": "disturb",
+        "label": "Disturb",
+        "outcomes": { "weights": { "loot": 15, "hazard": 50, "intel": 5, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "You stomp through the ring. Under the last puffball, something solid — a small cache.",
+            "Beneath the scattered remains of the ring, the soil is loose. Something's buried here."
+          ],
+          "hazard": [
+            "You punt a puffball. It detonates on impact. Then the next one goes. Chain reaction.",
+            "The ring erupts in a cascade of burning spores. Your eyes stream and your lungs seize.",
+            "You break the ring and the ground trembles. Something below takes offense."
+          ],
+          "flavor": [
+            "You scatter the puffballs. They roll gently across the floor. The cave judges you silently.",
+            "The ring is broken. Nothing happens. You feel vaguely guilty."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_root_tangle",
+    "name": "Root tangle",
+    "asciiChar": "∞",
+    "biomes": ["fungal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 35, "hazard": 15, "intel": 15, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "The roots have grown around something — crushed but intact. You work it free.",
+            "Deep in the tangle, wrapped in rootlets like a gift, something catches the light."
+          ],
+          "hazard": [
+            "The roots constrict around your arm as you reach in. Living wood, and it's strong.",
+            "You disturb a nest woven into the roots. The inhabitants object violently."
+          ],
+          "intel": [
+            "The roots trace a path along the wall and disappear into a crack leading deeper.",
+            "Following the root system with your eyes, you see it spans toward an adjacent chamber."
+          ],
+          "flavor": [
+            "Roots from a surface world you can barely remember. They've come a long way down.",
+            "The tangle pulses faintly. Growing, always growing, with nowhere left to go.",
+            "Gnarled wood and pale rootlets, knotted like arthritic fingers. Nothing to find here."
+          ]
+        }
+      },
+      {
+        "id": "untangle",
+        "label": "Untangle",
+        "requiresClass": "shadowblade",
+        "outcomes": { "weights": { "loot": 45, "hazard": 3, "intel": 25, "secret": 15, "flavor": 12 } },
+        "narration": {
+          "loot": [
+            "Your deft fingers work the knots apart. There — wedged in the core, something wrapped in oilcloth.",
+            "You read the tangle like a puzzle. The solution reveals a hidden cache at its centre."
+          ],
+          "intel": [
+            "As you work the roots apart, you uncover scratch marks on the wall behind — a crude map.",
+            "The tangle was placed here deliberately, concealing markings. Someone wanted these found by the right person."
+          ],
+          "secret": [
+            "The roots hide a gap in the wall — narrow, but passable. It leads somewhere unmapped.",
+            "Behind the tangle, a passage. The roots grew to conceal it, or were planted to."
+          ],
+          "flavor": [
+            "You untangle the roots methodically. There's nothing inside but more roots.",
+            "The knots come apart easily in your hands. A satisfying puzzle with no prize."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_bark_face",
+    "name": "Bark face",
+    "asciiChar": "☺",
+    "biomes": ["fungal"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 10, "hazard": 5, "intel": 15, "flavor": 70 } },
+        "narration": {
+          "loot": [
+            "The face's mouth is a knot-hole. Inside it, tucked like a secret, something small and hard.",
+            "One of the eyes is a polished stone, worked smooth. It comes free with a twist."
+          ],
+          "hazard": [
+            "The face weeps sap as you touch it. The sap burns where it lands on your skin."
+          ],
+          "intel": [
+            "The face looks toward one of the exits. Coincidence, or a warning?",
+            "There are more faces like this one — you just didn't see them before. They all face the same direction."
+          ],
+          "flavor": [
+            "The face watches you with knothole eyes. It has been watching for a very long time.",
+            "You stare at the face. It stares back. Neither of you blinks.",
+            "Who carved this? Or did the wood simply grow tired of being featureless?",
+            "The expression could be anything. Grief. Amusement. Hunger. You decide not to decide."
+          ]
+        }
+      },
+      {
+        "id": "pray",
+        "label": "Pray",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 25, "hazard": 2, "intel": 35, "flavor": 38 } },
+        "narration": {
+          "loot": [
+            "You bow your head and speak softly. The face's mouth opens — not carved, but moving — and something drops out.",
+            "Your prayer is answered. The bark splits and offers a small blessing."
+          ],
+          "intel": [
+            "The face speaks in impressions, not words. Danger ahead. Something that shouldn't be disturbed.",
+            "Through your prayer, the face shares a vision: the layout of nearby chambers, seen from root-level."
+          ],
+          "flavor": [
+            "The face seems to soften as you pray. A trick of the light, surely.",
+            "You feel acknowledged. Not answered — just acknowledged. Perhaps that's enough.",
+            "The prayer echoes strangely. The face seems satisfied, though nothing has changed."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_rotting_crate",
+    "name": "Rotting crate",
+    "asciiChar": "■",
+    "biomes": ["fungal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 55, "hazard": 15, "intel": 5, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "The crate's contents have mostly decayed, but one item survived the damp.",
+            "Between rotting planks you find a wrapped bundle, still dry inside its oilskin.",
+            "Most of the crate is mush. But at the bottom, something solid."
+          ],
+          "hazard": [
+            "The wood gives way and your hand plunges into something sharp inside — rusted nails.",
+            "The crate collapses. A colony of stinging insects boils out of the wreckage."
+          ],
+          "intel": [
+            "Supply markings on the crate — someone has been provisioning routes through here."
+          ],
+          "flavor": [
+            "Rotten wood, rotten contents, rotten luck. Nothing salvageable.",
+            "Who hauls a crate this deep underground? And what happened to them?"
+          ]
+        }
+      },
+      {
+        "id": "pick_lock",
+        "label": "Pick lock",
+        "requiresClass": "shadowblade",
+        "outcomes": { "weights": { "loot": 70, "hazard": 2, "intel": 10, "flavor": 18 } },
+        "narration": {
+          "loot": [
+            "The lock is rusted but the mechanism still works. Inside: the good stuff, sealed away from the rot.",
+            "Click. The lock yields. Whatever was worth locking away is still here.",
+            "The locked compartment is bone-dry inside. Someone packed this to last."
+          ],
+          "intel": [
+            "The lock is trapped — but you spotted it. Inside, a journal. Supply routes, guard schedules.",
+            "The locked section contains correspondence. Someone was planning something in these caves."
+          ],
+          "flavor": [
+            "You pick the lock with a satisfying click. Inside: empty. Someone beat you to it.",
+            "The locked compartment held something once. The impression in the velvet lining suggests a ring."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_crystal_node",
+    "name": "Embedded crystal",
+    "asciiChar": "◆",
+    "biomes": ["fungal"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 35, "hazard": 20, "intel": 10, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "The crystal is loose in its setting. It comes free with a firm twist.",
+            "Light refracts through the crystal. At this angle you can see something embedded inside."
+          ],
+          "hazard": [
+            "The crystal is sharp. Sharper than it looks. Blood wells before you feel the cut.",
+            "You touch the crystal and static arcs through your hand. The charge is vicious.",
+            "The node shatters at your touch. Crystal shards pepper your face."
+          ],
+          "intel": [
+            "The crystal vibrates at a frequency you can feel in your teeth. Something is generating power nearby."
+          ],
+          "flavor": [
+            "The crystal pulses with a soft internal light. It means nothing you can decipher.",
+            "Beautiful. Useless. The eternal combination of things found underground.",
+            "You press your thumb against the facets. It's warm. Crystals shouldn't be warm."
+          ]
+        }
+      },
+      {
+        "id": "pry_free",
+        "label": "Pry free",
+        "requiresClass": "vanguard",
+        "outcomes": { "weights": { "loot": 60, "hazard": 10, "intel": 10, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "You wedge your blade behind the crystal and lever it free. It's heavier than it looks — and valuable.",
+            "Brute force works. The crystal pops from the rock face trailing sparks."
+          ],
+          "hazard": [
+            "The crystal resists, then gives suddenly. The backlash sends crystal splinters into your forearm.",
+            "You wrench it free and the stone around it fractures. A shard of rock catches your shoulder."
+          ],
+          "intel": [
+            "Behind the crystal, the wall is hollow. You can hear movement on the other side."
+          ],
+          "flavor": [
+            "You pry the crystal loose. In your hands, it stops glowing. Just a rock now.",
+            "It comes free easily — too easily. This one is depleted, whatever it once held."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_burrow",
+    "name": "Animal burrow",
+    "asciiChar": "∪",
+    "biomes": ["fungal"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 25, "intel": 20, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "The burrow's occupant is a hoarder. Shiny things line the nest — one of them is useful.",
+            "A small creature scurries away as you peer in. It left something behind."
+          ],
+          "hazard": [
+            "Something in the burrow doesn't appreciate visitors. Teeth, small but numerous.",
+            "You reach in blind. The occupant is home, and territorial.",
+            "The burrow isn't empty. The thing inside is fast, and it aims for the eyes."
+          ],
+          "intel": [
+            "The burrow has multiple exits. This animal knows routes through the cave that you don't.",
+            "Claw marks around the burrow entrance lead toward a passage — a well-worn trail."
+          ],
+          "flavor": [
+            "A small, warm hole in the cold stone. Something lives here, curled and sleeping. You leave it be.",
+            "Tiny bones and seed husks. Life persists, even here.",
+            "The burrow smells of animal musk and old moss. Cozy, for a hole in the ground."
+          ]
+        }
+      },
+      {
+        "id": "scout",
+        "label": "Scout",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 30, "hazard": 5, "intel": 45, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "You rig a small light and thread it into the tunnel. The burrow connects to a cache — supplies, stashed and forgotten.",
+            "Your careful examination of the tunnel network reveals a hidden compartment, partially collapsed."
+          ],
+          "intel": [
+            "The tunnel network maps onto the room layout perfectly. You can predict what's in adjacent chambers.",
+            "Disturbed soil, fresh claw marks — the local fauna is agitated. Something's changed recently.",
+            "Air currents through the burrow tell you about connected spaces. Your mental map expands."
+          ],
+          "flavor": [
+            "The burrow system is impressively engineered for something without thumbs. But it tells you nothing new.",
+            "You map the tunnel network thoroughly. It leads to more tunnels. That's it."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_altar_stump",
+    "name": "Carved stump",
+    "asciiChar": "†",
+    "biomes": ["fungal"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 10, "intel": 15, "secret": 20, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "The carvings frame a hollow in the stump's crown. Inside — an offering, long uncollected.",
+            "You trace the carvings. One symbol is a latch. The stump opens like a reliquary."
+          ],
+          "hazard": [
+            "The carvings are warded. Your fingers tingle, then burn, as old protections flare.",
+            "You touch the wrong symbol. The stump pulses and something strikes you from within."
+          ],
+          "intel": [
+            "The carvings tell a story — a map, disguised as mythology. You recognise landmarks.",
+            "The altar faces a specific direction. Following the sight line reveals a hidden mark on the far wall."
+          ],
+          "secret": [
+            "The carvings describe a hidden chamber. The directions are encoded, but readable.",
+            "One carving depicts a door. Not metaphorical — there's a passage here, behind the altar."
+          ],
+          "flavor": [
+            "The carvings are ancient, worn smooth by countless touching hands. You add yours to the count.",
+            "An altar to something you don't recognise. The old gods of the underground, perhaps.",
+            "The stump hums faintly when you place your hands on it. Just vibration. Just stone and wood."
+          ]
+        }
+      },
+      {
+        "id": "consecrate",
+        "label": "Consecrate",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 40, "hazard": 2, "intel": 20, "secret": 25, "flavor": 13 } },
+        "narration": {
+          "loot": [
+            "You sanctify the altar. The carvings glow and the hollow opens fully. Inside — a sacred offering, preserved by old magic.",
+            "Your consecration unlocks something. The stump splits along ancient seams, revealing its heart."
+          ],
+          "intel": [
+            "The altar responds to your consecration with visions — brief, violent impressions of what lies ahead.",
+            "The sanctified altar pulses once. You know, suddenly, where the greatest danger waits."
+          ],
+          "secret": [
+            "The consecrated altar reveals what was hidden: a seam in the floor, a passage descending.",
+            "Your blessing awakens the altar fully. It shows you a door that wasn't there before."
+          ],
+          "flavor": [
+            "The consecration takes. A sense of peace settles over the stump. Nothing else changes.",
+            "You complete the rite. The altar is at rest now. Whatever haunted it is gone."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fungal_hanging_vines",
+    "name": "Curtain of vines",
+    "asciiChar": "║",
+    "biomes": ["fungal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 10, "intel": 10, "secret": 25, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "Something is tangled in the vines — caught on its way through, perhaps. Still useful.",
+            "A vine has grown around a small object, holding it suspended at eye level."
+          ],
+          "hazard": [
+            "The vines are covered in fine barbs you didn't see. Your hands come away bleeding.",
+            "You part the curtain and something drops from above — heavy, sharp, and aimed at your head."
+          ],
+          "intel": [
+            "Through the vines you can see the wall behind them — marked with directions, arrow-scratched.",
+            "The vines conceal an alcove with a clear view into the next passage."
+          ],
+          "secret": [
+            "Behind the curtain: not wall, but open space. A passage, hidden by the growth.",
+            "The vines conceal an opening. Cool air flows through it — another chamber beyond."
+          ],
+          "flavor": [
+            "The vines sway as you pass. There's no breeze. They moved on their own.",
+            "A living curtain, green and grey, dividing nothing from nothing.",
+            "You part the vines. Behind them: a wall. Just a wall. The vines fall back into place."
+          ]
+        }
+      },
+      {
+        "id": "push_through",
+        "label": "Push through",
+        "outcomes": { "weights": { "loot": 15, "hazard": 20, "secret": 35, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "You force your way through. The vines resist, then give. On the other side, you find a supply stash.",
+            "Pushing through the curtain, you stumble into a small alcove. Someone's abandoned pack sits here."
+          ],
+          "hazard": [
+            "The vines wrap around your limbs as you push. They tighten. You tear free, but not unscathed.",
+            "You push through and fall — the floor drops away on the other side. A short tumble, but painful."
+          ],
+          "secret": [
+            "The curtain hides a narrow passage. It shouldn't be here — it's not on any map.",
+            "You push through into a space that shouldn't exist. The cave has secrets behind its curtains."
+          ],
+          "flavor": [
+            "You push through the curtain. It's just more cave on the other side. Anticlimactic.",
+            "The vines cling and grab but there's nothing beyond them. You retreat, covered in sap."
+          ]
+        }
+      }
+    ]
+  },
+
+  {
+    "id": "starter_supply_sack",
+    "name": "Torn supply sack",
+    "asciiChar": "■",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 55, "hazard": 10, "intel": 5, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "The sack is torn but not empty. Someone left in a hurry.",
+            "You rummage through mouldy cloth and find something worth keeping."
+          ],
+          "hazard": [
+            "A centipede the length of your forearm curls out of the sack and strikes.",
+            "The sack is full of broken glass. You discover this the hard way."
+          ],
+          "flavor": [
+            "Rotten food, torn fabric, nothing useful. A sorry end to someone's expedition.",
+            "Empty wrappers and a cracked waterskin. Whoever left this took what mattered."
+          ]
+        }
+      },
+      {
+        "id": "rummage",
+        "label": "Rummage",
+        "outcomes": { "weights": { "loot": 40, "hazard": 30, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "You tear the sack apart. At the very bottom, wrapped in oilcloth — something intact.",
+            "Aggressive searching pays off. A sealed pouch tumbles out."
+          ],
+          "hazard": [
+            "You shove your hand deep and something bites. Hard.",
+            "The sack was sitting on a nest. The occupants swarm up your arms."
+          ],
+          "flavor": [
+            "You shake out every last crumb. Nothing. Just dust and disappointment.",
+            "Thorough destruction of an empty sack. Very efficient."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "starter_old_torch",
+    "name": "Discarded torch",
+    "asciiChar": "!",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 5, "intel": 25, "flavor": 50 } },
+        "narration": {
+          "loot": [
+            "The torch was used as a makeshift holder. Something is lashed to the handle.",
+            "Wrapped around the base — a small bundle, hidden by the soot."
+          ],
+          "intel": [
+            "The torch points the way its owner was heading. Drag marks on the floor confirm the direction.",
+            "Soot marks on the walls trace a path. Someone was marking their route."
+          ],
+          "flavor": [
+            "Cold and spent. Whoever carried this is long gone.",
+            "The pitch has hardened. This torch burned its last hours ago. Or years.",
+            "A simple pine torch. The upper caves don't warrant anything fancier."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "starter_crack_wall",
+    "name": "Cracked wall",
+    "asciiChar": "▌",
+    "biomes": ["starter"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 10, "intel": 15, "secret": 20, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "The crack is wide enough to reach into. Your fingers close around something solid.",
+            "Wedged in the fissure — a small pouch, pressed flat by the shifting stone."
+          ],
+          "hazard": [
+            "Loose rubble shifts as you probe the crack. A chunk of ceiling clips your shoulder.",
+            "Something in the crack bites your finger. You can't see what it was."
+          ],
+          "intel": [
+            "Air moves through the crack. There's open space on the other side.",
+            "You press your ear to the crack. Faint sounds — movement in an adjacent passage."
+          ],
+          "secret": [
+            "The crack runs floor to ceiling. With effort, it might widen into a passage.",
+            "Behind the crack, a hollow. It's not natural — someone sealed this opening."
+          ],
+          "flavor": [
+            "Just a crack. The mountain settling, nothing more.",
+            "You peer through the fissure. Darkness, and more darkness. Riveting."
+          ]
+        }
+      },
+      {
+        "id": "widen",
+        "label": "Widen",
+        "requiresClass": "vanguard",
+        "outcomes": { "weights": { "loot": 30, "hazard": 15, "secret": 35, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "You hammer the crack wider. Behind the stone — a sealed niche with something inside.",
+            "Brute force reveals a hidden cavity. The builders didn't want this found."
+          ],
+          "hazard": [
+            "The wall gives way faster than expected. Rubble cascades onto you.",
+            "You break through, but the collapse sends shards of stone into your arms."
+          ],
+          "secret": [
+            "The crack becomes a gap, then a passage. Somewhere nobody's walked in a long time.",
+            "You force the wall apart. Behind it — a tunnel, hand-carved, leading into darkness."
+          ],
+          "flavor": [
+            "You widen the crack to find... more wall. Solid rock behind it.",
+            "A lot of effort for a slightly larger crack. The mountain wins this round."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "starter_rope_anchor",
+    "name": "Rope anchor",
+    "asciiChar": "∩",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 5, "intel": 35, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "The anchor holds a frayed rope. At the end, still attached — a climber's pack.",
+            "Someone left gear clipped to the anchor. Their loss, your gain."
+          ],
+          "intel": [
+            "The rope leads down a shaft. The knots suggest experienced climbers came this way.",
+            "Marks around the anchor tell a story — multiple expeditions, different years."
+          ],
+          "flavor": [
+            "A piton driven deep into the rock. The rope is long gone.",
+            "Professional work. Whoever set this knew what they were doing. Didn't save them.",
+            "The anchor is solid. The rope that hung from it was not."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "starter_rat_nest",
+    "name": "Rat nest",
+    "asciiChar": "~",
+    "biomes": ["starter"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 20, "intel": 10, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The rats have been collecting. Among the debris — something that glints.",
+            "A magpie instinct. The nest is full of stolen trinkets, one of which is useful."
+          ],
+          "hazard": [
+            "The rats are home. And they don't share.",
+            "You disturb the nest and a dozen furious rodents pour out, biting everything.",
+            "The mother rat is the size of a cat. She disagrees with your presence."
+          ],
+          "intel": [
+            "The rats have chewed through a wall in the back of the nest. A tunnel leads somewhere.",
+            "Rat droppings trail toward a passage you hadn't noticed."
+          ],
+          "flavor": [
+            "Shredded cloth, gnawed bones, and the smell. The smell is the worst part.",
+            "A nest of ordinary rats in an ordinary cave. The mundanity is almost comforting.",
+            "The rats watch you from the shadows with bead-black eyes. Judging."
+          ]
+        }
+      },
+      {
+        "id": "scout",
+        "label": "Scout",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 35, "hazard": 5, "intel": 40, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "You catalog the rats' hoard systematically. Most is junk — but not all.",
+            "Tracking the rats' foraging routes, you find their best stash."
+          ],
+          "intel": [
+            "The rats have mapped this cave system better than you. Their trails reveal the layout.",
+            "Droppings, claw marks, fur traces — the rats show you where everything connects.",
+            "You follow the rats' paths. They always know where the dangers are. And aren't."
+          ],
+          "flavor": [
+            "You study the nest with scientific detachment. Conclusion: it's a rat nest.",
+            "Thorough analysis confirms the rats are just... rats. Disappointing."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "starter_scratched_wall",
+    "name": "Scratched markings",
+    "asciiChar": "≡",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 5, "intel": 45, "flavor": 50 } },
+        "narration": {
+          "loot": [
+            "The markings are a crude map. An X marks a loose stone nearby — and something behind it."
+          ],
+          "intel": [
+            "Tally marks, arrows, warnings. A previous explorer left notes for whoever came next.",
+            "The scratches form a simple map. Not complete, but enough to warn you about something ahead.",
+            "Numbers scratched beside arrows. Someone was counting rooms. Their count stops abruptly."
+          ],
+          "flavor": [
+            "Names. Dates. The usual graffiti of the desperate. None of them came back.",
+            "\"TURN BACK\" in shaky letters. Solid advice, poorly taken.",
+            "Scratches too crude to read. Could be words, could be claw marks. Could be both."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "starter_collapsed_beam",
+    "name": "Collapsed beam",
+    "asciiChar": "/",
+    "biomes": ["starter"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 15, "intel": 10, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The beam crushed a shelf when it fell. Among the wreckage — something intact.",
+            "Under the beam, pinned flat, a pack that still has contents."
+          ],
+          "hazard": [
+            "You shift the beam and the ceiling groans. Dust and small stones rain down.",
+            "The beam rolls as you investigate. It catches your shin before you can jump clear."
+          ],
+          "intel": [
+            "The beam was cut, not broken. Someone brought this ceiling down deliberately.",
+            "Marks on the beam suggest it was load-bearing. The collapse blocked a passage."
+          ],
+          "flavor": [
+            "Old timber, dry-rotted and splintered. This mine hasn't been maintained in decades.",
+            "The beam creaks when you touch it. Best left alone.",
+            "Evidence of old industry. Someone worked these caves once. Now the caves work on their own."
+          ]
+        }
+      },
+      {
+        "id": "lift",
+        "label": "Lift",
+        "requiresClass": "vanguard",
+        "outcomes": { "weights": { "loot": 40, "hazard": 15, "secret": 25, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "You heave the beam aside. Beneath it — a crushed crate, but its contents survived.",
+            "The beam shifts with effort. It was covering a supply cache, maybe intentionally."
+          ],
+          "hazard": [
+            "You lift the beam and the ceiling above shifts ominously. Stones strike your back.",
+            "The beam is heavier than it looks. Something in your shoulder gives before the wood does."
+          ],
+          "secret": [
+            "The beam was blocking a passage. Not collapsed over it — placed across it.",
+            "You move the beam and find a trapdoor beneath. Someone didn't want this found."
+          ],
+          "flavor": [
+            "You lift the beam. Underneath: dirt, stones, disappointment.",
+            "Impressive show of strength. Zero practical results. The beam goes back down."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "starter_puddle",
+    "name": "Muddy puddle",
+    "asciiChar": "≈",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 10, "intel": 15, "flavor": 55 } },
+        "narration": {
+          "loot": [
+            "The mud has swallowed something. You fish it out — still usable.",
+            "Light catches something under the murky surface. Worth grabbing."
+          ],
+          "hazard": [
+            "The puddle is deeper than it looks. Your foot plunges through into a hidden crevice.",
+            "The mud conceals sharp debris. You step on something unpleasant."
+          ],
+          "intel": [
+            "Fresh footprints in the mud, not yours. Something passed through recently.",
+            "The puddle is fed by a seep from the wall. Water flows from somewhere nearby."
+          ],
+          "flavor": [
+            "Mud, water, probably rat urine. The glamour of exploration.",
+            "Your reflection stares up at you from the brown water. You both look tired.",
+            "A puddle. In a cave. Truly, the wonders never cease."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "starter_old_lantern",
+    "name": "Broken lantern",
+    "asciiChar": "◙",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 10, "intel": 20, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The lantern is broken but the fuel reservoir is intact. And there's something stuffed inside.",
+            "Behind the cracked glass, a small object wrapped in cloth. Hidden deliberately."
+          ],
+          "hazard": [
+            "You cut yourself on the broken glass. Deeper than expected.",
+            "Residual oil ignites when you jostle the lantern. Brief but painful."
+          ],
+          "intel": [
+            "The lantern is military issue. Soldiers came this way — and didn't come back.",
+            "An inscription on the base — initials and a date. Recent."
+          ],
+          "flavor": [
+            "A tin lantern, dented and dark. Its light-giving days are over.",
+            "The glass is cracked in a starburst pattern. Impact, not age. Thrown or dropped.",
+            "Oil stains around the base. Someone sat here a while. Then left."
+          ]
+        }
+      },
+      {
+        "id": "analyze",
+        "label": "Analyze mechanism",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 40, "hazard": 3, "intel": 35, "flavor": 22 } },
+        "narration": {
+          "loot": [
+            "You disassemble the lantern efficiently. The reflector plate is salvageable — and behind it, a hidden compartment.",
+            "The mechanism contains more than oil. A tiny cache, built into the frame."
+          ],
+          "intel": [
+            "The lantern's design tells you who made it and when. This is recent expedition gear.",
+            "Residue analysis — the oil is local, refined from cave fauna. Someone was living down here."
+          ],
+          "flavor": [
+            "Excellent craftsmanship for a broken lamp. You admire it. It remains broken.",
+            "You understand exactly how this lantern works. That knowledge helps no one."
+          ]
+        }
+      }
+    ]
+  },
+
+  {
+    "id": "crystal_geode_cluster",
+    "name": "Geode cluster",
+    "asciiChar": "◆",
+    "biomes": ["crystal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 40, "hazard": 15, "intel": 10, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "One geode has already cracked. Inside, a crystal worth keeping — and something else.",
+            "The cluster contains a hollow geode. Inside it, wrapped in mineral deposits, something useful."
+          ],
+          "hazard": [
+            "The crystal shatters under your touch. Shards fly — one catches your cheek.",
+            "The geode is pressurised. It bursts, spraying needle-fine crystal fragments."
+          ],
+          "intel": [
+            "The crystal growth patterns point consistently in one direction. Following them might lead somewhere.",
+            "Resonance from the cluster — it vibrates in sympathy with something deeper in the caves."
+          ],
+          "flavor": [
+            "Beautiful amethyst formations, worthless without a jeweller. You admire and move on.",
+            "The geodes hum faintly. Harmonic resonance, nothing magical. Still eerie.",
+            "Light fragments into rainbows across the cave wall. The crystal doesn't care about your quest."
+          ]
+        }
+      },
+      {
+        "id": "pry_free",
+        "label": "Pry free",
+        "requiresClass": "vanguard",
+        "outcomes": { "weights": { "loot": 60, "hazard": 15, "intel": 5, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "You crack the geode open with controlled force. The prize inside is intact.",
+            "One clean strike splits the cluster. Something valuable tumbles out of the core."
+          ],
+          "hazard": [
+            "The crystal explodes outward when freed. You shield your face but your arms take the worst.",
+            "The cluster was under tension. It snaps and a shard embeds in your hand."
+          ],
+          "flavor": [
+            "You break it open. Pretty crystals, nothing more. Geology is not treasure.",
+            "The geode cracks neatly in half. Both halves are empty. Perfectly, mockingly empty."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "crystal_singing_spire",
+    "name": "Singing spire",
+    "asciiChar": "▲",
+    "biomes": ["crystal"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 15, "hazard": 20, "intel": 20, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The spire's base has eroded, revealing something embedded in the crystal matrix.",
+            "A previous visitor hung something from the spire's tip. Still there, swaying gently."
+          ],
+          "hazard": [
+            "The spire's frequency shifts as you approach. The sound becomes painful, then physical.",
+            "You touch the spire and it screams. The vibration travels through your bones.",
+            "The harmonic shatters a nearby formation. Crystal shrapnel peppers your side."
+          ],
+          "intel": [
+            "The spire resonates with others in adjacent chambers. You can hear the layout in the harmonics.",
+            "The singing changes pitch near certain walls — thinner stone, possible passages."
+          ],
+          "flavor": [
+            "The spire sings a single, unwavering note. It has been singing for centuries.",
+            "You stand in the sound and feel it in your chest. Beautiful and deeply lonely.",
+            "The crystal hums like a tuning fork struck by god. You have nothing to tune."
+          ]
+        }
+      },
+      {
+        "id": "analyze",
+        "label": "Analyze harmonics",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 25, "hazard": 5, "intel": 50, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "You map the resonance nodes. One is a stress point — tap it precisely and a crystal shard drops free, flawless.",
+            "Frequency analysis reveals the spire is growing around an object. You extract it without damage."
+          ],
+          "intel": [
+            "The harmonics encode the cave structure. You can map three chambers without entering them.",
+            "Resonance patterns reveal the crystal network extends far beyond this room. You trace the connections.",
+            "The singing frequency matches seismic stress patterns. You can predict where passages are weakest."
+          ],
+          "flavor": [
+            "The acoustic properties are remarkable. You document everything. It helps no one here.",
+            "You understand the physics perfectly. The spire is unimpressed by your understanding."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "crystal_mirror_pool",
+    "name": "Mirror pool",
+    "asciiChar": "≈",
+    "biomes": ["crystal"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 15, "intel": 15, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The water is so clear you can see the bottom. Something rests there, crystallised in mineral deposits.",
+            "Light refracting through the pool reveals an object on the far edge, half-submerged."
+          ],
+          "hazard": [
+            "You reach in and the water burns cold. Mineral-saturated and corrosive.",
+            "The pool reflects light into your eyes. Blinding. You stumble and cut yourself on a crystal edge."
+          ],
+          "intel": [
+            "The pool reflects the ceiling perfectly. In the reflection, you see a passage you missed looking up.",
+            "Ripples move against the current. Something feeds this pool from an unseen source."
+          ],
+          "flavor": [
+            "Your reflection is clearer than any mirror. You look worse than you thought.",
+            "The pool is glass-still. A perfect circle of liquid crystal. You dare not disturb it.",
+            "Light plays through the water and casts prismatic patterns on the ceiling. Nature's chandelier."
+          ]
+        }
+      },
+      {
+        "id": "commune",
+        "label": "Commune",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 30, "hazard": 3, "intel": 40, "flavor": 27 } },
+        "narration": {
+          "loot": [
+            "You touch the water and speak quietly. The pool responds — the surface parts, revealing something on the bottom.",
+            "Your communion clarifies the water. Objects on the bottom become visible and retrievable."
+          ],
+          "intel": [
+            "The pool shows you visions — brief, fractured images of nearby chambers and their dangers.",
+            "Through the water, you see echoes of those who came before. Their path becomes yours.",
+            "The pool becomes a scrying surface. You see what lies ahead, dimly but clearly enough."
+          ],
+          "flavor": [
+            "The water warms at your touch. A blessing accepted, but nothing offered in return.",
+            "You commune with the stillness. The pool has been here longer than anything alive. It has patience."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "crystal_fractured_pillar",
+    "name": "Fractured pillar",
+    "asciiChar": "╫",
+    "biomes": ["crystal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 20, "intel": 10, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The fracture runs through the pillar's core. Inside the crack — something crystallised around an object.",
+            "The pillar split around a foreign body. Whatever was embedded in it is now accessible."
+          ],
+          "hazard": [
+            "You touch the fracture line and the pillar shifts. A slab of crystal shears off toward you.",
+            "The pillar is unstable. Your examination tips it further and debris rains from above."
+          ],
+          "intel": [
+            "The fracture pattern is deliberate. Someone cracked this pillar to mark a trail.",
+            "The pillar broke along a seam. Natural crystal doesn't fracture this way — force was applied."
+          ],
+          "flavor": [
+            "A once-magnificent crystal column, now split and leaning. Time wins every argument.",
+            "The fracture catches light and splits it into a permanent rainbow. A memorial to structural failure.",
+            "You push against the pillar. It doesn't budge. Whatever cracked it was stronger than you."
+          ]
+        }
+      },
+      {
+        "id": "search_shadows",
+        "label": "Search the cracks",
+        "requiresClass": "shadowblade",
+        "outcomes": { "weights": { "loot": 45, "hazard": 5, "intel": 20, "secret": 15, "flavor": 15 } },
+        "narration": {
+          "loot": [
+            "Your fingers find seams invisible to others. A hidden cache, tucked into the fracture.",
+            "The crack system is a maze. Your hands navigate it by touch and instinct."
+          ],
+          "intel": [
+            "The fractures tell a story of stress and impact. You can read the cave's trauma like a book.",
+            "Through the cracks, air moves. You trace the draft to an unmapped passage."
+          ],
+          "secret": [
+            "The pillar is hollow. The fracture is a door, if you know how to open it.",
+            "You find a cavity behind the fracture, large enough to crawl into. It leads somewhere."
+          ],
+          "flavor": [
+            "You explore every crack with expert fingers. Nothing but crystal dust and cold air.",
+            "The shadows inside the fractures are absolute. Even you find nothing in them."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "crystal_prism_shard",
+    "name": "Prism shard",
+    "asciiChar": "◇",
+    "biomes": ["crystal"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 35, "hazard": 20, "intel": 5, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The prism has grown around something. You can see it inside, perfectly preserved.",
+            "The shard is loose. Behind it, tucked into the wall — a small stash."
+          ],
+          "hazard": [
+            "The shard focuses ambient light into a beam. It burns where it touches your hand.",
+            "You grasp the prism and it splinters. Crystal needles drive into your palm."
+          ],
+          "flavor": [
+            "Rainbow light dances across your face. Pretty but pointless.",
+            "The shard is perfectly formed. A natural prism, splitting light endlessly.",
+            "You hold the prism up to your eye. The world shatters into colour. Then you put it down."
+          ]
+        }
+      },
+      {
+        "id": "disturb",
+        "label": "Break off",
+        "outcomes": { "weights": { "loot": 30, "hazard": 35, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "The shard snaps cleanly. Behind it, pressed into the wall socket — something useful.",
+            "You wrench the prism free. It shatters, but reveals a cache behind it."
+          ],
+          "hazard": [
+            "The shard detonates when you snap it. Crystal shrapnel everywhere.",
+            "You break the shard and focused light lances through the gap. It scorches your forearm.",
+            "The prism was load-bearing, somehow. The wall above shifts and stones tumble down."
+          ],
+          "flavor": [
+            "You break a perfectly good prism. No treasure. No secret. Just broken crystal.",
+            "The shard snaps and the light patterns die. The cave is dimmer now. Well done."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "crystal_frozen_figure",
+    "name": "Encased figure",
+    "asciiChar": "¤",
+    "biomes": ["crystal"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 10, "intel": 15, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The crystal hasn't reached the figure's outstretched hand. It still holds something.",
+            "The encasement is thinner at the base. You can reach the figure's belt pouch."
+          ],
+          "hazard": [
+            "The crystal around the figure is unstable. A piece breaks free and strikes you.",
+            "As you lean close, the figure's hand twitches. Reflex or... alive? Either way, it hurts."
+          ],
+          "intel": [
+            "The figure's gear marks them as a scout. Their map is visible through the crystal, readable if you squint.",
+            "The expression on the frozen face tells you everything about what they saw last."
+          ],
+          "flavor": [
+            "A person, perfectly preserved in crystal. Their expression is peaceful. Or perhaps resigned.",
+            "The crystal grows slowly. This person has been here decades, maybe centuries. Still whole.",
+            "You look into the figure's eyes through the crystal. There's no one behind them anymore."
+          ]
+        }
+      },
+      {
+        "id": "last_rites",
+        "label": "Last rites",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 35, "hazard": 2, "intel": 30, "flavor": 33 } },
+        "narration": {
+          "loot": [
+            "Your prayer softens the crystal around the figure's hands. Something drops free.",
+            "As you speak the rite, the crystal recedes from the figure's pack. You can reach it now."
+          ],
+          "intel": [
+            "The departed speaks through your prayer — fragmented memories of the route they took.",
+            "In death, they share what they knew. The path ahead becomes clearer."
+          ],
+          "flavor": [
+            "You speak the words. The crystal seems to warm. Perhaps they hear. Perhaps not.",
+            "The rite echoes strangely off the crystal. For a moment, the figure seems to exhale."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "crystal_light_well",
+    "name": "Light well",
+    "asciiChar": "○",
+    "biomes": ["crystal"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 15, "intel": 25, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "At the bottom of the well, among crystallised water droplets, something solid.",
+            "The light reveals objects embedded in the well's crystal walls. One is within reach."
+          ],
+          "hazard": [
+            "The concentrated light burns your skin. This well focuses energy like a lens.",
+            "You lean over the well and vertigo hits. The light seems to pull you downward."
+          ],
+          "intel": [
+            "The well channels light from above. Following its source reveals connected chambers.",
+            "Reflections in the well show passages at angles — you can see around corners through the crystal."
+          ],
+          "flavor": [
+            "A shaft of pure light, reaching up through crystal into darkness. No source visible.",
+            "The well is warm. Life could grow here, in this single column of light. Nothing has.",
+            "You stand in the light and feel almost safe. Almost."
+          ]
+        }
+      },
+      {
+        "id": "commune",
+        "label": "Commune",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 25, "hazard": 2, "intel": 45, "flavor": 28 } },
+        "narration": {
+          "loot": [
+            "The light responds to your communion. It intensifies, and something falls from the shaft above.",
+            "Your prayer is answered with warmth and a gift — crystallised within the light's focal point."
+          ],
+          "intel": [
+            "The light shows you the way. Through it, you see the cave system as if from above.",
+            "Your communion opens a vision — the dungeon's structure laid bare for a flickering moment.",
+            "The light carries impressions. Danger, safety, secrets — you sense them all nearby."
+          ],
+          "flavor": [
+            "The light embraces you. For a moment, the darkness doesn't exist. Then it returns.",
+            "You commune with the light. It has been shining alone for a very long time."
+          ]
+        }
+      }
+    ]
+  },
+
+  {
+    "id": "flooded_barnacle_chest",
+    "name": "Barnacled chest",
+    "asciiChar": "■",
+    "biomes": ["flooded"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 55, "hazard": 15, "intel": 5, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "The chest's lock has corroded away. Inside — waterlogged but salvageable goods.",
+            "Barnacles pry off in chunks. The chest opens reluctantly. Something dry remains inside.",
+            "The salt has preserved the contents better than you'd expect."
+          ],
+          "hazard": [
+            "The barnacles are razor-sharp. Your hands are bleeding before you get the chest open.",
+            "Something is living inside the chest. It strikes when the lid opens."
+          ],
+          "flavor": [
+            "Saltwater and rot. The chest's contents dissolved long ago.",
+            "The chest is fused shut by mineral deposits. Without tools, it's just a barnacled rock."
+          ]
+        }
+      },
+      {
+        "id": "pick_lock",
+        "label": "Force the mechanism",
+        "requiresClass": "shadowblade",
+        "outcomes": { "weights": { "loot": 70, "hazard": 5, "intel": 10, "flavor": 15 } },
+        "narration": {
+          "loot": [
+            "You work the corroded mechanism with precision. The sealed compartment opens — dry inside.",
+            "The false bottom releases with a click. The real contents were hidden from the water.",
+            "Your fingers find the trick panel. Behind the barnacles — a dry cache."
+          ],
+          "intel": [
+            "The chest contains correspondence, sealed in wax. Trade routes through the flooded passages.",
+            "Inside, a map wrapped in oilskin. The flooded passages are charted."
+          ],
+          "flavor": [
+            "You open every compartment. All empty, all damp. Someone was thorough before you.",
+            "The mechanism is elegant work, ruined by salt. You appreciate the craft. The craft doesn't help."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "flooded_kelp_curtain",
+    "name": "Kelp curtain",
+    "asciiChar": "║",
+    "biomes": ["flooded"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 15, "intel": 10, "secret": 25, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "Something is tangled in the kelp, caught by the current.",
+            "The kelp has grown around a floating object. You untangle it carefully."
+          ],
+          "hazard": [
+            "The kelp wraps your wrist and pulls. There's a current behind it, and it's strong.",
+            "You part the fronds and something lunges from behind them. An eel, and it bites."
+          ],
+          "intel": [
+            "Water flows through the curtain from one direction. There's a larger chamber behind it.",
+            "The kelp grows thickest where nutrients flow. Following the growth pattern reveals the water's source."
+          ],
+          "secret": [
+            "Behind the kelp — not a wall, but open water. A flooded passage, concealed.",
+            "The curtain hides a gap in the rock. The current flows through it."
+          ],
+          "flavor": [
+            "Thick fronds of cave kelp, swaying in the dark water. Hypnotic and useless.",
+            "The kelp smells of brine and old life. The sea has no business being this far underground."
+          ]
+        }
+      },
+      {
+        "id": "push_through",
+        "label": "Push through",
+        "outcomes": { "weights": { "loot": 15, "hazard": 25, "secret": 35, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "You force through the curtain. On the other side, caught on a rock shelf — abandoned gear.",
+            "Beyond the kelp, a small air pocket and a dry ledge. Someone left supplies here."
+          ],
+          "hazard": [
+            "The kelp tangles your legs as you push through. You go under briefly.",
+            "You push through and drop into deeper water. The current grabs you before you recover."
+          ],
+          "secret": [
+            "Behind the curtain — a flooded passage, low-ceilinged but passable. It goes somewhere.",
+            "The kelp was deliberately cultivated to hide this opening. Someone didn't want it found."
+          ],
+          "flavor": [
+            "You push through into more flooded cave. The kelp slides across your face. Unpleasant.",
+            "Nothing but wet stone and more kelp on the other side. The cave mocks your initiative."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "flooded_drowned_statue",
+    "name": "Drowned statue",
+    "asciiChar": "♦",
+    "biomes": ["flooded"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 10, "intel": 20, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The statue's outstretched hands hold an offering bowl. There's still something in it.",
+            "The base has eroded, revealing a sealed compartment beneath the plinth."
+          ],
+          "hazard": [
+            "The statue's stone is slick with algae. You slip and crack your elbow on the plinth.",
+            "You disturb the silt around the base. Something that was resting there isn't happy."
+          ],
+          "intel": [
+            "The statue faces a specific direction. Its gaze leads to a passage partially hidden by water.",
+            "Inscriptions on the base, partially legible. Directions, encoded in prayer."
+          ],
+          "flavor": [
+            "A stone figure, half-submerged, arms raised in supplication. The water doesn't care.",
+            "The statue's face has been worn smooth by centuries of water. No identity. No prayer answered.",
+            "Whoever this depicted, they're forgotten. The statue persists. The meaning doesn't."
+          ]
+        }
+      },
+      {
+        "id": "pray",
+        "label": "Pray",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 35, "hazard": 2, "intel": 35, "flavor": 28 } },
+        "narration": {
+          "loot": [
+            "You kneel in the water and pray. The statue responds — the offering bowl tilts, releasing its contents to you.",
+            "Your prayer drains the water around the base. A sealed reliquary is exposed."
+          ],
+          "intel": [
+            "The statue's empty eyes fill with light as you pray. Visions of the flooded passages, complete.",
+            "The drowned god listens. It shows you what the water hides.",
+            "Through prayer, the inscription becomes clear. A complete map of the sunken chambers."
+          ],
+          "flavor": [
+            "You pray at the feet of a forgotten god. The water laps gently. Nothing else.",
+            "The statue seems warmer after your prayer. Imagination, probably. Probably."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "flooded_air_pocket",
+    "name": "Air pocket",
+    "asciiChar": "°",
+    "biomes": ["flooded"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 15, "hazard": 5, "intel": 30, "flavor": 50 } },
+        "narration": {
+          "loot": [
+            "A dry shelf in the pocket holds a waterproof bag. Someone cached supplies here.",
+            "The air pocket extends to a small dry ledge. Something has been left here."
+          ],
+          "intel": [
+            "The air comes from somewhere. Tracing the draft reveals connected passages above water level.",
+            "The pocket tells you the cave breathes. There are open spaces above the water line.",
+            "Bubbles rise from a crack in the floor. The air source is below — another chamber, dry."
+          ],
+          "flavor": [
+            "You breathe the stale air gratefully. A dry ceiling in a wet world. Small mercies.",
+            "The pocket smells of trapped gas and old stone. Better than drowning.",
+            "A bubble of breathable air in a flooded nightmare. The cave's one concession to the living."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "flooded_shell_mound",
+    "name": "Shell mound",
+    "asciiChar": "∆",
+    "biomes": ["flooded"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 20, "intel": 10, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "Among the shells, something that isn't shell. Smooth, worked, valuable.",
+            "The mound contains a pearl. Not large, but real."
+          ],
+          "hazard": [
+            "The shells are sharp as knives. You learn this while digging through them.",
+            "Something living hides in the mound. It pinches hard enough to draw blood.",
+            "You disturb the mound and a venomous cone shell strikes your finger."
+          ],
+          "intel": [
+            "The shells are from deep-water species. The flood comes from the sea itself.",
+            "The mound is a midden — something intelligent piled these here deliberately."
+          ],
+          "flavor": [
+            "Shells from creatures that shouldn't exist underground. The sea disagrees.",
+            "You pick through the shells. Spirals and whorls from species you can't name.",
+            "A cairn of sea-death in an underground lake. Nothing about this is natural."
+          ]
+        }
+      },
+      {
+        "id": "scout",
+        "label": "Catalogue",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 35, "hazard": 3, "intel": 40, "flavor": 22 } },
+        "narration": {
+          "loot": [
+            "Systematic sorting reveals a pattern — and buried at the centre, the builder's prize.",
+            "You identify species distribution. The rarest shells cluster around something deliberate."
+          ],
+          "intel": [
+            "The species composition tells you about water flow. You can map the flooded passages from the ecology.",
+            "Shell types change by depth and salinity. You can predict which chambers are fully submerged.",
+            "The mound is a territorial marker. Something claims this area — and its range extends three rooms."
+          ],
+          "flavor": [
+            "Detailed shell taxonomy, exhaustively catalogued. Scientifically fascinating. Practically worthless.",
+            "You sort every shell by species. Results: a sorted pile of shells."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "flooded_rusted_grate",
+    "name": "Rusted grate",
+    "asciiChar": "#",
+    "biomes": ["flooded"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 15, "intel": 15, "secret": 20, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "Something is caught in the grate bars, washed there by the current.",
+            "The grate has trapped debris. Among the rubbish — something worth keeping."
+          ],
+          "hazard": [
+            "The rusted bars slice your hands. Tetanus is the least of your worries down here.",
+            "You rattle the grate and the ceiling above rumbles. Stop that."
+          ],
+          "intel": [
+            "Water flows through the grate from below. There's a whole system of flooded passages beneath you.",
+            "The grate is engineered. Someone built drainage here. The infrastructure implies habitation."
+          ],
+          "secret": [
+            "One section of the grate swings open — a hatch, not just a drain cover.",
+            "The grate hides a passage. The rust makes it look permanent. It isn't."
+          ],
+          "flavor": [
+            "Iron bars, red with corrosion, set into the floor. Whatever they kept in or out is long gone.",
+            "You peer through the grate into darkness and water. Nothing peers back. Probably."
+          ]
+        }
+      },
+      {
+        "id": "lift",
+        "label": "Wrench open",
+        "requiresClass": "vanguard",
+        "outcomes": { "weights": { "loot": 30, "hazard": 15, "secret": 35, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "The grate comes free with a groan. Underneath — a waterlogged stash.",
+            "You bend the bars apart. Behind them, wedged into the drain — someone's emergency pack."
+          ],
+          "hazard": [
+            "The grate fights you. A bar snaps and the jagged end rakes your forearm.",
+            "You lift the grate and the floor beneath gives way. A short, wet, painful fall."
+          ],
+          "secret": [
+            "The grate opens onto a ladder. A submerged passage, hand-carved, leads somewhere.",
+            "Under the grate — not a drain but a shaft. The water is only knee-deep. You can pass."
+          ],
+          "flavor": [
+            "You wrench the grate free. Underneath: more water, more stone. No reward for effort.",
+            "The grate was stuck by centuries of corrosion. Now it's unstuck. Nothing else changes."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "flooded_phosphor_bloom",
+    "name": "Phosphorescent bloom",
+    "asciiChar": "♧",
+    "biomes": ["flooded"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 15, "hazard": 15, "intel": 10, "flavor": 60 } },
+        "narration": {
+          "loot": [
+            "The bloom grows over something. You brush the tendrils aside and find a preserved artifact.",
+            "Light-producing organisms cluster around a mineral deposit. Part of it is extractable."
+          ],
+          "hazard": [
+            "The bloom releases a burst of toxin when touched. Your hand swells immediately.",
+            "You disturb the colony. The organisms secrete acid in self-defense."
+          ],
+          "intel": [
+            "The bloom traces water channels along the walls. You can read the flow patterns — and the layout.",
+            "Phosphorescence is brightest near air sources. You can find dry passages by following the light."
+          ],
+          "flavor": [
+            "The water glows soft blue-green around the bloom. Peaceful. Almost worth the drowning risk.",
+            "Tiny organisms, painting the darkness with cold light. They ask nothing and give everything.",
+            "You cup the glowing water in your hands. It fades as it leaves the colony. Keep walking."
+          ]
+        }
+      }
+    ]
+  },
+
+  {
+    "id": "bone_skull_pile",
+    "name": "Skull pile",
+    "asciiChar": "☠",
+    "biomes": ["bone"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 35, "hazard": 15, "intel": 15, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "Someone hid something inside a skull. Clever. You find it by weight.",
+            "The pile has been curated. Offerings sit between the skulls — one is still useful."
+          ],
+          "hazard": [
+            "The pile shifts. A skull rolls and the rest follow — a small avalanche of bone and teeth.",
+            "You reach into the pile and something inside it grabs back. Bone fingers, still articulated."
+          ],
+          "intel": [
+            "The skulls are marked. Different species, different ages. This is a trophy collection.",
+            "One skull has a map scratched into its cranium. Crude, but readable."
+          ],
+          "flavor": [
+            "Hundreds of skulls, stacked with care. Someone counted them. You don't want to.",
+            "The empty sockets watch you from every angle. They've seen everyone who came before.",
+            "You pick up a skull. It's heavier than expected. Something rattles inside. You put it back."
+          ]
+        }
+      },
+      {
+        "id": "last_rites",
+        "label": "Last rites",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 30, "hazard": 2, "intel": 35, "flavor": 33 } },
+        "narration": {
+          "loot": [
+            "Your rite releases the tension in the pile. It settles peacefully, revealing a buried offering.",
+            "The dead relinquish their treasures gratefully. Something rolls free from the bottom of the pile."
+          ],
+          "intel": [
+            "The dead speak in chorus. Fragments of memory — where they walked, where they fell.",
+            "Through the rite, you feel the history of each skull. The last thoughts converge on a warning.",
+            "The pile sighs. In the exhale, you understand the layout of these halls better than any map."
+          ],
+          "flavor": [
+            "You speak the words. The skulls seem lighter afterward. Unburdened.",
+            "The rite echoes through the ossuary. For a moment, silence. Real silence."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "bone_ribcage_arch",
+    "name": "Ribcage arch",
+    "asciiChar": "∩",
+    "biomes": ["bone"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 15, "intel": 15, "secret": 20, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "The arch's keystone is a pelvis bone. Wedged inside it — a small bundle.",
+            "Offerings hang from the ribs like ornaments. One is more than decorative."
+          ],
+          "hazard": [
+            "You brush a rib and the arch groans. Bones shift and a heavy section drops on you.",
+            "The arch is trapped. Touching a specific bone triggers a cascade of falling debris."
+          ],
+          "intel": [
+            "The arch frames a specific view — through it, you see markings on the far wall, aligned perfectly.",
+            "The bones are arranged by species. The pattern tells a story of what lived here, and what killed it."
+          ],
+          "secret": [
+            "The arch is a doorframe. The space beneath it was sealed with packed bone. It can be cleared.",
+            "Looking through the arch at the right angle reveals a hidden seam in the floor."
+          ],
+          "flavor": [
+            "A cathedral arch made of giant ribs. Whatever this came from was enormous.",
+            "The arch frames nothing. A monument to nothing, built from nothing's remains.",
+            "You stand beneath the arch and feel small. That was the architect's intention."
+          ]
+        }
+      },
+      {
+        "id": "untangle",
+        "label": "Navigate the bones",
+        "requiresClass": "shadowblade",
+        "outcomes": { "weights": { "loot": 35, "hazard": 5, "intel": 20, "secret": 25, "flavor": 15 } },
+        "narration": {
+          "loot": [
+            "You climb the arch like a scaffold. At the apex, hidden from below — a cache.",
+            "Your hands find holds others can't see. Inside the arch's structure — a hidden niche."
+          ],
+          "intel": [
+            "From the top of the arch, you can see the entire chamber. Passages you missed become obvious.",
+            "The arch's construction reveals the builders' routes. You trace them to hidden corridors."
+          ],
+          "secret": [
+            "The arch contains a passage within its structure. Narrow, but passable if you're agile.",
+            "You find a hidden chamber inside the arch itself. Someone built this to hide in."
+          ],
+          "flavor": [
+            "You navigate the bone structure expertly. It contains nothing but more bones.",
+            "An impressive climb with a disappointing conclusion. The top of the arch is just... the top."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "bone_whispering_wall",
+    "name": "Whispering wall",
+    "asciiChar": "≡",
+    "biomes": ["bone"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 10, "hazard": 15, "intel": 35, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The whispers guide your hand to a loose bone. Behind it, a small hollow with something inside.",
+            "One voice is louder than the rest. It leads you to a specific bone — and what's behind it."
+          ],
+          "hazard": [
+            "The whispers crescendo into a shriek. The sound is physical — it hurts.",
+            "You listen too long. The voices become words. The words become a headache that draws blood."
+          ],
+          "intel": [
+            "The whispers speak of routes and rooms. Not clearly, but enough to piece together.",
+            "You catch fragments — names of chambers, warnings about what guards them.",
+            "The wall whispers a count. Footsteps in the hall beyond. Something is pacing."
+          ],
+          "flavor": [
+            "The wall murmurs in a language you don't know. It sounds like grieving.",
+            "You press your ear to the bone. The whispers stop. When you pull away, they resume.",
+            "A choir of the dead, singing too quietly to hear. You catch the melody, not the words."
+          ]
+        }
+      },
+      {
+        "id": "commune",
+        "label": "Commune",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 20, "hazard": 3, "intel": 50, "flavor": 27 } },
+        "narration": {
+          "loot": [
+            "You speak the dead's language. They answer, and they give — a bone clicks out of the wall, revealing a gift.",
+            "The communion is profound. The wall offers what it has been holding."
+          ],
+          "intel": [
+            "The dead tell you everything. Every room, every danger, whispered directly into your mind.",
+            "You commune and the ossuary opens its secrets. The dead have been waiting for someone who listens.",
+            "The whispers become clear speech. They warn you. They guide you. They are desperate to help."
+          ],
+          "flavor": [
+            "The wall falls silent when you speak. Respectful, perhaps. Or exhausted.",
+            "You commune with the dead. They have nothing to say. Sometimes the dead are just dead."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "bone_sarcophagus",
+    "name": "Stone sarcophagus",
+    "asciiChar": "□",
+    "biomes": ["bone"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 45, "hazard": 20, "intel": 10, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "The lid is cracked enough to peer inside. Grave goods — still intact after all this time.",
+            "The sarcophagus has already been opened. But the looters missed the false bottom."
+          ],
+          "hazard": [
+            "You shift the lid and gas escapes — trapped decay, concentrated and toxic.",
+            "The occupant's hand grabs your wrist as the lid moves. Death grip. Literally.",
+            "The lid is heavier than expected. It slides and catches your fingers beneath it."
+          ],
+          "intel": [
+            "The carvings on the lid depict the ossuary's layout. A burial map, carved in bone.",
+            "Inscriptions name the occupant — and their role. A guardian. Of what?"
+          ],
+          "flavor": [
+            "The sarcophagus is sealed. Whatever's inside has been resting a long time. You let it rest.",
+            "You trace the carvings. A life, told in bone relief. Birth, war, death. The universal story.",
+            "The stone is cold. The kind of cold that suggests the occupant is still home."
+          ]
+        }
+      },
+      {
+        "id": "pry_open",
+        "label": "Pry open",
+        "requiresClass": "vanguard",
+        "outcomes": { "weights": { "loot": 60, "hazard": 20, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "The lid grinds aside. Grave goods — weapon, armour, offerings. The dead were buried rich.",
+            "You force the sarcophagus open. Inside, alongside the bones, something worth the desecration.",
+            "The false bottom gives way to brute force. The real treasure was beneath the body."
+          ],
+          "hazard": [
+            "The lid comes free and the occupant sits up. Not alive — but articulated. And angry.",
+            "You force it open and the trapped air ignites. Ancient preservation chemicals, still volatile.",
+            "The stone lid shatters when forced. Fragments everywhere. Several find you."
+          ],
+          "flavor": [
+            "You open the sarcophagus. Bones, dust, and nothing else. Grave robbery with no reward.",
+            "The occupant is thoroughly dead and thoroughly looted. Someone got here first."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "bone_hanging_cage",
+    "name": "Hanging cage",
+    "asciiChar": "Ω",
+    "biomes": ["bone"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 15, "intel": 10, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The cage's occupant is long gone. Their belongings are not.",
+            "Something glints through the bone bars. Reachable, if you stretch."
+          ],
+          "hazard": [
+            "The cage swings when you touch it. The chain snaps. Several kilograms of bone crash down.",
+            "You reach through the bars and something inside grabs you. Not bone. Something living."
+          ],
+          "intel": [
+            "The cage faces an exit — the prisoner's view for their last days. They scratched a message.",
+            "Marks on the cage bars. A countdown. The last number is circled."
+          ],
+          "flavor": [
+            "A cage of fused bone, swaying gently. Its occupant became part of the material.",
+            "The cage is empty. The chain is not rusted. Someone empties it regularly.",
+            "You wonder who builds a cage from bone. Then you wonder who fills it. Then you stop wondering."
+          ]
+        }
+      },
+      {
+        "id": "search_shadows",
+        "label": "Search inside",
+        "requiresClass": "shadowblade",
+        "outcomes": { "weights": { "loot": 50, "hazard": 5, "intel": 15, "secret": 15, "flavor": 15 } },
+        "narration": {
+          "loot": [
+            "You find the false bone in the cage floor. It's hollow — a hiding spot for the prisoner's valuables.",
+            "Your hands find a seam the cage builders missed. A hidden compartment in the frame."
+          ],
+          "intel": [
+            "The cage's occupant left a message in the pattern of scratches. You read it like braille.",
+            "Hidden scratches on the inner bars — a map of the ossuary, drawn by someone with nothing but time."
+          ],
+          "secret": [
+            "The cage was placed here to draw attention from a passage behind it. You find it.",
+            "A section of the cage opens like a door. It leads to a narrow crawlway in the wall."
+          ],
+          "flavor": [
+            "You search every bone of the cage. Nothing. Just a well-built prison.",
+            "The cage holds nothing but dust and the memory of suffering."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "bone_marrow_pool",
+    "name": "Marrow pool",
+    "asciiChar": "≈",
+    "biomes": ["bone"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 25, "intel": 10, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "Something solid rests at the bottom of the viscous pool. You fish it out, gagging.",
+            "The pool has preserved an object perfectly. You extract it with considerable reluctance."
+          ],
+          "hazard": [
+            "The pool is not marrow. Or not just marrow. It burns where it touches skin.",
+            "You reach in and something under the surface bites. The pool is inhabited.",
+            "The fumes from the pool hit you without warning. Your vision swims."
+          ],
+          "flavor": [
+            "A pool of rendered bone marrow. The smell is indescribable. You try not to describe it.",
+            "Thick, yellowish, and warm. The pool bubbles gently. You do not investigate why.",
+            "The ossuary renders its own. This pool is where the bones end up. Eventually."
+          ]
+        }
+      },
+      {
+        "id": "test_sample",
+        "label": "Analyze",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 30, "hazard": 5, "intel": 40, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "Analysis reveals a concentration of minerals at the pool's centre. Extractable and valuable.",
+            "The marrow has preserved something in suspension. Your careful extraction recovers it intact."
+          ],
+          "intel": [
+            "The composition tells you what died here and when. The bones are recent. The danger is current.",
+            "Chemical analysis of the pool reveals it's fed from multiple chambers. You map the connections.",
+            "The marrow contains traces from species in adjacent rooms. You know what's nearby."
+          ],
+          "flavor": [
+            "Thorough chemical analysis of bone marrow. Conclusion: it's bone marrow. Truly groundbreaking.",
+            "You study the pool with professional detachment. Your stomach studies it with professional revulsion."
+          ]
+        }
+      }
+    ]
+  },
+
+  {
+    "id": "volcanic_obsidian_flow",
+    "name": "Obsidian flow",
+    "asciiChar": "▓",
+    "biomes": ["volcanic"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 20, "intel": 10, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The obsidian has flowed around an object, encasing it. You can still reach it from one side.",
+            "The glass surface is smooth enough to reflect. In the reflection, you spot something embedded."
+          ],
+          "hazard": [
+            "Volcanic glass is sharp. You find out by kneeling on a thin edge.",
+            "The flow is still warm. Not hot — until you press your palm flat against it.",
+            "A thin section shatters when you lean on it. Glass shards and a cut hand."
+          ],
+          "intel": [
+            "The flow pattern shows where magma channels run beneath the floor. Useful routing information.",
+            "The obsidian captured gas bubbles. Their orientation tells you about the cave's ventilation."
+          ],
+          "flavor": [
+            "Black glass, perfectly smooth, reflecting firelight. The mountain's blood, cooled and hardened.",
+            "You see yourself in the obsidian. The heat has not been kind to your appearance.",
+            "The flow is ancient. The mountain exhaled here once, long ago, and the breath froze."
+          ]
+        }
+      },
+      {
+        "id": "pry_free",
+        "label": "Break apart",
+        "requiresClass": "vanguard",
+        "outcomes": { "weights": { "loot": 50, "hazard": 20, "intel": 5, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "You crack the obsidian like an egg. Inside, preserved by the glass — something valuable.",
+            "The flow shatters under force. Embedded within — an artifact, sealed by the eruption."
+          ],
+          "hazard": [
+            "The obsidian explodes outward when struck. Glass shrapnel at velocity.",
+            "You break it open and heat pours out. The interior is still hot, even after centuries."
+          ],
+          "flavor": [
+            "You smash beautiful obsidian into ugly rubble. Nothing inside but more glass.",
+            "Effective destruction. Zero discovery. The obsidian was solid all the way through."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "volcanic_lava_tube",
+    "name": "Lava tube",
+    "asciiChar": "∪",
+    "biomes": ["volcanic"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 20, "intel": 25, "secret": 15, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "The tube's interior has mineral deposits. Among them, something that was carried here by the flow.",
+            "A previous explorer cached supplies inside the tube opening. Still there."
+          ],
+          "hazard": [
+            "The tube exhales hot gas without warning. You inhale before you can stop yourself.",
+            "The tube walls are scalding. You touch before you test. Classic.",
+            "Loose rock inside the tube shifts and falls. In the enclosed space, there's nowhere to dodge."
+          ],
+          "intel": [
+            "The tube extends beyond this room. Following it would reveal the cave's volcanic plumbing.",
+            "Air flows through the tube from a distant source. There are open chambers connected to this.",
+            "The tube is part of a network. You can hear echoes of other rooms through it."
+          ],
+          "secret": [
+            "The tube is passable. Tight, hot, but it leads somewhere not on any map.",
+            "The tube opens into darkness. Not a dead end — a passage the mountain built."
+          ],
+          "flavor": [
+            "A tunnel carved by liquid rock. The walls are glass-smooth and still warm.",
+            "You peer into the tube. Heat shimmers. The darkness wavers. You decide not to crawl in.",
+            "The mountain's old veins. Once, fire flowed here. Now just heat and memory."
+          ]
+        }
+      },
+      {
+        "id": "scout",
+        "label": "Map the network",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 20, "hazard": 5, "intel": 50, "secret": 15, "flavor": 10 } },
+        "narration": {
+          "loot": [
+            "You send a probe into the tube network. It returns with a mineral sample — and something else.",
+            "Mapping the tube reveals a junction with a collapsed section. Behind the debris — a sealed cache."
+          ],
+          "intel": [
+            "The tube network maps the volcanic plumbing. You can predict where the floor is safe and where it isn't.",
+            "Acoustic mapping through the tube reveals the full chamber layout. Your mental map expands dramatically.",
+            "Temperature gradients through the tube tell you where active magma flows. Avoid those rooms."
+          ],
+          "secret": [
+            "The tube connects to a chamber not visible from any passage. You can reach it.",
+            "Your mapping reveals a junction the builders couldn't have known about. A natural shortcut."
+          ],
+          "flavor": [
+            "You map the tube network in detail. It's a dead end. A very well-mapped dead end.",
+            "Thorough surveying confirms: hot tube, goes nowhere useful. Science."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "volcanic_slag_heap",
+    "name": "Slag heap",
+    "asciiChar": "▲",
+    "biomes": ["volcanic"],
+    "slotSize": "medium",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 40, "hazard": 25, "intel": 5, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "The slag contains metal — refined by the volcano's heat. Some of it is useful.",
+            "You sift through the slag and find a worked object. Someone was forging down here."
+          ],
+          "hazard": [
+            "The slag is still hot in places. Your hand finds one of those places.",
+            "Sharp edges hidden in the loose material. You cut yourself before you see the blood.",
+            "The heap shifts. Volcanic debris cascades over your feet. It's heavier than it looks."
+          ],
+          "flavor": [
+            "Volcanic waste, cooled into ugly lumps. The mountain's garbage.",
+            "You kick through the slag. Clinkers and pumice and worthless rock.",
+            "The heap radiates warmth. The mountain is always working, even in its waste."
+          ]
+        }
+      },
+      {
+        "id": "disturb",
+        "label": "Dig through",
+        "outcomes": { "weights": { "loot": 35, "hazard": 40, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "Aggressive digging uncovers a sealed container, heat-treated and intact.",
+            "At the bottom of the heap — a forge-sealed box. Whatever's inside survived the eruption."
+          ],
+          "hazard": [
+            "You dig and the slag collapses inward. You're waist-deep in hot rubble.",
+            "The heap conceals a vent. You dig into it and superheated gas jets out.",
+            "Your enthusiasm exceeds your caution. Burns on both hands. Worth it? No."
+          ],
+          "flavor": [
+            "You dig through the entire heap. Slag, all the way down. Just... slag.",
+            "Thorough excavation reveals nothing. The mountain produced junk and you sorted it."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "volcanic_heat_vent",
+    "name": "Heat vent",
+    "asciiChar": "○",
+    "biomes": ["volcanic"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 15, "hazard": 35, "intel": 20, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "The vent's rim has mineral deposits. One crystallised formation is worth extracting.",
+            "Something was dropped near the vent — too hot to retrieve carelessly, but you manage."
+          ],
+          "hazard": [
+            "The vent belches steam without warning. Second-degree burns, instantly.",
+            "You lean over the vent. It erupts. Your eyebrows are gone and your face is scalded.",
+            "The ground around the vent is thin. Your foot breaks through into hot rock."
+          ],
+          "intel": [
+            "The vent's output tells you about magma flows below. You can predict the hot zones.",
+            "Steam patterns indicate connected chambers. The vent network maps the volcanic system."
+          ],
+          "flavor": [
+            "The vent breathes hot air steadily. The mountain's exhalation, endless and indifferent.",
+            "You hold your hand over the vent. Warm, then hot, then you pull away. The mountain doesn't care.",
+            "Sulfurous steam, yellow-tinged. The smell of the earth's interior. Rotten eggs and apocalypse."
+          ]
+        }
+      },
+      {
+        "id": "analyze",
+        "label": "Analyze emissions",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 25, "hazard": 5, "intel": 50, "flavor": 20 } },
+        "narration": {
+          "loot": [
+            "Gas composition analysis reveals rare mineral deposits in the vent shaft. You extract a sample.",
+            "The vent cycles predictably. During a lull, you reach in and recover a slag-encrusted artifact."
+          ],
+          "intel": [
+            "The gas composition maps the volcanic system. You know where the magma is active — and where it isn't.",
+            "Temperature cycling tells you about chamber sizes nearby. Large rooms cool the output measurably.",
+            "You predict the vent's eruption cycle. Twelve seconds safe, three seconds deadly. Now you know."
+          ],
+          "flavor": [
+            "Detailed analysis of volcanic gases. Conclusion: the mountain is active. You needed a scientist for this.",
+            "You study the emissions thoroughly. The vent continues to vent, indifferent to your expertise."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "volcanic_cooled_flow",
+    "name": "Cooled lava flow",
+    "asciiChar": "~",
+    "biomes": ["volcanic"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 15, "intel": 10, "flavor": 50 } },
+        "narration": {
+          "loot": [
+            "The flow's surface is cracked. In a gap — something that was carried and then entombed.",
+            "The lava flowed over an old campsite. Some of the gear was sealed inside, protected by the rock."
+          ],
+          "hazard": [
+            "The crust is thin here. Your foot breaks through into still-warm rock.",
+            "You walk on the flow and it shifts. Not solid — just crusted over something molten."
+          ],
+          "intel": [
+            "The flow's direction tells you where the magma came from. The source chamber is close.",
+            "The lava followed existing passages. Its path maps routes you can't see."
+          ],
+          "flavor": [
+            "Frozen waves of stone, mid-flow. The moment the mountain's fury stopped.",
+            "The flow is beautiful in its violence. Destruction, preserved as art.",
+            "You walk on cooled lava. Beneath your feet, the record of something catastrophic."
+          ]
+        }
+      },
+      {
+        "id": "consecrate",
+        "label": "Consecrate",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 30, "hazard": 2, "intel": 25, "secret": 25, "flavor": 18 } },
+        "narration": {
+          "loot": [
+            "Your blessing cools the stone further. Cracks widen and release what was trapped inside.",
+            "The consecrated flow surrenders its contents. The mountain's anger gives way to generosity."
+          ],
+          "intel": [
+            "Through the consecration, you feel the mountain's pain. It shows you where it hurts — the active zones.",
+            "The flow carries memory. Your blessing unlocks it — a vision of the volcanic system."
+          ],
+          "secret": [
+            "The flow covered a passage. Your consecration reveals the seam — it can be cleared.",
+            "Beneath the cooled lava, something the mountain tried to hide. A passage, sealed by eruption."
+          ],
+          "flavor": [
+            "You bless the stone. The heat fades slightly. A small mercy in a merciless place.",
+            "The consecration holds. The flow is peaceful now, whatever violence created it."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "volcanic_ember_cluster",
+    "name": "Ember cluster",
+    "asciiChar": "♦",
+    "biomes": ["volcanic"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 30, "hazard": 30, "intel": 5, "flavor": 35 } },
+        "narration": {
+          "loot": [
+            "The embers glow around a dark object. Not coal — something manufactured, heat-treated.",
+            "Among the embers, a crystal that thrives in fire. It's warm but intact."
+          ],
+          "hazard": [
+            "You reach for an ember and it flares. Not dying — dormant. The burst of heat is vicious.",
+            "The cluster looks dead. It isn't. Your hand disagrees with your assessment.",
+            "Embers scatter when disturbed. One lands on your shoulder and burns through cloth."
+          ],
+          "flavor": [
+            "Glowing coals that never cool. The mountain's pilot light, always ready.",
+            "The embers pulse like a heartbeat. The mountain is alive, and you're inside it.",
+            "You warm your hands over the embers. The first comfortable moment since you descended. Brief."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "volcanic_forge_remains",
+    "name": "Ruined forge",
+    "asciiChar": "╬",
+    "biomes": ["volcanic"],
+    "slotSize": "large",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 45, "hazard": 15, "intel": 15, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "The forge's quenching trough still holds tools. One is salvageable.",
+            "Half-finished work sits on the anvil. Abandoned mid-strike. Still useful.",
+            "The forge's fuel bin contains more than coal. Someone stored valuables among the cinders."
+          ],
+          "hazard": [
+            "The forge still has live coals. You discover this by reaching in.",
+            "You bump the anvil and the half-finished work rolls off. It's hot. Onto your foot."
+          ],
+          "intel": [
+            "The forge was producing weapons. The designs are unfamiliar — whoever built here wasn't human.",
+            "Work orders scratched into the anvil's base. Lists of chambers, quantities, deadlines."
+          ],
+          "flavor": [
+            "A forge built into the living rock, powered by the mountain itself. Abandoned but not broken.",
+            "Someone worked metal here, using the volcano as their furnace. The ambition is staggering.",
+            "The anvil rings when you touch it. A clear, deep note. The forge remembers its purpose."
+          ]
+        }
+      },
+      {
+        "id": "analyze",
+        "label": "Analyze the craft",
+        "requiresClass": "artificer",
+        "outcomes": { "weights": { "loot": 50, "hazard": 5, "intel": 30, "flavor": 15 } },
+        "narration": {
+          "loot": [
+            "You understand the forge's design. The waste bin contains failed castings — one is almost perfect.",
+            "The quenching technique is unique. You replicate it and recover a tempered piece from the trough."
+          ],
+          "intel": [
+            "The forge's design reveals the builder's sophistication. You can predict what else they built — and where.",
+            "Material analysis of the forge slag tells you what was produced here. Weapons, locks, mechanisms.",
+            "The forge's ventilation system connects to the broader cave network. You map the airflow."
+          ],
+          "flavor": [
+            "You appreciate the engineering enormously. The forge doesn't reciprocate.",
+            "A masterwork of volcanic forge design. You understand every component. None of them help you."
+          ]
+        }
+      }
+    ]
+  }
+]

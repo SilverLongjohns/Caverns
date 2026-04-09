@@ -1,4 +1,4 @@
-import type { DungeonContent } from './types.js';
+import type { DungeonContent, Item } from './types.js';
 
 export const STARTER_WEAPON = {
   id: 'starter_sword',
@@ -16,6 +16,57 @@ export const STARTER_POTION = {
   rarity: 'common' as const,
   slot: 'consumable' as const,
   stats: { healAmount: 15 },
+};
+
+export const CLASS_STARTER_ITEMS: Record<string, { weapon: Item; offhand: Item }> = {
+  vanguard: {
+    weapon: {
+      id: 'vanguard_iron_mace', name: 'Iron Mace',
+      description: 'A heavy flanged mace. Reliable and brutal.',
+      rarity: 'common', slot: 'weapon', stats: { damage: 2 },
+    },
+    offhand: {
+      id: 'vanguard_tower_shield', name: 'Tower Shield',
+      description: 'A tall shield of banded oak and iron.',
+      rarity: 'common', slot: 'offhand', stats: { defense: 3 },
+    },
+  },
+  shadowblade: {
+    weapon: {
+      id: 'shadowblade_twin_daggers', name: 'Twin Daggers',
+      description: 'A matched pair of razor-sharp blades.',
+      rarity: 'common', slot: 'weapon', stats: { damage: 3, initiative: 2 },
+    },
+    offhand: {
+      id: 'shadowblade_smoke_cloak', name: 'Smoke Cloak',
+      description: 'A dark cloak woven with alchemical fibers.',
+      rarity: 'common', slot: 'offhand', stats: { defense: 1 },
+    },
+  },
+  cleric: {
+    weapon: {
+      id: 'cleric_blessed_staff', name: 'Blessed Staff',
+      description: 'A staff inscribed with protective glyphs.',
+      rarity: 'common', slot: 'weapon', stats: { damage: 2, initiative: 1 },
+    },
+    offhand: {
+      id: 'cleric_holy_symbol', name: 'Holy Symbol',
+      description: 'A silver pendant radiating faint warmth.',
+      rarity: 'common', slot: 'offhand', stats: { defense: 2 },
+    },
+  },
+  artificer: {
+    weapon: {
+      id: 'artificer_repeating_crossbow', name: 'Repeating Crossbow',
+      description: 'A compact crossbow with a mechanical reload mechanism.',
+      rarity: 'common', slot: 'weapon', stats: { damage: 3 },
+    },
+    offhand: {
+      id: 'artificer_toolkit', name: 'Toolkit',
+      description: 'A leather case of springs, gears, and small explosives.',
+      rarity: 'common', slot: 'offhand', stats: { defense: 1, initiative: 2 },
+    },
+  },
 };
 
 export const DRIPPING_HALLS: DungeonContent = {

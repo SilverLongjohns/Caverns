@@ -7,6 +7,8 @@ import type { ClientMessage, ServerMessage } from '@caverns/shared';
 import { Lobby } from './Lobby.js';
 import { GameSession } from './GameSession.js';
 import { generateDungeon } from './DungeonGenerator.js';
+import { generateProceduralDungeon } from './ProceduralGenerator.js';
+import { generateRoomCode } from './roomCode.js';
 
 const PORT = Number(process.env.PORT) || 3001;
 
@@ -31,13 +33,28 @@ const server = createServer((req, res) => {
 
   if (existsSync(filePath) && statSync(filePath).isFile()) {
     const ext = extname(filePath);
-    res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+    const isHtml = ext === '.html';
+    const headers: Record<string, string> = {
+      'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
+      'Cache-Control': isHtml
+        ? 'no-cache, no-store, must-revalidate'
+        : 'public, max-age=31536000, immutable',
+    };
+    if (isHtml) {
+      headers['CDN-Cache-Control'] = 'no-store';
+      headers['Surrogate-Control'] = 'no-store';
+    }
+    res.writeHead(200, headers);
     res.end(readFileSync(filePath));
   } else {
-    // SPA fallback — serve index.html for any unknown route
     const indexPath = join(CLIENT_DIR, 'index.html');
     if (existsSync(indexPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.writeHead(200, {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'CDN-Cache-Control': 'no-store',
+        'Surrogate-Control': 'no-store',
+      });
       res.end(readFileSync(indexPath));
     } else {
       res.writeHead(404);
@@ -50,13 +67,33 @@ const wss = new WebSocketServer({ server });
 const clients = new Map<string, WebSocket>();
 let nextId = 1;
 
-function broadcast(msg: ServerMessage): void {
-  const data = JSON.stringify(msg);
-  for (const ws of clients.values()) {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(data);
+interface LobbyRoom {
+  code: string;
+  lobby: Lobby;
+  gameSession: GameSession | null;
+  playerIds: Set<string>;
+}
+
+const rooms = new Map<string, LobbyRoom>();
+const playerRoom = new Map<string, string>();
+
+function getRoom(playerId: string): LobbyRoom | undefined {
+  const code = playerRoom.get(playerId);
+  return code ? rooms.get(code) : undefined;
+}
+
+function roomBroadcast(roomCode: string): (msg: ServerMessage) => void {
+  return (msg: ServerMessage) => {
+    const room = rooms.get(roomCode);
+    if (!room) return;
+    const data = JSON.stringify(msg);
+    for (const pid of room.playerIds) {
+      const ws = clients.get(pid);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(data);
+      }
     }
-  }
+  };
 }
 
 function sendTo(playerId: string, msg: ServerMessage): void {
@@ -66,8 +103,10 @@ function sendTo(playerId: string, msg: ServerMessage): void {
   }
 }
 
-const lobby = new Lobby(broadcast, sendTo);
-let gameSession: GameSession | null = null;
+function destroyRoom(code: string): void {
+  rooms.delete(code);
+  console.log(`Room ${code} destroyed — all players left.`);
+}
 
 wss.on('connection', (ws) => {
   const playerId = `player_${nextId++}`;
@@ -83,33 +122,72 @@ wss.on('connection', (ws) => {
 
     switch (msg.type) {
       case 'join_lobby': {
-        lobby.addPlayer(playerId, msg.playerName);
+        if (playerRoom.has(playerId)) break;
+
+        if (msg.roomCode) {
+          const code = msg.roomCode.toUpperCase();
+          const room = rooms.get(code);
+          if (!room) {
+            sendTo(playerId, { type: 'error', message: 'Room not found.' });
+            break;
+          }
+          if (room.gameSession) {
+            sendTo(playerId, { type: 'error', message: 'Game already in progress.' });
+            break;
+          }
+          if (room.playerIds.size >= 4) {
+            sendTo(playerId, { type: 'error', message: 'Room is full.' });
+            break;
+          }
+          room.playerIds.add(playerId);
+          playerRoom.set(playerId, code);
+          room.lobby.addPlayer(playerId, msg.playerName, msg.className ?? 'vanguard');
+        } else {
+          const code = generateRoomCode(new Set(rooms.keys()));
+          const broadcast = roomBroadcast(code);
+          const lobby = new Lobby(code, broadcast, sendTo);
+          const room: LobbyRoom = { code, lobby, gameSession: null, playerIds: new Set([playerId]) };
+          rooms.set(code, room);
+          playerRoom.set(playerId, code);
+          lobby.addPlayer(playerId, msg.playerName, msg.className ?? 'vanguard');
+          console.log(`Room ${code} created by ${msg.playerName}.`);
+        }
         break;
       }
+
       case 'set_difficulty': {
-        lobby.setDifficulty(playerId, msg.difficulty);
+        const room = getRoom(playerId);
+        if (room) room.lobby.setDifficulty(playerId, msg.difficulty);
         break;
       }
+
       case 'start_game': {
-        if (!lobby.isHost(playerId)) {
+        const room = getRoom(playerId);
+        if (!room) break;
+        if (!room.lobby.isHost(playerId)) {
           sendTo(playerId, { type: 'error', message: 'Only the host can start the game.' });
           break;
         }
 
-        const difficulty = msg.difficulty ?? lobby.getDifficulty();
+        const difficulty = msg.difficulty ?? room.lobby.getDifficulty();
         const apiKey = msg.apiKey;
+        const broadcast = roomBroadcast(room.code);
+
+        const onGameOver = () => {
+          room.gameSession = null;
+          room.lobby.broadcastState();
+        };
 
         if (!apiKey) {
-          // No API key — use static dungeon immediately
-          gameSession = new GameSession(broadcast, sendTo);
-          for (const p of lobby.getPlayers()) {
-            gameSession.addPlayer(p.id, p.name);
+          const dungeon = generateProceduralDungeon(3);
+          room.gameSession = new GameSession(broadcast, sendTo, dungeon, onGameOver);
+          for (const p of room.lobby.getPlayers()) {
+            room.gameSession.addPlayer(p.id, p.name, p.className);
           }
-          gameSession.startGame();
+          room.gameSession.startGame();
           break;
         }
 
-        // Start generation
         broadcast({ type: 'generation_status', status: 'generating' });
 
         generateDungeon(apiKey, difficulty).then((result) => {
@@ -121,11 +199,11 @@ wss.on('connection', (ws) => {
             });
           }
 
-          gameSession = new GameSession(broadcast, sendTo, result.dungeon);
-          for (const p of lobby.getPlayers()) {
-            gameSession.addPlayer(p.id, p.name);
+          room.gameSession = new GameSession(broadcast, sendTo, result.dungeon, onGameOver);
+          for (const p of room.lobby.getPlayers()) {
+            room.gameSession.addPlayer(p.id, p.name, p.className);
           }
-          gameSession.startGame();
+          room.gameSession.startGame();
 
           if (!result.generated) {
             broadcast({
@@ -138,36 +216,64 @@ wss.on('connection', (ws) => {
 
         break;
       }
+
       case 'move': {
-        gameSession?.handleMove(playerId, msg.direction);
+        getRoom(playerId)?.gameSession?.handleMove(playerId, msg.direction);
         break;
       }
       case 'combat_action': {
-        gameSession?.handleCombatAction(playerId, msg.action, msg.targetId, msg.itemIndex, msg.fleeDirection, msg.critMultiplier);
+        if (msg.action === 'use_ability' && msg.abilityId) {
+          getRoom(playerId)?.gameSession?.handleUseAbility(playerId, msg.abilityId, msg.targetId);
+        } else if (msg.action === 'use_item_effect' && msg.effectId) {
+          getRoom(playerId)?.gameSession?.handleItemEffectAction(playerId, msg.effectId, msg.targetId);
+        } else {
+          getRoom(playerId)?.gameSession?.handleCombatAction(playerId, msg.action as 'attack' | 'defend' | 'use_item' | 'flee', msg.targetId, msg.itemIndex, msg.fleeDirection, msg.critMultiplier);
+        }
         break;
       }
       case 'defend_result': {
-        gameSession?.handleDefendResult(playerId, msg.damageReduction);
+        getRoom(playerId)?.gameSession?.handleDefendResult(playerId, msg.damageReduction);
         break;
       }
       case 'loot_choice': {
-        gameSession?.handleLootChoice(playerId, msg.itemId, msg.choice);
+        getRoom(playerId)?.gameSession?.handleLootChoice(playerId, msg.itemId, msg.choice);
         break;
       }
       case 'revive': {
-        gameSession?.handleRevive(playerId, msg.targetPlayerId);
+        getRoom(playerId)?.gameSession?.handleRevive(playerId, msg.targetPlayerId);
         break;
       }
       case 'equip_item': {
-        gameSession?.handleEquipItem(playerId, msg.inventoryIndex);
+        getRoom(playerId)?.gameSession?.handleEquipItem(playerId, msg.inventoryIndex);
         break;
       }
       case 'drop_item': {
-        gameSession?.handleDropItem(playerId, msg.inventoryIndex);
+        getRoom(playerId)?.gameSession?.handleDropItem(playerId, msg.inventoryIndex);
         break;
       }
       case 'use_consumable': {
-        gameSession?.handleUseConsumable(playerId, msg.consumableIndex);
+        getRoom(playerId)?.gameSession?.handleUseConsumable(playerId, msg.consumableIndex);
+        break;
+      }
+      case 'puzzle_answer': {
+        getRoom(playerId)?.gameSession?.handlePuzzleAnswer(playerId, msg.roomId, msg.answerIndex);
+        break;
+      }
+      case 'interact': {
+        getRoom(playerId)?.gameSession?.handleInteract(playerId, msg.interactableId);
+        break;
+      }
+      case 'interact_action': {
+        getRoom(playerId)?.gameSession?.handleInteractAction(playerId, msg.interactableId, msg.actionId);
+        break;
+      }
+      case 'chat': {
+        const room = getRoom(playerId);
+        if (!room) break;
+        const text = msg.text.trim().slice(0, 200);
+        if (!text) break;
+        const name = room.lobby.getPlayerName(playerId) ?? 'Unknown';
+        roomBroadcast(room.code)({ type: 'text_log', message: `${name}: ${text}`, logType: 'chat' });
         break;
       }
     }
@@ -175,10 +281,14 @@ wss.on('connection', (ws) => {
 
   ws.on('close', () => {
     clients.delete(playerId);
-    lobby.removePlayer(playerId);
-    if (gameSession && clients.size === 0) {
-      gameSession = null;
-      console.log('All clients disconnected — game session ended.');
+    const room = getRoom(playerId);
+    if (room) {
+      room.playerIds.delete(playerId);
+      room.lobby.removePlayer(playerId);
+      playerRoom.delete(playerId);
+      if (room.playerIds.size === 0) {
+        destroyRoom(room.code);
+      }
     }
   });
 });
