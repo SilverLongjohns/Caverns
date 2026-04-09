@@ -1,13 +1,15 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import { useGameStore } from '../store/gameStore.js';
-import type { Direction, ItemStats, CritMultiplier, DamageReduction } from '@caverns/shared';
+import type { Direction, Item, ItemStats, CritMultiplier, DamageReduction } from '@caverns/shared';
+import { CLASS_DEFINITIONS } from '@caverns/shared';
 import { AttackQTE } from './AttackQTE.js';
 import { DefenseQTE } from './DefenseQTE.js';
+import { Disintegrate } from './Disintegrate.js';
 
 type ActionState =
   | { mode: 'idle' }
   | { mode: 'main' }
-  | { mode: 'target'; afterSelect: 'attack' | 'use_item'; itemIndex?: number }
+  | { mode: 'target'; afterSelect: 'attack' | 'use_item' | 'ability' | 'item_effect'; itemIndex?: number; abilityId?: string; effectId?: string }
   | { mode: 'items' }
   | { mode: 'flee' };
 
@@ -21,6 +23,8 @@ interface CombatViewProps {
   ) => void;
   onRevive: (targetPlayerId: string) => void;
   onDefendResult: (damageReduction: number) => void;
+  onUseAbility: (abilityId: string, targetId?: string) => void;
+  onUseItemEffect: (effectId: string, targetId?: string) => void;
 }
 
 function formatItemStat(stats: ItemStats): string {
@@ -44,7 +48,7 @@ function CharHpBar({ hp, maxHp }: { hp: number; maxHp: number }) {
   );
 }
 
-export function CombatView({ onCombatAction, onRevive, onDefendResult }: CombatViewProps) {
+export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbility, onUseItemEffect }: CombatViewProps) {
   const playerId = useGameStore((s) => s.playerId);
   const players = useGameStore((s) => s.players);
   const activeCombat = useGameStore((s) => s.activeCombat);
@@ -109,6 +113,28 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult }: CombatV
     return participant?.initiative ?? 5;
   }, [activeCombat, playerId]);
 
+  const playerAbilities = useMemo(() => {
+    const classDef = CLASS_DEFINITIONS.find(c => c.id === player?.className);
+    if (!classDef) return [];
+    return classDef.abilities.filter(a => !a.passive);
+  }, [player?.className]);
+
+  const activatedItemEffects = useMemo(() => {
+    if (!player) return [];
+    const activatedEffectIds = ['overcharge', 'revive_once', 'rally'];
+    const equipment = [
+      player.equipment.weapon,
+      player.equipment.offhand,
+      player.equipment.armor,
+      player.equipment.accessory,
+    ].filter(Boolean) as Item[];
+
+    return equipment
+      .filter(item => item.effect && activatedEffectIds.includes(item.effect))
+      .filter(item => !player.usedEffects?.includes(item.effect!))
+      .map(item => ({ effectId: item.effect!, itemName: item.name }));
+  }, [player]);
+
   const prevDefendQte = useRef(pendingDefendQte);
   if (pendingDefendQte && pendingDefendQte !== prevDefendQte.current) {
     if (!activeQte) {
@@ -123,6 +149,12 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult }: CombatV
     if (effectiveState.mode !== 'target') return;
     if (effectiveState.afterSelect === 'attack') {
       setActiveQte({ type: 'attack', targetId });
+      setActionState({ mode: 'idle' });
+    } else if (effectiveState.afterSelect === 'ability') {
+      onUseAbility(effectiveState.abilityId!, targetId);
+      setActionState({ mode: 'idle' });
+    } else if (effectiveState.afterSelect === 'item_effect') {
+      onUseItemEffect(effectiveState.effectId!, targetId);
       setActionState({ mode: 'idle' });
     } else {
       onCombatAction('use_item', targetId, effectiveState.itemIndex);
@@ -167,6 +199,8 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult }: CombatV
   }, [onDefendResult]);
 
   const isTargeting = effectiveState.mode === 'target';
+  const isReviveTargeting = isTargeting && effectiveState.afterSelect === 'item_effect';
+  const isEnemyTargeting = isTargeting && !isReviveTargeting;
 
   return (
     <div className="combat-view">
@@ -179,8 +213,13 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult }: CombatV
             const isActive = currentTurnId === member.id;
             const isAttacking = combatAnim?.attackerId === member.id;
             const isHit = combatAnim?.targetId === member.id;
+            const canTarget = isReviveTargeting && isDowned && member.id !== playerId;
             return (
-              <div key={member.id} className={`combat-member${isAttacking ? ' anim-lunge' : ''}${isHit ? ' anim-shake' : ''}`}>
+              <div
+                key={member.id}
+                className={`combat-member${isAttacking ? ' anim-lunge' : ''}${isHit ? ' anim-shake' : ''}${canTarget ? ' targetable' : ''}`}
+                onClick={() => canTarget && handleTargetClick(member.id)}
+              >
                 <div className={`combat-member-name${isDowned ? ' downed' : ''}`}>
                   {isActive && <span className="turn-indicator">►</span>}
                   {member.name}
@@ -198,19 +237,20 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult }: CombatV
             const isHit = combatAnim?.targetId === enemy.id;
             const isDying = dyingMobIds.has(enemy.id);
             return (
-            <div
-              key={enemy.id}
-              className={`enemy-plate${isTargeting ? ' targetable' : ''}${isAttacking ? ' anim-lunge' : ''}${isHit && !isDying ? ' anim-shake' : ''}${isDying ? ' anim-disintegrate' : ''}`}
-              onClick={() => isTargeting && !isDying && handleTargetClick(enemy.id)}
-            >
-              <div className="enemy-name">
-                {enemy.name}
-                <span className="skull-rating">
-                  {'☠'.repeat(Math.ceil(enemy.maxHp / 30))}
-                </span>
+            <Disintegrate key={enemy.id} active={isDying}>
+              <div
+                className={`enemy-plate${isEnemyTargeting ? ' targetable' : ''}${isAttacking ? ' anim-lunge' : ''}${isHit && !isDying ? ' anim-shake' : ''}`}
+                onClick={() => isEnemyTargeting && !isDying && handleTargetClick(enemy.id)}
+              >
+                <div className="enemy-name">
+                  {enemy.name}
+                  <span className="skull-rating">
+                    {'☠'.repeat(Math.ceil(enemy.maxHp / 30))}
+                  </span>
+                </div>
+                <CharHpBar hp={enemy.hp} maxHp={enemy.maxHp} />
               </div>
-              <CharHpBar hp={enemy.hp} maxHp={enemy.maxHp} />
-            </div>
+            </Disintegrate>
             );
           })}
         </div>
@@ -248,6 +288,47 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult }: CombatV
             {downedAllies.map((ally) => (
               <button key={ally.id} className="revive-btn" onClick={() => onRevive(ally.id)}>
                 Revive {ally.name}
+              </button>
+            ))}
+            {playerAbilities.map((ability) => {
+              const cd = player.cooldowns?.find(c => c.abilityId === ability.id);
+              const onCooldown = cd && cd.turnsRemaining > 0;
+              return (
+                <button
+                  key={ability.id}
+                  className={`ability-btn ${onCooldown ? 'on-cooldown' : ''}`}
+                  disabled={!!onCooldown}
+                  onClick={() => {
+                    if (ability.targetType === 'none') {
+                      onUseAbility(ability.id);
+                      setActionState({ mode: 'idle' });
+                    } else if (ability.targetType === 'enemy') {
+                      setActionState({ mode: 'target', afterSelect: 'ability', abilityId: ability.id });
+                    } else if (ability.targetType === 'ally') {
+                      setActionState({ mode: 'target', afterSelect: 'ability', abilityId: ability.id });
+                    }
+                  }}
+                >
+                  {ability.name}
+                  {onCooldown && <span className="cooldown-badge">{cd!.turnsRemaining}</span>}
+                </button>
+              );
+            })}
+            {activatedItemEffects.map(({ effectId, itemName }) => (
+              <button
+                key={effectId}
+                className="effect-btn"
+                title={effectId.replace(/_/g, ' ')}
+                onClick={() => {
+                  if (effectId === 'revive_once') {
+                    setActionState({ mode: 'target', afterSelect: 'item_effect', effectId });
+                  } else {
+                    onUseItemEffect(effectId);
+                    setActionState({ mode: 'idle' });
+                  }
+                }}
+              >
+                {itemName}
               </button>
             ))}
           </>

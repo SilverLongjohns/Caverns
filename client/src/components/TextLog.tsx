@@ -6,7 +6,31 @@ const LOG_COLORS: Record<string, string> = {
   combat: '#cc4444',
   loot: '#d4a857',
   system: '#7a6e5a',
+  chat: '#88bbdd',
 };
+
+const RARITY_PATTERN = /\{(common|uncommon|rare|legendary|unique):([^}]+)\}/g;
+
+function renderLine(text: string): (string | JSX.Element)[] {
+  const parts: (string | JSX.Element)[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  RARITY_PATTERN.lastIndex = 0;
+  while ((match = RARITY_PATTERN.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push(
+      <span key={match.index} className={`rarity-${match[1]}`}>{match[2]}</span>
+    );
+    lastIndex = RARITY_PATTERN.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
+}
 
 export function TextLog() {
   const textLog = useGameStore((s) => s.textLog);
@@ -25,7 +49,7 @@ export function TextLog() {
           style={{ color: LOG_COLORS[entry.logType] ?? '#e0e0e0' }}
         >
           {entry.message.split('\n').map((line, i) => (
-            <div key={i}>{line || '\u00A0'}</div>
+            <div key={i}>{line ? renderLine(line) : '\u00A0'}</div>
           ))}
         </div>
       ))}

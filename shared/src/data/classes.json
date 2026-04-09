@@ -1,0 +1,133 @@
+[
+  {
+    "id": "vanguard",
+    "displayName": "Vanguard",
+    "description": "A stalwart defender who draws enemy attention and shields allies.",
+    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
+    "starterWeaponId": "vanguard_iron_mace",
+    "starterOffhandId": "vanguard_tower_shield",
+    "abilities": [
+      {
+        "id": "shield_wall",
+        "name": "Shield Wall",
+        "description": "Taunt all enemies for 2 turns. Gain +50% defense.",
+        "cooldown": 3,
+        "targetType": "none",
+        "passive": false,
+        "effects": [
+          { "type": "taunt", "duration": 2 },
+          { "type": "apply_buff", "buffType": "defense_multiply", "duration": 2, "value": 1.5, "target": "self" }
+        ]
+      },
+      {
+        "id": "rally",
+        "name": "Rally",
+        "description": "All allies gain +3 defense for 2 turns.",
+        "cooldown": 4,
+        "targetType": "none",
+        "passive": false,
+        "effects": [
+          { "type": "apply_buff", "buffType": "defense_flat", "duration": 2, "value": 3, "target": "all_allies" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shadowblade",
+    "displayName": "Shadowblade",
+    "description": "A lethal striker who hits fast and picks pockets.",
+    "baseStats": { "maxHp": 35, "damage": 7, "defense": 1, "initiative": 9 },
+    "starterWeaponId": "shadowblade_twin_daggers",
+    "starterOffhandId": "shadowblade_smoke_cloak",
+    "abilities": [
+      {
+        "id": "backstab",
+        "name": "Backstab",
+        "description": "Deal 2.5x damage, bypass target defense.",
+        "cooldown": 2,
+        "targetType": "enemy",
+        "passive": false,
+        "effects": [
+          { "type": "deal_damage", "multiplier": 2.5, "ignoreDefense": true }
+        ]
+      },
+      {
+        "id": "pickpocket",
+        "name": "Pickpocket",
+        "description": "30% chance for extra loot after combat.",
+        "cooldown": 0,
+        "targetType": "none",
+        "passive": true,
+        "trigger": "on_combat_victory",
+        "effects": [
+          { "type": "extra_loot_roll", "chance": 0.3 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cleric",
+    "displayName": "Cleric",
+    "description": "A holy healer who mends wounds and wards against death.",
+    "baseStats": { "maxHp": 40, "damage": 4, "defense": 2, "initiative": 5 },
+    "starterWeaponId": "cleric_blessed_staff",
+    "starterOffhandId": "cleric_holy_symbol",
+    "abilities": [
+      {
+        "id": "heal",
+        "name": "Heal",
+        "description": "Restore 30% of target ally's max HP.",
+        "cooldown": 2,
+        "targetType": "ally",
+        "passive": false,
+        "effects": [
+          { "type": "heal", "percentMaxHp": 0.3 }
+        ]
+      },
+      {
+        "id": "blessed_ward",
+        "name": "Blessed Ward",
+        "description": "Target ally cannot be downed for 1 turn.",
+        "cooldown": 4,
+        "targetType": "ally",
+        "passive": false,
+        "effects": [
+          { "type": "prevent_down", "duration": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "artificer",
+    "displayName": "Artificer",
+    "description": "A cunning inventor who disrupts enemies and scouts ahead.",
+    "baseStats": { "maxHp": 35, "damage": 5, "defense": 1, "initiative": 7 },
+    "starterWeaponId": "artificer_repeating_crossbow",
+    "starterOffhandId": "artificer_toolkit",
+    "abilities": [
+      {
+        "id": "smoke_bomb",
+        "name": "Smoke Bomb",
+        "description": "All enemies skip their next turn.",
+        "cooldown": 3,
+        "targetType": "none",
+        "passive": false,
+        "effects": [
+          { "type": "skip_turn", "duration": 1, "targets": "all_enemies" }
+        ]
+      },
+      {
+        "id": "scout_drone",
+        "name": "Scout Drone",
+        "description": "Detect enemies in adjacent rooms.",
+        "cooldown": 0,
+        "targetType": "none",
+        "passive": true,
+        "trigger": "on_room_enter",
+        "effects": [
+          { "type": "scout_adjacent" }
+        ]
+      }
+    ]
+  }
+]
