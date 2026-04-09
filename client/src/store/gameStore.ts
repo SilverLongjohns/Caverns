@@ -296,6 +296,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case 'interact_actions':
         set({
+          selectedInteractableId: msg.interactableId,
           pendingInteractActions: {
             interactableId: msg.interactableId,
             interactableName: msg.interactableName,

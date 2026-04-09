@@ -1035,13 +1035,26 @@ export class GameSession {
       }
     }
 
-    // Create secret room on reveal_room outcome
+    // Create secret room on reveal_room / secret outcome
     if ((result.outcomeType === 'reveal_room' || result.outcomeType === 'secret') && !this.secretRoomLinks.has(interactableId)) {
       this.createSecretRoom(interactableId, player.roomId);
       this.broadcastToRoom(player.roomId, {
         type: 'text_log',
         message: 'A hidden passage has opened nearby...',
         logType: 'narration',
+      });
+      // Immediately show the "Enter passage" action so the player doesn't have to re-click
+      const def = allInteractableDefs.find(d => d.id === room.interactables?.find(i => i.instanceId === interactableId)?.definitionId);
+      this.sendTo(playerId, {
+        type: 'interact_actions',
+        interactableId,
+        interactableName: def?.name ?? 'Passage',
+        actions: [{
+          id: '_enter_passage',
+          label: 'Enter passage',
+          locked: false,
+          used: false,
+        }],
       });
     }
   }
