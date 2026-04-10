@@ -70,8 +70,8 @@ export function buildTileGrid(room: Room, biomeId: string): TileGrid {
   let themes: (string | null)[][] | undefined;
 
   if (hasThemes) {
-    themes = config.tiles.map(row =>
-      row.map(tileType => (tileThemes as Record<string, string>)[tileType] ?? null)
+    themes = config.tiles.map((row: string[]) =>
+      row.map((tileType: string) => (tileThemes as Record<string, string>)[tileType] ?? null)
     );
   }
 

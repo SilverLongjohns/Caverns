@@ -304,7 +304,7 @@ export class GameSession {
     for (const event of moveResult.events) {
       switch (event.type) {
         case 'exit': {
-          const exitDir = event.exit.direction;
+          const exitDir: Direction = event.exit.direction;
           const targetRoomId = event.exit.targetRoomId;
           const currentRoom = this.rooms.get(player.roomId)!;
           const targetRoom = this.rooms.get(targetRoomId);

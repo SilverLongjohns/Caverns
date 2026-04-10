@@ -30,21 +30,22 @@ describe('GameSession', () => {
     const mobPos = s.mobAIManager.getMobPosition(roomId);
     if (!mobPos) return false;
 
-    for (let i = 0; i < 50; i++) {
-      const playerPos = s.playerGridPositions.get(playerId);
-      if (!playerPos) break;
-      const dx = Math.sign(mobPos.x - playerPos.x);
-      const dy = Math.sign(mobPos.y - playerPos.y);
-      let dir = '';
-      if (dy < 0) dir += 'n';
-      if (dy > 0) dir += 's';
-      if (dx > 0) dir += 'e';
-      if (dx < 0) dir += 'w';
-      if (!dir) dir = 'n';
-      s.lastGridMove.delete(playerId);
-      session.handleGridMove(playerId, dir);
-      if (messages.some((m) => m.msg.type === 'combat_start')) return true;
-    }
+    // Teleport player next to the mob instead of pathing through random terrain
+    const grid = s.roomGrids.get(roomId);
+    if (!grid) return false;
+    grid.removeEntity(playerId);
+    const adjacentPos = { x: mobPos.x, y: mobPos.y + 1 };
+    grid.addEntity({ id: playerId, type: 'player', position: { ...adjacentPos } });
+    s.playerGridPositions.set(playerId, { ...adjacentPos });
+    s.mobAIManager.updatePlayerPosition(roomId, playerId, adjacentPos);
+
+    // Walk into detection range
+    s.lastGridMove.delete(playerId);
+    session.handleGridMove(playerId, 'n');
+    if (messages.some((m) => m.msg.type === 'combat_start')) return true;
+
+    // Already adjacent — trigger detection manually
+    s.mobAIManager.checkDetection(roomId);
     return messages.some((m) => m.msg.type === 'combat_start');
   }
 

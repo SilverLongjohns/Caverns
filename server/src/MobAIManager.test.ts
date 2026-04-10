@@ -47,12 +47,12 @@ function makeMob(instanceId = 'mob-1'): MobInstance {
 }
 
 describe('MobAIManager', () => {
-  let broadcast: ReturnType<typeof vi.fn>;
+  let broadcast: ReturnType<typeof vi.fn<(roomId: string, msg: ServerMessage) => void>>;
   let manager: MobAIManager;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    broadcast = vi.fn();
+    broadcast = vi.fn<(roomId: string, msg: ServerMessage) => void>();
     manager = new MobAIManager(broadcast);
   });
 
