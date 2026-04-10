@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GameSession } from './GameSession.js';
 import type { DungeonContent } from '@caverns/shared';
+import { exitPosition } from './tileGridBuilder.js';
 
 describe('GameSession', () => {
   function createSession() {
@@ -18,6 +19,77 @@ describe('GameSession', () => {
     return { session, messages };
   }
 
+  /**
+   * Helper: walk a player toward the mob in their current room until combat triggers.
+   * Returns true if combat was triggered.
+   */
+  function walkPlayerToMob(session: GameSession, playerId: string, messages: { playerId: string; msg: any }[]): boolean {
+    const s = session as any;
+    const roomId = s.playerManager.getPlayer(playerId)?.roomId;
+    if (!roomId) return false;
+    const mobPos = s.mobAIManager.getMobPosition(roomId);
+    if (!mobPos) return false;
+
+    for (let i = 0; i < 50; i++) {
+      const playerPos = s.playerGridPositions.get(playerId);
+      if (!playerPos) break;
+      const dx = Math.sign(mobPos.x - playerPos.x);
+      const dy = Math.sign(mobPos.y - playerPos.y);
+      let dir = '';
+      if (dy < 0) dir += 'n';
+      if (dy > 0) dir += 's';
+      if (dx > 0) dir += 'e';
+      if (dx < 0) dir += 'w';
+      if (!dir) dir = 'n';
+      s.lastGridMove.delete(playerId);
+      session.handleGridMove(playerId, dir);
+      if (messages.some((m) => m.msg.type === 'combat_start')) return true;
+    }
+    return messages.some((m) => m.msg.type === 'combat_start');
+  }
+
+  /**
+   * Helper: position a player adjacent to a room's exit tile and then call handleGridMove
+   * to walk them through the exit, triggering a room transition.
+   * This replaces the old `handleMove(playerId, direction)` for tests.
+   */
+  function movePlayerThroughExit(session: GameSession, playerId: string, direction: 'north' | 'south' | 'east' | 'west') {
+    const s = session as any;
+    const roomId = s.playerManager.getPlayer(playerId)?.roomId;
+    if (!roomId) return;
+    const room = s.rooms.get(roomId);
+    if (!room?.tileGrid) return;
+    const grid = s.roomGrids.get(roomId);
+    if (!grid) return;
+
+    const exitPos = exitPosition(direction, room.tileGrid.width, room.tileGrid.height);
+    // Map direction to grid direction and pre-exit position
+    const dirMap: Record<string, { gridDir: string; dx: number; dy: number }> = {
+      north: { gridDir: 'n', dx: 0, dy: 1 },
+      south: { gridDir: 's', dx: 0, dy: -1 },
+      east:  { gridDir: 'e', dx: -1, dy: 0 },
+      west:  { gridDir: 'w', dx: 1, dy: 0 },
+    };
+    const { gridDir, dx, dy } = dirMap[direction];
+    const preExitPos = { x: exitPos.x + dx, y: exitPos.y + dy };
+
+    // Remove and re-add the player entity at the pre-exit position
+    grid.removeEntity(playerId);
+    // Ensure the tile is walkable; if not, try the exit position itself minus one more step
+    if (grid.isWalkable(preExitPos)) {
+      grid.addEntity({ id: playerId, type: 'player', position: { ...preExitPos } });
+    } else {
+      // fallback: place directly on the exit tile and move through
+      grid.addEntity({ id: playerId, type: 'player', position: { ...exitPos } });
+    }
+    s.playerGridPositions.set(playerId, grid.getEntity(playerId)?.position ?? preExitPos);
+
+    // Bypass rate limiting for tests
+    s.lastGridMove.delete(playerId);
+
+    session.handleGridMove(playerId, gridDir);
+  }
+
   it('starts game with players in entrance room', () => {
     const { session } = createSession();
     expect(session.getPlayerRoom('p1')).toBe('entrance');
@@ -32,50 +104,56 @@ describe('GameSession', () => {
   it('moves a player to an adjacent room', () => {
     const { session, messages } = createSession();
     messages.length = 0;
-    session.handleMove('p1', 'north');
+    movePlayerThroughExit(session, 'p1', 'north');
     expect(session.getPlayerRoom('p1')).toBe('fungal_grotto');
   });
 
   it('rejects move to invalid direction', () => {
     const { session, messages } = createSession();
     messages.length = 0;
-    session.handleMove('p1', 'west');
+    // 'west' has no exit from entrance — handleGridMove will just fail silently
+    // (no exit tile to walk onto). But we can test that the player stays put.
+    session.handleGridMove('p1', 'w');
     expect(session.getPlayerRoom('p1')).toBe('entrance');
-    const errorMsg = messages.find((m) => m.msg.type === 'error');
-    expect(errorMsg).toBeDefined();
   });
 
   it('reveals new room when a player enters it', () => {
     const { session } = createSession();
     expect(session.isRoomRevealed('fungal_grotto')).toBe(false);
-    session.handleMove('p1', 'north');
+    movePlayerThroughExit(session, 'p1', 'north');
     expect(session.isRoomRevealed('fungal_grotto')).toBe(true);
   });
 
-  it('triggers combat when entering a room with mobs', () => {
+  it('triggers combat when player walks near a mob', () => {
     const { session, messages } = createSession();
+    movePlayerThroughExit(session, 'p1', 'north');
     messages.length = 0;
-    session.handleMove('p1', 'north');
-    const combatStart = messages.find((m) => m.msg.type === 'combat_start');
-    expect(combatStart).toBeDefined();
+    const triggered = walkPlayerToMob(session, 'p1', messages);
+    expect(triggered).toBe(true);
   });
 
   it('does not trigger combat in a cleared room', () => {
     const { session, messages } = createSession();
-    session.handleMove('p1', 'north');
+    movePlayerThroughExit(session, 'p1', 'north');
     session.clearRoom('fungal_grotto');
-    session.handleMove('p1', 'south');
+    // Move back south, then north again
+    movePlayerThroughExit(session, 'p1', 'south');
     messages.length = 0;
-    session.handleMove('p1', 'north');
+    movePlayerThroughExit(session, 'p1', 'north');
     const combatStart = messages.find((m) => m.msg.type === 'combat_start');
     expect(combatStart).toBeUndefined();
   });
 
   it('prevents movement while in combat', () => {
     const { session, messages } = createSession();
-    session.handleMove('p1', 'north');
+    movePlayerThroughExit(session, 'p1', 'north');
+    walkPlayerToMob(session, 'p1', messages);
+
+    // Now in combat — trying to move should fail
     messages.length = 0;
-    session.handleMove('p1', 'south');
+    const s = session as any;
+    s.lastGridMove.delete('p1');
+    session.handleGridMove('p1', 's');
     expect(session.getPlayerRoom('p1')).toBe('fungal_grotto');
     const errorMsg = messages.find((m) => m.msg.type === 'error');
     expect(errorMsg).toBeDefined();
@@ -108,7 +186,8 @@ describe('GameSession', () => {
 
   it('passes critMultiplier through to combat action', () => {
     const { session, messages } = createSession();
-    session.handleMove('p1', 'north');
+    movePlayerThroughExit(session, 'p1', 'north');
+    walkPlayerToMob(session, 'p1', messages);
     messages.length = 0;
     session.handleCombatAction('p1', 'attack', undefined, undefined, undefined, 1.5);
     // May not be p1's turn, but should not crash
@@ -122,16 +201,17 @@ describe('GameSession', () => {
   });
 
   it('calls onGameOver callback when game ends in wipe', () => {
-    const messages: any[] = [];
+    const messages: { playerId: string; msg: any }[] = [];
     let gameOverCalled = false;
-    const broadcast = (msg: any) => messages.push(msg);
-    const sendTo = (_id: string, msg: any) => messages.push(msg);
+    const broadcast = (msg: any) => { messages.push({ playerId: '__broadcast__', msg }); };
+    const sendTo = (playerId: string, msg: any) => { messages.push({ playerId, msg }); };
     const session = new GameSession(broadcast, sendTo, undefined, () => { gameOverCalled = true; });
     session.addPlayer('p1', 'Alice');
     session.startGame();
 
-    // Move to a room with combat
-    session.handleMove('p1', 'north'); // fungal_grotto has encounter
+    // Move to a room with combat and walk to mob
+    movePlayerThroughExit(session, 'p1', 'north');
+    walkPlayerToMob(session, 'p1', messages);
 
     // Repeatedly attack until either player dies or mob dies
     for (let i = 0; i < 50; i++) {
@@ -171,7 +251,7 @@ describe('GameSession', () => {
     it('blocks movement through a locked exit when player has no key', () => {
       const { session, messages } = createLockedSession();
       messages.length = 0;
-      session.handleMove('p1', 'north');
+      movePlayerThroughExit(session, 'p1', 'north');
       expect(session.getPlayerRoom('p1')).toBe('room_a');
       const errorMsg = messages.find((m) => m.msg.type === 'error');
       expect(errorMsg).toBeDefined();
@@ -182,21 +262,21 @@ describe('GameSession', () => {
       const { session, messages } = createLockedSession();
       session.addKeyToParty('p1', 'test_key');
       messages.length = 0;
-      session.handleMove('p1', 'north');
+      movePlayerThroughExit(session, 'p1', 'north');
       expect(session.getPlayerRoom('p1')).toBe('room_b');
     });
 
     it('permanently unlocks the exit after passing through', () => {
       const { session, messages } = createLockedSession();
       session.addKeyToParty('p1', 'test_key');
-      session.handleMove('p1', 'north');
+      movePlayerThroughExit(session, 'p1', 'north');
       // Clear combat so player can move back
       session.clearRoom('room_b');
-      session.handleMove('p1', 'south');
+      movePlayerThroughExit(session, 'p1', 'south');
       expect(session.getPlayerRoom('p1')).toBe('room_a');
       messages.length = 0;
       // Move north again — should not require key check anymore
-      session.handleMove('p1', 'north');
+      movePlayerThroughExit(session, 'p1', 'north');
       expect(session.getPlayerRoom('p1')).toBe('room_b');
       const unlockMsg = messages.find((m) => m.msg.type === 'text_log' && m.msg.message.includes('lock clicks'));
       expect(unlockMsg).toBeUndefined();
@@ -263,7 +343,7 @@ describe('GameSession', () => {
     it.skip('sends puzzle_prompt when entering a puzzle room', () => {
       const { session, messages } = createPuzzleSession();
       messages.length = 0;
-      session.handleMove('p1', 'north');
+      movePlayerThroughExit(session, 'p1', 'north');
       expect(session.getPlayerRoom('p1')).toBe('room_b');
       const puzzleMsg = messages.find((m) => m.msg.type === 'puzzle_prompt');
       expect(puzzleMsg).toBeDefined();
@@ -273,7 +353,7 @@ describe('GameSession', () => {
 
     it.skip('sends puzzle_result correct on right answer', () => {
       const { session, messages } = createPuzzleSession();
-      session.handleMove('p1', 'north');
+      movePlayerThroughExit(session, 'p1', 'north');
       messages.length = 0;
       session.handlePuzzleAnswer('p1', 'room_b', 1);
       const resultMsg = messages.find((m) => m.msg.type === 'puzzle_result');
@@ -283,11 +363,11 @@ describe('GameSession', () => {
 
     it('does not re-prompt puzzle after solving', () => {
       const { session, messages } = createPuzzleSession();
-      session.handleMove('p1', 'north');
+      movePlayerThroughExit(session, 'p1', 'north');
       session.handlePuzzleAnswer('p1', 'room_b', 1);
-      session.handleMove('p1', 'south');
+      movePlayerThroughExit(session, 'p1', 'south');
       messages.length = 0;
-      session.handleMove('p1', 'north');
+      movePlayerThroughExit(session, 'p1', 'north');
       const puzzleMsg = messages.find((m) => m.msg.type === 'puzzle_prompt');
       expect(puzzleMsg).toBeUndefined();
     });

@@ -1,5 +1,5 @@
 import type { Tile, Entity, GridPosition, PathfindingOpts } from './types.js';
-import { chebyshevDistance, DIRECTION_OFFSETS } from './types.js';
+import { chebyshevDistance, DIRECTION_OFFSETS, TILE_PROPERTIES } from './types.js';
 
 function posKey(p: GridPosition): string {
   return `${p.x},${p.y}`;
@@ -26,7 +26,7 @@ export function findPath(
   function isWalkable(p: GridPosition): boolean {
     if (p.x < 0 || p.x >= width || p.y < 0 || p.y >= height) return false;
     const tile = tiles[p.y][p.x];
-    if (tile.type === 'wall') return false;
+    if (!TILE_PROPERTIES[tile.type].walkable) return false;
     if (blockedByEntities && entityPositions.has(posKey(p))) {
       if ((p.x === from.x && p.y === from.y) || (p.x === to.x && p.y === to.y)) return true;
       return false;

@@ -1023,36 +1023,56 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   white-space: pre;
 }
 
-.char-wall {
-  color: #336633;
+/* === Tile Type Colors === */
+.tile-floor    { color: #223322; }
+.tile-wall     { color: #336633; }
+.tile-exit     { color: #44ff44; }
+.tile-water    { color: #3355aa; }
+.tile-chasm    { color: #111111; }
+.tile-hazard   { color: #aa3333; }
+.tile-bridge   { color: #665533; }
+
+/* === Theme Color Overrides === */
+.tile-theme-moss_stone   { color: #2a5a2a; }
+.tile-theme-carved_stone { color: #556677; }
+.tile-theme-obsidian     { color: #332211; }
+.tile-theme-deep_water   { color: #2244aa; }
+
+.tile-theme-lava {
+  color: #ff4400;
+  text-shadow: 0 0 4px #ff2200, 0 0 8px #aa0000;
+  animation: lava-pulse 2s ease-in-out infinite;
 }
 
-.char-floor {
-  color: #223322;
+@keyframes lava-pulse {
+  0%, 100% { text-shadow: 0 0 4px #ff2200, 0 0 8px #aa0000; }
+  50% { text-shadow: 0 0 8px #ff4400, 0 0 16px #cc2200; }
 }
 
-.char-exit {
-  color: #44ff44;
+/* === Entity Overlay Classes === */
+.entity-mob {
+  color: #ff3333;
+  font-weight: 800;
 }
 
-.char-interactable {
+.entity-interactable {
   color: #ffaa33;
   cursor: pointer;
   transition: color 0.15s, text-shadow 0.15s;
 }
 
-.char-interactable:hover {
+.entity-interactable:hover {
   color: #ffcc55;
   text-shadow: 0 0 4px #ffaa33;
 }
 
-.char-interactable.char-selected {
+.entity-interactable.entity-selected {
   color: #ffcc55;
   text-shadow: 0 0 6px #ffaa33, 0 0 12px #ff8800;
   animation: interactable-pulse 1.5s ease-in-out infinite;
 }
 
-.char-interactable-used {
+.entity-interactable-used {
   color: #665522;
   cursor: pointer;
 }

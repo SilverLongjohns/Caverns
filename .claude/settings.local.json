@@ -19,7 +19,10 @@
       "Bash(npx vite:*)",
       "Bash(vitest run:*)",
       "Bash(npm install:*)",
-      "Bash(tsc --noEmit)"
+      "Bash(tsc --noEmit)",
+      "Bash(npx.cmd --version)",
+      "Bash(npx tsx:*)",
+      "Bash(npx esbuild:*)"
     ]
   }
 }

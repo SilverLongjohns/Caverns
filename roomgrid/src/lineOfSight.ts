@@ -1,5 +1,5 @@
 import type { GridPosition, Tile } from './types.js';
-import { chebyshevDistance } from './types.js';
+import { chebyshevDistance, TILE_PROPERTIES } from './types.js';
 
 export function bresenhamLine(from: GridPosition, to: GridPosition): GridPosition[] {
   const points: GridPosition[] = [];
@@ -39,7 +39,7 @@ export function hasLineOfSight(tiles: Tile[][], from: GridPosition, to: GridPosi
     const row = tiles[p.y];
     if (!row) return false;
     const tile = row[p.x];
-    if (!tile || tile.type === 'wall') return false;
+    if (!tile || TILE_PROPERTIES[tile.type].blocksLOS) return false;
 
     // Diagonal corner check: when both x and y changed from previous point,
     // if both orthogonal neighbors are walls, LOS is blocked (two-wall corner)
@@ -47,8 +47,8 @@ export function hasLineOfSight(tiles: Tile[][], from: GridPosition, to: GridPosi
     if (prev.x !== p.x && prev.y !== p.y) {
       const cornerA = tiles[prev.y]?.[p.x];
       const cornerB = tiles[p.y]?.[prev.x];
-      const aIsWall = !cornerA || cornerA.type === 'wall';
-      const bIsWall = !cornerB || cornerB.type === 'wall';
+      const aIsWall = !cornerA || TILE_PROPERTIES[cornerA.type].blocksLOS;
+      const bIsWall = !cornerB || TILE_PROPERTIES[cornerB.type].blocksLOS;
       if (aIsWall && bIsWall) return false;
     }
   }

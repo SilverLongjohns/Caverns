@@ -1,7 +1,7 @@
 import type { Direction } from '@caverns/shared';
 
 // === Tiles ===
-export type TileType = 'floor' | 'wall' | 'exit';
+export type TileType = 'floor' | 'wall' | 'exit' | 'water' | 'chasm' | 'hazard' | 'bridge';
 
 export interface ExitData {
   direction: Direction;
@@ -11,7 +11,25 @@ export interface ExitData {
 export interface Tile {
   type: TileType;
   exit?: ExitData;
+  theme?: string;
 }
+
+// === Tile Properties ===
+export interface TileProperties {
+  walkable: boolean;
+  blocksLOS: boolean;
+  damageOnEntry?: number;
+}
+
+export const TILE_PROPERTIES: Record<TileType, TileProperties> = {
+  floor:  { walkable: true,  blocksLOS: false },
+  wall:   { walkable: false, blocksLOS: true },
+  exit:   { walkable: true,  blocksLOS: false },
+  water:  { walkable: true,  blocksLOS: false },
+  chasm:  { walkable: false, blocksLOS: false },
+  hazard: { walkable: true,  blocksLOS: false, damageOnEntry: 5 },
+  bridge: { walkable: true,  blocksLOS: false },
+};
 
 // === Positions ===
 export interface GridPosition {
@@ -42,7 +60,8 @@ export type GridDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 export type MoveEvent =
   | { type: 'combat'; entityId: string }
   | { type: 'exit'; exit: ExitData }
-  | { type: 'interact'; entityId: string };
+  | { type: 'interact'; entityId: string }
+  | { type: 'hazard'; damage: number };
 
 export interface MoveResult {
   success: boolean;

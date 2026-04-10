@@ -1,0 +1,26 @@
+[
+  {
+    "biomeId": "starter",
+    "strategy": "cavern",
+    "params": { "fillProbability": 0.40, "smoothingPasses": 4 },
+    "tileThemes": { "floor": "dirt", "wall": "rock" }
+  },
+  {
+    "biomeId": "fungal",
+    "strategy": "cavern",
+    "params": { "fillProbability": 0.45, "smoothingPasses": 5, "waterChance": 0.1 },
+    "tileThemes": { "floor": "moss", "wall": "fungal_rock", "water": "spore_pool" }
+  },
+  {
+    "biomeId": "crypt",
+    "strategy": "structured",
+    "params": { "subRoomCount": 3, "featureChance": 0.4 },
+    "tileThemes": { "floor": "stone_tile", "wall": "carved_stone" }
+  },
+  {
+    "biomeId": "volcanic",
+    "strategy": "chasm",
+    "params": { "chasmCount": 2, "hazardChance": 0.15 },
+    "tileThemes": { "floor": "basalt", "wall": "obsidian", "hazard": "lava" }
+  }
+]

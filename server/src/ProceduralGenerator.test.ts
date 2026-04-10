@@ -266,6 +266,55 @@ describe('ProceduralGenerator', () => {
     }
   });
 
+  it('all rooms have tileGrid populated', () => {
+    const dungeon = generateProceduralDungeon(2);
+    for (const room of dungeon.rooms) {
+      expect(room.tileGrid, `Room ${room.id} (${room.type}) missing tileGrid`).toBeDefined();
+      expect(room.tileGrid!.width).toBeGreaterThan(0);
+      expect(room.tileGrid!.height).toBeGreaterThan(0);
+      expect(room.tileGrid!.tiles.length).toBe(room.tileGrid!.height);
+      expect(room.tileGrid!.tiles[0].length).toBe(room.tileGrid!.width);
+    }
+  });
+
+  it('room tileGrid dimensions match room type', () => {
+    const dungeon = generateProceduralDungeon(2);
+    const expectedDims: Record<string, { width: number; height: number }> = {
+      tunnel:   { width: 30, height: 8 },
+      chamber:  { width: 30, height: 15 },
+      cavern:   { width: 40, height: 18 },
+      dead_end: { width: 20, height: 12 },
+      boss:     { width: 45, height: 20 },
+    };
+    for (const room of dungeon.rooms) {
+      const expected = expectedDims[room.type];
+      if (expected) {
+        expect(room.tileGrid!.width, `${room.id} width`).toBe(expected.width);
+        expect(room.tileGrid!.height, `${room.id} height`).toBe(expected.height);
+      }
+    }
+  });
+
+  it('room tileGrid has exit tiles matching room exits', () => {
+    const dungeon = generateProceduralDungeon(2);
+    for (const room of dungeon.rooms) {
+      const grid = room.tileGrid!;
+      for (const dir of Object.keys(room.exits) as Direction[]) {
+        let exitX: number, exitY: number;
+        switch (dir) {
+          case 'north': exitX = Math.floor(grid.width / 2); exitY = 0; break;
+          case 'south': exitX = Math.floor(grid.width / 2); exitY = grid.height - 1; break;
+          case 'west':  exitX = 0; exitY = Math.floor(grid.height / 2); break;
+          case 'east':  exitX = grid.width - 1; exitY = Math.floor(grid.height / 2); break;
+        }
+        expect(
+          grid.tiles[exitY!][exitX!],
+          `Room ${room.id} exit ${dir} at (${exitX!},${exitY!}) should be 'exit'`
+        ).toBe('exit');
+      }
+    }
+  });
+
   describe('interactable placement', () => {
     it('places interactables on rooms with slots', () => {
       const dungeon = generateProceduralDungeon(3);

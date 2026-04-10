@@ -9,7 +9,7 @@ import type {
   MoveResult,
   PathfindingOpts,
 } from './types.js';
-import { DIRECTION_OFFSETS } from './types.js';
+import { DIRECTION_OFFSETS, TILE_PROPERTIES } from './types.js';
 import { hasLineOfSight as losCheck, getVisibleTiles as visCheck } from './lineOfSight.js';
 import { findPath as astarFind } from './pathfinding.js';
 
@@ -56,7 +56,7 @@ export class RoomGrid {
   isWalkable(pos: GridPosition): boolean {
     const tile = this.getTile(pos);
     if (!tile) return false;
-    return tile.type === 'floor' || tile.type === 'exit';
+    return TILE_PROPERTIES[tile.type].walkable;
   }
 
   isInBounds(pos: GridPosition): boolean {
@@ -142,6 +142,17 @@ export class RoomGrid {
       const interactable = targetEntities.find(e => e.type === 'interactable');
       if (interactable) {
         events.push({ type: 'interact', entityId: interactable.id });
+      }
+    }
+
+    // Check for hazard tile
+    if (entity.type === 'player') {
+      const targetTile = this.getTile(target);
+      if (targetTile) {
+        const props = TILE_PROPERTIES[targetTile.type];
+        if (props.damageOnEntry !== undefined) {
+          events.push({ type: 'hazard', damage: props.damageOnEntry });
+        }
       }
     }
 
