@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import type { Room, MobTemplate, Item, Direction, DungeonContent, Rarity, InteractableDefinition, InteractableInstance } from '@caverns/shared';
+import { LOOT_CONFIG, DUNGEON_CONFIG } from '@caverns/shared';
 import type { RoomChit, MobPoolEntry, BiomeDefinition, PuzzleTemplate } from '@caverns/shared';
 import { validateDungeon } from './DungeonValidator.js';
 
@@ -496,21 +497,11 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
   }
 
   // 6. Distribute loot
-  const defaultRarityWeights: { rarity: Rarity; weight: number }[] = [
-    { rarity: 'common', weight: 0.499 },
-    { rarity: 'uncommon', weight: 0.30 },
-    { rarity: 'rare', weight: 0.15 },
-    { rarity: 'legendary', weight: 0.05 },
-    { rarity: 'unique', weight: 0.001 },
-  ];
+  const defaultRarityWeights: { rarity: Rarity; weight: number }[] = (Object.entries(LOOT_CONFIG.defaultLootWeights) as [Rarity, number][])
+    .map(([rarity, weight]) => ({ rarity, weight }));
 
-  const starterRarityWeights: { rarity: Rarity; weight: number }[] = [
-    { rarity: 'common', weight: 0.70 },
-    { rarity: 'uncommon', weight: 0.27 },
-    { rarity: 'rare', weight: 0.025 },
-    { rarity: 'legendary', weight: 0.005 },
-    { rarity: 'unique', weight: 0.0 },
-  ];
+  const starterRarityWeights: { rarity: Rarity; weight: number }[] = (Object.entries(LOOT_CONFIG.starterLootWeights) as [Rarity, number][])
+    .map(([rarity, weight]) => ({ rarity, weight }));
 
   for (const room of allRooms) {
     if (room.type === 'boss') continue;
@@ -546,8 +537,8 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
   }
 
   // 7. Place key — in a room at 60-75% dungeon depth (by zone index)
-  const targetZoneMin = Math.floor(zoneCount * 0.6);
-  const targetZoneMax = Math.floor(zoneCount * 0.75);
+  const targetZoneMin = Math.floor(zoneCount * DUNGEON_CONFIG.keyPlacementDepthMin);
+  const targetZoneMax = Math.floor(zoneCount * DUNGEON_CONFIG.keyPlacementDepthMax);
   const keyZoneIndex = Math.max(0, Math.min(zoneCount - 2, randInt(targetZoneMin, Math.max(targetZoneMin, targetZoneMax))));
 
   // Get rooms in the key zone
@@ -572,7 +563,7 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
     );
     if (eligibleRooms.length === 0) continue;
 
-    const puzzleCount = 1; // one puzzle per zone to avoid oversaturation
+    const puzzleCount = DUNGEON_CONFIG.puzzlesPerZone;
     const shuffledRooms = shuffle([...eligibleRooms]);
     const shuffledPuzzles = shuffle([...biomePuzzles]);
 
@@ -604,7 +595,6 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
   }
 
   // 9. Place interactables
-  const INTERACTABLE_DENSITY = 0.65;
   let intCounter = 0;
 
   for (const room of allRooms) {
@@ -614,7 +604,7 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
     const chitForRoom = allRoomChits.find(c => room.id.startsWith(c.id + '_'));
     if (!chitForRoom?.interactableSlots || chitForRoom.interactableSlots.length === 0) continue;
 
-    if (Math.random() > INTERACTABLE_DENSITY) continue;
+    if (Math.random() > DUNGEON_CONFIG.interactableDensity) continue;
 
     const biome = getBiomeForRoom(room, biomes, zoneEntries, zoneCount);
     const biomeInteractables = allInteractables.filter(d => d.biomes.includes(biome.id));

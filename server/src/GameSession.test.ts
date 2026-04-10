@@ -227,13 +227,10 @@ describe('GameSession', () => {
       return { session, messages };
     }
 
-    it('ticks cooldowns when player moves', () => {
+    it('player starts with full energy', () => {
       const { session } = createAbilitySession('vanguard');
-      (session as any).playerManager.setCooldown('p1', 'shield_wall', 3);
-      session.handleMove('p1', 'north');
       const player = (session as any).playerManager.getPlayer('p1');
-      const cd = player.cooldowns.find((c: any) => c.abilityId === 'shield_wall');
-      expect(cd.turnsRemaining).toBe(2);
+      expect(player.energy).toBe(30);
     });
   });
 

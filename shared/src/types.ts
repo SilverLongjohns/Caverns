@@ -1,5 +1,7 @@
-import type { AbilityCooldown, ActiveBuff } from './classTypes.js';
+import type { ActiveBuff } from './classTypes.js';
 import { getClassDefinition } from './classData.js';
+import { PLAYER_CONFIG } from './data/player.js';
+import { ENERGY_CONFIG } from './data/energy.js';
 
 // === Directions ===
 export type Direction = 'north' | 'south' | 'east' | 'west';
@@ -136,8 +138,8 @@ export interface Equipment {
   accessory: Item | null;
 }
 
-export const CONSUMABLE_SLOTS = 6;
-export const INVENTORY_SLOTS = 7;
+export const CONSUMABLE_SLOTS = PLAYER_CONFIG.consumableSlots;
+export const INVENTORY_SLOTS = PLAYER_CONFIG.inventorySlots;
 
 export interface Player {
   id: string;
@@ -151,16 +153,11 @@ export interface Player {
   inventory: (Item | null)[];
   status: PlayerStatus;
   keychain: string[];
-  cooldowns: AbilityCooldown[];
+  energy: number;
   usedEffects: string[];
 }
 
-export const BASE_STATS = {
-  maxHp: 50,
-  damage: 5,
-  defense: 2,
-  initiative: 5,
-};
+export const BASE_STATS = PLAYER_CONFIG.baseStats;
 
 export interface ComputedStats {
   maxHp: number;
@@ -230,7 +227,7 @@ export function createPlayer(id: string, name: string, roomId: string, className
     inventory: Array(INVENTORY_SLOTS).fill(null),
     status: 'exploring',
     keychain: [],
-    cooldowns: [],
+    energy: ENERGY_CONFIG.startingEnergy,
     usedEffects: [],
   };
 }
@@ -245,7 +242,7 @@ export interface CombatParticipant {
   initiative: number;
   className?: string;
   buffs?: ActiveBuff[];
-  cooldowns?: AbilityCooldown[];
+  energy?: number;
 }
 
 export interface CombatState {

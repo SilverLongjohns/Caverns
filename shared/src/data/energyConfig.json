@@ -1,0 +1,5 @@
+{
+  "maxEnergy": 30,
+  "startingEnergy": 30,
+  "regenPerTurn": 2
+}

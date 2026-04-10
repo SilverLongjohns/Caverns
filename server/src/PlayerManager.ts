@@ -10,6 +10,7 @@ import {
   STARTER_POTION,
   CONSUMABLE_SLOTS,
   INVENTORY_SLOTS,
+  ENERGY_CONFIG,
 } from '@caverns/shared';
 
 export class PlayerManager {
@@ -30,13 +31,6 @@ export class PlayerManager {
     if (starterItems) {
       player.equipment.weapon = { ...starterItems.weapon };
       player.equipment.offhand = { ...starterItems.offhand };
-    }
-
-    // Initialize ability cooldowns (all start at 0 = ready)
-    if (classDef) {
-      player.cooldowns = classDef.abilities
-        .filter(a => !a.passive)
-        .map(a => ({ abilityId: a.id, turnsRemaining: 0 }));
     }
 
     player.consumables[0] = { ...STARTER_POTION };
@@ -193,27 +187,22 @@ export class PlayerManager {
     return player?.keychain.includes(keyId) ?? false;
   }
 
-  tickCooldowns(playerId: string, amount: number = 1): void {
+  spendEnergy(playerId: string, cost: number): void {
     const player = this.players.get(playerId);
     if (!player) return;
-    player.cooldowns = player.cooldowns.map(cd => ({
-      ...cd,
-      turnsRemaining: Math.max(0, cd.turnsRemaining - amount),
-    }));
+    player.energy = Math.max(0, player.energy - cost);
   }
 
-  setCooldown(playerId: string, abilityId: string, turns: number): void {
+  regenEnergy(playerId: string, amount: number): void {
     const player = this.players.get(playerId);
     if (!player) return;
-    const cd = player.cooldowns.find(c => c.abilityId === abilityId);
-    if (cd) cd.turnsRemaining = turns;
+    player.energy = Math.min(ENERGY_CONFIG.maxEnergy, player.energy + amount);
   }
 
-  isAbilityReady(playerId: string, abilityId: string): boolean {
+  hasEnergy(playerId: string, cost: number): boolean {
     const player = this.players.get(playerId);
     if (!player) return false;
-    const cd = player.cooldowns.find(c => c.abilityId === abilityId);
-    return cd ? cd.turnsRemaining === 0 : false;
+    return player.energy >= cost;
   }
 
   private recalcMaxHp(player: Player): void {

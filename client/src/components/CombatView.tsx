@@ -1,7 +1,8 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import type { Direction, Item, ItemStats, CritMultiplier, DamageReduction } from '@caverns/shared';
-import { CLASS_DEFINITIONS } from '@caverns/shared';
+import { CLASS_DEFINITIONS, ENERGY_CONFIG } from '@caverns/shared';
+import { COMBAT_UI_CONFIG } from '../uiconfig/combatUI.js';
 import { AttackQTE } from './AttackQTE.js';
 import { DefenseQTE } from './DefenseQTE.js';
 import { Disintegrate } from './Disintegrate.js';
@@ -34,10 +35,10 @@ function formatItemStat(stats: ItemStats): string {
 }
 
 function CharHpBar({ hp, maxHp }: { hp: number; maxHp: number }) {
-  const totalBlocks = 10;
+  const totalBlocks = COMBAT_UI_CONFIG.hpBlockCount;
   const filledBlocks = Math.round((hp / maxHp) * totalBlocks);
-  const percent = (hp / maxHp) * 100;
-  const colorClass = percent > 50 ? '' : percent > 25 ? 'hp-yellow' : 'hp-red';
+  const percent = hp / maxHp;
+  const colorClass = percent > COMBAT_UI_CONFIG.hpThresholdYellow ? '' : percent > COMBAT_UI_CONFIG.hpThresholdRed ? 'hp-yellow' : 'hp-red';
 
   return (
     <span className="char-hp-bar">
@@ -295,14 +296,14 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
                 Revive {ally.name}
               </button>
             ))}
+            <div className="energy-display">Energy: {player.energy ?? 0}/{ENERGY_CONFIG.maxEnergy}</div>
             {playerAbilities.map((ability) => {
-              const cd = player.cooldowns?.find(c => c.abilityId === ability.id);
-              const onCooldown = cd && cd.turnsRemaining > 0;
+              const notEnoughEnergy = (player.energy ?? 0) < ability.energyCost;
               return (
                 <button
                   key={ability.id}
-                  className={`ability-btn ${onCooldown ? 'on-cooldown' : ''}`}
-                  disabled={!!onCooldown}
+                  className={`ability-btn ${notEnoughEnergy ? 'no-energy' : ''}`}
+                  disabled={notEnoughEnergy}
                   onClick={() => {
                     if (ability.targetType === 'none') {
                       onUseAbility(ability.id);
@@ -314,8 +315,7 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
                     }
                   }}
                 >
-                  {ability.name}
-                  {onCooldown && <span className="cooldown-badge">{cd!.turnsRemaining}</span>}
+                  {ability.name} <span className="energy-cost">{ability.energyCost}</span>
                 </button>
               );
             })}

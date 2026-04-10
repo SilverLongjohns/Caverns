@@ -7,7 +7,7 @@ export interface AbilityDefinition {
   id: string;
   name: string;
   description: string;
-  cooldown: number;
+  energyCost: number;
   targetType: 'none' | 'ally' | 'enemy';
   passive: boolean;
   trigger?: string;
@@ -22,11 +22,6 @@ export interface ClassDefinition {
   starterWeaponId: string;
   starterOffhandId: string;
   abilities: AbilityDefinition[];
-}
-
-export interface AbilityCooldown {
-  abilityId: string;
-  turnsRemaining: number;
 }
 
 export interface ActiveBuff {

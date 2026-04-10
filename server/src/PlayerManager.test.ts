@@ -113,27 +113,39 @@ describe('PlayerManager', () => {
     expect(player.equipment.offhand?.id).toBe('shadowblade_smoke_cloak');
   });
 
-  it('initializes ability cooldowns at 0', () => {
+  it('initializes player with full energy', () => {
     const pm = new PlayerManager();
     const player = pm.addPlayer('p1', 'Alice', 'room1', 'vanguard');
-    expect(player.cooldowns).toHaveLength(2);
-    expect(player.cooldowns.every(c => c.turnsRemaining === 0)).toBe(true);
+    expect(player.energy).toBe(30);
   });
 
-  it('ticks cooldowns down', () => {
+  it('spends energy', () => {
     const pm = new PlayerManager();
     pm.addPlayer('p1', 'Alice', 'room1', 'vanguard');
-    pm.setCooldown('p1', 'shield_wall', 3);
-    pm.tickCooldowns('p1');
+    pm.spendEnergy('p1', 15);
     const player = pm.getPlayer('p1')!;
-    expect(player.cooldowns.find(c => c.abilityId === 'shield_wall')!.turnsRemaining).toBe(2);
+    expect(player.energy).toBe(15);
   });
 
-  it('does not tick cooldowns below 0', () => {
+  it('regens energy capped at 30', () => {
     const pm = new PlayerManager();
     pm.addPlayer('p1', 'Alice', 'room1', 'vanguard');
-    pm.tickCooldowns('p1');
+    pm.spendEnergy('p1', 5);
+    pm.regenEnergy('p1', 10);
     const player = pm.getPlayer('p1')!;
-    expect(player.cooldowns.every(c => c.turnsRemaining === 0)).toBe(true);
+    expect(player.energy).toBe(30);
+  });
+
+  it('hasEnergy returns false when not enough', () => {
+    const pm = new PlayerManager();
+    pm.addPlayer('p1', 'Alice', 'room1', 'vanguard');
+    pm.spendEnergy('p1', 20);
+    expect(pm.hasEnergy('p1', 15)).toBe(false);
+  });
+
+  it('hasEnergy returns true when enough', () => {
+    const pm = new PlayerManager();
+    pm.addPlayer('p1', 'Alice', 'room1', 'vanguard');
+    expect(pm.hasEnergy('p1', 25)).toBe(true);
   });
 });

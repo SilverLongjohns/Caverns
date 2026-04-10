@@ -1,0 +1,8 @@
+{
+  "defenseMultiplierWhenDefending": 2,
+  "fleeDamageDivisor": 2,
+  "initiativeRandomRange": 5,
+  "minDamage": 1,
+  "hazardDamageMin": 5,
+  "hazardDamageRange": 11
+}
