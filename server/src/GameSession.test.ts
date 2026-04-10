@@ -30,21 +30,25 @@ describe('GameSession', () => {
     const mobPos = s.mobAIManager.getMobPosition(roomId);
     if (!mobPos) return false;
 
-    // Teleport player next to the mob instead of pathing through random terrain
+    // Teleport player to a walkable tile adjacent to the mob (within detection range)
     const grid = s.roomGrids.get(roomId);
     if (!grid) return false;
     grid.removeEntity(playerId);
-    const adjacentPos = { x: mobPos.x, y: mobPos.y + 1 };
-    grid.addEntity({ id: playerId, type: 'player', position: { ...adjacentPos } });
-    s.playerGridPositions.set(playerId, { ...adjacentPos });
-    s.mobAIManager.updatePlayerPosition(roomId, playerId, adjacentPos);
+    const offsets = [{ dx: 0, dy: 1 }, { dx: 0, dy: -1 }, { dx: 1, dy: 0 }, { dx: -1, dy: 0 }];
+    let placed = false;
+    for (const { dx, dy } of offsets) {
+      const pos = { x: mobPos.x + dx, y: mobPos.y + dy };
+      if (grid.isWalkable(pos)) {
+        grid.addEntity({ id: playerId, type: 'player', position: { ...pos } });
+        s.playerGridPositions.set(playerId, { ...pos });
+        s.mobAIManager.updatePlayerPosition(roomId, playerId, pos);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) return false;
 
-    // Walk into detection range
-    s.lastGridMove.delete(playerId);
-    session.handleGridMove(playerId, 'n');
-    if (messages.some((m) => m.msg.type === 'combat_start')) return true;
-
-    // Already adjacent — trigger detection manually
+    // Player is within detection range — trigger check
     s.mobAIManager.checkDetection(roomId);
     return messages.some((m) => m.msg.type === 'combat_start');
   }
