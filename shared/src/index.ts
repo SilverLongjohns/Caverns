@@ -6,7 +6,6 @@ export * from './data/types.js';
 export * from './classTypes.js';
 export * from './classData.js';
 export * from './interactableData.js';
-export * from './data/roomTemplates.js';
 export * from './data/configTypes.js';
 export { COMBAT_CONFIG } from './data/combat.js';
 export { ENERGY_CONFIG } from './data/energy.js';

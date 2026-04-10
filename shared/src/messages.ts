@@ -1,5 +1,6 @@
 import type {
   Direction,
+  GridDirection,
   Player,
   Room,
   Item,
@@ -28,9 +29,9 @@ export interface SetDifficultyMessage {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
-export interface MoveMessage {
-  type: 'move';
-  direction: Direction;
+export interface GridMoveMessage {
+  type: 'grid_move';
+  direction: GridDirection;
 }
 
 export interface CombatActionMessage {
@@ -81,11 +82,6 @@ export interface PuzzleAnswerMessage {
   answerIndex: number;
 }
 
-export interface InteractMessage {
-  type: 'interact';
-  interactableId: string;
-}
-
 export interface InteractActionMessage {
   type: 'interact_action';
   interactableId: string;
@@ -101,7 +97,7 @@ export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
   | SetDifficultyMessage
-  | MoveMessage
+  | GridMoveMessage
   | CombatActionMessage
   | LootChoiceMessage
   | ReviveMessage
@@ -110,7 +106,6 @@ export type ClientMessage =
   | UseConsumableMessage
   | DefendResultMessage
   | PuzzleAnswerMessage
-  | InteractMessage
   | InteractActionMessage
   | ChatMessage;
 
@@ -137,6 +132,7 @@ export interface GameStartMessage {
   players: Record<string, Player>;
   rooms: Record<string, Room>;
   currentRoomId: string;
+  playerPositions: Record<string, { x: number; y: number }>;
 }
 
 export interface RoomRevealMessage {
@@ -148,6 +144,8 @@ export interface PlayerMovedMessage {
   type: 'player_moved';
   playerId: string;
   roomId: string;
+  x: number;
+  y: number;
 }
 
 export interface CombatStartMessage {
@@ -281,6 +279,37 @@ export interface InteractableStateMessage {
   usedBy: string;
 }
 
+export interface MobSpawnMessage {
+  type: 'mob_spawn';
+  roomId: string;
+  mobId: string;
+  mobName: string;
+  x: number;
+  y: number;
+}
+
+export interface MobPositionMessage {
+  type: 'mob_position';
+  roomId: string;
+  mobId: string;
+  x: number;
+  y: number;
+}
+
+export interface MobDespawnMessage {
+  type: 'mob_despawn';
+  roomId: string;
+  mobId: string;
+}
+
+export interface PlayerPositionMessage {
+  type: 'player_position';
+  playerId: string;
+  roomId: string;
+  x: number;
+  y: number;
+}
+
 export interface ErrorMessage {
   type: 'error';
   message: string;
@@ -307,4 +336,8 @@ export type ServerMessage =
   | InteractActionsMessage
   | InteractResultMessage
   | InteractableStateMessage
+  | MobSpawnMessage
+  | MobPositionMessage
+  | MobDespawnMessage
+  | PlayerPositionMessage
   | ErrorMessage;

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { ClientMessage, Direction } from '@caverns/shared';
+import type { ClientMessage, Direction, GridDirection } from '@caverns/shared';
 
 export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
   const send = useCallback(
@@ -18,7 +18,7 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
       send({ type: 'start_game', apiKey, difficulty }),
     setDifficulty: (difficulty: 'easy' | 'medium' | 'hard') =>
       send({ type: 'set_difficulty', difficulty }),
-    move: (direction: Direction) => send({ type: 'move', direction }),
+    gridMove: (direction: GridDirection) => send({ type: 'grid_move', direction }),
     combatAction: (
       action: 'attack' | 'defend' | 'use_item' | 'flee',
       targetId?: string, itemIndex?: number, fleeDirection?: Direction,
@@ -31,7 +31,6 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     dropItem: (inventoryIndex: number) => send({ type: 'drop_item', inventoryIndex }),
     useConsumable: (consumableIndex: number) => send({ type: 'use_consumable', consumableIndex }),
     puzzleAnswer: (roomId: string, answerIndex: number) => send({ type: 'puzzle_answer', roomId, answerIndex }),
-    interact: (interactableId: string) => send({ type: 'interact', interactableId }),
     interactAction: (interactableId: string, actionId: string) =>
       send({ type: 'interact_action', interactableId, actionId }),
     useAbility: (abilityId: string, targetId?: string) =>

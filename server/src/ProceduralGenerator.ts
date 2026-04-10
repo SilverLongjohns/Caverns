@@ -5,6 +5,7 @@ import type { Room, MobTemplate, Item, Direction, DungeonContent, Rarity, Intera
 import { LOOT_CONFIG, DUNGEON_CONFIG } from '@caverns/shared';
 import type { RoomChit, MobPoolEntry, BiomeDefinition, PuzzleTemplate } from '@caverns/shared';
 import { validateDungeon } from './DungeonValidator.js';
+import { buildTileGrid } from './tileGridBuilder.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,6 +52,29 @@ function shuffle<T>(arr: T[]): T[] {
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+const NON_WALKABLE_TILES = new Set(['wall', 'chasm']);
+
+function findWalkablePosition(room: Room, x: number, y: number): { x: number; y: number } | null {
+  const grid = room.tileGrid;
+  if (!grid) return { x, y };
+  if (!NON_WALKABLE_TILES.has(grid.tiles[y]?.[x])) return { x, y };
+
+  // Spiral search for nearest walkable tile
+  for (let r = 1; r < Math.max(grid.width, grid.height); r++) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= grid.width || ny >= grid.height) continue;
+        const tile = grid.tiles[ny][nx];
+        if (tile && !NON_WALKABLE_TILES.has(tile) && tile !== 'exit') return { x: nx, y: ny };
+      }
+    }
+  }
+  return null;
 }
 
 function randInt(min: number, max: number): number {
@@ -446,6 +470,12 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
   // 4b. Connectivity repair — reconnect any orphaned rooms
   repairConnectivity(allRooms, allRooms[0].id);
 
+  // 4c. Generate tile grids for all rooms
+  for (const room of allRooms) {
+    const biome = getBiomeForRoom(room, biomes, zoneEntries, zoneCount);
+    room.tileGrid = buildTileGrid(room, biome.id);
+  }
+
   // 5. Populate mobs
   const entranceRoomId = allRooms[0].id;
   for (const room of allRooms) {
@@ -623,10 +653,13 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
       usedDefIds.add(def.id);
       intCounter++;
 
+      const pos = findWalkablePosition(room, slot.position.x, slot.position.y);
+      if (!pos) continue;
+
       instances.push({
         definitionId: def.id,
         instanceId: `int_${String(intCounter).padStart(3, '0')}`,
-        position: { x: slot.position.x, y: slot.position.y },
+        position: pos,
         usedActions: {},
       });
     }

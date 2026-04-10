@@ -7,6 +7,7 @@ import {
   type Player,
   type DungeonContent,
   type ServerMessage,
+  type GridDirection,
   DRIPPING_HALLS,
   clampCritMultiplier,
   clampDamageReduction,
@@ -24,6 +25,11 @@ import { CombatManager, type CombatPlayerInfo } from './CombatManager.js';
 import { LootManager } from './LootManager.js';
 import { AbilityResolver } from './AbilityResolver.js';
 import { InteractionResolver } from './InteractionResolver.js';
+import { buildTileGrid } from './tileGridBuilder.js';
+import { RoomGrid } from '@caverns/roomgrid';
+import type { RoomGridConfig, TileType, GridPosition } from '@caverns/roomgrid';
+import { MobAIManager } from './MobAIManager.js';
+import { exitPosition } from './tileGridBuilder.js';
 import type { InteractableDefinition, InteractableInstance } from '@caverns/shared';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -57,6 +63,10 @@ export class GameSession {
   private playerClasses = new Map<string, string>(); // playerId -> className
   private secretRoomLinks = new Map<string, { secretRoomId: string; sourceRoomId: string }>(); // interactableInstanceId -> secret room
   private nextSecretRoomId = 1;
+  private roomGrids = new Map<string, RoomGrid>();
+  private mobAIManager!: MobAIManager;
+  private playerGridPositions = new Map<string, GridPosition>();
+  private lastGridMove = new Map<string, number>();
   private started = false;
   private pendingDefend: {
     roomId: string;
@@ -111,6 +121,10 @@ export class GameSession {
         });
       },
     );
+    this.mobAIManager = new MobAIManager(this.broadcastToRoom);
+    this.mobAIManager.onDetection = (roomId: string, mobId: string) => {
+      this.handleMobDetection(roomId, mobId);
+    };
   }
 
   addPlayer(id: string, name: string, className: string = 'vanguard'): void {
@@ -121,6 +135,14 @@ export class GameSession {
 
   startGame(): void {
     this.started = true;
+
+    // Generate tile grids for rooms that don't have one (e.g., DRIPPING_HALLS)
+    for (const [, room] of this.rooms) {
+      if (!room.tileGrid) {
+        room.tileGrid = buildTileGrid(room, 'starter');
+      }
+    }
+
     const entranceId = this.content.entranceRoomId;
     for (const pid of this.playerIds) {
       const className = this.playerClasses.get(pid) ?? 'vanguard';
@@ -134,10 +156,38 @@ export class GameSession {
     for (const p of this.playerManager.getAllPlayers()) {
       playerMap[p.id] = p;
     }
+
+    // Create RoomGrid for entrance
+    const entranceGrid = this.createRoomGrid(entranceId);
+
+    // If entrance has an encounter, register mob
+    if (entrance.encounter && !this.clearedRooms.has(entranceId)) {
+      const template = this.mobs.get(entrance.encounter.mobId);
+      if (template) {
+        const mobInstance: MobInstance = {
+          instanceId: `${template.id}_${Date.now()}`,
+          templateId: template.id, name: template.name,
+          maxHp: template.maxHp, hp: template.maxHp,
+          damage: template.damage, defense: template.defense, initiative: template.initiative,
+        };
+        this.mobAIManager.registerRoom(entranceId, entranceGrid, mobInstance);
+      }
+    }
+
+    const entranceCenter = this.findWalkableCenter(entranceId);
+    const playerPositions: Record<string, { x: number; y: number }> = {};
+    for (const pid of this.playerIds) {
+      this.playerGridPositions.set(pid, { ...entranceCenter });
+      playerPositions[pid] = { ...entranceCenter };
+      entranceGrid.addEntity({ id: pid, type: 'player', position: { ...entranceCenter } });
+      this.mobAIManager.addPlayer(entranceId, pid, entranceCenter);
+    }
+
     for (const pid of this.playerIds) {
       this.sendTo(pid, {
         type: 'game_start', playerId: pid,
         players: playerMap, rooms: revealedRoomMap, currentRoomId: entranceId,
+        playerPositions,
       });
     }
     this.broadcast({
@@ -165,7 +215,55 @@ export class GameSession {
     }
   }
 
-  handleMove(playerId: string, direction: Direction): void {
+  private findWalkableCenter(roomId: string): GridPosition {
+    const grid = this.roomGrids.get(roomId)!;
+    const room = this.rooms.get(roomId)!;
+    const w = room.tileGrid!.width;
+    const h = room.tileGrid!.height;
+    const center: GridPosition = { x: Math.floor(w / 2), y: Math.floor(h / 2) };
+    if (grid.isWalkable(center)) return center;
+    // Spiral outward to find nearest walkable tile
+    for (let r = 1; r < Math.max(w, h); r++) {
+      for (let dx = -r; dx <= r; dx++) {
+        for (let dy = -r; dy <= r; dy++) {
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+          const pos: GridPosition = { x: center.x + dx, y: center.y + dy };
+          if (grid.isWalkable(pos)) return pos;
+        }
+      }
+    }
+    return center; // fallback
+  }
+
+  private createRoomGrid(roomId: string): RoomGrid {
+    const room = this.rooms.get(roomId)!;
+    const tileGrid = room.tileGrid!;
+    const tiles = tileGrid.tiles as unknown as TileType[][];
+    const exits: RoomGridConfig['exits'] = [];
+
+    const allExits = { ...room.lockedExits, ...room.exits };
+    for (const [dir, targetId] of Object.entries(allExits)) {
+      if (!targetId) continue;
+      const pos = exitPosition(dir as any, tileGrid.width, tileGrid.height);
+      exits.push({ position: pos, data: { direction: dir as any, targetRoomId: targetId } });
+    }
+
+    const grid = new RoomGrid({ width: tileGrid.width, height: tileGrid.height, tiles, exits });
+
+    // Add interactable entities to the grid (skip if position isn't walkable)
+    if (room.interactables) {
+      for (const inst of room.interactables) {
+        if (grid.isWalkable(inst.position)) {
+          grid.addEntity({ id: inst.instanceId, type: 'interactable', position: { ...inst.position } });
+        }
+      }
+    }
+
+    this.roomGrids.set(roomId, grid);
+    return grid;
+  }
+
+  handleGridMove(playerId: string, direction: string): void {
     const player = this.playerManager.getPlayer(playerId);
     if (!player) return;
     if (player.status === 'in_combat') {
@@ -176,69 +274,206 @@ export class GameSession {
       this.sendTo(playerId, { type: 'error', message: 'You are downed and cannot move.' });
       return;
     }
-    const currentRoom = this.rooms.get(player.roomId);
-    if (!currentRoom) return;
-    const targetRoomId = currentRoom.exits[direction];
-    if (!targetRoomId) {
-      this.sendTo(playerId, { type: 'error', message: `There is no exit to the ${direction}.` });
-      return;
-    }
-    const targetRoom = this.rooms.get(targetRoomId);
-    if (!targetRoom) return;
-    // Check if exit is locked
-    const lockedKeyId = currentRoom.lockedExits?.[direction];
-    if (lockedKeyId) {
-      const playersInRoom = this.playerManager.getPlayersInRoom(player.roomId);
-      const hasKey = playersInRoom.some(p => p.keychain.includes(lockedKeyId));
-      if (!hasKey) {
-        this.sendTo(playerId, { type: 'error', message: 'This passage is locked. You need a key to proceed.' });
-        return;
-      }
-      // Unlock permanently
-      delete currentRoom.lockedExits![direction];
-      this.broadcastToRoom(player.roomId, {
-        type: 'text_log',
-        message: 'The lock clicks open. The passage is now clear.',
-        logType: 'system',
-      });
-    }
-    this.playerManager.movePlayer(playerId, targetRoomId);
-    const isNewRoom = !this.revealedRooms.has(targetRoomId);
-    if (isNewRoom) {
-      this.revealedRooms.add(targetRoomId);
-      this.broadcast({ type: 'room_reveal', room: targetRoom });
-    }
-    this.broadcast({ type: 'player_moved', playerId, roomId: targetRoomId });
-    this.broadcast({
-      type: 'text_log',
-      message: `${player.name} moves ${direction} to ${targetRoom.name}.`,
-      logType: 'system',
-    });
-    this.sendTo(playerId, {
-      type: 'text_log',
-      message: `--- ${targetRoom.name} ---\n${targetRoom.description}\n\nExits: ${Object.keys(targetRoom.exits).join(', ')}`,
-      logType: 'narration',
-    });
-    if (this.content.zoneTransitions?.[targetRoomId]) {
-      this.broadcast({
-        type: 'text_log',
-        message: this.content.zoneTransitions[targetRoomId],
-        logType: 'narration',
-      });
-    }
-    // Fire on_room_enter passive triggers
-    this.firePassiveTrigger(playerId, 'on_room_enter', targetRoomId);
 
-    if (this.combats.has(targetRoomId)) {
-      this.joinExistingCombat(playerId, targetRoomId);
-      return;
+    // Rate limit: 150ms between moves
+    const now = Date.now();
+    const lastMove = this.lastGridMove.get(playerId) ?? 0;
+    if (now - lastMove < 150) return;
+    this.lastGridMove.set(playerId, now);
+
+    const grid = this.roomGrids.get(player.roomId);
+    if (!grid) return;
+
+    const moveResult = grid.moveEntity(playerId, direction as GridDirection);
+    if (!moveResult.success) return;
+
+    // Update position tracking
+    if (moveResult.newPosition) {
+      this.playerGridPositions.set(playerId, { ...moveResult.newPosition });
+      this.mobAIManager.updatePlayerPosition(player.roomId, playerId, moveResult.newPosition);
+      this.broadcastToRoom(player.roomId, {
+        type: 'player_position',
+        playerId,
+        roomId: player.roomId,
+        x: moveResult.newPosition.x,
+        y: moveResult.newPosition.y,
+      });
     }
-    if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
-      this.startCombat(targetRoomId, targetRoom.encounter.mobId);
-    // Puzzles disabled — will be integrated into interactables flow
-    // } else if (targetRoom.puzzle && !this.solvedPuzzles.has(targetRoomId)) {
-    //   this.sendPuzzlePrompt(targetRoomId, playerId);
+
+    // Handle events from the move
+    for (const event of moveResult.events) {
+      switch (event.type) {
+        case 'exit': {
+          const exitDir = event.exit.direction;
+          const targetRoomId = event.exit.targetRoomId;
+          const currentRoom = this.rooms.get(player.roomId)!;
+          const targetRoom = this.rooms.get(targetRoomId);
+          if (!targetRoom) break;
+
+          // Check if exit is locked
+          const lockedKeyId = currentRoom.lockedExits?.[exitDir];
+          if (lockedKeyId) {
+            const playersInRoom = this.playerManager.getPlayersInRoom(player.roomId);
+            const hasKey = playersInRoom.some(p => p.keychain.includes(lockedKeyId));
+            if (!hasKey) {
+              // Move player back off the exit tile
+              const oppositeGridDir = this.getOppositeGridDir(direction);
+              if (oppositeGridDir) {
+                grid.moveEntity(playerId, oppositeGridDir as GridDirection);
+              }
+              this.sendTo(playerId, { type: 'error', message: 'This passage is locked. You need a key to proceed.' });
+              return;
+            }
+            // Unlock permanently
+            delete currentRoom.lockedExits![exitDir];
+            this.broadcastToRoom(player.roomId, {
+              type: 'text_log',
+              message: 'The lock clicks open. The passage is now clear.',
+              logType: 'system',
+            });
+          }
+
+          // Remove player from current room grid and mob AI
+          const oldRoomId = player.roomId;
+          grid.removeEntity(playerId);
+          this.mobAIManager.removePlayer(oldRoomId, playerId);
+
+          // Move player via playerManager
+          this.playerManager.movePlayer(playerId, targetRoomId);
+
+          // Reveal new room if needed, create RoomGrid, register mob
+          const isNewRoom = !this.revealedRooms.has(targetRoomId);
+          if (isNewRoom) {
+            this.revealedRooms.add(targetRoomId);
+            this.broadcast({ type: 'room_reveal', room: targetRoom });
+            const newGrid = this.createRoomGrid(targetRoomId);
+            // Register mob if room has uncleared encounter
+            if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
+              const template = this.mobs.get(targetRoom.encounter.mobId);
+              if (template) {
+                const mobInstance: MobInstance = {
+                  instanceId: `${template.id}_${Date.now()}`,
+                  templateId: template.id, name: template.name,
+                  maxHp: template.maxHp, hp: template.maxHp,
+                  damage: template.damage, defense: template.defense, initiative: template.initiative,
+                };
+                this.mobAIManager.registerRoom(targetRoomId, newGrid, mobInstance);
+              }
+            }
+          }
+
+          // Spawn player at opposite exit in new room
+          const oppositeDir = this.getOppositeDirection(exitDir);
+          const newRoomGrid = this.roomGrids.get(targetRoomId)!;
+          const spawnPos = exitPosition(oppositeDir, targetRoom.tileGrid!.width, targetRoom.tileGrid!.height);
+          // Move one tile inward from the exit so player is on the floor, not the exit tile
+          const gridOpposite = this.getOppositeGridDir(direction);
+          if (gridOpposite) {
+            const inwardOffset = { n: { dx: 0, dy: -1 }, s: { dx: 0, dy: 1 }, e: { dx: 1, dy: 0 }, w: { dx: -1, dy: 0 }, ne: { dx: 1, dy: -1 }, nw: { dx: -1, dy: -1 }, se: { dx: 1, dy: 1 }, sw: { dx: -1, dy: 1 } }[direction];
+            if (inwardOffset) {
+              const inwardPos = { x: spawnPos.x + inwardOffset.dx, y: spawnPos.y + inwardOffset.dy };
+              if (newRoomGrid.isWalkable(inwardPos)) {
+                spawnPos.x = inwardPos.x;
+                spawnPos.y = inwardPos.y;
+              }
+            }
+          }
+          this.playerGridPositions.set(playerId, { ...spawnPos });
+          newRoomGrid.addEntity({ id: playerId, type: 'player', position: { ...spawnPos } });
+          this.mobAIManager.addPlayer(targetRoomId, playerId, spawnPos);
+
+          // Broadcast player_moved with coordinates
+          this.broadcast({ type: 'player_moved', playerId, roomId: targetRoomId, x: spawnPos.x, y: spawnPos.y });
+          this.broadcast({
+            type: 'text_log',
+            message: `${player.name} moves ${exitDir} to ${targetRoom.name}.`,
+            logType: 'system',
+          });
+          this.sendTo(playerId, {
+            type: 'text_log',
+            message: `--- ${targetRoom.name} ---\n${targetRoom.description}\n\nExits: ${Object.keys(targetRoom.exits).join(', ')}`,
+            logType: 'narration',
+          });
+          if (this.content.zoneTransitions?.[targetRoomId]) {
+            this.broadcast({
+              type: 'text_log',
+              message: this.content.zoneTransitions[targetRoomId],
+              logType: 'narration',
+            });
+          }
+
+          // Fire on_room_enter passive triggers
+          this.firePassiveTrigger(playerId, 'on_room_enter', targetRoomId);
+
+          // Join existing combat if one is already in progress
+          if (this.combats.has(targetRoomId)) {
+            this.joinExistingCombat(playerId, targetRoomId);
+          }
+          return; // Exit event handled, stop processing other events
+        }
+        case 'hazard': {
+          this.playerManager.takeDamage(playerId, event.damage);
+          this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+          this.broadcastToRoom(player.roomId, {
+            type: 'text_log',
+            message: `${player.name} takes ${event.damage} damage from a hazard!`,
+            logType: 'combat',
+          });
+          break;
+        }
+        case 'interact': {
+          // Move player back off the interactable tile
+          const oppositeDir = this.getOppositeGridDir(direction);
+          if (oppositeDir) {
+            grid.moveEntity(playerId, oppositeDir as GridDirection);
+            const entity = grid.getEntity(playerId);
+            if (entity) {
+              this.playerGridPositions.set(playerId, { ...entity.position });
+            }
+          }
+          // Open interaction menu
+          this.handleInteract(playerId, event.entityId);
+          return;
+        }
+        case 'combat':
+          // No-op: handled by mob detection check below
+          break;
+      }
     }
+
+    // Check mob detection after movement
+    this.checkMobDetection(player.roomId);
+  }
+
+  private checkMobDetection(roomId: string): void {
+    this.mobAIManager.checkDetection(roomId);
+  }
+
+  private getOppositeDirection(dir: Direction): Direction {
+    switch (dir) {
+      case 'north': return 'south';
+      case 'south': return 'north';
+      case 'east': return 'west';
+      case 'west': return 'east';
+    }
+  }
+
+  private getOppositeGridDir(dir: string): string | null {
+    const opposites: Record<string, string> = {
+      n: 's', s: 'n', e: 'w', w: 'e', ne: 'sw', nw: 'se', se: 'nw', sw: 'ne',
+    };
+    return opposites[dir] ?? null;
+  }
+
+  private handleMobDetection(roomId: string, mobId: string): void {
+    if (this.combats.has(roomId)) return;
+    if (this.clearedRooms.has(roomId)) return;
+
+    const room = this.rooms.get(roomId);
+    if (!room?.encounter) return;
+
+    this.mobAIManager.pauseMob(roomId);
+    this.startCombat(roomId, room.encounter.mobId);
   }
 
   private startCombat(roomId: string, mobTemplateId: string): void {
@@ -342,19 +577,53 @@ export class GameSession {
         const p = this.playerManager.getPlayer(playerId)!;
         p.hp = result.actorHp ?? p.hp;
         if (fleeDirection) {
-          const currentRoom = this.rooms.get(p.roomId);
+          const oldRoomId = p.roomId;
+          const currentRoom = this.rooms.get(oldRoomId);
           const targetRoomId = currentRoom?.exits[fleeDirection];
           if (targetRoomId) {
+            // Remove player from old room grid and mob AI
+            const oldGrid = this.roomGrids.get(oldRoomId);
+            if (oldGrid) oldGrid.removeEntity(playerId);
+            this.mobAIManager.removePlayer(oldRoomId, playerId);
+
             this.playerManager.movePlayer(playerId, targetRoomId);
+            const targetRoom = this.rooms.get(targetRoomId);
             const isNewRoom = !this.revealedRooms.has(targetRoomId);
             if (isNewRoom) {
               this.revealedRooms.add(targetRoomId);
-              const targetRoom = this.rooms.get(targetRoomId);
               if (targetRoom) {
                 this.broadcast({ type: 'room_reveal', room: targetRoom });
+                const newGrid = this.createRoomGrid(targetRoomId);
+                // Register mob if room has uncleared encounter
+                if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
+                  const template = this.mobs.get(targetRoom.encounter.mobId);
+                  if (template) {
+                    const mobInstance: MobInstance = {
+                      instanceId: `${template.id}_${Date.now()}`,
+                      templateId: template.id, name: template.name,
+                      maxHp: template.maxHp, hp: template.maxHp,
+                      damage: template.damage, defense: template.defense, initiative: template.initiative,
+                    };
+                    this.mobAIManager.registerRoom(targetRoomId, newGrid, mobInstance);
+                  }
+                }
               }
             }
-            this.broadcast({ type: 'player_moved', playerId, roomId: targetRoomId });
+
+            // Calculate spawn position in new room
+            const oppositeDir = this.getOppositeDirection(fleeDirection);
+            const newRoomGrid = this.roomGrids.get(targetRoomId);
+            let fleeX = 0, fleeY = 0;
+            if (newRoomGrid && targetRoom?.tileGrid) {
+              const spawnPos = exitPosition(oppositeDir, targetRoom.tileGrid.width, targetRoom.tileGrid.height);
+              fleeX = spawnPos.x;
+              fleeY = spawnPos.y;
+              this.playerGridPositions.set(playerId, { x: fleeX, y: fleeY });
+              newRoomGrid.addEntity({ id: playerId, type: 'player', position: { x: fleeX, y: fleeY } });
+              this.mobAIManager.addPlayer(targetRoomId, playerId, { x: fleeX, y: fleeY });
+            }
+
+            this.broadcast({ type: 'player_moved', playerId, roomId: targetRoomId, x: fleeX, y: fleeY });
           }
         }
       }
@@ -434,6 +703,9 @@ export class GameSession {
       }
     }
     this.broadcastToRoom(roomId, { type: 'combat_end', result });
+    if (result === 'flee') {
+      this.mobAIManager.reactivateMob(roomId);
+    }
     this.combats.delete(roomId);
     for (const p of this.playerManager.getPlayersInRoom(roomId)) {
       if (p.status === 'in_combat') {
@@ -443,6 +715,7 @@ export class GameSession {
     }
     if (result === 'victory') {
       this.clearRoom(roomId);
+      this.mobAIManager.removeMob(roomId);
       this.broadcastToRoom(roomId, { type: 'text_log', message: 'The enemies have been defeated!', logType: 'combat' });
       this.fireVictoryPassives(roomId);
       this.dropLoot(roomId);
@@ -1042,7 +1315,7 @@ export class GameSession {
         message: 'A hidden passage has opened nearby...',
         logType: 'narration',
       });
-      // Immediately show the "Enter passage" action so the player doesn't have to re-click
+      // Immediately show the "Enter passage" action so the player doesn't have to re-walk
       const def = allInteractableDefs.find(d => d.id === room.interactables?.find(i => i.instanceId === interactableId)?.definitionId);
       this.sendTo(playerId, {
         type: 'interact_actions',
@@ -1055,6 +1328,9 @@ export class GameSession {
           used: false,
         }],
       });
+    } else {
+      // Re-send the updated actions menu so the player can keep interacting
+      this.handleInteract(playerId, interactableId);
     }
   }
 
@@ -1065,14 +1341,43 @@ export class GameSession {
     const targetRoom = this.rooms.get(targetRoomId);
     if (!targetRoom) return;
 
+    const oldRoomId = player.roomId;
+
+    // Remove player from old room grid and mob AI
+    const oldGrid = this.roomGrids.get(oldRoomId);
+    if (oldGrid) oldGrid.removeEntity(playerId);
+    this.mobAIManager.removePlayer(oldRoomId, playerId);
+
     this.playerManager.movePlayer(playerId, targetRoomId);
 
     if (!this.revealedRooms.has(targetRoomId)) {
       this.revealedRooms.add(targetRoomId);
       this.broadcast({ type: 'room_reveal', room: targetRoom });
+      const newGrid = this.createRoomGrid(targetRoomId);
+      if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
+        const template = this.mobs.get(targetRoom.encounter.mobId);
+        if (template) {
+          const mobInstance: MobInstance = {
+            instanceId: `${template.id}_${Date.now()}`,
+            templateId: template.id, name: template.name,
+            maxHp: template.maxHp, hp: template.maxHp,
+            damage: template.damage, defense: template.defense, initiative: template.initiative,
+          };
+          this.mobAIManager.registerRoom(targetRoomId, newGrid, mobInstance);
+        }
+      }
     }
 
-    this.broadcast({ type: 'player_moved', playerId, roomId: targetRoomId });
+    // Add player to new room grid at center
+    const spawnPos = this.findWalkableCenter(targetRoomId);
+    this.playerGridPositions.set(playerId, { ...spawnPos });
+    const newGrid = this.roomGrids.get(targetRoomId);
+    if (newGrid) {
+      newGrid.addEntity({ id: playerId, type: 'player', position: { ...spawnPos } });
+      this.mobAIManager.addPlayer(targetRoomId, playerId, spawnPos);
+    }
+
+    this.broadcast({ type: 'player_moved', playerId, roomId: targetRoomId, x: spawnPos.x, y: spawnPos.y });
     this.sendTo(playerId, {
       type: 'text_log',
       message: `${narration}\n\n--- ${targetRoom.name} ---\n${targetRoom.description}`,
@@ -1099,12 +1404,12 @@ export class GameSession {
     const shuffled = [...candidates].sort(() => Math.random() - 0.5);
     const picked = shuffled.slice(0, 4);
 
-    // Position interactables in the dead_end template
+    // Position interactables within the 20x12 dead_end grid interior
     const slotPositions = [
-      { x: 6, y: 2 },
-      { x: 14, y: 4 },
-      { x: 22, y: 2 },
-      { x: 10, y: 5 },
+      { x: 4, y: 3 },
+      { x: 10, y: 3 },
+      { x: 15, y: 3 },
+      { x: 7, y: 7 },
     ];
 
     const interactables: InteractableInstance[] = picked.map((def, i) => ({
@@ -1118,7 +1423,7 @@ export class GameSession {
     interactables.push({
       definitionId: '_return_portal',
       instanceId: `${roomId}_portal`,
-      position: { x: 14, y: 6 },
+      position: { x: 10, y: 9 },
       usedActions: {},
     });
 
@@ -1131,6 +1436,7 @@ export class GameSession {
       interactables,
     };
 
+    secretRoom.tileGrid = buildTileGrid(secretRoom, 'starter');
     this.rooms.set(roomId, secretRoom);
     this.secretRoomLinks.set(interactableId, { secretRoomId: roomId, sourceRoomId });
   }

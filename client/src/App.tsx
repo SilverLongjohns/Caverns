@@ -1,7 +1,7 @@
 import { useGameStore } from './store/gameStore.js';
 import { useWebSocket } from './hooks/useWebSocket.js';
 import { useGameActions } from './hooks/useGameActions.js';
-import { useKeyboardMovement } from './hooks/useKeyboardMovement.js';
+import { useGridMovement } from './hooks/useGridMovement.js';
 import { Lobby } from './components/Lobby.js';
 import { TextLog } from './components/TextLog.js';
 import { MiniMap } from './components/MiniMap.js';
@@ -28,7 +28,7 @@ export function App() {
   const currentRoom = rooms[currentRoomId];
   const availableExits = currentRoom?.exits ?? {};
 
-  useKeyboardMovement(actions.move, inExploration);
+  useGridMovement(actions.gridMove, inExploration);
 
   let content;
 
@@ -91,7 +91,7 @@ export function App() {
             <>
               <div className="room-area">
                 <Compass exits={availableExits} />
-                <RoomView onInteract={actions.interact} />
+                <RoomView />
               </div>
               <TextLog />
               <ChatInput onSend={actions.chat} />

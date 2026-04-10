@@ -217,8 +217,8 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      case 'move': {
-        getRoom(playerId)?.gameSession?.handleMove(playerId, msg.direction);
+      case 'grid_move': {
+        getRoom(playerId)?.gameSession?.handleGridMove(playerId, msg.direction);
         break;
       }
       case 'combat_action': {
@@ -259,11 +259,7 @@ wss.on('connection', (ws) => {
         getRoom(playerId)?.gameSession?.handlePuzzleAnswer(playerId, msg.roomId, msg.answerIndex);
         break;
       }
-      case 'interact': {
-        getRoom(playerId)?.gameSession?.handleInteract(playerId, msg.interactableId);
-        break;
-      }
-      case 'interact_action': {
+case 'interact_action': {
         getRoom(playerId)?.gameSession?.handleInteractAction(playerId, msg.interactableId, msg.actionId);
         break;
       }

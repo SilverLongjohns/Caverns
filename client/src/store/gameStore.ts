@@ -53,6 +53,8 @@ export interface GameStore {
       usedBy?: string;
     }[];
   } | null;
+  mobPositions: Record<string, { mobId: string; mobName: string; x: number; y: number }>;
+  playerPositions: Record<string, { x: number; y: number }>;
   handleServerMessage: (msg: ServerMessage) => void;
   setLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
   reset: () => void;
@@ -83,6 +85,8 @@ const initialState = {
   scoutThreats: {},
   selectedInteractableId: null,
   pendingInteractActions: null,
+  mobPositions: {},
+  playerPositions: {},
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -121,6 +125,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
           pendingLoot: null,
           pendingDefendQte: null,
           gameOver: null,
+          playerPositions: msg.playerPositions ?? {},
+          mobPositions: {},
         });
         break;
 
@@ -139,6 +145,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
             [msg.playerId]: { ...state.players[msg.playerId], roomId: msg.roomId },
           },
           currentRoomId: isMe ? msg.roomId : state.currentRoomId,
+          playerPositions: {
+            ...state.playerPositions,
+            [msg.playerId]: { x: msg.x, y: msg.y },
+          },
           // Clear room-specific UI state when we move
           ...(isMe ? {
             activePuzzle: null,
@@ -336,6 +346,47 @@ export const useGameStore = create<GameStore>((set, get) => ({
           };
         });
         break;
+
+      case 'mob_spawn':
+        set((state) => ({
+          mobPositions: {
+            ...state.mobPositions,
+            [msg.roomId]: { mobId: msg.mobId, mobName: msg.mobName, x: msg.x, y: msg.y },
+          },
+        }));
+        break;
+
+      case 'mob_position':
+        set((state) => {
+          const existing = state.mobPositions[msg.roomId];
+          if (!existing) return {};
+          return {
+            mobPositions: {
+              ...state.mobPositions,
+              [msg.roomId]: { ...existing, x: msg.x, y: msg.y },
+            },
+          };
+        });
+        break;
+
+      case 'mob_despawn':
+        set((state) => {
+          const { [msg.roomId]: _, ...rest } = state.mobPositions;
+          return { mobPositions: rest };
+        });
+        break;
+
+      case 'player_position': {
+        const isLocal = msg.playerId === get().playerId;
+        set((state) => ({
+          playerPositions: {
+            ...state.playerPositions,
+            [msg.playerId]: { x: msg.x, y: msg.y },
+          },
+          ...(isLocal ? { selectedInteractableId: null, pendingInteractActions: null } : {}),
+        }));
+        break;
+      }
     }
   },
 

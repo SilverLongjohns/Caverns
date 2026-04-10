@@ -5,6 +5,7 @@ import { ENERGY_CONFIG } from './data/energy.js';
 
 // === Directions ===
 export type Direction = 'north' | 'south' | 'east' | 'west';
+export type GridDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 // === Items ===
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary' | 'unique';
@@ -89,6 +90,13 @@ export interface RoomPuzzle {
   correctIndex: number;
 }
 
+export interface TileGrid {
+  width: number;
+  height: number;
+  tiles: string[][];
+  themes?: (string | null)[][];
+}
+
 export interface Room {
   id: string;
   type: RoomType;
@@ -101,6 +109,7 @@ export interface Room {
   puzzle?: RoomPuzzle;
   gridX?: number;
   gridY?: number;
+  tileGrid?: TileGrid;
   interactables?: InteractableInstance[];
 }
 
