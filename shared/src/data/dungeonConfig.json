@@ -1,0 +1,7 @@
+{
+  "keyPlacementDepthMin": 0.6,
+  "keyPlacementDepthMax": 0.75,
+  "puzzlesPerZone": 1,
+  "interactableDensity": 0.65,
+  "encounterSpawnChance": 0.25
+}

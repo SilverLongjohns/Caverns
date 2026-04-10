@@ -7,6 +7,7 @@ import type {
   ActiveBuff,
   EquippedEffect,
 } from '@caverns/shared';
+import { COMBAT_CONFIG } from '@caverns/shared';
 import { ItemEffectResolver } from './ItemEffectResolver.js';
 
 export interface CombatPlayerInfo {
@@ -85,7 +86,7 @@ export class CombatManager {
     }
 
     const alive = Array.from(this.participants.values()).filter((p) => p.alive);
-    alive.sort((a, b) => b.initiative + Math.random() * 5 - (a.initiative + Math.random() * 5));
+    alive.sort((a, b) => b.initiative + Math.random() * COMBAT_CONFIG.initiativeRandomRange - (a.initiative + Math.random() * COMBAT_CONFIG.initiativeRandomRange));
     this.turnOrder = alive.map((p) => p.id);
     this.turnIndex = 0;
   }
@@ -169,8 +170,8 @@ export class CombatManager {
         // Overcharge
         const overchargeMultiplier = attackEffects.overchargeMultiplier ?? 1.0;
 
-        const effectiveDefense = target.isDefending ? targetDefense * 2 : targetDefense;
-        const damage = Math.max(1, Math.floor((actorDamage - effectiveDefense) * finalMultiplier * overchargeMultiplier));
+        const effectiveDefense = target.isDefending ? targetDefense * COMBAT_CONFIG.defenseMultiplierWhenDefending : targetDefense;
+        const damage = Math.max(COMBAT_CONFIG.minDamage, Math.floor((actorDamage - effectiveDefense) * finalMultiplier * overchargeMultiplier));
         target.hp = Math.max(0, target.hp - damage);
 
         // Track for momentum and rampage
@@ -268,7 +269,7 @@ export class CombatManager {
       case 'flee': {
         let totalOpportunityDamage = 0;
         for (const p of this.participants.values()) {
-          if (p.type === 'mob' && p.alive) totalOpportunityDamage += Math.floor(p.damage / 2);
+          if (p.type === 'mob' && p.alive) totalOpportunityDamage += Math.floor(p.damage / COMBAT_CONFIG.fleeDamageDivisor);
         }
         actor.hp = Math.max(0, actor.hp - totalOpportunityDamage);
         actor.alive = false;
@@ -318,10 +319,10 @@ export class CombatManager {
       .filter(b => b.type === 'defense_multiply')
       .reduce((mult, b) => mult * (b.value ?? 1), 1);
     const effectiveDefense = target.isDefending
-      ? Math.floor((target.defense + bonusDefense) * defenseMultiplier * 2)
+      ? Math.floor((target.defense + bonusDefense) * defenseMultiplier * COMBAT_CONFIG.defenseMultiplierWhenDefending)
       : Math.floor((target.defense + bonusDefense) * defenseMultiplier);
 
-    const rawDamage = Math.max(1, mob.damage - effectiveDefense);
+    const rawDamage = Math.max(COMBAT_CONFIG.minDamage, mob.damage - effectiveDefense);
 
     if (target.isDefending) {
       return {

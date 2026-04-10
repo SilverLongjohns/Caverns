@@ -1,13 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '../store/gameStore.js';
+import { LOG_COLORS_CONFIG } from '../uiconfig/logColors.js';
 
-const LOG_COLORS: Record<string, string> = {
-  narration: '#c8b89a',
-  combat: '#cc4444',
-  loot: '#d4a857',
-  system: '#7a6e5a',
-  chat: '#88bbdd',
-};
+const LOG_COLORS: Record<string, string> = LOG_COLORS_CONFIG;
 
 const RARITY_PATTERN = /\{(common|uncommon|rare|legendary|unique):([^}]+)\}/g;
 

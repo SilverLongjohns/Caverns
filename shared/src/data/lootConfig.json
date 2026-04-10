@@ -1,0 +1,22 @@
+{
+  "timeoutMs": 15000,
+  "skullRarityWeights": {
+    "1": { "common": 5, "uncommon": 2, "rare": 0.5, "legendary": 0.1, "unique": 0 },
+    "2": { "common": 3, "uncommon": 3, "rare": 1.5, "legendary": 0.5, "unique": 0.1 },
+    "3": { "common": 1, "uncommon": 3, "rare": 3, "legendary": 1.5, "unique": 0.5 }
+  },
+  "defaultLootWeights": {
+    "common": 0.499,
+    "uncommon": 0.30,
+    "rare": 0.15,
+    "legendary": 0.05,
+    "unique": 0.001
+  },
+  "starterLootWeights": {
+    "common": 0.70,
+    "uncommon": 0.27,
+    "rare": 0.025,
+    "legendary": 0.005,
+    "unique": 0.0
+  }
+}

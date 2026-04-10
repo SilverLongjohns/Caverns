@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import type { Direction } from '@caverns/shared';
+import { MAP_UI_CONFIG } from '../uiconfig/mapUI.js';
 
 const ROOM_W = 100;
 const ROOM_H = 50;
@@ -8,10 +9,10 @@ const GAP_X = 140;
 const GAP_Y = 80;
 
 // How many grid units to show around the player in follow mode
-const VIEWPORT_RADIUS_X = 1.5;
-const VIEWPORT_RADIUS_Y = 1.5;
+const VIEWPORT_RADIUS_X = MAP_UI_CONFIG.viewportRadius;
+const VIEWPORT_RADIUS_Y = MAP_UI_CONFIG.viewportRadius;
 
-const PLAYER_COLORS = ['#d4a857', '#cc4444', '#5599cc', '#88cc66'];
+const PLAYER_COLORS = MAP_UI_CONFIG.playerColors;
 
 const DIR_OFFSET: Record<Direction, { dx: number; dy: number }> = {
   north: { dx: 0, dy: -1 },

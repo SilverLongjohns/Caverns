@@ -11,6 +11,10 @@ import {
   clampCritMultiplier,
   clampDamageReduction,
   QTE_CONFIG,
+  ENERGY_CONFIG,
+  LOOT_CONFIG,
+  TIMING_CONFIG,
+  DUNGEON_CONFIG,
   getClassDefinition,
   getPlayerEquippedEffects,
   type EquippedEffect,
@@ -199,7 +203,6 @@ export class GameSession {
       });
     }
     this.playerManager.movePlayer(playerId, targetRoomId);
-    this.playerManager.tickCooldowns(playerId);
     const isNewRoom = !this.revealedRooms.has(targetRoomId);
     if (isNewRoom) {
       this.revealedRooms.add(targetRoomId);
@@ -364,6 +367,8 @@ export class GameSession {
         this.broadcast({ type: 'player_update', player: target });
       }
     }
+    this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
+    this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
     combat.advanceTurn();
     this.afterCombatTurn(combatRoomId, combat);
   }
@@ -400,14 +405,14 @@ export class GameSession {
     if (combat.isComplete()) {
       const result = combat.getResult();
       // Delay combat end on victory so the client disintegration animation plays
-      const delay = result === 'victory' ? 1000 : 0;
+      const delay = result === 'victory' ? TIMING_CONFIG.victoryDelayMs : 0;
       setTimeout(() => this.finishCombat(roomId, result as 'victory' | 'flee' | 'wipe'), delay);
       return;
     }
     const currentId = combat.getCurrentTurnId();
     if (combat.isMobTurn(currentId)) {
       // Delay mob turns so attack animations play out before the next action
-      setTimeout(() => this.processMobTurn(roomId, combat), 600);
+      setTimeout(() => this.processMobTurn(roomId, combat), TIMING_CONFIG.mobTurnDelayMs);
     } else {
       this.broadcastTurnPrompt(combat);
     }
@@ -447,7 +452,7 @@ export class GameSession {
         setTimeout(() => {
           this.broadcast({ type: 'game_over', result: 'victory' });
           this.onGameOver?.();
-        }, 3000);
+        }, TIMING_CONFIG.postVictoryLootDelayMs);
       }
     }
     if (this.playerManager.allPlayersDowned()) {
@@ -624,15 +629,9 @@ export class GameSession {
     return false;
   }
 
-  private static SKULL_RARITY_WEIGHTS: Record<number, Record<string, number>> = {
-    1: { common: 5, uncommon: 2, rare: 0.5, legendary: 0.1, unique: 0 },
-    2: { common: 3, uncommon: 3, rare: 1.5, legendary: 0.5, unique: 0.1 },
-    3: { common: 1, uncommon: 3, rare: 3, legendary: 1.5, unique: 0.5 },
-  };
-
   private rollMobLoot(lootTable: string[], skullRating: number): Item | undefined {
-    const weights = GameSession.SKULL_RARITY_WEIGHTS[skullRating]
-      ?? GameSession.SKULL_RARITY_WEIGHTS[2];
+    const weights = LOOT_CONFIG.skullRarityWeights[String(skullRating)]
+      ?? LOOT_CONFIG.skullRarityWeights['2'];
 
     // Resolve items and assign weights by rarity
     const candidates: { item: Item; weight: number }[] = [];
@@ -703,7 +702,7 @@ export class GameSession {
       this.broadcastToRoom(roomId, { type: 'text_log', message: `{${item.rarity}:${item.name}} dropped!`, logType: 'loot' });
     }
     if (playerIds.length > 1) {
-      this.broadcastToRoom(roomId, { type: 'loot_prompt', items: regularItems, timeout: 15000 });
+      this.broadcastToRoom(roomId, { type: 'loot_prompt', items: regularItems, timeout: LOOT_CONFIG.timeoutMs });
     }
     this.lootManager.startLootRound(roomId, regularItems, playerIds);
   }
@@ -839,7 +838,7 @@ export class GameSession {
         logType: 'system',
       });
       // 25% chance to spawn a mob — pick a skull-1 mob from the dungeon
-      if (Math.random() < 0.25) {
+      if (Math.random() < DUNGEON_CONFIG.encounterSpawnChance) {
         const skull1Mobs = this.content.mobs.filter(m => m.skullRating === 1);
         if (skull1Mobs.length > 0) {
           const mob = skull1Mobs[Math.floor(Math.random() * skull1Mobs.length)];
@@ -1149,8 +1148,8 @@ export class GameSession {
     const ability = classDef.abilities.find(a => a.id === abilityId && !a.passive);
     if (!ability) return;
 
-    if (!this.playerManager.isAbilityReady(playerId, abilityId)) {
-      this.sendTo(playerId, { type: 'error', message: `${ability.name} is on cooldown.` });
+    if (!this.playerManager.hasEnergy(playerId, ability.energyCost)) {
+      this.sendTo(playerId, { type: 'error', message: `Not enough energy for ${ability.name}.` });
       return;
     }
 
@@ -1162,8 +1161,8 @@ export class GameSession {
 
     const result = this.abilityResolver.resolveAllEffects(ability.effects, caster, target ?? null, participants);
 
-    // Set cooldown
-    this.playerManager.setCooldown(playerId, abilityId, ability.cooldown);
+    // Spend energy
+    this.playerManager.spendEnergy(playerId, ability.energyCost);
 
     // Broadcast result
     const targetParticipant = targetId ? participants.find(p => p.id === targetId) : null;
@@ -1187,7 +1186,8 @@ export class GameSession {
     // Narrate
     this.narrateAbility(player.roomId, player.name, ability.name, targetParticipant?.name, result);
 
-    // Sync player update (cooldowns changed)
+    this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
+    // Sync player update (energy changed)
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
 
     // Handle target downed by ability

@@ -1,4 +1,5 @@
 import type { Item } from '@caverns/shared';
+import { LOOT_CONFIG } from '@caverns/shared';
 
 type LootChoice = 'need' | 'greed' | 'pass';
 
@@ -37,7 +38,7 @@ export class LootManager {
     for (const item of items) { choices.set(item.id, new Map()); }
     this.pendingRound = {
       items, playerIds, choices,
-      timer: setTimeout(() => this.resolveRound(), 15000),
+      timer: setTimeout(() => this.resolveRound(), LOOT_CONFIG.timeoutMs),
     };
   }
 

@@ -1,0 +1,10 @@
+{
+  "inventorySlots": 7,
+  "consumableSlots": 6,
+  "baseStats": {
+    "maxHp": 50,
+    "damage": 5,
+    "defense": 2,
+    "initiative": 5
+  }
+}

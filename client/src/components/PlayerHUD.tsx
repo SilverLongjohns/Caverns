@@ -1,7 +1,6 @@
-import { useMemo } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import type { Item, ItemStats } from '@caverns/shared';
-import { CLASS_DEFINITIONS } from '@caverns/shared';
+import { ENERGY_CONFIG } from '@caverns/shared';
 
 function formatStats(stats: ItemStats): string {
   const parts: string[] = [];
@@ -42,12 +41,6 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable }: PlayerHU
   const players = useGameStore((s) => s.players);
   const player = players[playerId];
 
-  const playerAbilities = useMemo(() => {
-    const classDef = CLASS_DEFINITIONS.find(c => c.id === player?.className);
-    if (!classDef) return [];
-    return classDef.abilities.filter(a => !a.passive);
-  }, [player?.className]);
-
   if (!player) return null;
 
   const hpPercent = (player.hp / player.maxHp) * 100;
@@ -59,25 +52,13 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable }: PlayerHU
       <h3>{player.name}</h3>
       <div className="hud-class">{player.className}</div>
 
-      {playerAbilities.length > 0 && (
-        <div className="hud-cooldowns">
-          {playerAbilities.map((ability) => {
-            const cd = player.cooldowns?.find(c => c.abilityId === ability.id);
-            const ready = !cd || cd.turnsRemaining === 0;
-            return (
-              <div key={ability.id} className={`hud-ability ${ready ? 'ability-ready' : 'ability-cooldown'}`}>
-                <span className="ability-label">{ability.name}</span>
-                {!ready && <span className="ability-cd">{cd!.turnsRemaining}</span>}
-                {ready && <span className="ability-cd ready">{'\u2713'}</span>}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       <div className="hp-bar-container">
         <div className="hp-bar" style={{ width: `${hpPercent}%`, backgroundColor: hpColor }} />
         <span className="hp-text">{player.hp} / {player.maxHp}</span>
+      </div>
+      <div className="energy-bar-container">
+        <div className="energy-bar" style={{ width: `${((player.energy ?? 0) / ENERGY_CONFIG.maxEnergy) * 100}%` }} />
+        <span className="energy-text">{player.energy ?? 0}/{ENERGY_CONFIG.maxEnergy} Energy</span>
       </div>
       <div className="equipment-grid">
         <ItemDisplay item={player.equipment.weapon} label="Weapon" />

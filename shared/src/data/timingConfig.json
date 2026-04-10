@@ -1,0 +1,5 @@
+{
+  "victoryDelayMs": 1000,
+  "mobTurnDelayMs": 600,
+  "postVictoryLootDelayMs": 3000
+}

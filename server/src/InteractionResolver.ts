@@ -5,6 +5,7 @@ import type {
   OutcomeType,
   Item,
 } from '@caverns/shared';
+import { COMBAT_CONFIG } from '@caverns/shared';
 
 export interface ActionInfo {
   id: string;
@@ -163,7 +164,7 @@ export class InteractionResolver {
     action: InteractableAction,
     outcomeType: OutcomeType,
   ): InteractionResult {
-    const damage = 5 + Math.floor(Math.random() * 11);
+    const damage = COMBAT_CONFIG.hazardDamageMin + Math.floor(Math.random() * COMBAT_CONFIG.hazardDamageRange);
     const custom = this.pickNarration(action, outcomeType);
     const narration = (custom ?? `You ${action.label.toLowerCase()} the ${definition.name.toLowerCase()}. Something lashes out.`) + ` -${damage} HP.`;
     return { outcomeType, narration, damage };

@@ -873,25 +873,53 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   position: relative;
 }
 .ability-btn:hover:not(:disabled) { border-color: #8a6abf; color: #d4c0f0; }
-.ability-btn.on-cooldown { opacity: 0.5; }
-.cooldown-badge {
-  position: absolute; top: -4px; right: -4px;
-  background: #7a2a2a; color: #c8b89a; font-size: 0.65rem;
-  width: 16px; height: 16px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+.ability-btn.no-energy { opacity: 0.4; cursor: not-allowed; }
+
+/* Energy display in combat */
+.energy-display {
+  color: #4fc3f7;
+  font-size: 0.9em;
+  margin-bottom: 4px;
+  text-shadow: 0 0 6px rgba(79, 195, 247, 0.5);
+}
+
+.energy-cost {
+  color: #4fc3f7;
+  font-size: 0.8em;
+  opacity: 0.8;
 }
 .combat-member.targetable { cursor: pointer; outline: 1px solid #5599cc; }
 .combat-member.targetable:hover { outline-color: #88ccff; }
 
-/* === HUD Class/Cooldown === */
+/* === HUD Class/Energy === */
 .hud-class { color: #d4a857; font-size: 0.8rem; text-transform: capitalize; margin-bottom: 0.25rem; }
-.hud-cooldowns { display: flex; flex-direction: column; gap: 0.2rem; margin: 0.5rem 0; padding: 0.25rem 0; border-top: 1px solid #2a2218; }
-.hud-ability { display: flex; justify-content: space-between; font-size: 0.75rem; }
-.ability-label { color: #b8a0d4; }
-.ability-cd { color: #7a2a2a; }
-.ability-cd.ready { color: #44cc44; }
-.ability-ready .ability-label { color: #d4c0f0; }
-.ability-cooldown .ability-label { color: #5a4a3a; }
+
+/* Energy bar in PlayerHUD */
+.energy-bar-container {
+  position: relative;
+  height: 14px;
+  background: #1a1a2e;
+  border: 1px solid #4fc3f7;
+  margin-top: 4px;
+}
+
+.energy-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #0d47a1, #4fc3f7);
+  transition: width 0.3s ease;
+}
+
+.energy-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.7em;
+  line-height: 14px;
+  color: #e0e0e0;
+  text-shadow: 0 0 2px #000;
+}
 
 /* === Item Effects === */
 .item-effect {

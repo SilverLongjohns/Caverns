@@ -11,7 +11,7 @@
         "id": "shield_wall",
         "name": "Shield Wall",
         "description": "Taunt all enemies for 2 turns. Gain +50% defense.",
-        "cooldown": 3,
+        "energyCost": 15,
         "targetType": "none",
         "passive": false,
         "effects": [
@@ -23,7 +23,7 @@
         "id": "rally",
         "name": "Rally",
         "description": "All allies gain +3 defense for 2 turns.",
-        "cooldown": 4,
+        "energyCost": 20,
         "targetType": "none",
         "passive": false,
         "effects": [
@@ -44,7 +44,7 @@
         "id": "backstab",
         "name": "Backstab",
         "description": "Deal 2.5x damage, bypass target defense.",
-        "cooldown": 2,
+        "energyCost": 25,
         "targetType": "enemy",
         "passive": false,
         "effects": [
@@ -55,7 +55,7 @@
         "id": "pickpocket",
         "name": "Pickpocket",
         "description": "30% chance for extra loot after combat.",
-        "cooldown": 0,
+        "energyCost": 0,
         "targetType": "none",
         "passive": true,
         "trigger": "on_combat_victory",
@@ -77,7 +77,7 @@
         "id": "heal",
         "name": "Heal",
         "description": "Restore 30% of target ally's max HP.",
-        "cooldown": 2,
+        "energyCost": 10,
         "targetType": "ally",
         "passive": false,
         "effects": [
@@ -88,7 +88,7 @@
         "id": "blessed_ward",
         "name": "Blessed Ward",
         "description": "Target ally cannot be downed for 1 turn.",
-        "cooldown": 4,
+        "energyCost": 20,
         "targetType": "ally",
         "passive": false,
         "effects": [
@@ -109,7 +109,7 @@
         "id": "smoke_bomb",
         "name": "Smoke Bomb",
         "description": "All enemies skip their next turn.",
-        "cooldown": 3,
+        "energyCost": 25,
         "targetType": "none",
         "passive": false,
         "effects": [
@@ -120,7 +120,7 @@
         "id": "scout_drone",
         "name": "Scout Drone",
         "description": "Detect enemies in adjacent rooms.",
-        "cooldown": 0,
+        "energyCost": 0,
         "targetType": "none",
         "passive": true,
         "trigger": "on_room_enter",

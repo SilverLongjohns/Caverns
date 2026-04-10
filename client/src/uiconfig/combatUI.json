@@ -1,0 +1,5 @@
+{
+  "hpThresholdYellow": 0.5,
+  "hpThresholdRed": 0.25,
+  "hpBlockCount": 10
+}
