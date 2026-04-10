@@ -17,7 +17,9 @@
       "Bash(ls /mnt/c/Users/jakeh/WebstormProjects/Caverns/node_modules/.bin/vitest*)",
       "Bash(/mnt/c/Users/jakeh/WebstormProjects/Caverns/node_modules/.bin/vitest run:*)",
       "Bash(npx vite:*)",
-      "Bash(vitest run:*)"
+      "Bash(vitest run:*)",
+      "Bash(npm install:*)",
+      "Bash(tsc --noEmit)"
     ]
   }
 }
