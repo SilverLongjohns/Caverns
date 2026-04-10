@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import { LOG_COLORS_CONFIG } from '../uiconfig/logColors.js';
 
-const LOG_COLORS: Record<string, string> = LOG_COLORS_CONFIG;
+const LOG_COLORS: Record<string, string> = { ...LOG_COLORS_CONFIG };
 
 const RARITY_PATTERN = /\{(common|uncommon|rare|legendary|unique):([^}]+)\}/g;
 

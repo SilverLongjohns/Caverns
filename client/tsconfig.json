@@ -4,7 +4,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "jsx": "react-jsx",
-    "module": "ES2022",
+    "module": "ESNext",
     "moduleResolution": "bundler"
   },
   "include": ["src"]
