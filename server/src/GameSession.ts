@@ -511,25 +511,7 @@ export class GameSession {
           break;
         }
         case 'interact': {
-          // Move player back off the interactable tile
-          const oppositeDir = this.getOppositeGridDir(direction);
-          if (oppositeDir) {
-            grid.moveEntity(playerId, oppositeDir as GridDirection);
-            const entity = grid.getEntity(playerId);
-            if (entity) {
-              this.playerGridPositions.set(playerId, { ...entity.position });
-              this.mobAIManager.updatePlayerPosition(player.roomId, playerId, entity.position);
-              // Broadcast corrected position so client stays in sync
-              this.broadcastToRoom(player.roomId, {
-                type: 'player_position',
-                playerId,
-                roomId: player.roomId,
-                x: entity.position.x,
-                y: entity.position.y,
-              });
-            }
-          }
-          // Open interaction menu
+          // Open interaction menu — player stays on the tile
           this.handleInteract(playerId, event.entityId);
           return;
         }
@@ -1691,7 +1673,7 @@ export class GameSession {
     if (!player || player.status !== 'in_combat') return;
 
     const combat = this.combats.get(player.roomId);
-    if (!combat || combat.getCurrentTurnId() !== playerId) return;
+    if (!combat || !combat.isPlayerTurn(playerId)) return;
 
     const classDef = getClassDefinition(player.className);
     if (!classDef) return;
@@ -1711,6 +1693,15 @@ export class GameSession {
     if (!caster) return;
 
     const result = this.abilityResolver.resolveAllEffects(ability.effects, caster, target ?? null, participants);
+
+    // Sync healing to PlayerManager so it persists beyond combat
+    if (result.healing && targetId) {
+      const targetPlayer = this.playerManager.getPlayer(targetId);
+      if (targetPlayer) {
+        this.playerManager.healPlayer(targetId, result.healing);
+        this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(targetId)! });
+      }
+    }
 
     // Spend energy
     this.playerManager.spendEnergy(playerId, ability.energyCost);
