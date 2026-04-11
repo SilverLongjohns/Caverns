@@ -1344,6 +1344,10 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   color: #5a2a5a;
 }
 
+.entity-furnishing {
+  color: #665544;
+}
+
 .examine-actions {
   margin-top: 0.25rem;
 }
