@@ -16,8 +16,5 @@
     "start": "node server/dist/index.js",
     "host": "npm run build && node server/dist/index.js",
     "test": "npm run test --workspaces --if-present"
-  },
-  "dependencies": {
-    "@rollup/rollup-win32-x64-msvc": "^4.60.1"
   }
 }
