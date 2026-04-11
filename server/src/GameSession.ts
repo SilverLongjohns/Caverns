@@ -229,6 +229,45 @@ export class GameSession {
     }
   }
 
+  private checkTorchPickup(playerId: string, roomId: string, pos: { x: number; y: number }): void {
+    const room = this.rooms.get(roomId);
+    if (!room?.tileGrid?.themes) return;
+
+    const { themes, tiles } = room.tileGrid;
+    // Check 4 orthogonal neighbors for torch-themed wall tiles
+    const neighbors = [
+      { x: pos.x, y: pos.y - 1 },
+      { x: pos.x, y: pos.y + 1 },
+      { x: pos.x - 1, y: pos.y },
+      { x: pos.x + 1, y: pos.y },
+    ];
+
+    for (const n of neighbors) {
+      if (n.y < 0 || n.y >= themes.length) continue;
+      if (n.x < 0 || n.x >= (themes[0]?.length ?? 0)) continue;
+      if (themes[n.y][n.x] === 'torch' && tiles[n.y][n.x] === 'wall') {
+        // Remove torch from room data
+        themes[n.y][n.x] = null;
+
+        // Broadcast pickup
+        this.broadcastToRoom(roomId, {
+          type: 'torch_pickup',
+          playerId,
+          position: { x: n.x, y: n.y },
+          fuel: 60,
+        } as any);
+
+        this.broadcastToRoom(roomId, {
+          type: 'text_log',
+          message: 'You grab a torch from the wall. The shadows retreat.',
+          logType: 'narration',
+        });
+
+        return; // Only pick up one torch per move
+      }
+    }
+  }
+
   /**
    * BFS from an exit tile to find the nearest walkable tile that has at least
    * 2 walkable cardinal neighbors, so the player isn't boxed in.
@@ -360,6 +399,10 @@ export class GameSession {
       });
     }
 
+    if (moveResult.newPosition) {
+      this.checkTorchPickup(playerId, player.roomId, moveResult.newPosition);
+    }
+
     // Handle events from the move
     for (const event of moveResult.events) {
       switch (event.type) {
@@ -426,6 +469,7 @@ export class GameSession {
           this.playerGridPositions.set(playerId, { ...spawnPos });
           newRoomGrid.addEntity({ id: playerId, type: 'player', position: { ...spawnPos } });
           this.mobAIManager.addPlayer(targetRoomId, playerId, spawnPos);
+          this.checkTorchPickup(playerId, targetRoomId, spawnPos);
 
           // Broadcast player_moved with coordinates
           this.broadcast({ type: 'player_moved', playerId, roomId: targetRoomId, x: spawnPos.x, y: spawnPos.y });

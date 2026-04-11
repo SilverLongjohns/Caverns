@@ -79,6 +79,16 @@ export function chebyshevDistance(a: GridPosition, b: GridPosition): number {
   return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 }
 
+export function manhattanDistance(a: GridPosition, b: GridPosition): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+export function euclideanDistance(a: GridPosition, b: GridPosition): number {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
 // === Direction Offsets ===
 export const DIRECTION_OFFSETS: Record<GridDirection, { dx: number; dy: number }> = {
   n:  { dx:  0, dy: -1 },

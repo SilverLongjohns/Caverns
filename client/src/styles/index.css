@@ -85,9 +85,89 @@ body {
   justify-content: center;
   height: 100%;
   gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
 }
 
+.lobby-cave-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  height: 55%;
+}
+
+.lobby-cave-bg pre {
+  position: absolute;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: clamp(0.5rem, 1.1vw, 0.9rem);
+  line-height: 1.0;
+  color: #302a24;
+  white-space: pre;
+  letter-spacing: -0.05em;
+}
+
+.lobby-cave-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  height: 35%;
+}
+
+.lobby-cave-top pre {
+  position: absolute;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: clamp(0.4rem, 0.85vw, 0.7rem);
+  line-height: 1.0;
+  color: #302a24;
+  white-space: pre;
+  letter-spacing: -0.05em;
+}
+
+.cave-eyes {
+  position: absolute;
+  display: flex;
+  pointer-events: none;
+  z-index: 0;
+  animation: eyes-blink 12s infinite;
+  opacity: 0;
+}
+
+.cave-eye {
+  width: 1em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: #cc2020;
+  box-shadow: 0 0 4px #ff3030, 0 0 10px rgba(255, 40, 40, 0.4);
+}
+
+@keyframes eyes-blink {
+  0%, 100% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 0.9; }
+  22% { opacity: 0.9; }
+  22.5% { opacity: 0; }
+  23% { opacity: 0.8; }
+  28% { opacity: 0.8; }
+  29% { opacity: 0; }
+}
+
+.lobby > *:not(.lobby-cave-bg):not(.lobby-cave-top):not(.cave-eyes) { position: relative; z-index: 2; }
 .lobby h1 { font-size: 3rem; color: #d4a857; text-shadow: 0 0 12px rgba(212, 168, 87, 0.5), 0 0 40px rgba(212, 168, 87, 0.15); }
+.lobby-logo { width: 320px; height: auto; filter: drop-shadow(0 0 12px rgba(212, 168, 87, 0.5)) drop-shadow(0 0 40px rgba(212, 168, 87, 0.15)); }
 .lobby-subtitle { color: #7a6e5a; font-size: 1.1rem; }
 @keyframes blink {
   0%, 49% { opacity: 1; }
@@ -1033,6 +1113,15 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 .tile-hazard   { color: #dd2222; text-shadow: 0 0 3px rgba(221, 34, 34, 0.3); }
 .tile-bridge   { color: #aa7744; }
 
+/* === LoS Shadow States === */
+.tile-unseen {
+  color: transparent;
+}
+
+.tile-explored {
+  opacity: 0.3;
+}
+
 /* === Biome Theme Overrides === */
 
 /* Starter biome — earthy brown/grey */
@@ -1070,6 +1159,12 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 @keyframes lava-pulse {
   0%, 100% { text-shadow: 0 0 4px #ff2200, 0 0 8px #aa0000; }
   50% { text-shadow: 0 0 8px #ff4400, 0 0 16px #cc2200; }
+}
+
+/* Torch on wall — warm amber glow */
+.tile-wall.tile-theme-torch {
+  color: #ffaa33;
+  text-shadow: 0 0 4px rgba(255, 170, 51, 0.5), 0 0 8px rgba(255, 100, 0, 0.3);
 }
 
 /* === Debug Panel === */
@@ -1443,4 +1538,46 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 .stat-alloc-btn:hover {
   background: #5a4a30;
   text-shadow: 0 0 4px rgba(212, 168, 87, 0.6);
+}
+
+/* === Torch HUD === */
+.torch-hud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-family: inherit;
+}
+
+.torch-icon {
+  color: #ffaa33;
+  text-shadow: 0 0 4px rgba(255, 170, 51, 0.5);
+  font-size: 1em;
+}
+
+.torch-bar-bg {
+  width: 120px;
+  height: 6px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+
+.torch-bar-fill {
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.torch-full {
+  background: #ffaa33;
+  box-shadow: 0 0 4px rgba(255, 170, 51, 0.4);
+}
+
+.torch-mid {
+  background: #ff7700;
+  box-shadow: 0 0 4px rgba(255, 119, 0, 0.4);
+}
+
+.torch-low {
+  background: #ff3300;
+  box-shadow: 0 0 4px rgba(255, 51, 0, 0.4);
 }

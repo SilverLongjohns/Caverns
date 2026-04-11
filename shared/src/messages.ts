@@ -353,6 +353,13 @@ export interface LevelUpMessage {
   newLevel: number;
 }
 
+export interface TorchPickupMessage {
+  type: 'torch_pickup';
+  playerId: string;
+  position: { x: number; y: number };
+  fuel: number;
+}
+
 export type ServerMessage =
   | LobbyStateMessage
   | GameStartMessage
@@ -380,4 +387,5 @@ export type ServerMessage =
   | MobDespawnMessage
   | PlayerPositionMessage
   | ErrorMessage
-  | LevelUpMessage;
+  | LevelUpMessage
+  | TorchPickupMessage;
