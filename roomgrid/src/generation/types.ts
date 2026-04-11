@@ -18,6 +18,12 @@ export interface GenerationParams {
   minOpenPercent?: number;
   hazardChance?: number;
   waterChance?: number;
+  waterStyle?: 'scatter' | 'puddle' | 'stream' | 'mixed';
+  waterCount?: number;
+  waterSize?: number;
+  waterLength?: number;
+  streamCount?: number;
+  puddleCount?: number;
 }
 
 export interface BiomeGenerationConfig {

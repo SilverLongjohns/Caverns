@@ -19,12 +19,20 @@ interface TileGridViewProps {
   entities: EntityOverlay[];
 }
 
-/** Animated water tile that randomly toggles between ~ and ≈ */
-const WaterChar = memo(function WaterChar() {
-  const [char, setChar] = useState('~');
+const WATER_CHARS: Record<string, [string, string]> = {
+  mineral_pool: ['-', '+'],
+  spore_pool: ['~', '≈'],
+  deep_water: ['~', '≈'],
+};
+const DEFAULT_WATER_CHARS: [string, string] = ['~', '≈'];
+
+/** Animated water tile that randomly toggles between two chars */
+const WaterChar = memo(function WaterChar({ theme }: { theme?: string | null }) {
+  const chars = (theme && WATER_CHARS[theme]) || DEFAULT_WATER_CHARS;
+  const [char, setChar] = useState(chars[0]);
   useEffect(() => {
     const id = setInterval(() => {
-      setChar((c) => (c === '~' ? '≈' : '~'));
+      setChar((c) => (c === chars[0] ? chars[1] : chars[0]));
     }, 800 + Math.random() * 700);
     return () => clearInterval(id);
   }, []);
@@ -63,7 +71,7 @@ export function TileGridView({ tileGrid, entities }: TileGridViewProps) {
         if (tileType === 'water') {
           cells.push(
             <span key={x} className={tileClass}>
-              <WaterChar />
+              <WaterChar theme={theme} />
             </span>
           );
         } else {

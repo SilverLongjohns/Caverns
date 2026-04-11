@@ -5,6 +5,7 @@ import type { MobInstance, ServerMessage } from '@caverns/shared';
 const WANDER_INTERVAL_MS = 1500;
 const IDLE_CHANCE = 0.3;
 const DETECTION_RANGE = 3;
+const PURSUIT_RANGE = 10;
 const MIN_SPAWN_DISTANCE_FROM_EXIT = 5;
 
 interface MobRoom {
@@ -217,13 +218,35 @@ export class MobAIManager {
     for (const room of this.rooms.values()) {
       if (room.paused) continue;
 
-      // Random idle chance
-      if (Math.random() < IDLE_CHANCE) continue;
+      // Find nearest player
+      let nearestPlayer: GridPosition | null = null;
+      let nearestDist = Infinity;
+      for (const playerPos of room.playerPositions.values()) {
+        const dist = chebyshevDistance(room.mobPosition, playerPos);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestPlayer = playerPos;
+        }
+      }
 
-      // Shuffle directions
-      const shuffled = [...directions].sort(() => Math.random() - 0.5);
+      // If player is within pursuit range, move toward them; otherwise wander
+      let moveDirections: GridDirection[];
+      if (nearestPlayer && nearestDist <= PURSUIT_RANGE) {
+        // Sort directions by which ones bring mob closer to player
+        moveDirections = [...directions].sort((a, b) => {
+          const oa = DIRECTION_OFFSETS[a];
+          const ob = DIRECTION_OFFSETS[b];
+          const posA = { x: room.mobPosition.x + oa.dx, y: room.mobPosition.y + oa.dy };
+          const posB = { x: room.mobPosition.x + ob.dx, y: room.mobPosition.y + ob.dy };
+          return chebyshevDistance(posA, nearestPlayer!) - chebyshevDistance(posB, nearestPlayer!);
+        });
+      } else {
+        // Random idle chance only when wandering
+        if (Math.random() < IDLE_CHANCE) continue;
+        moveDirections = [...directions].sort(() => Math.random() - 0.5);
+      }
 
-      for (const dir of shuffled) {
+      for (const dir of moveDirections) {
         const result = room.grid.moveEntity(room.mob.instanceId, dir);
         if (result.success && result.newPosition) {
           room.mobPosition = { ...result.newPosition };

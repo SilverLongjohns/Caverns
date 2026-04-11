@@ -93,6 +93,15 @@ export interface ChatMessage {
   text: string;
 }
 
+export interface DebugTeleportMessage {
+  type: 'debug_teleport';
+  roomId: string;
+}
+
+export interface DebugRevealAllMessage {
+  type: 'debug_reveal_all';
+}
+
 export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
@@ -107,7 +116,9 @@ export type ClientMessage =
   | DefendResultMessage
   | PuzzleAnswerMessage
   | InteractActionMessage
-  | ChatMessage;
+  | ChatMessage
+  | DebugTeleportMessage
+  | DebugRevealAllMessage;
 
 // === Server -> Client ===
 

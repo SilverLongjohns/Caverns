@@ -8,14 +8,26 @@
   {
     "biomeId": "fungal",
     "strategy": "cavern",
-    "params": { "fillProbability": 0.45, "smoothingPasses": 5, "waterChance": 0.1 },
+    "params": { "fillProbability": 0.45, "smoothingPasses": 5, "waterChance": 0.08, "waterStyle": "scatter" },
     "tileThemes": { "floor": "moss", "wall": "fungal_rock", "water": "spore_pool" }
   },
   {
-    "biomeId": "crypt",
+    "biomeId": "crystal",
+    "strategy": "cavern",
+    "params": { "fillProbability": 0.42, "smoothingPasses": 4, "waterChance": 0.05, "waterStyle": "puddle", "waterCount": 2, "waterSize": 5 },
+    "tileThemes": { "floor": "crystal_floor", "wall": "crystal_wall", "water": "mineral_pool" }
+  },
+  {
+    "biomeId": "flooded",
+    "strategy": "cavern",
+    "params": { "fillProbability": 0.32, "smoothingPasses": 3, "waterChance": 0.25, "waterStyle": "mixed", "streamCount": 2, "waterLength": 35, "puddleCount": 4, "waterSize": 15 },
+    "tileThemes": { "floor": "wet_stone", "wall": "slick_rock", "water": "deep_water" }
+  },
+  {
+    "biomeId": "bone",
     "strategy": "structured",
     "params": { "subRoomCount": 3, "featureChance": 0.4 },
-    "tileThemes": { "floor": "stone_tile", "wall": "carved_stone" }
+    "tileThemes": { "floor": "bone_floor", "wall": "bone_wall" }
   },
   {
     "biomeId": "volcanic",

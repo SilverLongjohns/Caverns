@@ -12,6 +12,7 @@ import { CombatView } from './components/CombatView.js';
 import { RoomView } from './components/RoomView.js';
 import { Compass } from './components/Compass.js';
 import { ChatInput } from './components/ChatInput.js';
+import { DebugPanel } from './components/DebugPanel.js';
 
 export function App() {
   const wsRef = useWebSocket();
@@ -116,6 +117,7 @@ export function App() {
   return (
     <>
       {content}
+      {import.meta.env.DEV && connectionStatus === 'in_game' && !gameOver && <DebugPanel onTeleport={actions.debugTeleport} onRevealAll={actions.debugRevealAll} />}
       <div className="crt-overlay" />
     </>
   );
