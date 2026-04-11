@@ -17,6 +17,7 @@ interface TileGridViewProps {
     themes?: (string | null)[][];
   };
   entities: EntityOverlay[];
+  alert?: { x: number; y: number } | null;
 }
 
 const WATER_CHARS: Record<string, [string, string]> = {
@@ -39,7 +40,7 @@ const WaterChar = memo(function WaterChar({ theme }: { theme?: string | null }) 
   return <>{char}</>;
 });
 
-export function TileGridView({ tileGrid, entities }: TileGridViewProps) {
+export function TileGridView({ tileGrid, entities, alert }: TileGridViewProps) {
   const { width, height, tiles, themes } = tileGrid;
 
   // Build entity lookup: "x,y" -> EntityOverlay
@@ -92,8 +93,20 @@ export function TileGridView({ tileGrid, entities }: TileGridViewProps) {
   }
 
   return (
-    <pre className="room-grid">
+    <pre className="room-grid" style={{ position: 'relative' }}>
       {rows}
+      {alert && (
+        <span
+          className="mob-alert"
+          style={{
+            position: 'absolute',
+            left: `${alert.x}ch`,
+            top: `calc(${alert.y} * 1.3em)`,
+          }}
+        >
+          !
+        </span>
+      )}
     </pre>
   );
 }

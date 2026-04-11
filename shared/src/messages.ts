@@ -307,6 +307,14 @@ export interface MobPositionMessage {
   y: number;
 }
 
+export interface MobAlertMessage {
+  type: 'mob_alert';
+  roomId: string;
+  mobId: string;
+  x: number;
+  y: number;
+}
+
 export interface MobDespawnMessage {
   type: 'mob_despawn';
   roomId: string;
@@ -349,6 +357,7 @@ export type ServerMessage =
   | InteractableStateMessage
   | MobSpawnMessage
   | MobPositionMessage
+  | MobAlertMessage
   | MobDespawnMessage
   | PlayerPositionMessage
   | ErrorMessage;

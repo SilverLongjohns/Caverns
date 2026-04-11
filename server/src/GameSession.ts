@@ -125,6 +125,9 @@ export class GameSession {
     this.mobAIManager.onDetection = (roomId: string, mobId: string) => {
       this.handleMobDetection(roomId, mobId);
     };
+    this.mobAIManager.onPursuitStart = (roomId: string, mobId: string, x: number, y: number) => {
+      this.broadcast({ type: 'mob_alert', roomId, mobId, x, y });
+    };
   }
 
   addPlayer(id: string, name: string, className: string = 'vanguard'): void {

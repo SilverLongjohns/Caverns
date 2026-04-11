@@ -54,6 +54,7 @@ export interface GameStore {
     }[];
   } | null;
   mobPositions: Record<string, { mobId: string; mobName: string; x: number; y: number }>;
+  mobAlert: { roomId: string; x: number; y: number } | null;
   playerPositions: Record<string, { x: number; y: number }>;
   handleServerMessage: (msg: ServerMessage) => void;
   setLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
@@ -86,6 +87,7 @@ const initialState = {
   selectedInteractableId: null,
   pendingInteractActions: null,
   mobPositions: {},
+  mobAlert: null,
   playerPositions: {},
 };
 
@@ -374,6 +376,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
           const { [msg.roomId]: _, ...rest } = state.mobPositions;
           return { mobPositions: rest };
         });
+        break;
+
+      case 'mob_alert':
+        set({ mobAlert: { roomId: msg.roomId, x: msg.x, y: msg.y } });
+        setTimeout(() => useGameStore.setState({ mobAlert: null }), 800);
         break;
 
       case 'player_position': {

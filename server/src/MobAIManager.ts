@@ -3,8 +3,9 @@ import { chebyshevDistance, DIRECTION_OFFSETS } from '@caverns/roomgrid';
 import type { MobInstance, ServerMessage } from '@caverns/shared';
 
 const WANDER_INTERVAL_MS = 1500;
+const PURSUIT_INTERVAL_MS = 600;
 const IDLE_CHANCE = 0.3;
-const DETECTION_RANGE = 3;
+const DETECTION_RANGE = 2;
 const PURSUIT_RANGE = 10;
 const MIN_SPAWN_DISTANCE_FROM_EXIT = 5;
 
@@ -14,16 +15,20 @@ interface MobRoom {
   mob: MobInstance;
   mobPosition: GridPosition;
   paused: boolean;
+  pursuing: boolean;
   playerPositions: Map<string, GridPosition>;
 }
 
 export class MobAIManager {
   private rooms = new Map<string, MobRoom>();
-  private intervalId: ReturnType<typeof setInterval>;
+  private wanderIntervalId: ReturnType<typeof setInterval>;
+  private pursuitIntervalId: ReturnType<typeof setInterval>;
   public onDetection: ((roomId: string, mobId: string) => void) | null = null;
+  public onPursuitStart: ((roomId: string, mobId: string, x: number, y: number) => void) | null = null;
 
   constructor(private broadcastToRoom: (roomId: string, msg: ServerMessage) => void) {
-    this.intervalId = setInterval(() => this.tick(), WANDER_INTERVAL_MS);
+    this.wanderIntervalId = setInterval(() => this.tick(false), WANDER_INTERVAL_MS);
+    this.pursuitIntervalId = setInterval(() => this.tick(true), PURSUIT_INTERVAL_MS);
   }
 
   registerRoom(roomId: string, grid: RoomGrid, mob: MobInstance): void {
@@ -41,6 +46,7 @@ export class MobAIManager {
       mob,
       mobPosition: { ...spawnPos },
       paused: false,
+      pursuing: false,
       playerPositions: new Map(),
     };
 
@@ -157,7 +163,8 @@ export class MobAIManager {
   }
 
   destroy(): void {
-    clearInterval(this.intervalId);
+    clearInterval(this.wanderIntervalId);
+    clearInterval(this.pursuitIntervalId);
   }
 
   private findSpawnPosition(grid: RoomGrid): GridPosition {
@@ -212,7 +219,7 @@ export class MobAIManager {
     return pool[idx];
   }
 
-  private tick(): void {
+  private tick(pursuitTick: boolean): void {
     const directions = Object.keys(DIRECTION_OFFSETS) as GridDirection[];
 
     for (const room of this.rooms.values()) {
@@ -229,10 +236,25 @@ export class MobAIManager {
         }
       }
 
-      // If player is within pursuit range, move toward them; otherwise wander
+      const pursuing = nearestPlayer && nearestDist <= PURSUIT_RANGE;
+
+      // Fire alert on transition to pursuit
+      if (pursuing && !room.pursuing) {
+        room.pursuing = true;
+        this.onPursuitStart?.(room.roomId, room.mob.instanceId, room.mobPosition.x, room.mobPosition.y);
+      } else if (!pursuing) {
+        room.pursuing = false;
+      }
+
+      // Pursuing rooms only act on pursuit ticks, wandering rooms only on wander ticks
+      if (pursuing !== pursuitTick) continue;
+
+      if (!pursuing) {
+        if (Math.random() < IDLE_CHANCE) continue;
+      }
+
       let moveDirections: GridDirection[];
-      if (nearestPlayer && nearestDist <= PURSUIT_RANGE) {
-        // Sort directions by which ones bring mob closer to player
+      if (pursuing) {
         moveDirections = [...directions].sort((a, b) => {
           const oa = DIRECTION_OFFSETS[a];
           const ob = DIRECTION_OFFSETS[b];
@@ -241,8 +263,6 @@ export class MobAIManager {
           return chebyshevDistance(posA, nearestPlayer!) - chebyshevDistance(posB, nearestPlayer!);
         });
       } else {
-        // Random idle chance only when wandering
-        if (Math.random() < IDLE_CHANCE) continue;
         moveDirections = [...directions].sort(() => Math.random() - 0.5);
       }
 
