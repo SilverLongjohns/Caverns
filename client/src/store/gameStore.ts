@@ -57,6 +57,9 @@ export interface GameStore {
   mobAlert: { roomId: string; x: number; y: number } | null;
   playerPositions: Record<string, { x: number; y: number }>;
   levelUpGlow: boolean;
+  torchFuel: number;
+  torchMaxFuel: number;
+  exploredTiles: Set<string>;
   handleServerMessage: (msg: ServerMessage) => void;
   setLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
   reset: () => void;
@@ -91,6 +94,9 @@ const initialState = {
   mobAlert: null,
   playerPositions: {},
   levelUpGlow: false,
+  torchFuel: 0,
+  torchMaxFuel: 0,
+  exploredTiles: new Set<string>(),
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -158,6 +164,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
             activePuzzle: null,
             selectedInteractableId: null,
             pendingInteractActions: null,
+            exploredTiles: new Set<string>(),
           } : {}),
         }));
         break;
@@ -409,6 +416,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
       }
 
+      case 'torch_pickup': {
+        if (msg.playerId === get().playerId) {
+          set({ torchFuel: msg.fuel, torchMaxFuel: msg.fuel });
+        }
+        // Update the wall tile theme to remove the torch for all players
+        set((state) => {
+          const roomId = state.currentRoomId;
+          const room = state.rooms[roomId];
+          if (!room?.tileGrid?.themes) return {};
+          const newThemes = room.tileGrid.themes.map((row, y) =>
+            row.map((theme, x) =>
+              x === msg.position.x && y === msg.position.y && theme === 'torch' ? null : theme
+            )
+          );
+          return {
+            rooms: {
+              ...state.rooms,
+              [roomId]: {
+                ...room,
+                tileGrid: { ...room.tileGrid, themes: newThemes },
+              },
+            },
+          };
+        });
+        break;
+      }
+
       case 'player_position': {
         const isLocal = msg.playerId === get().playerId;
         set((state) => ({
@@ -416,7 +450,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
             ...state.playerPositions,
             [msg.playerId]: { x: msg.x, y: msg.y },
           },
-          ...(isLocal ? { selectedInteractableId: null, pendingInteractActions: null } : {}),
+          ...(isLocal ? {
+            selectedInteractableId: null,
+            pendingInteractActions: null,
+            torchFuel: Math.max(0, state.torchFuel - 1),
+          } : {}),
         }));
         break;
       }

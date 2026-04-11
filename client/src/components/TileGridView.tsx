@@ -18,6 +18,8 @@ interface TileGridViewProps {
   };
   entities: EntityOverlay[];
   alert?: { x: number; y: number } | null;
+  visibleTiles?: Set<string>;
+  exploredTiles?: Set<string>;
 }
 
 const WATER_CHARS: Record<string, [string, string]> = {
@@ -40,7 +42,7 @@ const WaterChar = memo(function WaterChar({ theme }: { theme?: string | null }) 
   return <>{char}</>;
 });
 
-export function TileGridView({ tileGrid, entities, alert }: TileGridViewProps) {
+export function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles }: TileGridViewProps) {
   const { width, height, tiles, themes } = tileGrid;
 
   // Build entity lookup: "x,y" -> EntityOverlay
@@ -53,7 +55,44 @@ export function TileGridView({ tileGrid, entities, alert }: TileGridViewProps) {
   for (let y = 0; y < height; y++) {
     const cells: React.ReactNode[] = [];
     for (let x = 0; x < width; x++) {
-      const entity = entityMap.get(`${x},${y}`);
+      const key = `${x},${y}`;
+      const isVisible = !visibleTiles || visibleTiles.has(key);
+      const isExplored = exploredTiles?.has(key) ?? false;
+
+      // Unseen — render empty space
+      if (!isVisible && !isExplored) {
+        cells.push(<span key={x} className="tile-unseen">{' '}</span>);
+        continue;
+      }
+
+      // Explored but not currently visible — show terrain only, dimmed
+      if (!isVisible && isExplored) {
+        const tileType = tiles[y][x];
+        const theme = themes?.[y]?.[x];
+        const tileClass = theme
+          ? `tile-${tileType} tile-theme-${theme} tile-explored`
+          : `tile-${tileType} tile-explored`;
+
+        if (tileType === 'water') {
+          cells.push(
+            <span key={x} className={tileClass}>
+              <WaterChar theme={theme} />
+            </span>
+          );
+        } else {
+          const char = getTileChar(tiles as any, x, y);
+          const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
+          cells.push(
+            <span key={x} className={tileClass}>
+              {displayChar}
+            </span>
+          );
+        }
+        continue;
+      }
+
+      // Visible — existing rendering (entity or tile)
+      const entity = entityMap.get(key);
       const tileType = tiles[y][x];
       const theme = themes?.[y]?.[x];
 
@@ -64,7 +103,6 @@ export function TileGridView({ tileGrid, entities, alert }: TileGridViewProps) {
           </span>
         );
       } else {
-        // Render tile
         const tileClass = theme
           ? `tile-${tileType} tile-theme-${theme}`
           : `tile-${tileType}`;
@@ -77,9 +115,10 @@ export function TileGridView({ tileGrid, entities, alert }: TileGridViewProps) {
           );
         } else {
           const char = getTileChar(tiles as any, x, y);
+          const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
           cells.push(
             <span key={x} className={tileClass}>
-              {char}
+              {displayChar}
             </span>
           );
         }

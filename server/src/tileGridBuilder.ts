@@ -35,6 +35,62 @@ export function exitPosition(dir: Direction, w: number, h: number): { x: number;
   }
 }
 
+function placeTorches(
+  tiles: string[][],
+  themes: (string | null)[][] | undefined,
+  width: number,
+  height: number,
+  roomType: string
+): (string | null)[][] {
+  // Ensure themes array exists
+  const out = themes
+    ? themes.map((row) => [...row])
+    : tiles.map((row) => row.map(() => null));
+
+  // Determine torch count by room type
+  const maxTorches: Record<string, number> = {
+    tunnel: 1,
+    chamber: 2,
+    cavern: 2,
+    dead_end: 1,
+    boss: 3,
+  };
+  const count = maxTorches[roomType] ?? 1;
+
+  // 50% chance the room has no torches at all
+  if (Math.random() < 0.5) return out;
+
+  // Find eligible wall tiles: wall tiles orthogonally adjacent to at least one floor tile
+  const eligible: { x: number; y: number }[] = [];
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      if (tiles[y][x] !== 'wall') continue;
+      const hasFloorNeighbor =
+        tiles[y - 1]?.[x] === 'floor' ||
+        tiles[y + 1]?.[x] === 'floor' ||
+        tiles[y][x - 1] === 'floor' ||
+        tiles[y][x + 1] === 'floor';
+      if (hasFloorNeighbor) eligible.push({ x, y });
+    }
+  }
+
+  if (eligible.length === 0) return out;
+
+  // Shuffle and pick up to count
+  for (let i = eligible.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [eligible[i], eligible[j]] = [eligible[j], eligible[i]];
+  }
+
+  const placed = Math.min(count, eligible.length);
+  for (let i = 0; i < placed; i++) {
+    const { x, y } = eligible[i];
+    out[y][x] = 'torch';
+  }
+
+  return out;
+}
+
 export function buildTileGrid(room: Room, biomeId: string): TileGrid {
   const dims = ROOM_DIMENSIONS[room.type] ?? DEFAULT_DIMENSIONS;
   const { width, height } = dims;
@@ -75,10 +131,12 @@ export function buildTileGrid(room: Room, biomeId: string): TileGrid {
     );
   }
 
+  const finalThemes = placeTorches(config.tiles as string[][], themes ?? undefined, width, height, room.type);
+
   return {
     width,
     height,
     tiles: config.tiles as string[][],
-    ...(themes ? { themes } : {}),
+    themes: finalThemes,
   };
 }

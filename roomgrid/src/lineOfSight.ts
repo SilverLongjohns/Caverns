@@ -1,5 +1,5 @@
 import type { GridPosition, Tile } from './types.js';
-import { chebyshevDistance, TILE_PROPERTIES } from './types.js';
+import { euclideanDistance, TILE_PROPERTIES } from './types.js';
 
 export function bresenhamLine(from: GridPosition, to: GridPosition): GridPosition[] {
   const points: GridPosition[] = [];
@@ -68,7 +68,7 @@ export function getVisibleTiles(tiles: Tile[][], from: GridPosition, range: numb
   for (let y = minY; y <= maxY; y++) {
     for (let x = minX; x <= maxX; x++) {
       const pos = { x, y };
-      if (chebyshevDistance(from, pos) > range) continue;
+      if (euclideanDistance(from, pos) > range) continue;
       if (hasLineOfSight(tiles, from, pos)) {
         visible.push(pos);
       }

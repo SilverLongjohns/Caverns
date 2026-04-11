@@ -146,7 +146,8 @@ describe('getVisibleTiles', () => {
       '.....',
     ]);
     const visible = getVisibleTiles(tiles, { x: 2, y: 2 }, 1);
-    expect(visible).toHaveLength(9);
+    // Euclidean distance range 1 = center + 4 cardinal (diagonals are ~1.41, excluded)
+    expect(visible).toHaveLength(5);
   });
 
   it('excludes tiles behind walls', () => {
@@ -177,7 +178,7 @@ describe('getVisibleTiles', () => {
     }
   });
 
-  it('uses Chebyshev distance for range', () => {
+  it('uses Euclidean distance for range (circular shape)', () => {
     const tiles = buildTiles([
       '.....',
       '.....',
@@ -185,8 +186,12 @@ describe('getVisibleTiles', () => {
       '.....',
       '.....',
     ]);
-    const visible = getVisibleTiles(tiles, { x: 2, y: 2 }, 1);
+    const visible = getVisibleTiles(tiles, { x: 2, y: 2 }, 2);
+    // Euclidean range 2: diagonal (1,1) = ~1.41, included
     const hasDiagonal = visible.some(p => p.x === 3 && p.y === 3);
     expect(hasDiagonal).toBe(true);
+    // But (2,2) away = ~2.83, excluded
+    const hasFarCorner = visible.some(p => p.x === 4 && p.y === 4);
+    expect(hasFarCorner).toBe(false);
   });
 });
