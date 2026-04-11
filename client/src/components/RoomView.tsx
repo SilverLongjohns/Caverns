@@ -51,14 +51,16 @@ export function RoomView() {
 
     // Mob (pre-combat wandering) — from mobPositions store
     if (!activeCombat || activeCombat.roomId !== currentRoomId) {
-      const mobData = mobPositions[currentRoomId];
-      if (mobData) {
-        overlays.push({
-          x: mobData.x,
-          y: mobData.y,
-          char: mobData.mobName[0] ?? '?',
-          className: 'entity-mob',
-        });
+      const mobDataList = mobPositions[currentRoomId];
+      if (mobDataList) {
+        for (const mobData of mobDataList) {
+          overlays.push({
+            x: mobData.x,
+            y: mobData.y,
+            char: mobData.mobName[0] ?? '?',
+            className: 'entity-mob',
+          });
+        }
       }
     }
 

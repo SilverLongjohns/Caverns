@@ -27,8 +27,9 @@ describe('GameSession', () => {
     const s = session as any;
     const roomId = s.playerManager.getPlayer(playerId)?.roomId;
     if (!roomId) return false;
-    const mobPos = s.mobAIManager.getMobPosition(roomId);
-    if (!mobPos) return false;
+    const positions = s.mobAIManager.getMobPositions(roomId);
+    if (positions.length === 0) return false;
+    const mobPos = positions[0];
 
     // Teleport player to a walkable tile adjacent to the mob (within detection range)
     const grid = s.roomGrids.get(roomId);
@@ -317,6 +318,29 @@ describe('GameSession', () => {
       const player = (session as any).playerManager.getPlayer('p1');
       expect(player.energy).toBe(30);
     });
+  });
+
+  it('calculateAddCount returns 0 for low party power', () => {
+    const { session } = createSession();
+    const s = session as any;
+    const addCount = s.calculateAddCount();
+    expect(addCount).toBe(0);
+  });
+
+  it('combat_start includes multiple participants when adds are present', () => {
+    const { session, messages } = createSession();
+    const s = session as any;
+    // Artificially inflate party power to trigger adds
+    for (const player of s.playerManager.getAllPlayers()) {
+      player.statAllocations = { ferocity: 20, toughness: 20, vitality: 20 };
+    }
+    movePlayerThroughExit(session, 'p1', 'north');
+    const triggered = walkPlayerToMob(session, 'p1', messages);
+    if (triggered) {
+      const combatStart = messages.find(m => m.msg.type === 'combat_start');
+      const mobs = combatStart.msg.combat.participants.filter((p: any) => p.type === 'mob');
+      expect(mobs.length).toBeGreaterThan(1);
+    }
   });
 
   describe('puzzles', () => {

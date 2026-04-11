@@ -1,19 +1,22 @@
 import type { RoomGrid, GridPosition, GridDirection } from '@caverns/roomgrid';
 import { chebyshevDistance, DIRECTION_OFFSETS } from '@caverns/roomgrid';
 import type { MobInstance, ServerMessage } from '@caverns/shared';
+import { ENCOUNTER_CONFIG } from '@caverns/shared';
 
 const WANDER_INTERVAL_MS = 1500;
 const PURSUIT_INTERVAL_MS = 600;
 const IDLE_CHANCE = 0.3;
-const DETECTION_RANGE = 2;
-const PURSUIT_RANGE = 10;
 const MIN_SPAWN_DISTANCE_FROM_EXIT = 5;
+
+interface MobEntry {
+  mob: MobInstance;
+  position: GridPosition;
+}
 
 interface MobRoom {
   roomId: string;
   grid: RoomGrid;
-  mob: MobInstance;
-  mobPosition: GridPosition;
+  mobs: MobEntry[];
   paused: boolean;
   pursuing: boolean;
   playerPositions: Map<string, GridPosition>;
@@ -31,49 +34,60 @@ export class MobAIManager {
     this.pursuitIntervalId = setInterval(() => this.tick(true), PURSUIT_INTERVAL_MS);
   }
 
-  registerRoom(roomId: string, grid: RoomGrid, mob: MobInstance): void {
-    const spawnPos = this.findSpawnPosition(grid);
+  registerRoom(roomId: string, grid: RoomGrid, mobs: MobInstance[]): void {
+    const mobEntries: MobEntry[] = [];
 
-    grid.addEntity({
-      id: mob.instanceId,
-      type: 'mob',
-      position: spawnPos,
-    });
+    for (const mob of mobs) {
+      const spawnPos = this.findSpawnPosition(grid);
+
+      grid.addEntity({
+        id: mob.instanceId,
+        type: 'mob',
+        position: spawnPos,
+      });
+
+      mobEntries.push({
+        mob,
+        position: { ...spawnPos },
+      });
+
+      this.broadcastToRoom(roomId, {
+        type: 'mob_spawn',
+        roomId,
+        mobId: mob.instanceId,
+        mobName: mob.name,
+        x: spawnPos.x,
+        y: spawnPos.y,
+      });
+    }
 
     const mobRoom: MobRoom = {
       roomId,
       grid,
-      mob,
-      mobPosition: { ...spawnPos },
+      mobs: mobEntries,
       paused: false,
       pursuing: false,
       playerPositions: new Map(),
     };
 
     this.rooms.set(roomId, mobRoom);
-
-    this.broadcastToRoom(roomId, {
-      type: 'mob_spawn',
-      roomId,
-      mobId: mob.instanceId,
-      mobName: mob.name,
-      x: spawnPos.x,
-      y: spawnPos.y,
-    });
   }
 
   removeMob(roomId: string): void {
     const room = this.rooms.get(roomId);
     if (!room) return;
 
-    room.grid.removeEntity(room.mob.instanceId);
-    this.rooms.delete(roomId);
+    for (const entry of room.mobs) {
+      room.grid.removeEntity(entry.mob.instanceId);
 
-    this.broadcastToRoom(roomId, {
-      type: 'mob_despawn',
-      roomId,
-      mobId: room.mob.instanceId,
-    });
+      this.broadcastToRoom(roomId, {
+        type: 'mob_despawn',
+        roomId,
+        mobId: entry.mob.instanceId,
+      });
+    }
+
+    this.rooms.delete(roomId);
   }
 
   pauseMob(roomId: string): void {
@@ -81,13 +95,16 @@ export class MobAIManager {
     if (!room) return;
 
     room.paused = true;
-    room.grid.removeEntity(room.mob.instanceId);
 
-    this.broadcastToRoom(roomId, {
-      type: 'mob_despawn',
-      roomId,
-      mobId: room.mob.instanceId,
-    });
+    for (const entry of room.mobs) {
+      room.grid.removeEntity(entry.mob.instanceId);
+
+      this.broadcastToRoom(roomId, {
+        type: 'mob_despawn',
+        roomId,
+        mobId: entry.mob.instanceId,
+      });
+    }
   }
 
   reactivateMob(roomId: string): void {
@@ -95,20 +112,23 @@ export class MobAIManager {
     if (!room) return;
 
     room.paused = false;
-    room.grid.addEntity({
-      id: room.mob.instanceId,
-      type: 'mob',
-      position: { ...room.mobPosition },
-    });
 
-    this.broadcastToRoom(roomId, {
-      type: 'mob_spawn',
-      roomId,
-      mobId: room.mob.instanceId,
-      mobName: room.mob.name,
-      x: room.mobPosition.x,
-      y: room.mobPosition.y,
-    });
+    for (const entry of room.mobs) {
+      room.grid.addEntity({
+        id: entry.mob.instanceId,
+        type: 'mob',
+        position: { ...entry.position },
+      });
+
+      this.broadcastToRoom(roomId, {
+        type: 'mob_spawn',
+        roomId,
+        mobId: entry.mob.instanceId,
+        mobName: entry.mob.name,
+        x: entry.position.x,
+        y: entry.position.y,
+      });
+    }
   }
 
   addPlayer(roomId: string, playerId: string, position: GridPosition): void {
@@ -133,16 +153,16 @@ export class MobAIManager {
     room.playerPositions.set(playerId, { ...position });
   }
 
-  getMobPosition(roomId: string): GridPosition | null {
+  getMobPositions(roomId: string): GridPosition[] {
     const room = this.rooms.get(roomId);
-    if (!room) return null;
-    return { ...room.mobPosition };
+    if (!room) return [];
+    return room.mobs.map(entry => ({ ...entry.position }));
   }
 
-  getMobId(roomId: string): string | null {
+  getMobIds(roomId: string): string[] {
     const room = this.rooms.get(roomId);
-    if (!room) return null;
-    return room.mob.instanceId;
+    if (!room) return [];
+    return room.mobs.map(entry => entry.mob.instanceId);
   }
 
   hasRoom(roomId: string): boolean {
@@ -153,11 +173,13 @@ export class MobAIManager {
     const room = this.rooms.get(roomId);
     if (!room || room.paused) return;
 
-    for (const playerPos of room.playerPositions.values()) {
-      const dist = chebyshevDistance(room.mobPosition, playerPos);
-      if (dist <= DETECTION_RANGE) {
-        this.onDetection?.(roomId, room.mob.instanceId);
-        return;
+    for (const entry of room.mobs) {
+      for (const playerPos of room.playerPositions.values()) {
+        const dist = chebyshevDistance(entry.position, playerPos);
+        if (dist <= ENCOUNTER_CONFIG.detectionRange) {
+          this.onDetection?.(roomId, entry.mob.instanceId);
+          return;
+        }
       }
     }
   }
@@ -225,23 +247,26 @@ export class MobAIManager {
     for (const room of this.rooms.values()) {
       if (room.paused) continue;
 
-      // Find nearest player
-      let nearestPlayer: GridPosition | null = null;
-      let nearestDist = Infinity;
-      for (const playerPos of room.playerPositions.values()) {
-        const dist = chebyshevDistance(room.mobPosition, playerPos);
-        if (dist < nearestDist) {
-          nearestDist = dist;
-          nearestPlayer = playerPos;
+      // Determine pursuit state: check if any mob is within pursuit range of any player
+      let closestMobEntry: MobEntry | null = null;
+      let closestMobDist = Infinity;
+
+      for (const entry of room.mobs) {
+        for (const playerPos of room.playerPositions.values()) {
+          const dist = chebyshevDistance(entry.position, playerPos);
+          if (dist < closestMobDist) {
+            closestMobDist = dist;
+            closestMobEntry = entry;
+          }
         }
       }
 
-      const pursuing = nearestPlayer && nearestDist <= PURSUIT_RANGE;
+      const pursuing = closestMobEntry !== null && closestMobDist <= ENCOUNTER_CONFIG.pursuitRange;
 
       // Fire alert on transition to pursuit
       if (pursuing && !room.pursuing) {
         room.pursuing = true;
-        this.onPursuitStart?.(room.roomId, room.mob.instanceId, room.mobPosition.x, room.mobPosition.y);
+        this.onPursuitStart?.(room.roomId, closestMobEntry!.mob.instanceId, closestMobEntry!.position.x, closestMobEntry!.position.y);
       } else if (!pursuing) {
         room.pursuing = false;
       }
@@ -249,38 +274,52 @@ export class MobAIManager {
       // Pursuing rooms only act on pursuit ticks, wandering rooms only on wander ticks
       if (pursuing !== pursuitTick) continue;
 
-      if (!pursuing) {
-        if (Math.random() < IDLE_CHANCE) continue;
-      }
+      // Move each mob independently
+      for (const entry of room.mobs) {
+        if (!pursuing) {
+          if (Math.random() < IDLE_CHANCE) continue;
+        }
 
-      let moveDirections: GridDirection[];
-      if (pursuing) {
-        moveDirections = [...directions].sort((a, b) => {
-          const oa = DIRECTION_OFFSETS[a];
-          const ob = DIRECTION_OFFSETS[b];
-          const posA = { x: room.mobPosition.x + oa.dx, y: room.mobPosition.y + oa.dy };
-          const posB = { x: room.mobPosition.x + ob.dx, y: room.mobPosition.y + ob.dy };
-          return chebyshevDistance(posA, nearestPlayer!) - chebyshevDistance(posB, nearestPlayer!);
-        });
-      } else {
-        moveDirections = [...directions].sort(() => Math.random() - 0.5);
-      }
+        // Find nearest player to this specific mob
+        let nearestPlayer: GridPosition | null = null;
+        let nearestDist = Infinity;
+        for (const playerPos of room.playerPositions.values()) {
+          const dist = chebyshevDistance(entry.position, playerPos);
+          if (dist < nearestDist) {
+            nearestDist = dist;
+            nearestPlayer = playerPos;
+          }
+        }
 
-      for (const dir of moveDirections) {
-        const result = room.grid.moveEntity(room.mob.instanceId, dir);
-        if (result.success && result.newPosition) {
-          room.mobPosition = { ...result.newPosition };
-
-          this.broadcastToRoom(room.roomId, {
-            type: 'mob_position',
-            roomId: room.roomId,
-            mobId: room.mob.instanceId,
-            x: result.newPosition.x,
-            y: result.newPosition.y,
+        let moveDirections: GridDirection[];
+        if (pursuing && nearestPlayer) {
+          moveDirections = [...directions].sort((a, b) => {
+            const oa = DIRECTION_OFFSETS[a];
+            const ob = DIRECTION_OFFSETS[b];
+            const posA = { x: entry.position.x + oa.dx, y: entry.position.y + oa.dy };
+            const posB = { x: entry.position.x + ob.dx, y: entry.position.y + ob.dy };
+            return chebyshevDistance(posA, nearestPlayer!) - chebyshevDistance(posB, nearestPlayer!);
           });
+        } else {
+          moveDirections = [...directions].sort(() => Math.random() - 0.5);
+        }
 
-          this.checkDetection(room.roomId);
-          break;
+        for (const dir of moveDirections) {
+          const result = room.grid.moveEntity(entry.mob.instanceId, dir);
+          if (result.success && result.newPosition) {
+            entry.position = { ...result.newPosition };
+
+            this.broadcastToRoom(room.roomId, {
+              type: 'mob_position',
+              roomId: room.roomId,
+              mobId: entry.mob.instanceId,
+              x: result.newPosition.x,
+              y: result.newPosition.y,
+            });
+
+            this.checkDetection(room.roomId);
+            break;
+          }
         }
       }
     }

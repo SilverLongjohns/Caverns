@@ -2,6 +2,7 @@ import type { ActiveBuff } from './classTypes.js';
 import { getClassDefinition } from './classData.js';
 import { PLAYER_CONFIG } from './data/player.js';
 import { ENERGY_CONFIG } from './data/energy.js';
+import { PROGRESSION_CONFIG } from './data/progression.js';
 
 // === Directions ===
 export type Direction = 'north' | 'south' | 'east' | 'west';
@@ -164,6 +165,10 @@ export interface Player {
   keychain: string[];
   energy: number;
   usedEffects: string[];
+  xp: number;
+  level: number;
+  unspentStatPoints: number;
+  statAllocations: Record<string, number>;
 }
 
 export const BASE_STATS = PLAYER_CONFIG.baseStats;
@@ -173,12 +178,13 @@ export interface ComputedStats {
   damage: number;
   defense: number;
   initiative: number;
+  maxEnergy: number;
 }
 
 export function computePlayerStats(player: Player): ComputedStats {
   const classDef = getClassDefinition(player.className);
   const base = classDef?.baseStats ?? BASE_STATS;
-  const stats: ComputedStats = { ...base };
+  const stats: ComputedStats = { ...base, maxEnergy: ENERGY_CONFIG.maxEnergy };
   const slots: (Item | null)[] = [
     player.equipment.weapon,
     player.equipment.offhand,
@@ -192,6 +198,19 @@ export function computePlayerStats(player: Player): ComputedStats {
     stats.maxHp += item.stats.maxHp ?? 0;
     stats.initiative += item.stats.initiative ?? 0;
   }
+
+  // Apply stat point allocations
+  const { statDefinitions } = PROGRESSION_CONFIG;
+  for (const def of statDefinitions) {
+    const points = player.statAllocations[def.id] ?? 0;
+    if (points <= 0) continue;
+    const bonus = points * def.perPoint;
+    const stat = def.internalStat as keyof ComputedStats;
+    if (stat in stats) {
+      (stats[stat] as number) += bonus;
+    }
+  }
+
   return stats;
 }
 
@@ -238,6 +257,10 @@ export function createPlayer(id: string, name: string, roomId: string, className
     keychain: [],
     energy: ENERGY_CONFIG.startingEnergy,
     usedEffects: [],
+    xp: 0,
+    level: 1,
+    unspentStatPoints: 0,
+    statAllocations: {},
   };
 }
 

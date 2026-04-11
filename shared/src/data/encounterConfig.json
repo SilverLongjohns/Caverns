@@ -1,0 +1,8 @@
+{
+  "baseline": 50,
+  "step": 15,
+  "maxAdds": 3,
+  "addXpBonus": 5,
+  "detectionRange": 1,
+  "pursuitRange": 10
+}

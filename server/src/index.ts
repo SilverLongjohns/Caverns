@@ -263,6 +263,10 @@ case 'interact_action': {
         getRoom(playerId)?.gameSession?.handleInteractAction(playerId, msg.interactableId, msg.actionId);
         break;
       }
+      case 'allocate_stat': {
+        getRoom(playerId)?.gameSession?.handleAllocateStat(playerId, msg.statId, msg.points);
+        break;
+      }
       case 'chat': {
         const room = getRoom(playerId);
         if (!room) break;
@@ -282,6 +286,12 @@ case 'interact_action': {
         const room = getRoom(playerId);
         if (!room?.gameSession) break;
         room.gameSession.debugRevealAll(playerId);
+        break;
+      }
+      case 'debug_give_item': {
+        const room = getRoom(playerId);
+        if (!room?.gameSession) break;
+        room.gameSession.debugGiveItem(playerId, msg.itemId);
         break;
       }
     }

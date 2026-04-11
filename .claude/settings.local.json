@@ -22,7 +22,11 @@
       "Bash(tsc --noEmit)",
       "Bash(npx.cmd --version)",
       "Bash(npx tsx:*)",
-      "Bash(npx esbuild:*)"
+      "Bash(npx esbuild:*)",
+      "Bash(ls /mnt/c/Users/jakeh/WebstormProjects/Caverns/node_modules/.bin/tsc*)",
+      "Bash(cat /mnt/c/Users/jakeh/WebstormProjects/Caverns/server/vitest.config.*)",
+      "Bash(cat /mnt/c/Users/jakeh/WebstormProjects/Caverns/vitest.config.*)",
+      "Bash(ls:*)"
     ]
   }
 }
