@@ -1,0 +1,16 @@
+{
+  "xpPerSkull": {
+    "1": 10,
+    "2": 25,
+    "3": 50
+  },
+  "levelThresholds": [0, 30, 75, 140, 230, 350],
+  "statPointsPerLevel": 2,
+  "statDefinitions": [
+    { "id": "vitality", "displayName": "Vitality", "internalStat": "maxHp", "perPoint": 5 },
+    { "id": "ferocity", "displayName": "Ferocity", "internalStat": "damage", "perPoint": 1 },
+    { "id": "toughness", "displayName": "Toughness", "internalStat": "defense", "perPoint": 1 },
+    { "id": "speed", "displayName": "Speed", "internalStat": "initiative", "perPoint": 1 },
+    { "id": "tactics", "displayName": "Tactics", "internalStat": "maxEnergy", "perPoint": 5 }
+  ]
+}

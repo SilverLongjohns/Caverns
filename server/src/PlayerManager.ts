@@ -11,6 +11,7 @@ import {
   CONSUMABLE_SLOTS,
   INVENTORY_SLOTS,
   ENERGY_CONFIG,
+  PROGRESSION_CONFIG,
 } from '@caverns/shared';
 
 export class PlayerManager {
@@ -196,13 +197,55 @@ export class PlayerManager {
   regenEnergy(playerId: string, amount: number): void {
     const player = this.players.get(playerId);
     if (!player) return;
-    player.energy = Math.min(ENERGY_CONFIG.maxEnergy, player.energy + amount);
+    const stats = computePlayerStats(player);
+    player.energy = Math.min(stats.maxEnergy, player.energy + amount);
   }
 
   hasEnergy(playerId: string, cost: number): boolean {
     const player = this.players.get(playerId);
     if (!player) return false;
     return player.energy >= cost;
+  }
+
+  awardXp(playerId: string, amount: number): number {
+    const player = this.players.get(playerId);
+    if (!player) throw new Error(`Player ${playerId} not found`);
+    player.xp += amount;
+    return player.xp;
+  }
+
+  checkLevelUp(playerId: string): number {
+    const player = this.players.get(playerId);
+    if (!player) throw new Error(`Player ${playerId} not found`);
+    const thresholds = PROGRESSION_CONFIG.levelThresholds;
+    const maxLevel = thresholds.length;
+    let newLevel = player.level;
+    while (newLevel < maxLevel && player.xp >= thresholds[newLevel]) {
+      newLevel++;
+    }
+    const levelsGained = newLevel - player.level;
+    if (levelsGained > 0) {
+      player.level = newLevel;
+      player.unspentStatPoints += levelsGained * PROGRESSION_CONFIG.statPointsPerLevel;
+    }
+    return levelsGained;
+  }
+
+  allocateStat(playerId: string, statId: string, points: number): boolean {
+    const player = this.players.get(playerId);
+    if (!player) throw new Error(`Player ${playerId} not found`);
+
+    const statDef = PROGRESSION_CONFIG.statDefinitions.find(s => s.id === statId);
+    if (!statDef) return false;
+    if (player.unspentStatPoints < points) return false;
+
+    player.statAllocations[statId] = (player.statAllocations[statId] ?? 0) + points;
+    player.unspentStatPoints -= points;
+
+    // Recalculate maxHp and adjust current HP
+    this.recalcMaxHp(player);
+
+    return true;
   }
 
   private recalcMaxHp(player: Player): void {

@@ -53,9 +53,10 @@ export interface GameStore {
       usedBy?: string;
     }[];
   } | null;
-  mobPositions: Record<string, { mobId: string; mobName: string; x: number; y: number }>;
+  mobPositions: Record<string, { mobId: string; mobName: string; x: number; y: number }[]>;
   mobAlert: { roomId: string; x: number; y: number } | null;
   playerPositions: Record<string, { x: number; y: number }>;
+  levelUpGlow: boolean;
   handleServerMessage: (msg: ServerMessage) => void;
   setLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
   reset: () => void;
@@ -89,6 +90,7 @@ const initialState = {
   mobPositions: {},
   mobAlert: null,
   playerPositions: {},
+  levelUpGlow: false,
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -350,12 +352,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'mob_spawn':
-        set((state) => ({
-          mobPositions: {
-            ...state.mobPositions,
-            [msg.roomId]: { mobId: msg.mobId, mobName: msg.mobName, x: msg.x, y: msg.y },
-          },
-        }));
+        set((state) => {
+          const existing = state.mobPositions[msg.roomId] ?? [];
+          return {
+            mobPositions: {
+              ...state.mobPositions,
+              [msg.roomId]: [...existing, { mobId: msg.mobId, mobName: msg.mobName, x: msg.x, y: msg.y }],
+            },
+          };
+        });
         break;
 
       case 'mob_position':
@@ -365,7 +370,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
           return {
             mobPositions: {
               ...state.mobPositions,
-              [msg.roomId]: { ...existing, x: msg.x, y: msg.y },
+              [msg.roomId]: existing.map(m =>
+                m.mobId === msg.mobId ? { ...m, x: msg.x, y: msg.y } : m
+              ),
             },
           };
         });
@@ -373,8 +380,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case 'mob_despawn':
         set((state) => {
-          const { [msg.roomId]: _, ...rest } = state.mobPositions;
-          return { mobPositions: rest };
+          const existing = state.mobPositions[msg.roomId];
+          if (!existing) return {};
+          const filtered = existing.filter(m => m.mobId !== msg.mobId);
+          if (filtered.length === 0) {
+            const { [msg.roomId]: _, ...rest } = state.mobPositions;
+            return { mobPositions: rest };
+          }
+          return {
+            mobPositions: {
+              ...state.mobPositions,
+              [msg.roomId]: filtered,
+            },
+          };
         });
         break;
 
@@ -382,6 +400,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
         set({ mobAlert: { roomId: msg.roomId, x: msg.x, y: msg.y } });
         setTimeout(() => useGameStore.setState({ mobAlert: null }), 800);
         break;
+
+      case 'level_up': {
+        if (msg.playerId === get().playerId) {
+          set({ levelUpGlow: true });
+          setTimeout(() => useGameStore.setState({ levelUpGlow: false }), 1500);
+        }
+        break;
+      }
 
       case 'player_position': {
         const isLocal = msg.playerId === get().playerId;

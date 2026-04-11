@@ -13,3 +13,5 @@ export { PLAYER_CONFIG } from './data/player.js';
 export { LOOT_CONFIG } from './data/loot.js';
 export { TIMING_CONFIG } from './data/timing.js';
 export { DUNGEON_CONFIG } from './data/dungeon.js';
+export { PROGRESSION_CONFIG } from './data/progression.js';
+export { ENCOUNTER_CONFIG } from './data/encounter.js';

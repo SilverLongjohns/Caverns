@@ -102,6 +102,17 @@ export interface DebugRevealAllMessage {
   type: 'debug_reveal_all';
 }
 
+export interface DebugGiveItemMessage {
+  type: 'debug_give_item';
+  itemId: string;
+}
+
+export interface AllocateStatMessage {
+  type: 'allocate_stat';
+  statId: string;
+  points: number;
+}
+
 export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
@@ -118,7 +129,9 @@ export type ClientMessage =
   | InteractActionMessage
   | ChatMessage
   | DebugTeleportMessage
-  | DebugRevealAllMessage;
+  | DebugRevealAllMessage
+  | DebugGiveItemMessage
+  | AllocateStatMessage;
 
 // === Server -> Client ===
 
@@ -334,6 +347,12 @@ export interface ErrorMessage {
   message: string;
 }
 
+export interface LevelUpMessage {
+  type: 'level_up';
+  playerId: string;
+  newLevel: number;
+}
+
 export type ServerMessage =
   | LobbyStateMessage
   | GameStartMessage
@@ -360,4 +379,5 @@ export type ServerMessage =
   | MobAlertMessage
   | MobDespawnMessage
   | PlayerPositionMessage
-  | ErrorMessage;
+  | ErrorMessage
+  | LevelUpMessage;

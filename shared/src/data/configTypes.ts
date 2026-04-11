@@ -52,3 +52,26 @@ export interface DungeonConfig {
   interactableDensity: number;
   encounterSpawnChance: number;
 }
+
+export interface StatDefinition {
+  id: string;
+  displayName: string;
+  internalStat: string;
+  perPoint: number;
+}
+
+export interface ProgressionConfig {
+  xpPerSkull: Record<string, number>;
+  levelThresholds: number[];
+  statPointsPerLevel: number;
+  statDefinitions: StatDefinition[];
+}
+
+export interface EncounterConfig {
+  baseline: number;
+  step: number;
+  maxAdds: number;
+  addXpBonus: number;
+  detectionRange: number;
+  pursuitRange: number;
+}

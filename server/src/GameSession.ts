@@ -16,8 +16,11 @@ import {
   LOOT_CONFIG,
   TIMING_CONFIG,
   DUNGEON_CONFIG,
+  PROGRESSION_CONFIG,
+  ENCOUNTER_CONFIG,
   getClassDefinition,
   getPlayerEquippedEffects,
+  computePlayerStats,
   type EquippedEffect,
 } from '@caverns/shared';
 import { PlayerManager } from './PlayerManager.js';
@@ -30,7 +33,7 @@ import { RoomGrid } from '@caverns/roomgrid';
 import type { RoomGridConfig, TileType, GridPosition } from '@caverns/roomgrid';
 import { MobAIManager } from './MobAIManager.js';
 import { exitPosition } from './tileGridBuilder.js';
-import type { InteractableDefinition, InteractableInstance } from '@caverns/shared';
+import type { InteractableDefinition, InteractableInstance, MobPoolEntry } from '@caverns/shared';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
@@ -39,6 +42,18 @@ const __filename_gs = fileURLToPath(import.meta.url);
 const __dirname_gs = dirname(__filename_gs);
 const allInteractableDefs: InteractableDefinition[] = JSON.parse(
   readFileSync(resolve(__dirname_gs, '../../shared/src/data/interactables.json'), 'utf-8')
+);
+const allMobPool: MobPoolEntry[] = JSON.parse(
+  readFileSync(resolve(__dirname_gs, '../../shared/src/data/mobPool.json'), 'utf-8')
+);
+const allItemsList: Item[] = JSON.parse(
+  readFileSync(resolve(__dirname_gs, '../../shared/src/data/items.json'), 'utf-8')
+);
+const allUniqueItemsList: Item[] = JSON.parse(
+  readFileSync(resolve(__dirname_gs, '../../shared/src/data/uniqueItems.json'), 'utf-8')
+);
+const allItemsById = new Map<string, Item>(
+  [...allItemsList, ...allUniqueItemsList].map(i => [i.id, i])
 );
 
 export class GameSession {
@@ -67,6 +82,7 @@ export class GameSession {
   private mobAIManager!: MobAIManager;
   private playerGridPositions = new Map<string, GridPosition>();
   private lastGridMove = new Map<string, number>();
+  private roomMobInstances = new Map<string, MobInstance[]>();
   private started = false;
   private pendingDefend: {
     roomId: string;
@@ -167,13 +183,8 @@ export class GameSession {
     if (entrance.encounter && !this.clearedRooms.has(entranceId)) {
       const template = this.mobs.get(entrance.encounter.mobId);
       if (template) {
-        const mobInstance: MobInstance = {
-          instanceId: `${template.id}_${Date.now()}`,
-          templateId: template.id, name: template.name,
-          maxHp: template.maxHp, hp: template.maxHp,
-          damage: template.damage, defense: template.defense, initiative: template.initiative,
-        };
-        this.mobAIManager.registerRoom(entranceId, entranceGrid, mobInstance);
+        const mobs = this.buildEncounterMobs(entranceId, template);
+        this.mobAIManager.registerRoom(entranceId, entranceGrid, mobs);
       }
     }
 
@@ -401,13 +412,8 @@ export class GameSession {
             if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
               const template = this.mobs.get(targetRoom.encounter.mobId);
               if (template) {
-                const mobInstance: MobInstance = {
-                  instanceId: `${template.id}_${Date.now()}`,
-                  templateId: template.id, name: template.name,
-                  maxHp: template.maxHp, hp: template.maxHp,
-                  damage: template.damage, defense: template.defense, initiative: template.initiative,
-                };
-                this.mobAIManager.registerRoom(targetRoomId, newGrid, mobInstance);
+                const mobs = this.buildEncounterMobs(targetRoomId, template);
+                this.mobAIManager.registerRoom(targetRoomId, newGrid, mobs);
               }
             }
           }
@@ -521,18 +527,14 @@ export class GameSession {
     if (!room?.encounter) return;
 
     this.mobAIManager.pauseMob(roomId);
-    this.startCombat(roomId, room.encounter.mobId);
+    const mobs = this.roomMobInstances.get(roomId) ?? [];
+    if (mobs.length === 0) return;
+    this.startCombat(roomId, mobs);
   }
 
-  private startCombat(roomId: string, mobTemplateId: string): void {
-    const template = this.mobs.get(mobTemplateId);
-    if (!template) return;
-    const mobInstance: MobInstance = {
-      instanceId: `${template.id}_${Date.now()}`,
-      templateId: template.id, name: template.name,
-      maxHp: template.maxHp, hp: template.maxHp,
-      damage: template.damage, defense: template.defense, initiative: template.initiative,
-    };
+  private startCombat(roomId: string, mobInstances: MobInstance[]): void {
+    if (mobInstances.length === 0) return;
+    const leaderTemplate = this.mobs.get(mobInstances[0].templateId);
     const playersInRoom = this.playerManager.getPlayersInRoom(roomId);
     const combatPlayers: CombatPlayerInfo[] = playersInRoom.map((p) => {
       const stats = this.playerManager.getComputedStats(p.id);
@@ -548,12 +550,36 @@ export class GameSession {
       this.playerManager.setStatus(p.id, 'in_combat');
       this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(p.id)! });
     }
-    const combat = new CombatManager(roomId, combatPlayers, [mobInstance], playerEffects, usedDungeonEffects);
+    const combat = new CombatManager(roomId, combatPlayers, mobInstances, playerEffects, usedDungeonEffects);
     this.combats.set(roomId, combat);
-    const skulls = '\u2620'.repeat(template.skullRating);
+
+    // Build encounter text
+    const skulls = leaderTemplate ? '\u2620'.repeat(leaderTemplate.skullRating) : '\u2620';
+    const description = leaderTemplate?.description ?? '';
+    let encounterText: string;
+    if (mobInstances.length === 1) {
+      encounterText = `A ${mobInstances[0].name} appears! (${skulls})\n${description}`;
+    } else {
+      // Group adds (everything after leader) by name
+      const adds = mobInstances.slice(1);
+      const addCounts = new Map<string, number>();
+      for (const add of adds) {
+        addCounts.set(add.name, (addCounts.get(add.name) ?? 0) + 1);
+      }
+      const addParts: string[] = [];
+      for (const [name, count] of addCounts) {
+        if (count === 1) {
+          addParts.push(`a ${name}`);
+        } else {
+          addParts.push(`${count} ${name}s`);
+        }
+      }
+      encounterText = `A ${mobInstances[0].name} appears with ${addParts.join(' and ')}! (${skulls})\n${description}`;
+    }
+
     this.broadcastToRoom(roomId, {
       type: 'text_log',
-      message: `A ${template.name} appears! (${skulls})\n${template.description}`,
+      message: encounterText,
       logType: 'combat',
     });
     this.broadcastToRoom(roomId, { type: 'combat_start', combat: combat.getState() });
@@ -646,13 +672,8 @@ export class GameSession {
                 if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
                   const template = this.mobs.get(targetRoom.encounter.mobId);
                   if (template) {
-                    const mobInstance: MobInstance = {
-                      instanceId: `${template.id}_${Date.now()}`,
-                      templateId: template.id, name: template.name,
-                      maxHp: template.maxHp, hp: template.maxHp,
-                      damage: template.damage, defense: template.defense, initiative: template.initiative,
-                    };
-                    this.mobAIManager.registerRoom(targetRoomId, newGrid, mobInstance);
+                    const mobs = this.buildEncounterMobs(targetRoomId, template);
+                    this.mobAIManager.registerRoom(targetRoomId, newGrid, mobs);
                   }
                 }
               }
@@ -764,10 +785,35 @@ export class GameSession {
     if (result === 'victory') {
       this.clearRoom(roomId);
       this.mobAIManager.removeMob(roomId);
+      this.roomMobInstances.delete(roomId);
       this.broadcastToRoom(roomId, { type: 'text_log', message: 'The enemies have been defeated!', logType: 'combat' });
       this.fireVictoryPassives(roomId);
-      this.dropLoot(roomId);
+      // Award XP to all players
       const room = this.rooms.get(roomId);
+      const skullRating = room?.encounter?.skullRating ?? 1;
+      const baseXp = PROGRESSION_CONFIG.xpPerSkull[String(skullRating)] ?? PROGRESSION_CONFIG.xpPerSkull['1'] ?? 0;
+      const allParticipants = combat.getParticipantsArray();
+      const combatMobCount = allParticipants.filter(p => p.type === 'mob').length;
+      const addCount = Math.max(0, combatMobCount - 1);
+      const xpAmount = baseXp + (addCount * ENCOUNTER_CONFIG.addXpBonus);
+      if (xpAmount > 0) {
+        const mobName = room?.encounter?.mobId ? this.mobs.get(room.encounter.mobId)?.name ?? 'enemy' : 'enemy';
+        this.broadcast({ type: 'text_log', message: `Gained ${xpAmount} XP from defeating ${mobName}!`, logType: 'system' });
+        for (const p of this.playerManager.getAllPlayers()) {
+          this.playerManager.awardXp(p.id, xpAmount);
+          const levelsGained = this.playerManager.checkLevelUp(p.id);
+          if (levelsGained > 0) {
+            const updatedPlayer = this.playerManager.getPlayer(p.id)!;
+            // Heal to full on level up
+            updatedPlayer.hp = computePlayerStats(updatedPlayer).maxHp;
+            updatedPlayer.maxHp = computePlayerStats(updatedPlayer).maxHp;
+            this.broadcast({ type: 'text_log', message: `${p.name} reached level ${updatedPlayer.level}!`, logType: 'system' });
+            this.broadcast({ type: 'level_up', playerId: p.id, newLevel: updatedPlayer.level });
+          }
+          this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(p.id)! });
+        }
+      }
+      this.dropLoot(roomId);
       if (room?.type === 'boss') {
         // Delay so loot prompt and victory text are visible before game_over
         setTimeout(() => {
@@ -1116,6 +1162,19 @@ export class GameSession {
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
   }
 
+  handleAllocateStat(playerId: string, statId: string, points: number): void {
+    const result = this.playerManager.allocateStat(playerId, statId, points);
+    if (!result) {
+      this.sendTo(playerId, { type: 'error', message: 'Cannot allocate stat point.' });
+      return;
+    }
+    const player = this.playerManager.getPlayer(playerId)!;
+    // Sync maxHp with computed stats
+    const stats = computePlayerStats(player);
+    player.maxHp = stats.maxHp;
+    this.broadcast({ type: 'player_update', player });
+  }
+
   private sendPuzzlePrompt(roomId: string, playerId: string): void {
     const room = this.rooms.get(roomId);
     if (!room?.puzzle) return;
@@ -1168,7 +1227,13 @@ export class GameSession {
             message: 'The failed attempt has attracted something...',
             logType: 'combat',
           });
-          this.startCombat(roomId, mob.id);
+          const mobInstance: MobInstance = {
+            instanceId: `${mob.id}_${Date.now()}`,
+            templateId: mob.id, name: mob.name,
+            maxHp: mob.maxHp, hp: mob.maxHp,
+            damage: mob.damage, defense: mob.defense, initiative: mob.initiative,
+          };
+          this.startCombat(roomId, [mobInstance]);
         }
       }
     }
@@ -1405,13 +1470,8 @@ export class GameSession {
       if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
         const template = this.mobs.get(targetRoom.encounter.mobId);
         if (template) {
-          const mobInstance: MobInstance = {
-            instanceId: `${template.id}_${Date.now()}`,
-            templateId: template.id, name: template.name,
-            maxHp: template.maxHp, hp: template.maxHp,
-            damage: template.damage, defense: template.defense, initiative: template.initiative,
-          };
-          this.mobAIManager.registerRoom(targetRoomId, newGrid, mobInstance);
+          const mobs = this.buildEncounterMobs(targetRoomId, template);
+          this.mobAIManager.registerRoom(targetRoomId, newGrid, mobs);
         }
       }
     }
@@ -1433,6 +1493,65 @@ export class GameSession {
     });
   }
 
+  private calculatePartyPower(): number {
+    let totalPower = 0;
+    for (const player of this.playerManager.getAllPlayers()) {
+      const stats = this.playerManager.getComputedStats(player.id);
+      totalPower += stats.damage + stats.defense + Math.floor(stats.maxHp / 5);
+    }
+    return totalPower;
+  }
+
+  private calculateAddCount(): number {
+    const power = this.calculatePartyPower();
+    const raw = Math.floor((power - ENCOUNTER_CONFIG.baseline) / ENCOUNTER_CONFIG.step);
+    return Math.max(0, Math.min(raw, ENCOUNTER_CONFIG.maxAdds));
+  }
+
+  private inferBiome(roomId: string): string {
+    const zoneMatch = roomId.match(/_z(\d+)_/);
+    if (!zoneMatch) return 'starter';
+    const prefix = roomId.slice(0, roomId.indexOf(`_z${zoneMatch[1]}_`));
+    const clean = prefix.replace(/^multi_/, '');
+    return clean.split('_')[0] || 'starter';
+  }
+
+  private buildEncounterMobs(roomId: string, leaderTemplate: MobTemplate): MobInstance[] {
+    const leader: MobInstance = {
+      instanceId: `${leaderTemplate.id}_${Date.now()}`,
+      templateId: leaderTemplate.id,
+      name: leaderTemplate.name,
+      maxHp: leaderTemplate.maxHp,
+      hp: leaderTemplate.maxHp,
+      damage: leaderTemplate.damage,
+      defense: leaderTemplate.defense,
+      initiative: leaderTemplate.initiative,
+    };
+
+    const addCount = this.calculateAddCount();
+    const biome = this.inferBiome(roomId);
+    const skull1Adds = allMobPool.filter(m => m.skullRating === 1 && m.biomes.includes(biome));
+
+    const mobs: MobInstance[] = [leader];
+
+    for (let i = 0; i < addCount && skull1Adds.length > 0; i++) {
+      const addEntry = skull1Adds[Math.floor(Math.random() * skull1Adds.length)];
+      mobs.push({
+        instanceId: `${addEntry.id}_${Date.now()}_add${i}`,
+        templateId: addEntry.id,
+        name: addEntry.name,
+        maxHp: addEntry.baseStats.maxHp,
+        hp: addEntry.baseStats.maxHp,
+        damage: addEntry.baseStats.damage,
+        defense: addEntry.baseStats.defense,
+        initiative: addEntry.baseStats.initiative,
+      });
+    }
+
+    this.roomMobInstances.set(roomId, mobs);
+    return mobs;
+  }
+
   debugTeleport(playerId: string, roomId: string): void {
     const room = this.rooms.get(roomId);
     if (!room) return;
@@ -1441,6 +1560,21 @@ export class GameSession {
       this.createRoomGrid(roomId);
     }
     this.teleportPlayer(playerId, roomId, 'You are teleported through space...');
+  }
+
+  debugGiveItem(playerId: string, itemId: string): void {
+    const item = allItemsById.get(itemId);
+    if (!item) return;
+    const added = this.playerManager.addToInventory(playerId, { ...item });
+    if (!added) {
+      this.sendTo(playerId, { type: 'error', message: 'Inventory full' });
+      return;
+    }
+    const player = this.playerManager.getPlayer(playerId);
+    if (player) {
+      this.sendTo(playerId, { type: 'player_update', player });
+      this.sendTo(playerId, { type: 'text_log', message: `[Debug] Received ${item.name}`, logType: 'system' });
+    }
   }
 
   debugRevealAll(playerId: string): void {

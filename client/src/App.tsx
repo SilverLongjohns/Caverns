@@ -24,6 +24,7 @@ export function App() {
   const activeCombat = useGameStore((s) => s.activeCombat);
   const rooms = useGameStore((s) => s.rooms);
   const currentRoomId = useGameStore((s) => s.currentRoomId);
+  const levelUpGlow = useGameStore((s) => s.levelUpGlow);
 
   const inExploration = connectionStatus === 'in_game' && !gameOver && !activeCombat;
   const currentRoom = rooms[currentRoomId];
@@ -108,7 +109,7 @@ export function App() {
         <div className="side-column">
           <MiniMap />
           <PartyPanel />
-          <PlayerHUD onEquipItem={actions.equipItem} onDropItem={actions.dropItem} onUseConsumable={actions.useConsumable} />
+          <PlayerHUD onEquipItem={actions.equipItem} onDropItem={actions.dropItem} onUseConsumable={actions.useConsumable} onAllocateStat={(statId) => actions.allocateStat(statId, 1)} />
         </div>
       </div>
     );
@@ -117,8 +118,9 @@ export function App() {
   return (
     <>
       {content}
-      {import.meta.env.DEV && connectionStatus === 'in_game' && !gameOver && <DebugPanel onTeleport={actions.debugTeleport} onRevealAll={actions.debugRevealAll} />}
+      {import.meta.env.DEV && connectionStatus === 'in_game' && !gameOver && <DebugPanel onTeleport={actions.debugTeleport} onRevealAll={actions.debugRevealAll} onGiveItem={actions.debugGiveItem} />}
       <div className="crt-overlay" />
+      {levelUpGlow && <div className="level-up-glow" />}
     </>
   );
 }
