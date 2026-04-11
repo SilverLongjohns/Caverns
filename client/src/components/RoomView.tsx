@@ -114,6 +114,18 @@ export function RoomView() {
       }
     }
 
+    // Furnishings
+    if (tileGrid.furnishings) {
+      for (const f of tileGrid.furnishings) {
+        overlays.push({
+          x: f.x,
+          y: f.y,
+          char: f.char,
+          className: f.interactable ? 'entity-interactable' : 'entity-furnishing',
+        });
+      }
+    }
+
     // Mob (pre-combat wandering) — from mobPositions store
     if (!activeCombat || activeCombat.roomId !== currentRoomId) {
       const mobDataList = mobPositions[currentRoomId];
@@ -130,16 +142,30 @@ export function RoomView() {
     }
 
     // Players at their real grid positions — from playerPositions store
+    const CLASS_COLORS: Record<string, string> = {
+      vanguard: '#5599dd',
+      shadowblade: '#bb66ee',
+      cleric: '#ddbb44',
+      artificer: '#dd8833',
+    };
+    const CLASS_COLORS_DIM: Record<string, string> = {
+      vanguard: '#3a6699',
+      shadowblade: '#7744aa',
+      cleric: '#998833',
+      artificer: '#995522',
+    };
     const playersInRoom = Object.values(players).filter((p) => p.roomId === currentRoomId);
     for (const player of playersInRoom) {
       const pos = playerPositions[player.id];
       if (!pos) continue;
+      const isMe = player.id === playerId;
+      const colors = isMe ? CLASS_COLORS : CLASS_COLORS_DIM;
       overlays.push({
         x: pos.x,
         y: pos.y,
         char: '@',
         className: 'entity-player',
-        style: { color: player.id === playerId ? '#44ff44' : '#88cc88' },
+        style: { color: colors[player.className] ?? (isMe ? '#44ff44' : '#88cc88') },
       });
     }
 

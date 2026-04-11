@@ -2635,5 +2635,313 @@
         }
       }
     ]
+  },
+  {
+    "id": "furn_starter_collapsed_cart",
+    "name": "Collapsed Cart",
+    "asciiChar": "⊞",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Search",
+        "outcomes": { "weights": { "loot": 40, "hazard": 15, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "Beneath the splintered planks, something glints in the mud.",
+            "A sack caught under the axle still holds something useful."
+          ],
+          "hazard": [
+            "The cart shifts as you reach under it. Wood splinters into your arm.",
+            "A nest of cave beetles scatters from the wreckage, biting as they flee."
+          ],
+          "flavor": [
+            "Rotted grain and broken wheels. Whoever was hauling this never made it out.",
+            "The wood crumbles at your touch. Nothing worth salvaging."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "furn_starter_rotting_shelf",
+    "name": "Rotting Shelf",
+    "asciiChar": "▐",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Search",
+        "outcomes": { "weights": { "loot": 35, "hazard": 10, "intel": 15, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "Behind mouldy jars, your fingers close around something solid.",
+            "One shelf holds. On it, something wrapped in oilcloth."
+          ],
+          "hazard": [
+            "The shelf collapses. A jar shatters, splashing something caustic.",
+            "You disturb a cluster of pale spiders nesting between the planks."
+          ],
+          "intel": [
+            "A scrap of parchment tucked between bottles. It describes nearby passages.",
+            "Scratched into the wood: a crude map. Someone marked a danger ahead."
+          ],
+          "flavor": [
+            "Jars of pickled something. Too far gone to identify, let alone eat.",
+            "Dust and rot. The shelf sags but holds nothing of interest."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "furn_starter_locked_chest",
+    "name": "Locked Chest",
+    "asciiChar": "■",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Force Open",
+        "outcomes": { "weights": { "loot": 55, "hazard": 20, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "The lock gives with a snap. Inside: something worth the bruised knuckles.",
+            "You pry the lid open. The chest's previous owner had good taste."
+          ],
+          "hazard": [
+            "A needle jabs from beneath the latch. Whoever locked this meant it.",
+            "The lid flies open and a burst of noxious gas hits your face."
+          ],
+          "flavor": [
+            "Empty. Someone got here first.",
+            "The chest contains only damp rags and a corroded coin too worn to spend."
+          ]
+        }
+      },
+      {
+        "id": "pick_lock",
+        "label": "Pick Lock",
+        "requiresClass": "shadowblade",
+        "outcomes": { "weights": { "loot": 70, "hazard": 5, "flavor": 25 } },
+        "narration": {
+          "loot": [
+            "The tumblers click into place. You ease the lid open — the trap disarmed, the prize yours.",
+            "Child's play. The lock pops and the contents are unguarded."
+          ],
+          "flavor": [
+            "You pick the lock cleanly, but the chest holds only dust and disappointment.",
+            "The mechanism is elegant. The contents are not."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "furn_starter_glowing_fungus",
+    "name": "Glowing Fungus",
+    "asciiChar": "✦",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 25, "hazard": 15, "intel": 20, "flavor": 40 } },
+        "narration": {
+          "loot": [
+            "The fungus cap splits open, revealing a crystallized core worth keeping.",
+            "Luminescent spores settle on your hand. Among them, something solid."
+          ],
+          "hazard": [
+            "The glow intensifies and the fungus bursts, spraying stinging spores.",
+            "You lean too close. The light burns your eyes for a moment."
+          ],
+          "intel": [
+            "The glow pulses in a rhythm. It grows brighter toward one passage.",
+            "In the soft light, you notice scratches on the wall. A warning, maybe."
+          ],
+          "flavor": [
+            "Beautiful and useless. The glow fades as you touch it.",
+            "It pulses gently, indifferent to your presence."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "furn_starter_strange_fossil",
+    "name": "Strange Fossil",
+    "asciiChar": "&",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 20, "hazard": 10, "intel": 25, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "You chip away the rock and find something embedded — not stone, but metal.",
+            "The fossil's eye socket holds a gemstone, still intact after millennia."
+          ],
+          "hazard": [
+            "The rock crumbles and something sharp inside cuts your palm.",
+            "As you pry at it, a crack runs through the wall. Dust rains down."
+          ],
+          "intel": [
+            "The creature's pose suggests it was fleeing something. From below.",
+            "The fossil is impossibly fresh. Whatever killed it may still be nearby."
+          ],
+          "flavor": [
+            "A creature from another age, preserved in stone. It has too many legs.",
+            "The fossil is ancient and beautiful. You leave it where it lies."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "furn_starter_shrine",
+    "name": "Shrine",
+    "asciiChar": "†",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Pray",
+        "outcomes": { "weights": { "loot": 30, "hazard": 10, "flavor": 35, "intel": 25 } },
+        "narration": {
+          "loot": [
+            "You kneel. A warmth flows through the stone. An offering materializes at the base.",
+            "The shrine glows faintly. When the light fades, something rests in the alcove."
+          ],
+          "hazard": [
+            "The shrine does not welcome you. A cold shock runs through your hands.",
+            "You feel watched. A sharp pain flares behind your eyes."
+          ],
+          "intel": [
+            "Visions flash: a chamber, a danger, a way through. Then silence.",
+            "The shrine hums. You sense the shape of nearby rooms in your mind."
+          ],
+          "flavor": [
+            "The stone is smooth from centuries of hands. It offers only peace.",
+            "A faint warmth, then nothing. The shrine remembers someone, but not you."
+          ]
+        }
+      },
+      {
+        "id": "bless",
+        "label": "Bless",
+        "requiresClass": "cleric",
+        "outcomes": { "weights": { "loot": 50, "hazard": 3, "intel": 30, "flavor": 17 } },
+        "narration": {
+          "loot": [
+            "Your blessing rekindles the shrine. It gives back what was left for the faithful.",
+            "Light pours from the stone. A gift, long held in trust."
+          ],
+          "intel": [
+            "The shrine's ancient connection awakens. You see the dungeon's layout clearly.",
+            "Through the shrine, you feel the presence of every creature on this floor."
+          ],
+          "flavor": [
+            "The shrine accepts your blessing. A moment of warmth in the dark.",
+            "You feel the gratitude of something long forgotten. It has nothing more to give."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "furn_starter_old_skeleton",
+    "name": "Old Skeleton",
+    "asciiChar": "%",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Search",
+        "outcomes": { "weights": { "loot": 40, "hazard": 15, "flavor": 45 } },
+        "narration": {
+          "loot": [
+            "The skeleton clutches a pouch. Inside, something still useful.",
+            "A belt pouch, half-buried in dust. Its owner has no further use for it."
+          ],
+          "hazard": [
+            "You disturb the remains and something bites — a centipede nesting in the ribcage.",
+            "The bones shift and a rusted blade falls, nicking your hand."
+          ],
+          "flavor": [
+            "An adventurer, once. Their gear has long since rotted away.",
+            "The skull grins at the ceiling. Whatever they found here, it found them first."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "furn_starter_altar",
+    "name": "Altar",
+    "asciiChar": "┬",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Examine",
+        "outcomes": { "weights": { "loot": 35, "hazard": 20, "intel": 15, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "The altar's surface is stained dark. Beneath, a hidden compartment holds something.",
+            "You run your hand along the carved stone. A panel clicks open."
+          ],
+          "hazard": [
+            "The altar thrums with energy. A shock arcs through your fingers.",
+            "Dark symbols flare to life as you touch the stone. Pain follows."
+          ],
+          "intel": [
+            "Carved into the base: a map of these chambers. Some passages are marked in red.",
+            "The altar's engravings depict the creature that rules this place. Its weaknesses too."
+          ],
+          "flavor": [
+            "Offerings of bone and tarnished metal. This altar served something hungry.",
+            "Cold stone, ancient carvings. The altar's purpose is lost to time."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "furn_starter_weapon_rack",
+    "name": "Weapon Rack",
+    "asciiChar": "╫",
+    "biomes": ["starter"],
+    "slotSize": "small",
+    "actions": [
+      {
+        "id": "examine",
+        "label": "Search",
+        "outcomes": { "weights": { "loot": 60, "hazard": 10, "flavor": 30 } },
+        "narration": {
+          "loot": [
+            "Most slots are empty, but one weapon remains — and it's in decent shape.",
+            "Rusted blades and broken hafts, but one piece catches your eye."
+          ],
+          "hazard": [
+            "You pull a weapon free and the rack collapses. A blade falls on your foot.",
+            "The rack is trapped. A spring-loaded spike fires from the back panel."
+          ],
+          "flavor": [
+            "Empty pegs and dust. Someone cleaned this out long ago.",
+            "Broken weapons, all of them. Whoever fought here lost badly."
+          ]
+        }
+      }
+    ]
   }
 ]

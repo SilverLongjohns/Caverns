@@ -4,6 +4,7 @@ import { dirname, resolve } from 'path';
 import type { Room, Direction, TileGrid } from '@caverns/shared';
 import { generateRoom } from '@caverns/roomgrid';
 import type { BiomeGenerationConfig } from '@caverns/roomgrid';
+import { placeFurnishings } from './furnishingPlacer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -133,10 +134,37 @@ export function buildTileGrid(room: Room, biomeId: string): TileGrid {
 
   const finalThemes = placeTorches(config.tiles as string[][], themes ?? undefined, width, height, room.type);
 
+  // Collect occupied positions: exits + existing interactables
+  const occupiedPositions = new Set<string>();
+  for (const exit of exits) {
+    occupiedPositions.add(`${exit.position.x},${exit.position.y}`);
+  }
+  if (room.interactables) {
+    for (const inst of room.interactables) {
+      occupiedPositions.add(`${inst.position.x},${inst.position.y}`);
+    }
+  }
+
+  const { furnishings, interactableInstances } = placeFurnishings(
+    config.tiles as string[][],
+    width,
+    height,
+    room.type,
+    biomeId,
+    occupiedPositions,
+  );
+
+  // Merge furniture interactables into room's interactables array
+  if (interactableInstances.length > 0) {
+    if (!room.interactables) room.interactables = [];
+    room.interactables.push(...interactableInstances);
+  }
+
   return {
     width,
     height,
     tiles: config.tiles as string[][],
     themes: finalThemes,
+    furnishings: furnishings.length > 0 ? furnishings : undefined,
   };
 }

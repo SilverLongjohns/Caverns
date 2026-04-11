@@ -1,0 +1,28 @@
+[
+  { "id": "starter_rubble", "name": "Rubble", "asciiChar": "░", "placement": "anywhere", "roomTypes": ["tunnel"], "biomes": ["starter"], "interactable": false, "weight": 10 },
+  { "id": "starter_bones", "name": "Bones", "asciiChar": "%", "placement": "anywhere", "roomTypes": ["tunnel"], "biomes": ["starter"], "interactable": false, "weight": 8 },
+  { "id": "starter_collapsed_cart", "name": "Collapsed Cart", "asciiChar": "⊞", "placement": "wall", "roomTypes": ["tunnel"], "biomes": ["starter"], "interactable": true, "weight": 5 },
+
+  { "id": "starter_table", "name": "Table", "asciiChar": "╥", "placement": "center", "roomTypes": ["chamber"], "biomes": ["starter"], "interactable": false, "weight": 8 },
+  { "id": "starter_chair", "name": "Chair", "asciiChar": "╤", "placement": "center", "roomTypes": ["chamber"], "biomes": ["starter"], "interactable": false, "weight": 10 },
+  { "id": "starter_barrel", "name": "Barrel", "asciiChar": "○", "placement": "wall", "roomTypes": ["chamber"], "biomes": ["starter"], "interactable": false, "weight": 10 },
+  { "id": "starter_rotting_shelf", "name": "Rotting Shelf", "asciiChar": "▐", "placement": "wall", "roomTypes": ["chamber"], "biomes": ["starter"], "interactable": true, "weight": 5 },
+  { "id": "starter_locked_chest", "name": "Locked Chest", "asciiChar": "■", "placement": "wall", "roomTypes": ["chamber"], "biomes": ["starter"], "interactable": true, "weight": 4 },
+
+  { "id": "starter_stalagmite", "name": "Stalagmite", "asciiChar": "▲", "placement": "anywhere", "roomTypes": ["cavern"], "biomes": ["starter"], "interactable": false, "weight": 10 },
+  { "id": "starter_mushroom_cluster", "name": "Mushroom Cluster", "asciiChar": "♣", "placement": "anywhere", "roomTypes": ["cavern"], "biomes": ["starter"], "interactable": false, "weight": 8 },
+  { "id": "starter_puddle", "name": "Puddle", "asciiChar": "~", "placement": "anywhere", "roomTypes": ["cavern"], "biomes": ["starter"], "interactable": false, "weight": 6 },
+  { "id": "starter_glowing_fungus", "name": "Glowing Fungus", "asciiChar": "✦", "placement": "wall", "roomTypes": ["cavern"], "biomes": ["starter"], "interactable": true, "weight": 5 },
+  { "id": "starter_strange_fossil", "name": "Strange Fossil", "asciiChar": "&", "placement": "wall", "roomTypes": ["cavern"], "biomes": ["starter"], "interactable": true, "weight": 4 },
+
+  { "id": "starter_crate", "name": "Crate", "asciiChar": "□", "placement": "corner", "roomTypes": ["dead_end"], "biomes": ["starter"], "interactable": false, "weight": 10 },
+  { "id": "starter_cobwebs", "name": "Cobwebs", "asciiChar": "≈", "placement": "corner", "roomTypes": ["dead_end"], "biomes": ["starter"], "interactable": false, "weight": 8 },
+  { "id": "starter_shrine", "name": "Shrine", "asciiChar": "†", "placement": "wall", "roomTypes": ["dead_end"], "biomes": ["starter"], "interactable": true, "weight": 5 },
+  { "id": "starter_old_skeleton", "name": "Old Skeleton", "asciiChar": "%", "placement": "anywhere", "roomTypes": ["dead_end"], "biomes": ["starter"], "interactable": true, "weight": 4 },
+
+  { "id": "starter_pillar", "name": "Pillar", "asciiChar": "║", "placement": "center", "roomTypes": ["boss"], "biomes": ["starter"], "interactable": false, "weight": 10 },
+  { "id": "starter_throne", "name": "Throne", "asciiChar": "▣", "placement": "wall", "roomTypes": ["boss"], "biomes": ["starter"], "interactable": false, "weight": 4 },
+  { "id": "starter_brazier", "name": "Brazier", "asciiChar": "*", "placement": "center", "roomTypes": ["boss"], "biomes": ["starter"], "interactable": false, "weight": 8 },
+  { "id": "starter_altar", "name": "Altar", "asciiChar": "┬", "placement": "wall", "roomTypes": ["boss"], "biomes": ["starter"], "interactable": true, "weight": 4 },
+  { "id": "starter_weapon_rack", "name": "Weapon Rack", "asciiChar": "╫", "placement": "wall", "roomTypes": ["boss"], "biomes": ["starter"], "interactable": true, "weight": 4 }
+]

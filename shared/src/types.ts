@@ -91,11 +91,20 @@ export interface RoomPuzzle {
   correctIndex: number;
 }
 
+export interface Furnishing {
+  x: number;
+  y: number;
+  char: string;
+  name: string;
+  interactable: boolean;
+}
+
 export interface TileGrid {
   width: number;
   height: number;
   tiles: string[][];
   themes?: (string | null)[][];
+  furnishings?: Furnishing[];
 }
 
 export interface Room {
