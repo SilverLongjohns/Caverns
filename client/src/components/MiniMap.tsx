@@ -133,7 +133,7 @@ export function MiniMap() {
           const dx = p2.x - p1.x;
           const dy = p2.y - p1.y;
           const isAdjacent = Math.abs(dx) + Math.abs(dy) === 1;
-          const stroke = locked ? '#7a2a2a' : '#4a3d2a';
+          const stroke = locked ? '#5a1a1a' : '#1a3a3a';
           const strokeWidth = locked ? 3 : 2;
           const dashArray = locked ? '4 3' : undefined;
 
@@ -184,12 +184,12 @@ export function MiniMap() {
           return (
             <g key={roomId}>
               <rect x={pos.x * GAP_X} y={pos.y * GAP_Y} width={ROOM_W} height={ROOM_H} rx={4}
-                fill={isCurrent ? '#2a2010' : '#1a1410'}
-                stroke={isCurrent ? '#d4a857' : '#3d3122'}
+                fill={isCurrent ? '#051515' : '#0a0a0a'}
+                stroke={isCurrent ? '#00e4ff' : '#1a3a3a'}
                 strokeWidth={isCurrent ? 2 : 1}
               />
               <text x={pos.x * GAP_X + ROOM_W / 2} y={pos.y * GAP_Y + ROOM_H / 2}
-                textAnchor="middle" dominantBaseline="middle" fill="#c8b89a" fontSize={10}
+                textAnchor="middle" dominantBaseline="middle" fill="#b4b4b4" fontSize={10}
               >
                 {room?.name ?? roomId}
               </text>
@@ -200,7 +200,7 @@ export function MiniMap() {
                     <text key={dir}
                       x={pos.x * GAP_X + ROOM_W / 2 + offset.dx * (ROOM_W / 2 + 12)}
                       y={pos.y * GAP_Y + ROOM_H / 2 + offset.dy * (ROOM_H / 2 + 12)}
-                      textAnchor="middle" dominantBaseline="middle" fill="#5a4530" fontSize={14}
+                      textAnchor="middle" dominantBaseline="middle" fill="#3a5a5a" fontSize={14}
                     >?</text>
                   );
                 }

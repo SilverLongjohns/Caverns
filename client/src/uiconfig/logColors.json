@@ -1,7 +1,7 @@
 {
-  "narration": "#c8b89a",
-  "combat": "#cc4444",
-  "loot": "#d4a857",
-  "system": "#7a6e5a",
-  "chat": "#88bbdd"
+  "narration": "#b4b4b4",
+  "combat": "#ff4444",
+  "loot": "#ffd700",
+  "system": "#5a7a7a",
+  "chat": "#77ccee"
 }
