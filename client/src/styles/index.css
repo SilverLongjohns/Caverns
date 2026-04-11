@@ -1178,6 +1178,26 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   text-shadow: 0 0 3px rgba(255, 51, 51, 0.4);
 }
 
+.mob-alert {
+  color: #ff2222;
+  font-weight: 900;
+  font-size: 1em;
+  pointer-events: none;
+  animation: mob-alert-float 0.8s cubic-bezier(0.12, 0, 0.39, 0) forwards;
+  text-shadow: 0 0 6px rgba(255, 34, 34, 0.8);
+}
+
+@keyframes mob-alert-float {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(2ch, -2em);
+    opacity: 0;
+  }
+}
+
 .entity-interactable {
   color: #ff44ff;
   transition: color 0.15s, text-shadow 0.15s;

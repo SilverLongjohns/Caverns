@@ -20,6 +20,7 @@ export function RoomView() {
   const playerId = useGameStore((s) => s.playerId);
   const activeCombat = useGameStore((s) => s.activeCombat);
   const mobPositions = useGameStore((s) => s.mobPositions);
+  const mobAlert = useGameStore((s) => s.mobAlert);
   const playerPositions = useGameStore((s) => s.playerPositions);
 
   const room = rooms[currentRoomId];
@@ -86,6 +87,7 @@ export function RoomView() {
       <TileGridView
         tileGrid={tileGrid}
         entities={entities}
+        alert={mobAlert && mobAlert.roomId === currentRoomId ? { x: mobAlert.x, y: mobAlert.y } : null}
       />
     </div>
   );

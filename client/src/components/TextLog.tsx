@@ -29,14 +29,18 @@ function renderLine(text: string): React.ReactNode[] {
 
 export function TextLog() {
   const textLog = useGameStore((s) => s.textLog);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const pendingInteractActions = useGameStore((s) => s.pendingInteractActions);
+  const activeCombat = useGameStore((s) => s.activeCombat);
+  const pendingLoot = useGameStore((s) => s.pendingLoot);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [textLog]);
+    const el = containerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [textLog, pendingInteractActions, activeCombat, pendingLoot]);
 
   return (
-    <div className="text-log">
+    <div className="text-log" ref={containerRef}>
       {textLog.map((entry) => (
         <div
           key={entry.id}
@@ -48,7 +52,6 @@ export function TextLog() {
           ))}
         </div>
       ))}
-      <div ref={bottomRef} />
     </div>
   );
 }
