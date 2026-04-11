@@ -38,5 +38,7 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     useItemEffect: (effectId: string, targetId?: string) =>
       send({ type: 'combat_action', action: 'use_item_effect', effectId, targetId }),
     chat: (text: string) => send({ type: 'chat', text }),
+    debugTeleport: (roomId: string) => send({ type: 'debug_teleport', roomId }),
+    debugRevealAll: () => send({ type: 'debug_reveal_all' }),
   };
 }

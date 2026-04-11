@@ -215,6 +215,52 @@ export class GameSession {
     }
   }
 
+  /**
+   * BFS from an exit tile to find the nearest walkable tile that has at least
+   * 2 walkable cardinal neighbors, so the player isn't boxed in.
+   */
+  private findSpawnNearExit(grid: RoomGrid, exitPos: GridPosition): GridPosition {
+    const visited = new Set<string>();
+    const queue: GridPosition[] = [];
+
+    // Seed BFS with cardinal neighbors of the exit
+    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const pos = { x: exitPos.x + dx, y: exitPos.y + dy };
+      const key = `${pos.x},${pos.y}`;
+      if (!visited.has(key) && grid.isWalkable(pos)) {
+        visited.add(key);
+        queue.push(pos);
+      }
+    }
+
+    while (queue.length > 0) {
+      const pos = queue.shift()!;
+      // Count walkable cardinal neighbors
+      let walkableNeighbors = 0;
+      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+        if (grid.isWalkable({ x: pos.x + dx, y: pos.y + dy })) walkableNeighbors++;
+      }
+      if (walkableNeighbors >= 2) return pos;
+
+      // Expand BFS
+      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+        const next = { x: pos.x + dx, y: pos.y + dy };
+        const key = `${next.x},${next.y}`;
+        if (!visited.has(key) && grid.isWalkable(next)) {
+          visited.add(key);
+          queue.push(next);
+        }
+      }
+    }
+
+    // Fallback: just use first walkable neighbor of exit
+    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const pos = { x: exitPos.x + dx, y: exitPos.y + dy };
+      if (grid.isWalkable(pos)) return pos;
+    }
+    return exitPos;
+  }
+
   private findWalkableCenter(roomId: string): GridPosition {
     const grid = this.roomGrids.get(roomId)!;
     const room = this.rooms.get(roomId)!;
@@ -341,13 +387,14 @@ export class GameSession {
           // Move player via playerManager
           this.playerManager.movePlayer(playerId, targetRoomId);
 
-          // Reveal new room if needed, create RoomGrid, register mob
-          const isNewRoom = !this.revealedRooms.has(targetRoomId);
-          if (isNewRoom) {
+          // Reveal new room if needed
+          if (!this.revealedRooms.has(targetRoomId)) {
             this.revealedRooms.add(targetRoomId);
             this.broadcast({ type: 'room_reveal', room: targetRoom });
+          }
+          // Create RoomGrid and register mob if grid doesn't exist yet
+          if (!this.roomGrids.has(targetRoomId)) {
             const newGrid = this.createRoomGrid(targetRoomId);
-            // Register mob if room has uncleared encounter
             if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
               const template = this.mobs.get(targetRoom.encounter.mobId);
               if (template) {
@@ -362,22 +409,11 @@ export class GameSession {
             }
           }
 
-          // Spawn player at opposite exit in new room
+          // Spawn player near opposite exit in new room, on a tile with room to move
           const oppositeDir = this.getOppositeDirection(exitDir);
           const newRoomGrid = this.roomGrids.get(targetRoomId)!;
-          const spawnPos = exitPosition(oppositeDir, targetRoom.tileGrid!.width, targetRoom.tileGrid!.height);
-          // Move one tile inward from the exit so player is on the floor, not the exit tile
-          const gridOpposite = this.getOppositeGridDir(direction);
-          if (gridOpposite) {
-            const inwardOffset = { n: { dx: 0, dy: -1 }, s: { dx: 0, dy: 1 }, e: { dx: 1, dy: 0 }, w: { dx: -1, dy: 0 }, ne: { dx: 1, dy: -1 }, nw: { dx: -1, dy: -1 }, se: { dx: 1, dy: 1 }, sw: { dx: -1, dy: 1 } }[direction];
-            if (inwardOffset) {
-              const inwardPos = { x: spawnPos.x + inwardOffset.dx, y: spawnPos.y + inwardOffset.dy };
-              if (newRoomGrid.isWalkable(inwardPos)) {
-                spawnPos.x = inwardPos.x;
-                spawnPos.y = inwardPos.y;
-              }
-            }
-          }
+          const exitPos = exitPosition(oppositeDir, targetRoom.tileGrid!.width, targetRoom.tileGrid!.height);
+          const spawnPos = this.findSpawnNearExit(newRoomGrid, exitPos);
           this.playerGridPositions.set(playerId, { ...spawnPos });
           newRoomGrid.addEntity({ id: playerId, type: 'player', position: { ...spawnPos } });
           this.mobAIManager.addPlayer(targetRoomId, playerId, spawnPos);
@@ -429,6 +465,15 @@ export class GameSession {
             const entity = grid.getEntity(playerId);
             if (entity) {
               this.playerGridPositions.set(playerId, { ...entity.position });
+              this.mobAIManager.updatePlayerPosition(player.roomId, playerId, entity.position);
+              // Broadcast corrected position so client stays in sync
+              this.broadcastToRoom(player.roomId, {
+                type: 'player_position',
+                playerId,
+                roomId: player.roomId,
+                x: entity.position.x,
+                y: entity.position.y,
+              });
             }
           }
           // Open interaction menu
@@ -1383,6 +1428,25 @@ export class GameSession {
       message: `${narration}\n\n--- ${targetRoom.name} ---\n${targetRoom.description}`,
       logType: 'narration',
     });
+  }
+
+  debugTeleport(playerId: string, roomId: string): void {
+    const room = this.rooms.get(roomId);
+    if (!room) return;
+    // Ensure room grid exists (may not if room was only revealed via debugRevealAll)
+    if (!this.roomGrids.has(roomId)) {
+      this.createRoomGrid(roomId);
+    }
+    this.teleportPlayer(playerId, roomId, 'You are teleported through space...');
+  }
+
+  debugRevealAll(playerId: string): void {
+    for (const [roomId, room] of this.rooms) {
+      if (!this.revealedRooms.has(roomId)) {
+        this.revealedRooms.add(roomId);
+        this.sendTo(playerId, { type: 'room_reveal', room });
+      }
+    }
   }
 
   private createSecretRoom(interactableId: string, sourceRoomId: string): void {

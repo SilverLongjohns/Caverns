@@ -47,8 +47,24 @@ export function getWallChar(tiles: TileType[][], x: number, y: number): string {
   return WALL_CHARS[mask];
 }
 
+function getBridgeChar(tiles: TileType[][], x: number, y: number): string {
+  const height = tiles.length;
+  const width = tiles[0].length;
+  // Check if chasm/bridge neighbors are to the east/west (vertical chasm → horizontal bridge)
+  const chasmEW =
+    (x > 0 && (tiles[y][x - 1] === 'chasm' || tiles[y][x - 1] === 'bridge')) ||
+    (x < width - 1 && (tiles[y][x + 1] === 'chasm' || tiles[y][x + 1] === 'bridge'));
+  const chasmNS =
+    (y > 0 && (tiles[y - 1][x] === 'chasm' || tiles[y - 1][x] === 'bridge')) ||
+    (y < height - 1 && (tiles[y + 1][x] === 'chasm' || tiles[y + 1][x] === 'bridge'));
+  // Chasm runs east-west → bridge runs north-south
+  if (chasmNS && !chasmEW) return '║';
+  return '=';
+}
+
 export function getTileChar(tiles: TileType[][], x: number, y: number): string {
   const type = tiles[y][x];
   if (type === 'wall') return getWallChar(tiles, x, y);
+  if (type === 'bridge') return getBridgeChar(tiles, x, y);
   return TILE_CHARS[type];
 }

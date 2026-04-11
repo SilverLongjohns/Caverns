@@ -1,5 +1,7 @@
 import type { TileType, RoomGridConfig } from '../types.js';
 import type { RoomGenerator, RoomGenerationRequest } from './types.js';
+import { placeWater } from './waterPlacer.js';
+import { clearExits } from './exitClearance.js';
 
 interface SubRoom {
   x: number;
@@ -16,7 +18,7 @@ export class StructuredGenerator implements RoomGenerator {
     const corridorWidth = params.corridorWidth ?? 1;
     const featureChance = params.featureChance ?? 0.3;
     const hazardChance = params.hazardChance ?? 0;
-    const waterChance = params.waterChance ?? 0;
+
 
     // 1. Fill with walls
     const grid: TileType[][] = Array.from({ length: height }, () =>
@@ -97,23 +99,8 @@ export class StructuredGenerator implements RoomGenerator {
       }
     }
 
-    // 4. Force exits and clear adjacent
-    for (const exit of exits) {
-      grid[exit.position.y][exit.position.x] = 'exit';
-      const adjacents = [
-        { x: exit.position.x - 1, y: exit.position.y },
-        { x: exit.position.x + 1, y: exit.position.y },
-        { x: exit.position.x, y: exit.position.y - 1 },
-        { x: exit.position.x, y: exit.position.y + 1 },
-      ];
-      for (const adj of adjacents) {
-        if (adj.x > 0 && adj.x < width - 1 && adj.y > 0 && adj.y < height - 1) {
-          if (grid[adj.y][adj.x] === 'wall') {
-            grid[adj.y][adj.x] = 'floor';
-          }
-        }
-      }
-    }
+    // 4. Force exit tiles and clear corridor inward from each exit
+    clearExits(grid, exits, width, height);
 
     // 5. Connect exits to nearest sub-room, or directly to each other if no sub-rooms placed
     if (exits.length > 1 && subRooms.length === 0) {
@@ -173,18 +160,18 @@ export class StructuredGenerator implements RoomGenerator {
       }
     }
 
-    // 6. Scatter hazards and water
+    // 6. Scatter hazards
     for (let y = 1; y < height - 1; y++) {
       for (let x = 1; x < width - 1; x++) {
         if (grid[y][x] !== 'floor') continue;
-        const roll = Math.random();
-        if (roll < hazardChance) {
+        if (Math.random() < hazardChance) {
           grid[y][x] = 'hazard';
-        } else if (roll < hazardChance + waterChance) {
-          grid[y][x] = 'water';
         }
       }
     }
+
+    // 7. Place water features
+    placeWater(grid, params);
 
     return {
       width,

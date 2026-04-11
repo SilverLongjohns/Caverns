@@ -272,6 +272,18 @@ case 'interact_action': {
         roomBroadcast(room.code)({ type: 'text_log', message: `${name}: ${text}`, logType: 'chat' });
         break;
       }
+      case 'debug_teleport': {
+        const room = getRoom(playerId);
+        if (!room?.gameSession) break;
+        room.gameSession.debugTeleport(playerId, msg.roomId);
+        break;
+      }
+      case 'debug_reveal_all': {
+        const room = getRoom(playerId);
+        if (!room?.gameSession) break;
+        room.gameSession.debugRevealAll(playerId);
+        break;
+      }
     }
   });
 

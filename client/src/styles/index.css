@@ -949,6 +949,7 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 
 .room-view {
   padding: 0.5rem;
+  background: #000000;
   border-bottom: 1px solid #1a3a1a;
   min-height: 420px;
   display: flex;
@@ -1023,22 +1024,44 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   white-space: pre;
 }
 
-/* === Tile Type Colors === */
-.tile-floor    { color: #223322; }
-.tile-wall     { color: #336633; }
-.tile-exit     { color: #44ff44; }
-.tile-water    { color: #3355aa; }
-.tile-chasm    { color: #111111; }
-.tile-hazard   { color: #aa3333; }
-.tile-bridge   { color: #665533; }
+/* === Tile Type Colors — base defaults === */
+.tile-floor    { color: #1a4a1a; }
+.tile-wall     { color: #6a6a5a; }
+.tile-exit     { color: #44ff44; text-shadow: 0 0 3px rgba(68, 255, 68, 0.3); }
+.tile-water    { color: #4488ee; }
+.tile-chasm    { color: #0a0a0a; }
+.tile-hazard   { color: #dd2222; text-shadow: 0 0 3px rgba(221, 34, 34, 0.3); }
+.tile-bridge   { color: #aa7744; }
 
-/* === Theme Color Overrides === */
-.tile-theme-moss_stone   { color: #2a5a2a; }
-.tile-theme-carved_stone { color: #556677; }
-.tile-theme-obsidian     { color: #332211; }
-.tile-theme-deep_water   { color: #2244aa; }
+/* === Biome Theme Overrides === */
 
-.tile-theme-lava {
+/* Starter biome — earthy brown/grey */
+.tile-floor.tile-theme-dirt    { color: #5a4a2a; }
+.tile-wall.tile-theme-rock     { color: #7a7060; }
+
+/* Fungal biome — grey stone with purple fungal growth */
+.tile-floor.tile-theme-moss       { color: #2a5a2a; }
+.tile-wall.tile-theme-fungal_rock { color: #7a6a8a; }
+.tile-water.tile-theme-spore_pool { color: #8844aa; text-shadow: 0 0 3px rgba(136, 68, 170, 0.3); }
+
+/* Crystal biome — cyan/teal crystalline */
+.tile-floor.tile-theme-crystal_floor { color: #2a6a6a; }
+.tile-wall.tile-theme-crystal_wall   { color: #44aaaa; text-shadow: 0 0 2px rgba(68, 170, 170, 0.2); }
+.tile-water.tile-theme-mineral_pool  { color: #44cccc; text-shadow: 0 0 3px rgba(68, 204, 204, 0.3); }
+
+/* Flooded biome — dark blue-grey waterlogged stone */
+.tile-floor.tile-theme-wet_stone  { color: #3a4a5a; }
+.tile-wall.tile-theme-slick_rock  { color: #5a6a7a; }
+.tile-water.tile-theme-deep_water { color: #3399ff; text-shadow: 0 0 4px rgba(51, 153, 255, 0.4); }
+
+/* Bone biome — pale yellowed bone and ivory */
+.tile-floor.tile-theme-bone_floor { color: #6a5a3a; }
+.tile-wall.tile-theme-bone_wall   { color: #9a8a6a; }
+
+/* Volcanic biome — dark basalt and obsidian */
+.tile-floor.tile-theme-basalt   { color: #3a2a2a; }
+.tile-wall.tile-theme-obsidian  { color: #4a2a4a; }
+.tile-hazard.tile-theme-lava {
   color: #ff4400;
   text-shadow: 0 0 4px #ff2200, 0 0 8px #aa0000;
   animation: lava-pulse 2s ease-in-out infinite;
@@ -1049,37 +1072,120 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   50% { text-shadow: 0 0 8px #ff4400, 0 0 16px #cc2200; }
 }
 
+/* === Debug Panel === */
+.debug-panel {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1000;
+  font-family: 'Courier New', monospace;
+}
+
+.debug-toggle {
+  background: #1a1410;
+  color: #d4a857;
+  border: 1px solid #3d3122;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.debug-toggle:hover { border-color: #d4a857; }
+
+.debug-content {
+  background: #1a1410;
+  border: 1px solid #3d3122;
+  padding: 8px;
+  margin-top: 4px;
+  max-height: 400px;
+  max-width: 350px;
+  overflow-y: auto;
+}
+
+.debug-reveal-all {
+  width: 100%;
+  background: #0d0a07;
+  color: #d4a857;
+  border: 1px solid #3d3122;
+  padding: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.debug-reveal-all:hover { border-color: #d4a857; }
+
+.debug-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.debug-filters button {
+  background: #0d0a07;
+  color: #7a6e5a;
+  border: 1px solid #3d3122;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  text-transform: capitalize;
+}
+
+.debug-filters button.active {
+  color: #d4a857;
+  border-color: #d4a857;
+}
+
+.debug-room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.debug-room {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #0d0a07;
+  border: 1px solid #2a2010;
+  padding: 3px 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  text-align: left;
+  color: #c8b89a;
+}
+
+.debug-room:hover { border-color: #d4a857; }
+.debug-room.current { border-color: #d4a857; background: #2a2010; }
+
+.debug-room-biome {
+  color: #7a6e5a;
+  min-width: 60px;
+  text-transform: capitalize;
+}
+
+.debug-room-name { color: #c8b89a; }
+
 /* === Entity Overlay Classes === */
 .entity-mob {
   color: #ff3333;
   font-weight: 800;
+  text-shadow: 0 0 3px rgba(255, 51, 51, 0.4);
 }
 
 .entity-interactable {
-  color: #ffaa33;
-  cursor: pointer;
+  color: #ff44ff;
   transition: color 0.15s, text-shadow 0.15s;
-}
-
-.entity-interactable:hover {
-  color: #ffcc55;
-  text-shadow: 0 0 4px #ffaa33;
-}
-
-.entity-interactable.entity-selected {
-  color: #ffcc55;
-  text-shadow: 0 0 6px #ffaa33, 0 0 12px #ff8800;
-  animation: interactable-pulse 1.5s ease-in-out infinite;
+  text-shadow: 0 0 3px rgba(255, 68, 255, 0.3);
 }
 
 .entity-interactable-used {
-  color: #665522;
-  cursor: pointer;
-}
-
-@keyframes interactable-pulse {
-  0%, 100% { text-shadow: 0 0 6px #ffaa33, 0 0 12px #ff8800; }
-  50% { text-shadow: 0 0 3px #ffaa33, 0 0 6px #ff8800; }
+  color: #5a2a5a;
 }
 
 .examine-actions {
