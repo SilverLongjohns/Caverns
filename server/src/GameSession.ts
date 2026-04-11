@@ -792,7 +792,7 @@ export class GameSession {
       const room = this.rooms.get(roomId);
       const skullRating = room?.encounter?.skullRating ?? 1;
       const baseXp = PROGRESSION_CONFIG.xpPerSkull[String(skullRating)] ?? PROGRESSION_CONFIG.xpPerSkull['1'] ?? 0;
-      const allParticipants = combat.getParticipantsArray();
+      const allParticipants = combat!.getParticipantsArray();
       const combatMobCount = allParticipants.filter(p => p.type === 'mob').length;
       const addCount = Math.max(0, combatMobCount - 1);
       const xpAmount = baseXp + (addCount * ENCOUNTER_CONFIG.addXpBonus);

@@ -338,7 +338,7 @@ describe('GameSession', () => {
     const triggered = walkPlayerToMob(session, 'p1', messages);
     if (triggered) {
       const combatStart = messages.find(m => m.msg.type === 'combat_start');
-      const mobs = combatStart.msg.combat.participants.filter((p: any) => p.type === 'mob');
+      const mobs = combatStart!.msg.combat.participants.filter((p: any) => p.type === 'mob');
       expect(mobs.length).toBeGreaterThan(1);
     }
   });
