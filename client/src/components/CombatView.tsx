@@ -316,6 +316,7 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
                   }}
                 >
                   {ability.name} <span className="energy-cost">{ability.energyCost}</span>
+                  <span className="ability-tooltip">{ability.description}</span>
                 </button>
               );
             })}
