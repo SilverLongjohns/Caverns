@@ -134,7 +134,7 @@ export function DebugPanel({ onTeleport, onRevealAll, onGiveItem }: DebugPanelPr
                   >
                     <span className="debug-room-biome">{item.slot}</span>
                     <span className={`debug-room-name rarity-${item.rarity}`}>{item.name}</span>
-                    {item.effect && <span className="debug-item-effect">{item.effect}</span>}
+                    {'effect' in item && item.effect && <span className="debug-item-effect">{item.effect}</span>}
                   </button>
                 ))}
               </div>
