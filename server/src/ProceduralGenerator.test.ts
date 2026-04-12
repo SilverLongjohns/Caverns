@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generateProceduralDungeon } from './ProceduralGenerator.js';
 import type { Direction } from '@caverns/shared';
+import { DROP_SPECS } from '@caverns/shared';
 
 describe('ProceduralGenerator', () => {
   it('generates a dungeon with the correct number of zones', () => {
@@ -78,36 +79,32 @@ describe('ProceduralGenerator', () => {
     }
   });
 
-  it('all room loot references items in the dungeon', () => {
+  it('all room drop specs reference registered DropSpec ids', () => {
     const dungeon = generateProceduralDungeon(3);
-    const itemIds = new Set(dungeon.items.map(i => i.id));
     for (const room of dungeon.rooms) {
-      if (room.loot) {
-        for (const loot of room.loot) {
-          // Key items won't be in the items array
-          const isKeyItem = dungeon.rooms.some(r =>
-            r.lockedExits && Object.values(r.lockedExits).includes(loot.itemId)
-          );
-          if (!isKeyItem) {
-            expect(itemIds.has(loot.itemId), `Unknown item ${loot.itemId} in room ${room.id}`).toBe(true);
-          }
-        }
+      if (!room.drops) continue;
+      if ('dropSpecId' in room.drops) {
+        expect(
+          DROP_SPECS[room.drops.dropSpecId],
+          `Unknown drop spec ${room.drops.dropSpecId} in room ${room.id}`,
+        ).toBeDefined();
+      } else {
+        expect(Array.isArray(room.drops.drops.pools)).toBe(true);
       }
     }
   });
 
-  it('all mob loot tables have valid LootDrop entries', () => {
+  it('all mob drop refs reference registered DropSpec ids', () => {
     const dungeon = generateProceduralDungeon(3);
-    const itemIds = new Set(dungeon.items.map(i => i.id));
-    const validSlots = ['weapon', 'offhand', 'armor', 'accessory'];
     for (const mob of dungeon.mobs) {
-      for (const drop of mob.lootTable) {
-        if ('consumableId' in drop) {
-          expect(itemIds.has(drop.consumableId), `Mob ${mob.id} references unknown consumable ${drop.consumableId}`).toBe(true);
-        } else if ('slot' in drop) {
-          expect(validSlots.includes(drop.slot), `Mob ${mob.id} has invalid slot ${drop.slot}`).toBe(true);
-          expect([1, 2, 3].includes(drop.skullRating), `Mob ${mob.id} has invalid skullRating`).toBe(true);
-        }
+      expect(mob.drops).toBeDefined();
+      if ('dropSpecId' in mob.drops) {
+        expect(
+          DROP_SPECS[mob.drops.dropSpecId],
+          `Mob ${mob.id} references unknown drop spec ${mob.drops.dropSpecId}`,
+        ).toBeDefined();
+      } else {
+        expect(Array.isArray(mob.drops.drops.pools)).toBe(true);
       }
     }
   });
@@ -124,14 +121,23 @@ describe('ProceduralGenerator', () => {
     expect(lockedTarget).toBeDefined();
   });
 
-  it('key item is placed in room loot', () => {
+  it('key item is placed in a room drop spec', () => {
     const dungeon = generateProceduralDungeon(3);
     const parentRoom = dungeon.rooms.find(r => r.lockedExits && Object.keys(r.lockedExits).length > 0);
     expect(parentRoom).toBeDefined();
     const keyId = Object.values(parentRoom!.lockedExits!)[0];
-    const roomWithKey = dungeon.rooms.find(r =>
-      r.loot?.some(l => l.itemId === keyId)
-    );
+    const hasKey = (ref: { dropSpecId?: string; drops?: { pools: { entries: { type: string; keyId?: string }[] }[] } } | undefined): boolean => {
+      if (!ref) return false;
+      if ('drops' in ref && ref.drops) {
+        for (const pool of ref.drops.pools) {
+          for (const entry of pool.entries) {
+            if (entry.type === 'key' && entry.keyId === keyId) return true;
+          }
+        }
+      }
+      return false;
+    };
+    const roomWithKey = dungeon.rooms.find(r => hasKey(r.drops as never));
     expect(roomWithKey, `No room contains key item ${keyId}`).toBeDefined();
   });
 
@@ -175,7 +181,6 @@ describe('ProceduralGenerator', () => {
       // Referential integrity
       const roomIds = new Set(dungeon.rooms.map(r => r.id));
       const mobIds = new Set(dungeon.mobs.map(m => m.id));
-      const itemIds = new Set(dungeon.items.map(i => i.id));
 
       expect(roomIds.has(dungeon.entranceRoomId)).toBe(true);
       expect(mobIds.has(dungeon.bossId)).toBe(true);
@@ -197,14 +202,12 @@ describe('ProceduralGenerator', () => {
         if (room.encounter) {
           expect(mobIds.has(room.encounter.mobId)).toBe(true);
         }
-        if (room.loot) {
-          for (const l of room.loot) {
-            const isKey = dungeon.rooms.some(r =>
-              r.lockedExits && Object.values(r.lockedExits).includes(l.itemId)
-            );
-            if (!isKey) {
-              expect(itemIds.has(l.itemId), `Missing item ${l.itemId}`).toBe(true);
-            }
+        if (room.drops) {
+          if ('dropSpecId' in room.drops) {
+            expect(
+              DROP_SPECS[room.drops.dropSpecId],
+              `Unknown drop spec ${room.drops.dropSpecId}`,
+            ).toBeDefined();
           }
         }
       }

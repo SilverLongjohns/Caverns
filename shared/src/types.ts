@@ -32,6 +32,69 @@ export interface Item {
   effectParams?: Record<string, number>;
 }
 
+// === Drop Specs ===
+
+export type DropSpecRef =
+  | { dropSpecId: string }
+  | { drops: DropSpec };
+
+export interface DropSpec {
+  pools: DropPool[];
+}
+
+export interface DropPool {
+  rolls: number;
+  entries: DropEntry[];
+}
+
+export type DropEntry =
+  | ConsumableDropEntry
+  | GeneratedDropEntry
+  | MaterialDropEntry
+  | GoldDropEntry
+  | KeyDropEntry
+  | NothingDropEntry;
+
+export interface ConsumableDropEntry {
+  type: 'consumable';
+  consumableId: string;
+  weight?: number;
+}
+
+export interface GeneratedDropEntry {
+  type: 'generated';
+  slot: EquipmentSlot;
+  skullRating?: 1 | 2 | 3;
+  skullOffset?: number;
+  rarityWeights?: Partial<Record<Rarity, number>>;
+  weight?: number;
+}
+
+export interface MaterialDropEntry {
+  type: 'material';
+  materialId: string;
+  count: number;
+  weight?: number;
+}
+
+export interface GoldDropEntry {
+  type: 'gold';
+  min: number;
+  max: number;
+  weight?: number;
+}
+
+export interface KeyDropEntry {
+  type: 'key';
+  keyId: string;
+  weight?: number;
+}
+
+export interface NothingDropEntry {
+  type: 'nothing';
+  weight?: number;
+}
+
 // === Interactables ===
 export type InteractableSize = 'small' | 'medium' | 'large';
 export type OutcomeType = 'loot' | 'hazard' | 'intel' | 'secret' | 'flavor' | 'reveal_room';
@@ -79,11 +142,6 @@ export interface RoomEncounter {
   skullRating: 1 | 2 | 3;
 }
 
-export interface RoomLoot {
-  itemId: string;
-  location: 'chest' | 'floor' | 'hidden';
-}
-
 export interface RoomPuzzle {
   id: string;
   description: string;
@@ -114,7 +172,8 @@ export interface Room {
   description: string;
   exits: Partial<Record<Direction, string>>;
   encounter?: RoomEncounter;
-  loot?: RoomLoot[];
+  drops?: DropSpecRef;
+  lootLocation?: 'chest' | 'floor' | 'hidden';
   lockedExits?: Partial<Record<Direction, string>>;
   puzzle?: RoomPuzzle;
   gridX?: number;
@@ -122,19 +181,6 @@ export interface Room {
   tileGrid?: TileGrid;
   interactables?: InteractableInstance[];
 }
-
-// === Loot Drops ===
-export interface GeneratedLootDrop {
-  slot: EquipmentSlot;
-  skullRating: 1 | 2 | 3;
-  rarityWeights?: Partial<Record<Rarity, number>>;
-}
-
-export interface ConsumableLootDrop {
-  consumableId: string;
-}
-
-export type LootDrop = GeneratedLootDrop | ConsumableLootDrop;
 
 // === Mobs ===
 export interface MobTemplate {
@@ -146,7 +192,7 @@ export interface MobTemplate {
   damage: number;
   defense: number;
   initiative: number;
-  lootTable: LootDrop[];
+  drops: DropSpecRef;
 }
 
 export interface MobInstance {
@@ -176,6 +222,7 @@ export const INVENTORY_SLOTS = PLAYER_CONFIG.inventorySlots;
 export interface Player {
   id: string;
   name: string;
+  gold: number;
   className: string;
   maxHp: number;
   hp: number;
@@ -268,6 +315,7 @@ export function createPlayer(id: string, name: string, roomId: string, className
   return {
     id,
     name,
+    gold: 0,
     className,
     maxHp,
     hp: maxHp,

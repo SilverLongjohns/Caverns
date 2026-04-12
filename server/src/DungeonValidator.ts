@@ -1,4 +1,5 @@
-import type { DungeonContent } from '@caverns/shared';
+import type { DungeonContent, DropSpec, DropSpecRef } from '@caverns/shared';
+import { DROP_SPECS } from '@caverns/shared';
 
 export interface ValidationConstraints {
   minRooms: number;
@@ -35,28 +36,45 @@ export function validateDungeon(dungeon: DungeonContent, constraints: Validation
     errors.push(`bossId "${dungeon.bossId}" does not match any mob`);
   }
 
+  // Helper: resolve a DropSpecRef to a DropSpec (via registry or inline).
+  const resolveRef = (ref: DropSpecRef): DropSpec | undefined => {
+    if ('dropSpecId' in ref) return DROP_SPECS[ref.dropSpecId];
+    return ref.drops;
+  };
+
+  const validateDropRef = (ref: DropSpecRef | undefined, ownerDesc: string): void => {
+    if (!ref) {
+      errors.push(`${ownerDesc} is missing required drops field`);
+      return;
+    }
+    if ('dropSpecId' in ref) {
+      if (!DROP_SPECS[ref.dropSpecId]) {
+        errors.push(`${ownerDesc} references unknown dropSpecId "${ref.dropSpecId}"`);
+        return;
+      }
+    }
+    const spec = resolveRef(ref);
+    if (!spec) return;
+    for (const pool of spec.pools) {
+      for (const entry of pool.entries) {
+        if (entry.type === 'consumable' && !itemIds.has(entry.consumableId)) {
+          errors.push(`${ownerDesc} drop references nonexistent consumable "${entry.consumableId}"`);
+        }
+      }
+    }
+  };
+
   for (const room of dungeon.rooms) {
     if (room.encounter && !mobIds.has(room.encounter.mobId)) {
       errors.push(`Room "${room.id}" encounter references nonexistent mob "${room.encounter.mobId}"`);
     }
-    if (room.loot) {
-      for (const loot of room.loot) {
-        if (!itemIds.has(loot.itemId)) {
-          errors.push(`Room "${room.id}" loot references nonexistent item "${loot.itemId}"`);
-        }
-      }
+    if (room.drops) {
+      validateDropRef(room.drops, `Room "${room.id}"`);
     }
   }
 
   for (const mob of dungeon.mobs) {
-    for (const drop of mob.lootTable) {
-      if ('consumableId' in drop) {
-        if (!itemIds.has(drop.consumableId)) {
-          errors.push(`Mob "${mob.id}" lootTable references nonexistent consumable "${drop.consumableId}"`);
-        }
-      }
-      // GeneratedLootDrop entries don't reference items by ID — validated by types
-    }
+    validateDropRef(mob.drops, `Mob "${mob.id}"`);
   }
 
   // Bidirectional exits
@@ -142,14 +160,22 @@ export function validateDungeon(dungeon: DungeonContent, constraints: Validation
     }
   }
 
-  // At least one room must contain the key item that unlocks the boss room
+  // At least one room/mob must drop the key that unlocks each locked exit.
   const lockedDirs = dungeon.rooms.flatMap(r =>
     r.lockedExits ? Object.values(r.lockedExits) : []
   );
-  for (const keyItemId of lockedDirs) {
-    const keyExists = dungeon.rooms.some(r =>
-      r.loot?.some(l => l.itemId === keyItemId)
+  const specHasKey = (ref: DropSpecRef | undefined, keyItemId: string): boolean => {
+    if (!ref) return false;
+    const spec = resolveRef(ref);
+    if (!spec) return false;
+    return spec.pools.some(pool =>
+      pool.entries.some(e => e.type === 'key' && e.keyId === keyItemId)
     );
+  };
+  for (const keyItemId of lockedDirs) {
+    const keyExists =
+      dungeon.rooms.some(r => specHasKey(r.drops, keyItemId)) ||
+      dungeon.mobs.some(m => specHasKey(m.drops, keyItemId));
     if (!keyExists) {
       errors.push(`Key item "${keyItemId}" required by a locked exit is not placed in any room`);
     }

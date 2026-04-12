@@ -28,5 +28,6 @@ export interface ItemGenerationRequest {
   skullRating: 1 | 2 | 3;
   biomeId: string;
   rarity?: Rarity;
+  rarityWeights?: Partial<Record<Rarity, number>>;
   seed?: number;
 }

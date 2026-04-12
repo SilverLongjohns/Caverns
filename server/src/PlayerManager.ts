@@ -207,6 +207,13 @@ export class PlayerManager {
     return player.energy >= cost;
   }
 
+  addGold(playerId: string, amount: number): number {
+    const player = this.players.get(playerId);
+    if (!player) return 0;
+    player.gold += amount;
+    return player.gold;
+  }
+
   awardXp(playerId: string, amount: number): number {
     const player = this.players.get(playerId);
     if (!player) throw new Error(`Player ${playerId} not found`);

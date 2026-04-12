@@ -4,409 +4,809 @@
     "name": "Tunnel Rat",
     "description": "A mangy rat the size of a terrier, eyes glinting red in the torchlight. It hisses and lunges.",
     "skullRating": 1,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 15, "damage": 6, "defense": 1, "initiative": 7 },
-    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "crude_bandage" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 15,
+      "damage": 6,
+      "defense": 1,
+      "initiative": 7
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "cave_bat_swarm",
     "name": "Cave Bat Swarm",
     "description": "A screeching cloud of leathery wings and tiny teeth. They swirl around you, biting from every angle.",
     "skullRating": 1,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 18, "damage": 8, "defense": 1, "initiative": 9 },
-    "lootTable": [{ "consumableId": "crude_bandage" }, { "consumableId": "cave_moss_poultice" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 18,
+      "damage": 8,
+      "defense": 1,
+      "initiative": 9
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "warren_spider",
     "name": "Warren Spider",
     "description": "A pale spider as big as a dinner plate. Its web lines the ceiling, and it drops without warning.",
     "skullRating": 1,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 16, "damage": 7, "defense": 2, "initiative": 6 },
-    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "cave_moss_poultice" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 16,
+      "damage": 7,
+      "defense": 2,
+      "initiative": 6
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "goblin_scrapper",
     "name": "Goblin Scrapper",
     "description": "A scrawny goblin in mismatched scraps of armor, wielding a jagged knife. More desperate than dangerous.",
     "skullRating": 1,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 20, "damage": 7, "defense": 2, "initiative": 5 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }, { "consumableId": "crude_bandage" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 20,
+      "damage": 7,
+      "defense": 2,
+      "initiative": 5
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "rubble_slime",
     "name": "Rubble Slime",
     "description": "A quivering blob of grey ooze studded with pebbles and bone fragments. It oozes toward you with mindless hunger.",
     "skullRating": 1,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 25, "damage": 6, "defense": 3, "initiative": 2 },
-    "lootTable": [{ "consumableId": "leather_scraps" }, { "consumableId": "cave_moss_poultice" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 25,
+      "damage": 6,
+      "defense": 3,
+      "initiative": 2
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "feral_miner",
     "name": "Feral Miner",
     "description": "A wild-eyed man in tattered overalls, swinging a pickaxe. Whatever happened down here broke his mind long ago.",
     "skullRating": 1,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 22, "damage": 9, "defense": 1, "initiative": 4 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "rot_gut_flask" }, { "consumableId": "leather_scraps" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 22,
+      "damage": 9,
+      "defense": 1,
+      "initiative": 4
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "alpha_wolf",
     "name": "Alpha Wolf",
     "description": "A massive grey wolf with scars across its muzzle. Its pack watches from the shadows, but it attacks alone.",
     "skullRating": 2,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 45, "damage": 12, "defense": 3, "initiative": 7 },
-    "lootTable": [{ "slot": "armor", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }, { "consumableId": "minor_hp_potion" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 45,
+      "damage": 12,
+      "defense": 3,
+      "initiative": 7
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "bandit_captain",
     "name": "Bandit Captain",
     "description": "A scarred veteran in patchwork armor, barking orders to underlings who are already dead. He fights on alone with grim determination.",
     "skullRating": 2,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 50, "damage": 14, "defense": 5, "initiative": 5 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "hp_potion" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 50,
+      "damage": 14,
+      "defense": 5,
+      "initiative": 5
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "cave_troll",
     "name": "Cave Troll",
     "description": "A hunched brute with skin like wet stone. It drags a boulder behind it like a toy, grunting with each labored step.",
     "skullRating": 2,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 55, "damage": 16, "defense": 6, "initiative": 2 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "offhand", "skullRating": 2 }, { "consumableId": "hp_potion" }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 55,
+      "damage": 16,
+      "defense": 6,
+      "initiative": 2
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "the_rat_king",
     "name": "The Rat King",
     "description": "A monstrous tangle of dozens of rats fused at the tail, grown to obscene size. Hundreds of eyes glare with unified malice, and the mass moves with horrifying coordination.",
     "skullRating": 3,
-    "biomes": ["starter"],
-    "baseStats": { "maxHp": 130, "damage": 18, "defense": 5, "initiative": 6 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "armor", "skullRating": 3 }]
+    "biomes": [
+      "starter"
+    ],
+    "baseStats": {
+      "maxHp": 130,
+      "damage": 18,
+      "defense": 5,
+      "initiative": 6
+    },
+    "drops": {
+      "dropSpecId": "fungal_boss"
+    }
   },
-
   {
     "id": "fungal_crawler",
     "name": "Fungal Crawler",
     "description": "A dog-sized insect coated in phosphorescent spores.",
     "skullRating": 1,
-    "biomes": ["fungal"],
-    "baseStats": { "maxHp": 25, "damage": 8, "defense": 2, "initiative": 4 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
+    "biomes": [
+      "fungal"
+    ],
+    "baseStats": {
+      "maxHp": 25,
+      "damage": 8,
+      "defense": 2,
+      "initiative": 4
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "cave_lurker",
     "name": "Cave Lurker",
     "description": "A pale, eyeless humanoid that clings to the ceiling and drops on prey.",
     "skullRating": 1,
-    "biomes": ["fungal"],
-    "baseStats": { "maxHp": 20, "damage": 10, "defense": 1, "initiative": 6 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
+    "biomes": [
+      "fungal"
+    ],
+    "baseStats": {
+      "maxHp": 20,
+      "damage": 10,
+      "defense": 1,
+      "initiative": 6
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "spore_shambler",
     "name": "Spore Shambler",
     "description": "A shambling mass of fungal growth in a vaguely humanoid shape. It moves slowly but hits with surprising weight.",
     "skullRating": 1,
-    "biomes": ["fungal"],
-    "baseStats": { "maxHp": 30, "damage": 7, "defense": 3, "initiative": 2 },
-    "lootTable": [{ "slot": "armor", "skullRating": 1 }, { "consumableId": "leather_scraps" }]
+    "biomes": [
+      "fungal"
+    ],
+    "baseStats": {
+      "maxHp": 30,
+      "damage": 7,
+      "defense": 3,
+      "initiative": 2
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "glowcap_swarm",
     "name": "Glowcap Swarm",
     "description": "A cloud of tiny luminescent mushroom creatures that attack as one, swarming over victims.",
     "skullRating": 1,
-    "biomes": ["fungal"],
-    "baseStats": { "maxHp": 15, "damage": 10, "defense": 1, "initiative": 8 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "throwing_spore" }]
+    "biomes": [
+      "fungal"
+    ],
+    "baseStats": {
+      "maxHp": 15,
+      "damage": 10,
+      "defense": 1,
+      "initiative": 8
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "sporecap_brute",
     "name": "Sporecap Brute",
     "description": "A hulking fungal creature with a massive mushroom cap for a head. Swings tree-trunk arms with devastating force.",
     "skullRating": 2,
-    "biomes": ["fungal"],
-    "baseStats": { "maxHp": 60, "damage": 14, "defense": 5, "initiative": 3 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }]
+    "biomes": [
+      "fungal"
+    ],
+    "baseStats": {
+      "maxHp": 60,
+      "damage": 14,
+      "defense": 5,
+      "initiative": 3
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "mycelium_guardian",
     "name": "Mycelium Guardian",
     "description": "A towering pillar of fungal matter with arms like battering rams. It guards the deeper tunnels with mindless devotion.",
     "skullRating": 2,
-    "biomes": ["fungal"],
-    "baseStats": { "maxHp": 70, "damage": 12, "defense": 6, "initiative": 2 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "offhand", "skullRating": 2 }, { "consumableId": "hp_potion" }]
+    "biomes": [
+      "fungal"
+    ],
+    "baseStats": {
+      "maxHp": 70,
+      "damage": 12,
+      "defense": 6,
+      "initiative": 2
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "mycelium_king",
     "name": "The Mycelium King",
     "description": "A towering mass of interwoven fungal tendrils shaped vaguely like a man. Spore clouds billow with each movement.",
     "skullRating": 3,
-    "biomes": ["fungal"],
-    "baseStats": { "maxHp": 200, "damage": 25, "defense": 8, "initiative": 5 },
-    "lootTable": [{ "slot": "accessory", "skullRating": 3 }, { "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }]
+    "biomes": [
+      "fungal"
+    ],
+    "baseStats": {
+      "maxHp": 200,
+      "damage": 25,
+      "defense": 8,
+      "initiative": 5
+    },
+    "drops": {
+      "dropSpecId": "fungal_boss"
+    }
   },
-
   {
     "id": "shard_beetle",
     "name": "Shard Beetle",
     "description": "An insect with a carapace of razor-sharp crystal fragments. It scuttles through narrow crevices.",
     "skullRating": 1,
-    "biomes": ["crystal"],
-    "baseStats": { "maxHp": 20, "damage": 9, "defense": 3, "initiative": 5 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "crystal_dust" }]
+    "biomes": [
+      "crystal"
+    ],
+    "baseStats": {
+      "maxHp": 20,
+      "damage": 9,
+      "defense": 3,
+      "initiative": 5
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "prism_wisp",
     "name": "Prism Wisp",
     "description": "A floating orb of light that refracts into blinding patterns. Its touch burns like concentrated sunlight.",
     "skullRating": 1,
-    "biomes": ["crystal"],
-    "baseStats": { "maxHp": 15, "damage": 11, "defense": 1, "initiative": 9 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "crystal_dust" }]
+    "biomes": [
+      "crystal"
+    ],
+    "baseStats": {
+      "maxHp": 15,
+      "damage": 11,
+      "defense": 1,
+      "initiative": 9
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "crystal_spider",
     "name": "Crystal Spider",
     "description": "A spider the size of a large dog, its legs and fangs made of translucent crystal. Webs of fine glass threads glitter in the light.",
     "skullRating": 1,
-    "biomes": ["crystal"],
-    "baseStats": { "maxHp": 22, "damage": 8, "defense": 2, "initiative": 7 },
-    "lootTable": [{ "slot": "armor", "skullRating": 1 }, { "slot": "offhand", "skullRating": 1 }]
+    "biomes": [
+      "crystal"
+    ],
+    "baseStats": {
+      "maxHp": 22,
+      "damage": 8,
+      "defense": 2,
+      "initiative": 7
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "resonance_stalker",
     "name": "Resonance Stalker",
     "description": "A lean predator made of living crystal that vibrates at frequencies that shatter stone. Nearly invisible against the cavern walls.",
     "skullRating": 1,
-    "biomes": ["crystal"],
-    "baseStats": { "maxHp": 18, "damage": 10, "defense": 2, "initiative": 8 },
-    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "prism_flask" }]
+    "biomes": [
+      "crystal"
+    ],
+    "baseStats": {
+      "maxHp": 18,
+      "damage": 10,
+      "defense": 2,
+      "initiative": 8
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "geode_golem",
     "name": "Geode Golem",
     "description": "A lumbering construct of hollow crystal, its interior filled with glittering formations. Each step shakes the ground.",
     "skullRating": 2,
-    "biomes": ["crystal"],
-    "baseStats": { "maxHp": 65, "damage": 15, "defense": 7, "initiative": 2 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "prism_flask" }]
+    "biomes": [
+      "crystal"
+    ],
+    "baseStats": {
+      "maxHp": 65,
+      "damage": 15,
+      "defense": 7,
+      "initiative": 2
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "facet_matriarch",
     "name": "Facet Matriarch",
     "description": "A massive crystalline entity with dozens of faceted eyes. Light bends around her in disorienting patterns.",
     "skullRating": 2,
-    "biomes": ["crystal"],
-    "baseStats": { "maxHp": 55, "damage": 18, "defense": 4, "initiative": 5 },
-    "lootTable": [{ "slot": "offhand", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }, { "consumableId": "crystal_grenade" }]
+    "biomes": [
+      "crystal"
+    ],
+    "baseStats": {
+      "maxHp": 55,
+      "damage": 18,
+      "defense": 4,
+      "initiative": 5
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "prismatic_colossus",
     "name": "The Prismatic Colossus",
     "description": "A creature of living crystal that towers to the ceiling. Light from every source converges on it, creating a blinding aura of refracted color.",
     "skullRating": 3,
-    "biomes": ["crystal"],
-    "baseStats": { "maxHp": 220, "damage": 22, "defense": 10, "initiative": 4 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "offhand", "skullRating": 3 }]
+    "biomes": [
+      "crystal"
+    ],
+    "baseStats": {
+      "maxHp": 220,
+      "damage": 22,
+      "defense": 10,
+      "initiative": 4
+    },
+    "drops": {
+      "dropSpecId": "fungal_boss"
+    }
   },
-
   {
     "id": "drowned_shambler",
     "name": "Drowned Shambler",
     "description": "A waterlogged corpse that still moves. Water pours from its mouth as it lurches forward.",
     "skullRating": 1,
-    "biomes": ["flooded"],
-    "baseStats": { "maxHp": 28, "damage": 7, "defense": 3, "initiative": 2 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
+    "biomes": [
+      "flooded"
+    ],
+    "baseStats": {
+      "maxHp": 28,
+      "damage": 7,
+      "defense": 3,
+      "initiative": 2
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "cave_eel",
     "name": "Cave Eel",
     "description": "A blind eel as long as a man, with rows of needle teeth. It senses vibrations in the water with terrifying accuracy.",
     "skullRating": 1,
-    "biomes": ["flooded"],
-    "baseStats": { "maxHp": 18, "damage": 11, "defense": 1, "initiative": 8 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "brine_tonic" }]
+    "biomes": [
+      "flooded"
+    ],
+    "baseStats": {
+      "maxHp": 18,
+      "damage": 11,
+      "defense": 1,
+      "initiative": 8
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "tide_crawler",
     "name": "Tide Crawler",
     "description": "A massive crustacean with barnacle-encrusted claws. It sidesteps through the flooded tunnels with surprising speed.",
     "skullRating": 1,
-    "biomes": ["flooded"],
-    "baseStats": { "maxHp": 25, "damage": 8, "defense": 4, "initiative": 4 },
-    "lootTable": [{ "slot": "offhand", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
+    "biomes": [
+      "flooded"
+    ],
+    "baseStats": {
+      "maxHp": 25,
+      "damage": 8,
+      "defense": 4,
+      "initiative": 4
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "salt_wraith",
     "name": "Salt Wraith",
     "description": "A translucent figure made of salt-crusted water. It flows through cracks and reforms to strike.",
     "skullRating": 1,
-    "biomes": ["flooded"],
-    "baseStats": { "maxHp": 16, "damage": 10, "defense": 2, "initiative": 7 },
-    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "sea_foam_salve" }]
+    "biomes": [
+      "flooded"
+    ],
+    "baseStats": {
+      "maxHp": 16,
+      "damage": 10,
+      "defense": 2,
+      "initiative": 7
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "abyssal_angler",
     "name": "Abyssal Angler",
     "description": "A hulking fish-like creature with a bioluminescent lure. Its jaw unhinges to swallow prey whole.",
     "skullRating": 2,
-    "biomes": ["flooded"],
-    "baseStats": { "maxHp": 70, "damage": 16, "defense": 5, "initiative": 3 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "offhand", "skullRating": 2 }, { "consumableId": "sea_foam_salve" }]
+    "biomes": [
+      "flooded"
+    ],
+    "baseStats": {
+      "maxHp": 70,
+      "damage": 16,
+      "defense": 5,
+      "initiative": 3
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "kraken_spawn",
     "name": "Kraken Spawn",
     "description": "A writhing mass of tentacles emerging from the dark water. Only a fragment of something much larger.",
     "skullRating": 2,
-    "biomes": ["flooded"],
-    "baseStats": { "maxHp": 60, "damage": 18, "defense": 4, "initiative": 6 },
-    "lootTable": [{ "slot": "accessory", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "depth_charge" }]
+    "biomes": [
+      "flooded"
+    ],
+    "baseStats": {
+      "maxHp": 60,
+      "damage": 18,
+      "defense": 4,
+      "initiative": 6
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "the_drowned_leviathan",
     "name": "The Drowned Leviathan",
     "description": "An ancient sea creature entombed in the flooded depths. It fills the chamber, tentacles reaching from wall to wall, a single enormous eye fixing on you with cold intelligence.",
     "skullRating": 3,
-    "biomes": ["flooded"],
-    "baseStats": { "maxHp": 250, "damage": 20, "defense": 9, "initiative": 3 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "offhand", "skullRating": 3 }]
+    "biomes": [
+      "flooded"
+    ],
+    "baseStats": {
+      "maxHp": 250,
+      "damage": 20,
+      "defense": 9,
+      "initiative": 3
+    },
+    "drops": {
+      "dropSpecId": "fungal_boss"
+    }
   },
-
   {
     "id": "bone_rattler",
     "name": "Bone Rattler",
     "description": "A skeleton reassembled wrong -- too many arms, joints bending the wrong way. It moves with a horrible clicking sound.",
     "skullRating": 1,
-    "biomes": ["bone"],
-    "baseStats": { "maxHp": 22, "damage": 8, "defense": 2, "initiative": 5 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
+    "biomes": [
+      "bone"
+    ],
+    "baseStats": {
+      "maxHp": 22,
+      "damage": 8,
+      "defense": 2,
+      "initiative": 5
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "marrow_leech",
     "name": "Marrow Leech",
     "description": "A pale worm that burrows through bone. It surfaces to feed, draining the marrow from living creatures.",
     "skullRating": 1,
-    "biomes": ["bone"],
-    "baseStats": { "maxHp": 16, "damage": 12, "defense": 1, "initiative": 6 },
-    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "marrow_paste" }]
+    "biomes": [
+      "bone"
+    ],
+    "baseStats": {
+      "maxHp": 16,
+      "damage": 12,
+      "defense": 1,
+      "initiative": 6
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "skull_sentinel",
     "name": "Skull Sentinel",
     "description": "A floating skull wreathed in pale flame. It guards the ossuary corridors, shrieking when intruders are detected.",
     "skullRating": 1,
-    "biomes": ["bone"],
-    "baseStats": { "maxHp": 18, "damage": 9, "defense": 3, "initiative": 7 },
-    "lootTable": [{ "slot": "offhand", "skullRating": 1 }, { "consumableId": "spirit_draught" }]
+    "biomes": [
+      "bone"
+    ],
+    "baseStats": {
+      "maxHp": 18,
+      "damage": 9,
+      "defense": 3,
+      "initiative": 7
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "grave_warden",
     "name": "Grave Warden",
     "description": "An armored skeleton wielding ancient weapons. Unlike the mindless rattlers, this one fights with discipline and purpose.",
     "skullRating": 1,
-    "biomes": ["bone"],
-    "baseStats": { "maxHp": 30, "damage": 7, "defense": 4, "initiative": 4 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "accessory", "skullRating": 1 }]
+    "biomes": [
+      "bone"
+    ],
+    "baseStats": {
+      "maxHp": 30,
+      "damage": 7,
+      "defense": 4,
+      "initiative": 4
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "bone_colossus",
     "name": "Bone Colossus",
     "description": "A giant assembled from hundreds of skeletons fused together. It towers over the ossuary halls, each step grinding bone to dust.",
     "skullRating": 2,
-    "biomes": ["bone"],
-    "baseStats": { "maxHp": 75, "damage": 14, "defense": 6, "initiative": 2 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "spirit_draught" }]
+    "biomes": [
+      "bone"
+    ],
+    "baseStats": {
+      "maxHp": 75,
+      "damage": 14,
+      "defense": 6,
+      "initiative": 2
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "lich_remnant",
     "name": "Lich Remnant",
     "description": "The decayed remains of an ancient sorcerer. Pale fire dances in its eye sockets and its bony fingers crackle with necrotic energy.",
     "skullRating": 2,
-    "biomes": ["bone"],
-    "baseStats": { "maxHp": 50, "damage": 20, "defense": 3, "initiative": 7 },
-    "lootTable": [{ "slot": "offhand", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }, { "consumableId": "bone_shard_bomb" }]
+    "biomes": [
+      "bone"
+    ],
+    "baseStats": {
+      "maxHp": 50,
+      "damage": 20,
+      "defense": 3,
+      "initiative": 7
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "the_charnel_king",
     "name": "The Charnel King",
     "description": "A massive figure assembled from thousands of bones, seated on a throne of ribcages. Eye sockets burn with pale fire. When it rises, the walls themselves shed bones to rebuild it.",
     "skullRating": 3,
-    "biomes": ["bone"],
-    "baseStats": { "maxHp": 230, "damage": 24, "defense": 10, "initiative": 5 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "armor", "skullRating": 3 }]
+    "biomes": [
+      "bone"
+    ],
+    "baseStats": {
+      "maxHp": 230,
+      "damage": 24,
+      "defense": 10,
+      "initiative": 5
+    },
+    "drops": {
+      "dropSpecId": "fungal_boss"
+    }
   },
-
   {
     "id": "cinder_imp",
     "name": "Cinder Imp",
     "description": "A small creature of hardened ash and glowing embers. It cackles as it hurls balls of molten slag.",
     "skullRating": 1,
-    "biomes": ["volcanic"],
-    "baseStats": { "maxHp": 16, "damage": 10, "defense": 1, "initiative": 9 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "magma_salve" }]
+    "biomes": [
+      "volcanic"
+    ],
+    "baseStats": {
+      "maxHp": 16,
+      "damage": 10,
+      "defense": 1,
+      "initiative": 9
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "magma_beetle",
     "name": "Magma Beetle",
     "description": "An armored beetle the size of a cart, its carapace glowing with volcanic heat. Lava drips from between its plates.",
     "skullRating": 1,
-    "biomes": ["volcanic"],
-    "baseStats": { "maxHp": 30, "damage": 7, "defense": 5, "initiative": 3 },
-    "lootTable": [{ "slot": "armor", "skullRating": 1 }, { "slot": "accessory", "skullRating": 1 }]
+    "biomes": [
+      "volcanic"
+    ],
+    "baseStats": {
+      "maxHp": 30,
+      "damage": 7,
+      "defense": 5,
+      "initiative": 3
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "ash_stalker",
     "name": "Ash Stalker",
     "description": "A lean predator coated in volcanic ash. It blends perfectly with the scorched terrain and strikes from concealment.",
     "skullRating": 1,
-    "biomes": ["volcanic"],
-    "baseStats": { "maxHp": 20, "damage": 11, "defense": 2, "initiative": 8 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "magma_salve" }]
+    "biomes": [
+      "volcanic"
+    ],
+    "baseStats": {
+      "maxHp": 20,
+      "damage": 11,
+      "defense": 2,
+      "initiative": 8
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "lava_slime",
     "name": "Lava Slime",
     "description": "A blob of semi-molten rock that oozes across the floor. It absorbs blows and retaliates with searing heat.",
     "skullRating": 1,
-    "biomes": ["volcanic"],
-    "baseStats": { "maxHp": 35, "damage": 6, "defense": 4, "initiative": 1 },
-    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "volcanic_tonic" }]
+    "biomes": [
+      "volcanic"
+    ],
+    "baseStats": {
+      "maxHp": 35,
+      "damage": 6,
+      "defense": 4,
+      "initiative": 1
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_common"
+    }
   },
   {
     "id": "obsidian_sentinel",
     "name": "Obsidian Sentinel",
     "description": "A humanoid figure of volcanic glass, moving with mechanical precision. Cracks in its surface glow with inner fire.",
     "skullRating": 2,
-    "biomes": ["volcanic"],
-    "baseStats": { "maxHp": 65, "damage": 16, "defense": 7, "initiative": 4 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "volcanic_tonic" }]
+    "biomes": [
+      "volcanic"
+    ],
+    "baseStats": {
+      "maxHp": 65,
+      "damage": 16,
+      "defense": 7,
+      "initiative": 4
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "pyroclast_wyrm",
     "name": "Pyroclast Wyrm",
     "description": "A serpentine creature that swims through molten rock. It surfaces to attack, spraying lava in wide arcs.",
     "skullRating": 2,
-    "biomes": ["volcanic"],
-    "baseStats": { "maxHp": 55, "damage": 20, "defense": 4, "initiative": 6 },
-    "lootTable": [{ "slot": "offhand", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }, { "consumableId": "fire_bomb" }]
+    "biomes": [
+      "volcanic"
+    ],
+    "baseStats": {
+      "maxHp": 55,
+      "damage": 20,
+      "defense": 4,
+      "initiative": 6
+    },
+    "drops": {
+      "dropSpecId": "fungal_mob_elite"
+    }
   },
   {
     "id": "the_forge_titan",
     "name": "The Forge Titan",
     "description": "A creature of slag and flame that rises from the magma itself. Its body is a furnace, its fists are anvils, and its rage is volcanic.",
     "skullRating": 3,
-    "biomes": ["volcanic"],
-    "baseStats": { "maxHp": 280, "damage": 28, "defense": 11, "initiative": 3 },
-    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "armor", "skullRating": 3 }]
+    "biomes": [
+      "volcanic"
+    ],
+    "baseStats": {
+      "maxHp": 280,
+      "damage": 28,
+      "defense": 11,
+      "initiative": 3
+    },
+    "drops": {
+      "dropSpecId": "fungal_boss"
+    }
   }
 ]

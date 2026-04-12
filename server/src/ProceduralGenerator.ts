@@ -1,11 +1,21 @@
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
-import type { Room, MobTemplate, Item, Direction, DungeonContent, Rarity, InteractableDefinition, InteractableInstance } from '@caverns/shared';
-import { LOOT_CONFIG, DUNGEON_CONFIG } from '@caverns/shared';
+import type { Room, MobTemplate, Item, Direction, DungeonContent, InteractableDefinition, InteractableInstance, DropSpec, DropSpecRef } from '@caverns/shared';
+import { DUNGEON_CONFIG, DROP_SPECS } from '@caverns/shared';
 import type { RoomChit, MobPoolEntry, BiomeDefinition, PuzzleTemplate } from '@caverns/shared';
 import { validateDungeon } from './DungeonValidator.js';
 import { buildTileGrid } from './tileGridBuilder.js';
+import { mergeDropSpecs, collectConsumableManifest } from './DropResolver.js';
+
+const STARTER_ITEM_IDS: readonly string[] = [
+  'starter_sword',
+  'minor_hp_potion',
+  'vanguard_iron_mace', 'vanguard_tower_shield',
+  'shadowblade_twin_daggers', 'shadowblade_smoke_cloak',
+  'cleric_blessed_staff', 'cleric_holy_symbol',
+  'artificer_repeating_crossbow', 'artificer_toolkit',
+];
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -114,7 +124,6 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
   let genCounter = 0;
   const allRooms: Room[] = [];
   const usedMobIds = new Set<string>();
-  const usedItemIds = new Set<string>();
   const zoneHubs: string[][] = []; // hubs per zone
   const zoneEntries: string[] = []; // entry room id per zone
 
@@ -454,18 +463,11 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
     damage: bossMobEntry.baseStats.damage,
     defense: bossMobEntry.baseStats.defense,
     initiative: bossMobEntry.baseStats.initiative,
-    lootTable: bossMobEntry.lootTable,
+    drops: bossMobEntry.drops,
   };
 
   bossRoom.encounter = { mobId: bossMob.id, skullRating: 3 };
   usedMobIds.add(bossMob.id);
-
-  // Add boss loot table consumable items
-  for (const drop of bossMob.lootTable) {
-    if ('consumableId' in drop) {
-      usedItemIds.add(drop.consumableId);
-    }
-  }
 
   allRooms.push(bossRoom);
 
@@ -516,57 +518,25 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
         damage: selectedMob.baseStats.damage,
         defense: selectedMob.baseStats.defense,
         initiative: selectedMob.baseStats.initiative,
-        lootTable: selectedMob.lootTable,
+        drops: selectedMob.drops,
       };
 
       room.encounter = { mobId: mobTemplate.id, skullRating: mobTemplate.skullRating };
       usedMobIds.add(mobTemplate.id);
-
-      for (const drop of mobTemplate.lootTable) {
-        if ('consumableId' in drop) {
-          usedItemIds.add(drop.consumableId);
-        }
-      }
     }
   }
 
-  // 6. Distribute loot
-  const defaultRarityWeights: { rarity: Rarity; weight: number }[] = (Object.entries(LOOT_CONFIG.defaultLootWeights) as [Rarity, number][])
-    .map(([rarity, weight]) => ({ rarity, weight }));
-
-  const starterRarityWeights: { rarity: Rarity; weight: number }[] = (Object.entries(LOOT_CONFIG.starterLootWeights) as [Rarity, number][])
-    .map(([rarity, weight]) => ({ rarity, weight }));
-
+  // 6. Assign room drop specs
   for (const room of allRooms) {
     if (room.type === 'boss') continue;
     if (room.id === entranceRoomId) continue;
-
     const biome = getBiomeForRoom(room, biomes, zoneEntries, zoneCount);
-    const rarityWeights = biome.isStarter ? starterRarityWeights : defaultRarityWeights;
-    if (Math.random() < biome.lootDensity) {
-      const selectedRarity = rollRarity(rarityWeights);
-      let candidateItems: Item[];
+    room.drops = { dropSpecId: biome.roomDropSpecId };
 
-      if (selectedRarity === 'unique') {
-        candidateItems = allUniqueItems;
-      } else {
-        candidateItems = allItems.filter(i => i.rarity === selectedRarity);
-      }
-
-      if (candidateItems.length > 0) {
-        const item = pick(candidateItems);
-        usedItemIds.add(item.id);
-
-        // Pick a loot location from the room chit
-        const chitForRoom = allRoomChits.find(c => room.id.startsWith(c.id + '_'));
-        const locations: ('chest' | 'floor' | 'hidden')[] =
-          chitForRoom && chitForRoom.lootLocations.length > 0
-            ? chitForRoom.lootLocations as ('chest' | 'floor' | 'hidden')[]
-            : ['floor'];
-
-        if (!room.loot) room.loot = [];
-        room.loot.push({ itemId: item.id, location: pick(locations) });
-      }
+    // Preserve location flavor from the room chit, if any.
+    const chitForRoom = allRoomChits.find(c => room.id.startsWith(c.id + '_'));
+    if (chitForRoom && chitForRoom.lootLocations.length > 0) {
+      room.lootLocation = pick(chitForRoom.lootLocations) as 'chest' | 'floor' | 'hidden';
     }
   }
 
@@ -578,9 +548,11 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
   // Get rooms in the key zone
   const keyZoneRooms = getRoomsInZone(allRooms, keyZoneIndex);
   const keyRoom = pick(keyZoneRooms.filter(r => r.type !== 'boss' && r.id !== entranceRoomId));
-  if (!keyRoom.loot) keyRoom.loot = [];
-  keyRoom.loot.push({ itemId: finalBiome.keyItem.id, location: 'hidden' });
-  usedItemIds.add(finalBiome.keyItem.id);
+  const keyDropSpec: DropSpec = {
+    pools: [{ rolls: 1, entries: [{ type: 'key', keyId: finalBiome.keyItem.id }] }],
+  };
+  keyRoom.drops = mergeDropSpecs(keyRoom.drops, { drops: keyDropSpec }, DROP_SPECS);
+  if (!keyRoom.lootLocation) keyRoom.lootLocation = 'hidden';
 
   // 8. Place puzzles — 2-3 per zone in rooms without encounters
   const usedPuzzleIds = new Set<string>();
@@ -612,19 +584,14 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
       };
       usedPuzzleIds.add(puzzle.id);
 
-      // Guarantee puzzle rooms have loot as a reward
-      if (!puzzleRoom.loot || puzzleRoom.loot.length === 0) {
-        const rarityWeights = biome.isStarter ? starterRarityWeights : defaultRarityWeights;
-        const selectedRarity = rollRarity(rarityWeights);
-        const candidateItems = selectedRarity === 'unique'
-          ? allUniqueItems
-          : allItems.filter(it => it.rarity === selectedRarity);
-        if (candidateItems.length > 0) {
-          const item = pick(candidateItems);
-          usedItemIds.add(item.id);
-          puzzleRoom.loot = [{ itemId: item.id, location: 'hidden' as const }];
-        }
-      }
+      // Guarantee puzzle rooms have a drop spec as a reward (merge with any
+      // existing drops — e.g. a pre-placed key entry — so nothing is clobbered).
+      puzzleRoom.drops = mergeDropSpecs(
+        puzzleRoom.drops,
+        { dropSpecId: biome.puzzleRewardSpecId },
+        DROP_SPECS,
+      );
+      if (!puzzleRoom.lootLocation) puzzleRoom.lootLocation = 'hidden';
     }
   }
 
@@ -689,37 +656,45 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
           damage: poolEntry.baseStats.damage,
           defense: poolEntry.baseStats.defense,
           initiative: poolEntry.baseStats.initiative,
-          lootTable: poolEntry.lootTable,
+          drops: poolEntry.drops,
         });
         addedMobIds.add(poolEntry.id);
       }
     }
   }
 
-  // Collect all used items
-  const collectedItemIds = new Set<string>();
-  const usedItemsList: Item[] = [];
+  // Collect every DropSpecRef in the dungeon and resolve its consumable references.
+  const allDropRefs: DropSpecRef[] = [];
+  for (const room of allRooms) {
+    if (room.drops) allDropRefs.push(room.drops);
+  }
+  for (const mob of usedMobs) {
+    if (mob.drops) allDropRefs.push(mob.drops);
+  }
+  const manifest = collectConsumableManifest(allDropRefs, DROP_SPECS);
 
-  for (const itemId of usedItemIds) {
-    if (collectedItemIds.has(itemId)) continue;
-    const item = allItems.find(i => i.id === itemId) ?? allUniqueItems.find(i => i.id === itemId);
+  const allItemsCombined: Item[] = [...allItems, ...allUniqueItems];
+  const usedItemsList: Item[] = [];
+  const includedItemIds = new Set<string>();
+
+  // Consumables referenced by drop specs
+  for (const id of manifest.consumableIds) {
+    if (includedItemIds.has(id)) continue;
+    const item = allItemsCombined.find(i => i.id === id);
     if (item) {
       usedItemsList.push(item);
-      collectedItemIds.add(itemId);
+      includedItemIds.add(id);
     }
   }
 
-  // Add key item — it comes from the biome definition, not the item pools
-  if (!collectedItemIds.has(finalBiome.keyItem.id)) {
-    usedItemsList.push({
-      id: finalBiome.keyItem.id,
-      name: finalBiome.keyItem.name,
-      description: finalBiome.keyItem.description,
-      rarity: 'unique',
-      slot: 'accessory',
-      stats: {},
-    });
-    collectedItemIds.add(finalBiome.keyItem.id);
+  // Starter gear is always needed, regardless of drops.
+  for (const id of STARTER_ITEM_IDS) {
+    if (includedItemIds.has(id)) continue;
+    const item = allItemsCombined.find(i => i.id === id);
+    if (item) {
+      usedItemsList.push(item);
+      includedItemIds.add(id);
+    }
   }
 
   // Stamp grid positions onto rooms so the client can lay them out without BFS
@@ -908,12 +883,3 @@ function getRoomsInZone(rooms: Room[], zoneIndex: number): Room[] {
   return rooms.filter(r => r.id.includes(`_z${zoneIndex}_`));
 }
 
-function rollRarity(weights: { rarity: Rarity; weight: number }[]): Rarity {
-  const total = weights.reduce((sum, w) => sum + w.weight, 0);
-  let roll = Math.random() * total;
-  for (const w of weights) {
-    roll -= w.weight;
-    if (roll <= 0) return w.rarity;
-  }
-  return weights[0].rarity;
-}
