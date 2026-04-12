@@ -7,6 +7,7 @@ COPY shared/package.json shared/
 COPY server/package.json server/
 COPY client/package.json client/
 COPY roomgrid/package.json roomgrid/
+COPY itemgen/package.json itemgen/
 
 RUN npm ci
 
@@ -14,6 +15,7 @@ COPY shared/ shared/
 COPY server/ server/
 COPY client/ client/
 COPY roomgrid/ roomgrid/
+COPY itemgen/ itemgen/
 COPY tsconfig.json .
 
 RUN npm run build
@@ -26,6 +28,7 @@ COPY package.json package-lock.json ./
 COPY shared/package.json shared/
 COPY server/package.json server/
 COPY roomgrid/package.json roomgrid/
+COPY itemgen/package.json itemgen/
 
 RUN npm ci --omit=dev
 
@@ -35,6 +38,8 @@ COPY --from=build /app/shared/package.json shared/
 COPY --from=build /app/roomgrid/dist roomgrid/dist
 COPY --from=build /app/roomgrid/src/data roomgrid/src/data
 COPY --from=build /app/roomgrid/package.json roomgrid/
+COPY --from=build /app/itemgen/dist itemgen/dist
+COPY --from=build /app/itemgen/package.json itemgen/
 COPY --from=build /app/server/dist server/dist
 COPY --from=build /app/client/dist client/dist
 
