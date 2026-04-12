@@ -41,6 +41,7 @@ COPY --from=build /app/roomgrid/package.json roomgrid/
 COPY --from=build /app/itemgen/dist itemgen/dist
 COPY --from=build /app/itemgen/package.json itemgen/
 COPY --from=build /app/server/dist server/dist
+COPY --from=build /app/server/src/db/migrations server/src/db/migrations
 COPY --from=build /app/client/dist client/dist
 
 EXPOSE 8080

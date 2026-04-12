@@ -44,6 +44,19 @@ export class PlayerManager {
     return this.players.get(id);
   }
 
+  addHydratedPlayer(player: Player): void {
+    this.players.set(player.id, player);
+  }
+
+  replacePlayerId(oldId: string, newId: string): boolean {
+    const player = this.players.get(oldId);
+    if (!player) return false;
+    player.id = newId;
+    this.players.delete(oldId);
+    this.players.set(newId, player);
+    return true;
+  }
+
   getAllPlayers(): Player[] {
     return Array.from(this.players.values());
   }

@@ -113,6 +113,43 @@ export interface AllocateStatMessage {
   points: number;
 }
 
+// === Account / character persistence ===
+
+export interface LoginMessage {
+  type: 'login';
+  name: string;
+}
+
+export interface ResumeSessionMessage {
+  type: 'resume_session';
+  token: string;
+}
+
+export interface LogoutMessage {
+  type: 'logout';
+}
+
+export interface CreateCharacterMessage {
+  type: 'create_character';
+  name: string;
+  class: string;
+}
+
+export interface SelectCharacterMessage {
+  type: 'select_character';
+  characterId: string;
+}
+
+export interface DeleteCharacterMessage {
+  type: 'delete_character';
+  characterId: string;
+}
+
+export interface SetReadyMessage {
+  type: 'set_ready';
+  ready: boolean;
+}
+
 export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
@@ -131,17 +168,65 @@ export type ClientMessage =
   | DebugTeleportMessage
   | DebugRevealAllMessage
   | DebugGiveItemMessage
-  | AllocateStatMessage;
+  | AllocateStatMessage
+  | LoginMessage
+  | ResumeSessionMessage
+  | LogoutMessage
+  | CreateCharacterMessage
+  | SelectCharacterMessage
+  | DeleteCharacterMessage
+  | SetReadyMessage;
 
 // === Server -> Client ===
 
+export interface LobbyPlayer {
+  connectionId: string;
+  accountId: string;
+  displayName: string;
+  isHost: boolean;
+  ready: boolean;
+  character?: { id: string; name: string; className: string; level: number };
+}
+
 export interface LobbyStateMessage {
   type: 'lobby_state';
-  players: { id: string; name: string; className: string }[];
+  players: LobbyPlayer[];
   hostId: string;
   yourId: string;
   difficulty: 'easy' | 'medium' | 'hard';
   roomCode: string;
+}
+
+export interface CharacterSummary {
+  id: string;
+  name: string;
+  className: string;
+  level: number;
+  gold: number;
+  lastPlayedAt: string | null;
+  inUse: boolean;
+}
+
+export interface AccountSummary {
+  id: string;
+  displayName: string;
+}
+
+export interface AuthResultMessage {
+  type: 'auth_result';
+  token: string;
+  account: AccountSummary;
+  characters: CharacterSummary[];
+}
+
+export interface AuthErrorMessage {
+  type: 'auth_error';
+  reason: string;
+}
+
+export interface CharacterListMessage {
+  type: 'character_list';
+  characters: CharacterSummary[];
 }
 
 export interface GenerationStatusMessage {
@@ -395,4 +480,7 @@ export type ServerMessage =
   | PlayerPositionMessage
   | ErrorMessage
   | LevelUpMessage
-  | TorchPickupMessage;
+  | TorchPickupMessage
+  | AuthResultMessage
+  | AuthErrorMessage
+  | CharacterListMessage;

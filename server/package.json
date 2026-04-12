@@ -4,18 +4,24 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --env-file=../.env src/index.ts",
     "build": "tsc",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate": "node --env-file=../.env ../node_modules/node-pg-migrate/bin/node-pg-migrate.js -m src/db/migrations -t pgmigrations up",
+    "migrate:down": "node --env-file=../.env ../node_modules/node-pg-migrate/bin/node-pg-migrate.js -m src/db/migrations -t pgmigrations down"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
     "@caverns/itemgen": "*",
     "@caverns/roomgrid": "*",
     "@caverns/shared": "*",
+    "kysely": "^0.28.16",
+    "node-pg-migrate": "^8.0.4",
+    "pg": "^8.20.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.20.0",
     "@types/ws": "^8.5.10",
     "tsx": "^4.19.0",
     "typescript": "^5.5.3",

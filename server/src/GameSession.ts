@@ -36,6 +36,9 @@ import { RoomGrid } from '@caverns/roomgrid';
 import type { RoomGridConfig, TileType, GridPosition } from '@caverns/roomgrid';
 import { MobAIManager } from './MobAIManager.js';
 import { exitPosition } from './tileGridBuilder.js';
+import type { CharacterRepository } from './CharacterRepository.js';
+import type { ActiveSessionMap } from './ActiveSessionMap.js';
+import { playerFromCharacter, characterSnapshotFromPlayer } from './characterAdapter.js';
 import type { InteractableDefinition, InteractableInstance, MobPoolEntry } from '@caverns/shared';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -76,6 +79,17 @@ export class GameSession {
   private broadcastToRoom: (roomId: string, msg: ServerMessage) => void;
   private playerIds: string[] = [];
   private playerNames = new Map<string, string>();
+  // Per-connection account/character context (Task 14+). Populated from index.ts
+  // when a character is attached via attachCharacterContext().
+  private connectionContexts = new Map<string, { accountId: string; characterId: string }>();
+  // Pre-hydrated players (from DB) staged before startGame runs.
+  private hydratedPlayers = new Map<string, Player>();
+  // Tracks which connections are currently disconnected (for AFK auto-skip).
+  private disconnectedConnections = new Set<string>();
+  // Debounced gold snapshot timers.
+  private goldWriteTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  // Whether lifecycle cleanup has already run so we don't double-snapshot.
+  private lifecycleCleanedUp = false;
   private abilityResolver = new AbilityResolver();
   private interactionResolver!: InteractionResolver;
   private playerClasses = new Map<string, string>(); // playerId -> className
@@ -100,7 +114,10 @@ export class GameSession {
     broadcast: (msg: ServerMessage) => void,
     sendTo: (playerId: string, msg: ServerMessage) => void,
     content?: DungeonContent,
-    private onGameOver?: () => void
+    private onGameOver?: () => void,
+    private characters: CharacterRepository | null = null,
+    private activeSessions: ActiveSessionMap | null = null,
+    private sessionId: string = 'dev-session',
   ) {
     this.broadcast = broadcast;
     this.sendTo = sendTo;
@@ -157,6 +174,126 @@ export class GameSession {
     this.playerClasses.set(id, className);
   }
 
+  /**
+   * Register an account/character context for a connection. Called from
+   * index.ts after a character has been selected and the lobby start_game
+   * fires. Enables snapshot/reconnect flows.
+   */
+  attachCharacterContext(connectionId: string, ctx: { accountId: string; characterId: string }): void {
+    this.connectionContexts.set(connectionId, ctx);
+  }
+
+  markDisconnected(connectionId: string): void {
+    this.disconnectedConnections.add(connectionId);
+  }
+
+  markConnected(connectionId: string): void {
+    this.disconnectedConnections.delete(connectionId);
+  }
+
+  hasPlayer(connectionId: string): boolean {
+    return this.playerManager.getPlayer(connectionId) != null;
+  }
+
+  /**
+   * Hydrate a player from the persisted character row. Called from index.ts
+   * before startGame(). Also attaches the connection to the active sessions map.
+   */
+  async hydratePlayerFromCharacter(
+    connectionId: string,
+    accountId: string,
+    characterId: string,
+  ): Promise<boolean> {
+    if (!this.characters) return false;
+    const row = await this.characters.getById(characterId);
+    if (!row) return false;
+    // roomId gets overwritten in startGame with the actual entrance id.
+    const player = playerFromCharacter(row, connectionId, this.content.entranceRoomId);
+    this.hydratedPlayers.set(connectionId, player);
+    this.connectionContexts.set(connectionId, { accountId, characterId });
+    this.activeSessions?.attach(accountId, this.sessionId);
+    return true;
+  }
+
+  findConnectionByAccount(accountId: string): string | undefined {
+    for (const [conn, ctx] of this.connectionContexts) {
+      if (ctx.accountId === accountId) return conn;
+    }
+    return undefined;
+  }
+
+  getCharacterIdFor(connectionId: string): string | undefined {
+    return this.connectionContexts.get(connectionId)?.characterId;
+  }
+
+  private async snapshotPlayer(playerId: string): Promise<void> {
+    if (!this.characters) return;
+    const player = this.playerManager.getPlayer(playerId);
+    if (!player) return;
+    const ctx = this.connectionContexts.get(playerId);
+    if (!ctx?.characterId) return;
+    try {
+      await this.characters.snapshot(ctx.characterId, characterSnapshotFromPlayer(player));
+    } catch (err) {
+      console.error('[GameSession] snapshotPlayer failed', err);
+    }
+  }
+
+  private scheduleGoldSnapshot(playerId: string): void {
+    const existing = this.goldWriteTimers.get(playerId);
+    if (existing) clearTimeout(existing);
+    const t = setTimeout(() => {
+      this.goldWriteTimers.delete(playerId);
+      void this.snapshotPlayer(playerId);
+    }, 500);
+    this.goldWriteTimers.set(playerId, t);
+  }
+
+  /**
+   * Rekey a player slot from an old connection id to a new one and send a
+   * catch-up snapshot to the new socket. Used by the resume_session flow.
+   */
+  reattachConnection(oldConnectionId: string, newConnectionId: string): boolean {
+    const player = this.playerManager.getPlayer(oldConnectionId);
+    if (!player) return false;
+    this.playerManager.replacePlayerId(oldConnectionId, newConnectionId);
+    // Transfer our internal tracking.
+    const ctx = this.connectionContexts.get(oldConnectionId);
+    if (ctx) {
+      this.connectionContexts.set(newConnectionId, ctx);
+      this.connectionContexts.delete(oldConnectionId);
+    }
+    const gridPos = this.playerGridPositions.get(oldConnectionId);
+    if (gridPos) {
+      this.playerGridPositions.set(newConnectionId, gridPos);
+      this.playerGridPositions.delete(oldConnectionId);
+    }
+    const name = this.playerNames.get(oldConnectionId);
+    if (name !== undefined) {
+      this.playerNames.set(newConnectionId, name);
+      this.playerNames.delete(oldConnectionId);
+    }
+    const cls = this.playerClasses.get(oldConnectionId);
+    if (cls !== undefined) {
+      this.playerClasses.set(newConnectionId, cls);
+      this.playerClasses.delete(oldConnectionId);
+    }
+    const idx = this.playerIds.indexOf(oldConnectionId);
+    if (idx >= 0) this.playerIds[idx] = newConnectionId;
+    // Cancel any AFK timer — the player is back.
+    for (const combat of this.combats.values()) {
+      combat.cancelAfkTimer();
+    }
+    // Send catch-up state.
+    const refreshed = this.playerManager.getPlayer(newConnectionId);
+    if (refreshed) {
+      const room = this.rooms.get(refreshed.roomId);
+      if (room) this.sendTo(newConnectionId, { type: 'room_reveal', room });
+      this.sendTo(newConnectionId, { type: 'player_update', player: refreshed });
+    }
+    return true;
+  }
+
   startGame(): void {
     this.started = true;
 
@@ -169,8 +306,21 @@ export class GameSession {
 
     const entranceId = this.content.entranceRoomId;
     for (const pid of this.playerIds) {
-      const className = this.playerClasses.get(pid) ?? 'vanguard';
-      this.playerManager.addPlayer(pid, this.playerNames.get(pid)!, entranceId, className);
+      const hydrated = this.hydratedPlayers.get(pid);
+      if (hydrated) {
+        hydrated.roomId = entranceId;
+        // Inject into PlayerManager's internal map via replacePlayerId trick:
+        // add a blank then overwrite with hydrated fields.
+        this.playerManager.addHydratedPlayer(hydrated);
+        // Also sync name/class so downstream code using playerNames is correct.
+        this.playerNames.set(pid, hydrated.name);
+        this.playerClasses.set(pid, hydrated.className);
+        // Immediately snapshot so last_played_at updates.
+        void this.snapshotPlayer(pid);
+      } else {
+        const className = this.playerClasses.get(pid) ?? 'vanguard';
+        this.playerManager.addPlayer(pid, this.playerNames.get(pid)!, entranceId, className);
+      }
     }
     this.revealedRooms.add(entranceId);
     const entrance = this.rooms.get(entranceId)!;
@@ -648,6 +798,7 @@ export class GameSession {
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
     if (!combat || !combat.isPlayerTurn(playerId)) return;
+    combat.cancelAfkTimer();
     let itemDamage: number | undefined;
     let itemHealing: number | undefined;
     if (action === 'use_item' && itemIndex !== undefined) {
@@ -842,20 +993,69 @@ export class GameSession {
             this.broadcast({ type: 'level_up', playerId: p.id, newLevel: updatedPlayer.level });
           }
           this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(p.id)! });
+          void this.snapshotPlayer(p.id);
         }
       }
       this.dropLoot(roomId);
       if (room?.type === 'boss') {
         // Delay so loot prompt and victory text are visible before game_over
-        setTimeout(() => {
+        setTimeout(async () => {
+          await this.finalizeGracefulEnd();
           this.broadcast({ type: 'game_over', result: 'victory' });
           this.onGameOver?.();
         }, TIMING_CONFIG.postVictoryLootDelayMs);
       }
     }
     if (this.playerManager.allPlayersDowned()) {
-      this.broadcast({ type: 'game_over', result: 'wipe' });
-      this.onGameOver?.();
+      void this.finalizeWipe().then(() => {
+        this.broadcast({ type: 'game_over', result: 'wipe' });
+        this.onGameOver?.();
+      });
+    }
+  }
+
+  private async finalizeGracefulEnd(): Promise<void> {
+    if (this.lifecycleCleanedUp) return;
+    this.lifecycleCleanedUp = true;
+    for (const player of this.playerManager.getAllPlayers()) {
+      await this.snapshotPlayer(player.id);
+      const ctx = this.connectionContexts.get(player.id);
+      if (ctx?.characterId && this.characters) {
+        try { await this.characters.markInUse(ctx.characterId, false); } catch (e) { console.error(e); }
+      }
+      if (ctx?.accountId) this.activeSessions?.detach(ctx.accountId);
+    }
+  }
+
+  private async finalizeWipe(): Promise<void> {
+    if (this.lifecycleCleanedUp) return;
+    this.lifecycleCleanedUp = true;
+    for (const player of this.playerManager.getAllPlayers()) {
+      const ctx = this.connectionContexts.get(player.id);
+      if (ctx?.characterId && this.characters) {
+        try { await this.characters.wipe(ctx.characterId); } catch (e) { console.error(e); }
+      }
+      if (ctx?.accountId) this.activeSessions?.detach(ctx.accountId);
+    }
+  }
+
+  /**
+   * Called from index.ts when a room is torn down because all clients have
+   * disconnected. Snapshots surviving characters and releases in_use locks.
+   */
+  async cleanup(): Promise<void> {
+    if (this.lifecycleCleanedUp) return;
+    this.lifecycleCleanedUp = true;
+    // Flush any pending debounced gold writes immediately.
+    for (const t of this.goldWriteTimers.values()) clearTimeout(t);
+    this.goldWriteTimers.clear();
+    for (const player of this.playerManager.getAllPlayers()) {
+      await this.snapshotPlayer(player.id);
+      const ctx = this.connectionContexts.get(player.id);
+      if (ctx?.characterId && this.characters) {
+        try { await this.characters.markInUse(ctx.characterId, false); } catch (e) { console.error(e); }
+      }
+      if (ctx?.accountId) this.activeSessions?.detach(ctx.accountId);
     }
   }
 
@@ -912,6 +1112,20 @@ export class GameSession {
   private broadcastTurnPrompt(combat: CombatManager): void {
     const state = combat.getState();
     this.broadcastToRoom(state.roomId, { type: 'combat_turn', currentTurnId: state.currentTurnId, roundNumber: state.roundNumber });
+    // If this turn belongs to a disconnected player, arm the AFK auto-skip.
+    const turnId = state.currentTurnId;
+    if (turnId && this.playerManager.getPlayer(turnId) && this.disconnectedConnections.has(turnId)) {
+      const roomId = state.roomId;
+      combat.armAfkTimer(
+        turnId,
+        () => this.disconnectedConnections.has(turnId),
+        () => {
+          combat.advanceTurn();
+          this.broadcastToRoom(roomId, { type: 'text_log', message: `${this.playerNames.get(turnId) ?? 'Player'} is AFK — turn skipped.`, logType: 'system' });
+          this.afterCombatTurn(roomId, combat);
+        },
+      );
+    }
   }
 
   private narrateCombatAction(roomId: string, result: any): void {
@@ -981,6 +1195,7 @@ export class GameSession {
     if (player) {
       for (const p of this.playerManager.getAllPlayers()) {
         this.broadcast({ type: 'player_update', player: p });
+        void this.snapshotPlayer(p.id);
       }
       this.broadcastToRoom(player.roomId, {
         type: 'text_log',
@@ -1059,6 +1274,7 @@ export class GameSession {
     for (const pid of playerIds) {
       const newTotal = this.playerManager.addGold(pid, amount);
       this.sendTo(pid, { type: 'gold_update', playerId: pid, gold: newTotal });
+      this.scheduleGoldSnapshot(pid);
     }
     this.broadcastToRoom(roomId, {
       type: 'text_log',
@@ -1131,6 +1347,7 @@ export class GameSession {
       this.broadcastToRoom(roomId, { type: 'text_log', message: `${winnerName} receives {${item.rarity}:${item.name}}!`, logType: 'loot' });
     }
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(winnerId)! });
+    void this.snapshotPlayer(winnerId);
   }
 
   handleLootChoice(playerId: string, itemId: string, choice: 'need' | 'greed' | 'pass'): void {
@@ -1167,6 +1384,7 @@ export class GameSession {
       return;
     }
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+    void this.snapshotPlayer(playerId);
   }
 
   handleDropItem(playerId: string, inventoryIndex: number): void {
@@ -1182,6 +1400,7 @@ export class GameSession {
       type: 'text_log', message: `${player.name} discards ${item.name}.`, logType: 'system',
     });
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+    void this.snapshotPlayer(playerId);
   }
 
   handleUseConsumable(playerId: string, consumableIndex: number): void {
@@ -1201,6 +1420,7 @@ export class GameSession {
       });
     }
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+    void this.snapshotPlayer(playerId);
   }
 
   handleAllocateStat(playerId: string, statId: string, points: number): void {
@@ -1214,6 +1434,7 @@ export class GameSession {
     const stats = computePlayerStats(player);
     player.maxHp = stats.maxHp;
     this.broadcast({ type: 'player_update', player });
+    void this.snapshotPlayer(playerId);
   }
 
   private sendPuzzlePrompt(roomId: string, playerId: string): void {

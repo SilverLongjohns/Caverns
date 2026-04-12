@@ -1,0 +1,93 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { createTestDb } from '../test-utils/testDb.js';
+import { CharacterRepository } from './CharacterRepository.js';
+import type { Kysely } from 'kysely';
+import type { Database } from './db/types.js';
+
+describe.skipIf(!process.env.DATABASE_URL)('CharacterRepository', () => {
+  let db: Kysely<Database>;
+  let cleanup: () => Promise<void>;
+  let repo: CharacterRepository;
+  let accountId: string;
+
+  beforeEach(async () => {
+    ({ db, cleanup } = await createTestDb());
+    repo = new CharacterRepository(db);
+    const acc = await db.insertInto('accounts')
+      .values({ auth_provider: 'name', provider_id: 'alice', display_name: 'Alice' } as never)
+      .returning('id').executeTakeFirstOrThrow();
+    accountId = acc.id;
+  });
+  afterEach(async () => { await cleanup(); });
+
+  it('creates and lists characters', async () => {
+    await repo.create(accountId, { name: 'Slasher', class: 'vanguard' });
+    await repo.create(accountId, { name: 'Sparker', class: 'pyromancer' });
+    const list = await repo.listForAccount(accountId);
+    expect(list.length).toBe(2);
+    expect(list.map((c) => c.name).sort()).toEqual(['Slasher', 'Sparker']);
+  });
+
+  it('rejects creation past the slot cap', async () => {
+    await repo.create(accountId, { name: 'A', class: 'vanguard' });
+    await repo.create(accountId, { name: 'B', class: 'vanguard' });
+    await repo.create(accountId, { name: 'C', class: 'vanguard' });
+    await expect(repo.create(accountId, { name: 'D', class: 'vanguard' })).rejects.toThrow(/slot/i);
+  });
+
+  it('deletes a character', async () => {
+    const c = await repo.create(accountId, { name: 'Doomed', class: 'vanguard' });
+    await repo.delete(accountId, c.id);
+    expect((await repo.listForAccount(accountId)).length).toBe(0);
+  });
+
+  it('writes a snapshot', async () => {
+    const c = await repo.create(accountId, { name: 'Alice', class: 'vanguard' });
+    await repo.snapshot(c.id, {
+      name: 'Alice', class: 'vanguard', level: 3, xp: 50,
+      stat_allocations: { strength: 1 },
+      equipment: { weapon: null, offhand: null, armor: null, accessory: null },
+      inventory: Array(7).fill(null), consumables: Array(6).fill(null),
+      gold: 75, keychain: ['k1'],
+    });
+    const reloaded = await repo.getById(c.id);
+    expect(reloaded?.level).toBe(3);
+    expect(reloaded?.gold).toBe(75);
+    expect(reloaded?.keychain).toEqual(['k1']);
+  });
+
+  it('marks and clears in_use', async () => {
+    const c = await repo.create(accountId, { name: 'Alice', class: 'vanguard' });
+    await repo.markInUse(c.id, true);
+    expect((await repo.getById(c.id))?.in_use).toBe(true);
+    await repo.markInUse(c.id, false);
+    expect((await repo.getById(c.id))?.in_use).toBe(false);
+  });
+
+  it('wipes carry but keeps progression', async () => {
+    const c = await repo.create(accountId, { name: 'Alice', class: 'vanguard' });
+    await repo.snapshot(c.id, {
+      name: 'Alice', class: 'vanguard', level: 4, xp: 90,
+      stat_allocations: { strength: 1 },
+      equipment: { weapon: null, offhand: null, armor: null, accessory: null },
+      inventory: Array(7).fill(null), consumables: Array(6).fill(null),
+      gold: 200, keychain: ['k'],
+    });
+    await repo.wipe(c.id);
+    const w = await repo.getById(c.id);
+    expect(w?.level).toBe(4);
+    expect(w?.xp).toBe(90);
+    expect(w?.stat_allocations).toEqual({ strength: 1 });
+    expect(w?.gold).toBe(0);
+    expect(w?.keychain).toEqual([]);
+    expect(w?.in_use).toBe(false);
+  });
+
+  it('clearAllInUse releases stranded locks', async () => {
+    const c = await repo.create(accountId, { name: 'Alice', class: 'vanguard' });
+    await repo.markInUse(c.id, true);
+    const cleared = await repo.clearAllInUse();
+    expect(cleared).toBeGreaterThanOrEqual(1);
+    expect((await repo.getById(c.id))?.in_use).toBe(false);
+  });
+});

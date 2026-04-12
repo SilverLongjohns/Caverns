@@ -43,6 +43,7 @@ export class CombatManager {
   private turnIndex = 0;
   private roundNumber = 1;
   private effectResolver: ItemEffectResolver;
+  private afkTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     roomId: string,
@@ -98,7 +99,23 @@ export class CombatManager {
     return this.turnOrder[this.turnIndex];
   }
 
+  armAfkTimer(_playerId: string, isAfk: () => boolean, onSkip: () => void, delayMs: number = 10_000): void {
+    this.cancelAfkTimer();
+    this.afkTimer = setTimeout(() => {
+      this.afkTimer = null;
+      if (isAfk()) onSkip();
+    }, delayMs);
+  }
+
+  cancelAfkTimer(): void {
+    if (this.afkTimer) {
+      clearTimeout(this.afkTimer);
+      this.afkTimer = null;
+    }
+  }
+
   advanceTurn(): void {
+    this.cancelAfkTimer();
     this.turnIndex++;
     while (this.turnIndex < this.turnOrder.length && !this.participants.get(this.turnOrder[this.turnIndex])?.alive) {
       this.turnIndex++;

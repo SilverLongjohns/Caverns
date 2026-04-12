@@ -5,7 +5,11 @@ import type {
   CombatState,
   Item,
   ServerMessage,
+  LobbyPlayer,
+  CharacterSummary,
+  AccountSummary,
 } from '@caverns/shared';
+import { saveSessionToken, clearSessionToken } from '../auth/sessionStorage.js';
 
 export interface TextLogEntry {
   message: string;
@@ -18,7 +22,12 @@ let logIdCounter = 0;
 export interface GameStore {
   connectionStatus: 'disconnected' | 'connected' | 'in_lobby' | 'in_game';
   setConnectionStatus: (status: GameStore['connectionStatus']) => void;
-  lobbyPlayers: { id: string; name: string; className: string }[];
+  authStatus: 'unauthenticated' | 'authenticated' | 'character_selected';
+  account: AccountSummary | null;
+  characters: CharacterSummary[];
+  selectedCharacterId: string | null;
+  authError: string | null;
+  lobbyPlayers: LobbyPlayer[];
   isHost: boolean;
   playerId: string;
   players: Record<string, Player>;
@@ -67,7 +76,12 @@ export interface GameStore {
 
 const initialState = {
   connectionStatus: 'disconnected' as const,
-  lobbyPlayers: [],
+  authStatus: 'unauthenticated' as const,
+  account: null,
+  characters: [],
+  selectedCharacterId: null,
+  authError: null,
+  lobbyPlayers: [] as LobbyPlayer[],
   isHost: false,
   playerId: '',
   players: {},
@@ -118,7 +132,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
           playerId: msg.yourId,
           lobbyDifficulty: msg.difficulty,
           roomCode: msg.roomCode,
+          authStatus:
+            state.authStatus === 'authenticated' ? 'character_selected' : state.authStatus,
         }));
+        break;
+
+      case 'auth_result':
+        saveSessionToken(msg.token);
+        set({
+          authStatus: 'authenticated',
+          account: msg.account,
+          characters: msg.characters,
+          authError: null,
+        });
+        break;
+
+      case 'auth_error':
+        clearSessionToken();
+        set({ authError: msg.reason, authStatus: 'unauthenticated' });
+        break;
+
+      case 'character_list':
+        set({ characters: msg.characters });
         break;
 
       case 'game_start':
