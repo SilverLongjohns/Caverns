@@ -67,5 +67,13 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
       send({ type: 'select_world', worldId });
       useGameStore.setState({ selectedWorldId: worldId });
     },
+    leaveWorld: () => {
+      send({ type: 'leave_world' });
+      useGameStore.setState({
+        currentWorld: null,
+        worldMembers: [],
+        selectedCharacterId: null,
+      });
+    },
   };
 }

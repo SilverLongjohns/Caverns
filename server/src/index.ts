@@ -15,6 +15,8 @@ import { NameAuthProvider } from './auth/NameAuthProvider.js';
 import { SessionStore } from './auth/SessionStore.js';
 import { CharacterRepository } from './CharacterRepository.js';
 import { WorldRepository } from './WorldRepository.js';
+import { WorldSession } from './WorldSession.js';
+import * as worldSessionManager from './worldSessionManager.js';
 import { ActiveSessionMap } from './ActiveSessionMap.js';
 import type { CharactersTable } from './db/types.js';
 
@@ -175,6 +177,32 @@ interface LobbyRoom {
 const rooms = new Map<string, LobbyRoom>();
 const playerRoom = new Map<string, string>();
 
+// Reverse lookup: connectionId → worldId for WorldSession membership.
+const worldConnections = new Map<string, string>();
+
+function getWorldSession(connectionId: string): WorldSession | undefined {
+  const worldId = worldConnections.get(connectionId);
+  return worldId ? worldSessionManager.getSession(worldId) : undefined;
+}
+
+function worldBroadcast(worldId: string) {
+  return (msg: ServerMessage, exceptConnectionId?: string) => {
+    for (const [connId, wId] of worldConnections) {
+      if (wId !== worldId) continue;
+      if (exceptConnectionId && connId === exceptConnectionId) continue;
+      sendTo(connId, msg);
+    }
+  };
+}
+
+async function detachFromWorldSession(connectionId: string): Promise<void> {
+  const session = getWorldSession(connectionId);
+  if (!session) return;
+  const result = await session.removeConnection(connectionId);
+  worldConnections.delete(connectionId);
+  if (result === 'destroyed') worldSessionManager.unregisterSession(session.worldId);
+}
+
 function getRoom(playerId: string): LobbyRoom | undefined {
   const code = playerRoom.get(playerId);
   return code ? rooms.get(code) : undefined;
@@ -286,6 +314,7 @@ wss.on('connection', (ws) => {
 
       case 'logout': {
         const ctx = connectionAccounts.get(playerId);
+        await detachFromWorldSession(playerId);
         // Fully detach from any room / game session the user was reattached
         // to via resume_session — otherwise playerRoom stays set and the
         // next join_lobby silently early-returns.
@@ -430,11 +459,57 @@ wss.on('connection', (ws) => {
         }
         await characterRepo.markInUse(ch.id, true);
         ctx.characterId = ch.id;
-        const room = getRoom(playerId);
-        if (room) {
-          room.lobby.attachCharacterToConnection(playerId, {
-            id: ch.id, name: ch.name, className: ch.class, level: ch.level,
+
+        if (!worldRepo || !db) {
+          sendTo(playerId, { type: 'world_error', reason: 'World unavailable' });
+          break;
+        }
+        const world = await worldRepo.getById(ctx.selectedWorldId);
+        if (!world) {
+          sendTo(playerId, { type: 'world_error', reason: 'World not found' });
+          break;
+        }
+        const accRow = await db
+          .selectFrom('accounts')
+          .select(['display_name'])
+          .where('id', '=', ctx.accountId)
+          .executeTakeFirst();
+
+        let session = worldSessionManager.getSession(world.id);
+        if (!session) {
+          session = new WorldSession({
+            worldId: world.id,
+            worldName: world.name,
+            worldRepo,
+            characterRepo,
+            broadcast: worldBroadcast(world.id),
+            sendTo,
           });
+          worldSessionManager.registerSession(session);
+        }
+
+        worldConnections.set(playerId, world.id);
+        await session.addConnection({
+          connectionId: playerId,
+          accountId: ctx.accountId,
+          characterId: ch.id,
+          displayName: accRow?.display_name ?? 'Unknown',
+          characterName: ch.name,
+          className: ch.class,
+          level: ch.level,
+        });
+        break;
+      }
+
+      case 'leave_world': {
+        const ctx = connectionAccounts.get(playerId);
+        await detachFromWorldSession(playerId);
+        if (ctx?.characterId && characterRepo) {
+          try { await characterRepo.markInUse(ctx.characterId, false); } catch (e) { console.error(e); }
+          ctx.characterId = undefined;
+        }
+        if (ctx?.selectedWorldId) {
+          await sendCharacterListForWorld(ws, ctx.accountId, ctx.selectedWorldId);
         }
         break;
       }
@@ -666,6 +741,7 @@ case 'interact_action': {
 
   ws.on('close', async () => {
     clients.delete(playerId);
+    await detachFromWorldSession(playerId);
     const room = getRoom(playerId);
     const inActiveGame = !!(room?.gameSession && room.gameSession.hasPlayer(playerId));
     if (room) {

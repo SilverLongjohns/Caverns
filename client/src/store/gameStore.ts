@@ -9,7 +9,19 @@ import type {
   CharacterSummary,
   AccountSummary,
   WorldSummary,
+  WorldMemberSummary,
 } from '@caverns/shared';
+
+export type ClientView =
+  | 'connecting'
+  | 'login'
+  | 'world_select'
+  | 'character_select'
+  | 'in_world'
+  | 'in_lobby'   // legacy — kept until Phase 5 retires the old lobby flow
+  | 'in_dungeon' // placeholder for Phase 5 — unused in Phase 2
+  | 'game_over'
+  | 'generating';
 import { saveSessionToken, clearSessionToken } from '../auth/sessionStorage.js';
 
 export interface TextLogEntry {
@@ -30,6 +42,8 @@ export interface GameStore {
   worlds: WorldSummary[];
   selectedWorldId: string | null;
   worldError: string | null;
+  currentWorld: { id: string; name: string } | null;
+  worldMembers: WorldMemberSummary[];
   authError: string | null;
   lobbyPlayers: LobbyPlayer[];
   isHost: boolean;
@@ -87,6 +101,8 @@ const initialState = {
   worlds: [],
   selectedWorldId: null,
   worldError: null,
+  currentWorld: null,
+  worldMembers: [] as WorldMemberSummary[],
   authError: null,
   lobbyPlayers: [] as LobbyPlayer[],
   isHost: false,
@@ -181,6 +197,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case 'world_error':
         set({ worldError: msg.reason });
+        break;
+
+      case 'world_state':
+        set({
+          currentWorld: { id: msg.worldId, name: msg.worldName },
+          worldMembers: msg.members,
+        });
+        break;
+
+      case 'world_member_joined':
+        set((state) => {
+          if (state.worldMembers.some((m) => m.connectionId === msg.member.connectionId)) {
+            return {};
+          }
+          return { worldMembers: [...state.worldMembers, msg.member] };
+        });
+        break;
+
+      case 'world_member_left':
+        set((state) => ({
+          worldMembers: state.worldMembers.filter((m) => m.connectionId !== msg.connectionId),
+        }));
         break;
 
       case 'game_start':
@@ -538,3 +576,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   reset: () => set(initialState),
 }));
+
+export function selectCurrentView(state: GameStore): ClientView {
+  if (state.connectionStatus === 'disconnected') return 'connecting';
+  if (state.generationStatus === 'generating' || state.generationStatus === 'failed') return 'generating';
+  if (state.gameOver) return 'game_over';
+  if (state.connectionStatus === 'in_game') return 'in_dungeon';
+  if (state.currentWorld) return 'in_world';
+  if (state.connectionStatus === 'in_lobby') return 'in_lobby';
+  if (state.authStatus === 'authenticated' && state.selectedWorldId && !state.selectedCharacterId) return 'character_select';
+  if (state.authStatus === 'authenticated' && !state.selectedWorldId) return 'world_select';
+  if (state.authStatus === 'unauthenticated') return 'login';
+  return 'connecting';
+}

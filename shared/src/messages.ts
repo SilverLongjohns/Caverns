@@ -171,6 +171,10 @@ export interface SelectWorldMessage {
   worldId: string;
 }
 
+export interface LeaveWorldMessage {
+  type: 'leave_world';
+}
+
 export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
@@ -200,7 +204,8 @@ export type ClientMessage =
   | ListWorldsMessage
   | CreateWorldMessage
   | JoinWorldMessage
-  | SelectWorldMessage;
+  | SelectWorldMessage
+  | LeaveWorldMessage;
 
 // === Server -> Client ===
 
@@ -259,6 +264,33 @@ export interface WorldSelectedMessage {
 export interface WorldErrorMessage {
   type: 'world_error';
   reason: string;
+}
+
+export interface WorldMemberSummary {
+  connectionId: string;
+  characterId: string;
+  characterName: string;
+  displayName: string;
+  className: string;
+  level: number;
+}
+
+export interface WorldStateMessage {
+  type: 'world_state';
+  worldId: string;
+  worldName: string;
+  members: WorldMemberSummary[];
+}
+
+export interface WorldMemberJoinedMessage {
+  type: 'world_member_joined';
+  member: WorldMemberSummary;
+}
+
+export interface WorldMemberLeftMessage {
+  type: 'world_member_left';
+  connectionId: string;
+  characterId: string;
 }
 
 export interface AuthResultMessage {
@@ -535,4 +567,7 @@ export type ServerMessage =
   | CharacterListMessage
   | WorldListMessage
   | WorldSelectedMessage
-  | WorldErrorMessage;
+  | WorldErrorMessage
+  | WorldStateMessage
+  | WorldMemberJoinedMessage
+  | WorldMemberLeftMessage;
