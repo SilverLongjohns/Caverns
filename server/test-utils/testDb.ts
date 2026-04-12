@@ -40,16 +40,34 @@ export async function createTestDb(): Promise<{ db: Kysely<Database>; cleanup: (
       last_played_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now()
     );
-    CREATE TABLE account_stash (
-      account_id uuid PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+    CREATE TABLE character_stash (
+      character_id uuid PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
       items jsonb NOT NULL DEFAULT '[]',
-      gold int NOT NULL DEFAULT 0
+      gold int NOT NULL DEFAULT 0,
+      capacity int NOT NULL DEFAULT 20
     );
     CREATE TABLE sessions (
       token text PRIMARY KEY,
       account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
       created_at timestamptz NOT NULL DEFAULT now(),
       expires_at timestamptz NOT NULL
+    );
+    CREATE TABLE worlds (
+      id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      name             text NOT NULL,
+      seed             bigint NOT NULL DEFAULT 0,
+      owner_account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      invite_code      text NOT NULL,
+      state            jsonb NOT NULL DEFAULT '{}',
+      created_at       timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (owner_account_id, name),
+      UNIQUE (invite_code)
+    );
+    CREATE TABLE world_members (
+      world_id   uuid NOT NULL REFERENCES worlds(id) ON DELETE CASCADE,
+      account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      joined_at  timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (world_id, account_id)
     );
   `).execute(db);
   return {

@@ -8,26 +8,9 @@ import type {
   CombatParticipant,
   OutcomeType,
 } from './types.js';
+import type { OverworldMap } from './overworld.js';
 
 // === Client -> Server ===
-
-export interface JoinLobbyMessage {
-  type: 'join_lobby';
-  playerName: string;
-  roomCode?: string;
-  className?: string;
-}
-
-export interface StartGameMessage {
-  type: 'start_game';
-  apiKey?: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
-}
-
-export interface SetDifficultyMessage {
-  type: 'set_difficulty';
-  difficulty: 'easy' | 'medium' | 'hard';
-}
 
 export interface GridMoveMessage {
   type: 'grid_move';
@@ -145,15 +128,67 @@ export interface DeleteCharacterMessage {
   characterId: string;
 }
 
-export interface SetReadyMessage {
-  type: 'set_ready';
-  ready: boolean;
+// === World membership ===
+
+export interface ListWorldsMessage {
+  type: 'list_worlds';
+}
+
+export interface CreateWorldMessage {
+  type: 'create_world';
+  name: string;
+}
+
+export interface JoinWorldMessage {
+  type: 'join_world';
+  inviteCode: string;
+}
+
+export interface SelectWorldMessage {
+  type: 'select_world';
+  worldId: string;
+}
+
+export interface LeaveWorldMessage {
+  type: 'leave_world';
+}
+
+export interface OverworldMoveMessage {
+  type: 'overworld_move';
+  targetX: number;
+  targetY: number;
+}
+
+export interface PortalReadyMessage {
+  type: 'portal_ready';
+}
+
+export interface PortalUnreadyMessage {
+  type: 'portal_unready';
+}
+
+export interface PortalEnterMessage {
+  type: 'portal_enter';
+}
+
+export interface OverworldInteractMessage {
+  type: 'overworld_interact';
+  interactableId: string;
+}
+
+export interface StashDepositMessage {
+  type: 'stash_deposit';
+  from: 'inventory' | 'consumables';
+  fromIndex: number;
+}
+
+export interface StashWithdrawMessage {
+  type: 'stash_withdraw';
+  stashIndex: number;
+  to: 'inventory' | 'consumables';
 }
 
 export type ClientMessage =
-  | JoinLobbyMessage
-  | StartGameMessage
-  | SetDifficultyMessage
   | GridMoveMessage
   | CombatActionMessage
   | LootChoiceMessage
@@ -175,27 +210,20 @@ export type ClientMessage =
   | CreateCharacterMessage
   | SelectCharacterMessage
   | DeleteCharacterMessage
-  | SetReadyMessage;
+  | ListWorldsMessage
+  | CreateWorldMessage
+  | JoinWorldMessage
+  | SelectWorldMessage
+  | LeaveWorldMessage
+  | OverworldMoveMessage
+  | PortalReadyMessage
+  | PortalUnreadyMessage
+  | PortalEnterMessage
+  | OverworldInteractMessage
+  | StashDepositMessage
+  | StashWithdrawMessage;
 
 // === Server -> Client ===
-
-export interface LobbyPlayer {
-  connectionId: string;
-  accountId: string;
-  displayName: string;
-  isHost: boolean;
-  ready: boolean;
-  character?: { id: string; name: string; className: string; level: number };
-}
-
-export interface LobbyStateMessage {
-  type: 'lobby_state';
-  players: LobbyPlayer[];
-  hostId: string;
-  yourId: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  roomCode: string;
-}
 
 export interface CharacterSummary {
   id: string;
@@ -210,6 +238,91 @@ export interface CharacterSummary {
 export interface AccountSummary {
   id: string;
   displayName: string;
+}
+
+export interface WorldSummary {
+  id: string;
+  name: string;
+  ownerDisplayName: string;
+  memberCount: number;
+  isOwner: boolean;
+  inviteCode: string;
+}
+
+export interface WorldListMessage {
+  type: 'world_list';
+  worlds: WorldSummary[];
+}
+
+export interface WorldSelectedMessage {
+  type: 'world_selected';
+  worldId: string;
+}
+
+export interface WorldErrorMessage {
+  type: 'world_error';
+  reason: string;
+}
+
+export interface WorldMemberSummary {
+  connectionId: string;
+  characterId: string;
+  characterName: string;
+  displayName: string;
+  className: string;
+  level: number;
+  pos: { x: number; y: number };
+}
+
+export interface WorldStateMessage {
+  type: 'world_state';
+  worldId: string;
+  worldName: string;
+  map: OverworldMap;
+  members: WorldMemberSummary[];
+}
+
+export interface WorldMemberJoinedMessage {
+  type: 'world_member_joined';
+  member: WorldMemberSummary;
+}
+
+export interface WorldMemberLeftMessage {
+  type: 'world_member_left';
+  connectionId: string;
+  characterId: string;
+}
+
+export interface OverworldTickStep {
+  connectionId: string;
+  x: number;
+  y: number;
+  arrived: boolean;
+}
+
+export interface OverworldTickMessage {
+  type: 'overworld_tick';
+  steps: OverworldTickStep[];
+}
+
+export interface WorldMoveRejectedMessage {
+  type: 'world_move_rejected';
+  reason: 'unreachable' | 'out_of_bounds' | 'not_walkable';
+}
+
+export interface PortalMusterUpdateMessage {
+  type: 'portal_muster_update';
+  portalId: string;
+  readyMembers: WorldMemberSummary[];
+}
+
+export interface DungeonEnteredMessage {
+  type: 'dungeon_entered';
+  dungeonSessionId: string;
+}
+
+export interface DungeonReturnedMessage {
+  type: 'dungeon_returned';
 }
 
 export interface AuthResultMessage {
@@ -444,6 +557,33 @@ export interface LevelUpMessage {
   newLevel: number;
 }
 
+export interface StashView {
+  items: (Item | null)[];
+  capacity: number;
+}
+
+export interface CharacterItemsView {
+  inventory: (Item | null)[];
+  consumables: (Item | null)[];
+}
+
+export interface StashOpenedMessage {
+  type: 'stash_opened';
+  stash: StashView;
+  character: CharacterItemsView;
+}
+
+export interface StashUpdatedMessage {
+  type: 'stash_updated';
+  stash: StashView;
+  character: CharacterItemsView;
+}
+
+export interface StashErrorMessage {
+  type: 'stash_error';
+  reason: string;
+}
+
 export interface TorchPickupMessage {
   type: 'torch_pickup';
   playerId: string;
@@ -452,7 +592,6 @@ export interface TorchPickupMessage {
 }
 
 export type ServerMessage =
-  | LobbyStateMessage
   | GameStartMessage
   | GenerationStatusMessage
   | RoomRevealMessage
@@ -481,6 +620,20 @@ export type ServerMessage =
   | ErrorMessage
   | LevelUpMessage
   | TorchPickupMessage
+  | StashOpenedMessage
+  | StashUpdatedMessage
+  | StashErrorMessage
   | AuthResultMessage
   | AuthErrorMessage
-  | CharacterListMessage;
+  | CharacterListMessage
+  | WorldListMessage
+  | WorldSelectedMessage
+  | WorldErrorMessage
+  | WorldStateMessage
+  | WorldMemberJoinedMessage
+  | WorldMemberLeftMessage
+  | OverworldTickMessage
+  | WorldMoveRejectedMessage
+  | PortalMusterUpdateMessage
+  | DungeonEnteredMessage
+  | DungeonReturnedMessage;

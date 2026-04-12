@@ -20,6 +20,10 @@ interface TileGridViewProps {
   alert?: { x: number; y: number } | null;
   visibleTiles?: Set<string>;
   exploredTiles?: Set<string>;
+  /** Optional per-tile char resolver. Return null to fall back to the dungeon renderer. */
+  charLookup?: (tileType: string, x: number, y: number) => string | null;
+  /** Optional click handler for tiles. */
+  onTileClick?: (x: number, y: number) => void;
 }
 
 const WATER_CHARS: Record<string, [string, string]> = {
@@ -42,7 +46,7 @@ const WaterChar = memo(function WaterChar({ theme }: { theme?: string | null }) 
   return <>{char}</>;
 });
 
-export function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles }: TileGridViewProps) {
+export function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles, charLookup, onTileClick }: TileGridViewProps) {
   const { width, height, tiles, themes } = tileGrid;
 
   // Build entity lookup: "x,y" -> EntityOverlay
@@ -80,7 +84,8 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
             </span>
           );
         } else {
-          const char = getTileChar(tiles as any, x, y);
+          const override = charLookup?.(tileType, x, y) ?? null;
+          const char = override ?? getTileChar(tiles as any, x, y);
           const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
           cells.push(
             <span key={x} className={tileClass}>
@@ -114,7 +119,8 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
             </span>
           );
         } else {
-          const char = getTileChar(tiles as any, x, y);
+          const override = charLookup?.(tileType, x, y) ?? null;
+          const char = override ?? getTileChar(tiles as any, x, y);
           const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
           cells.push(
             <span key={x} className={tileClass}>
@@ -125,7 +131,17 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
       }
     }
     rows.push(
-      <div key={y} className="room-row">
+      <div
+        key={y}
+        className="room-row"
+        onClick={onTileClick ? (e) => {
+          const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+          const charWidth = rect.width / width;
+          const x = Math.floor((e.clientX - rect.left) / charWidth);
+          if (x >= 0 && x < width) onTileClick(x, y);
+        } : undefined}
+        style={onTileClick ? { cursor: 'pointer' } : undefined}
+      >
         {cells}
       </div>
     );

@@ -6,7 +6,9 @@ export type CharacterSnapshot = Pick<
   CharactersTable,
   'name' | 'class' | 'level' | 'xp' | 'stat_allocations' | 'equipment' |
   'inventory' | 'consumables' | 'gold' | 'keychain'
->;
+> & {
+  overworld_pos?: { x: number; y: number } | null;
+};
 
 export function playerFromCharacter(
   character: CharactersTable,

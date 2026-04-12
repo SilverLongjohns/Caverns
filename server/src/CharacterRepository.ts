@@ -1,5 +1,6 @@
 import type { Kysely } from 'kysely';
 import { CLASS_STARTER_ITEMS, STARTER_POTION } from '@caverns/shared';
+import type { Item } from '@caverns/shared';
 import type { Database, CharactersTable } from './db/types.js';
 import type { CharacterSnapshot } from './characterAdapter.js';
 
@@ -30,10 +31,11 @@ export interface CreateCharacterInput {
 export class CharacterRepository {
   constructor(private db: Kysely<Database>) {}
 
-  async listForAccount(accountId: string): Promise<CharactersTable[]> {
+  async listForWorld(accountId: string, worldId: string): Promise<CharactersTable[]> {
     return this.db.selectFrom('characters')
       .selectAll()
       .where('account_id', '=', accountId)
+      .where('world_id', '=', worldId)
       .orderBy('created_at', 'asc')
       .execute();
   }
@@ -43,12 +45,13 @@ export class CharacterRepository {
       .where('id', '=', id).executeTakeFirst();
   }
 
-  async create(accountId: string, input: CreateCharacterInput): Promise<CharactersTable> {
-    const existing = await this.listForAccount(accountId);
+  async create(accountId: string, worldId: string, input: CreateCharacterInput): Promise<CharactersTable> {
+    const existing = await this.listForWorld(accountId, worldId);
     if (existing.length >= SLOT_CAP) throw new Error('Character slot limit reached');
     const inserted = await this.db.insertInto('characters')
       .values({
         account_id: accountId,
+        world_id: worldId,
         name: input.name.trim(),
         class: input.class,
         equipment: JSON.stringify(starterEquipment(input.class)),
@@ -80,6 +83,31 @@ export class CharacterRepository {
         consumables: JSON.stringify(snap.consumables) as never,
         gold: snap.gold,
         keychain: JSON.stringify(snap.keychain) as never,
+        last_played_at: new Date(),
+      })
+      .where('id', '=', id)
+      .execute();
+  }
+
+  async snapshotInventory(
+    id: string,
+    inventory: (Item | null)[],
+    consumables: (Item | null)[],
+  ): Promise<void> {
+    await this.db.updateTable('characters')
+      .set({
+        inventory: JSON.stringify(inventory) as never,
+        consumables: JSON.stringify(consumables) as never,
+        last_played_at: new Date(),
+      })
+      .where('id', '=', id)
+      .execute();
+  }
+
+  async snapshotOverworldPos(id: string, pos: { x: number; y: number }): Promise<void> {
+    await this.db.updateTable('characters')
+      .set({
+        overworld_pos: JSON.stringify(pos) as never,
         last_played_at: new Date(),
       })
       .where('id', '=', id)
