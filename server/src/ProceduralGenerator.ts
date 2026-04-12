@@ -460,9 +460,11 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
   bossRoom.encounter = { mobId: bossMob.id, skullRating: 3 };
   usedMobIds.add(bossMob.id);
 
-  // Add boss loot table items
-  for (const itemId of bossMob.lootTable) {
-    usedItemIds.add(itemId);
+  // Add boss loot table consumable items
+  for (const drop of bossMob.lootTable) {
+    if ('consumableId' in drop) {
+      usedItemIds.add(drop.consumableId);
+    }
   }
 
   allRooms.push(bossRoom);
@@ -520,8 +522,10 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
       room.encounter = { mobId: mobTemplate.id, skullRating: mobTemplate.skullRating };
       usedMobIds.add(mobTemplate.id);
 
-      for (const itemId of mobTemplate.lootTable) {
-        usedItemIds.add(itemId);
+      for (const drop of mobTemplate.lootTable) {
+        if ('consumableId' in drop) {
+          usedItemIds.add(drop.consumableId);
+        }
       }
     }
   }
@@ -737,6 +741,7 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
     name: `The ${biomes.map(b => b.name).join(' / ')}`,
     theme: biomes.map(b => b.name).join(', '),
     atmosphere: biomes.map(b => b.transitionText).join(' '),
+    biomeId: finalBiome.id,
     rooms: allRooms,
     mobs: usedMobs,
     items: usedItemsList,

@@ -49,10 +49,13 @@ export function validateDungeon(dungeon: DungeonContent, constraints: Validation
   }
 
   for (const mob of dungeon.mobs) {
-    for (const lootItemId of mob.lootTable) {
-      if (!itemIds.has(lootItemId)) {
-        errors.push(`Mob "${mob.id}" lootTable references nonexistent item "${lootItemId}"`);
+    for (const drop of mob.lootTable) {
+      if ('consumableId' in drop) {
+        if (!itemIds.has(drop.consumableId)) {
+          errors.push(`Mob "${mob.id}" lootTable references nonexistent consumable "${drop.consumableId}"`);
+        }
       }
+      // GeneratedLootDrop entries don't reference items by ID — validated by types
     }
   }
 

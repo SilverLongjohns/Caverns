@@ -174,6 +174,7 @@ describe('GameSession', () => {
       name: 'Test Dungeon',
       theme: 'test',
       atmosphere: 'test',
+      biomeId: 'fungal',
       entranceRoomId: 'start',
       bossId: 'test_boss',
       rooms: [
@@ -233,7 +234,7 @@ describe('GameSession', () => {
 
   describe('locked exits', () => {
     const lockedContent: DungeonContent = {
-      name: 'Test', theme: '', atmosphere: '',
+      name: 'Test', theme: '', atmosphere: '', biomeId: 'fungal',
       entranceRoomId: 'room_a',
       bossId: 'boss_1',
       rooms: [
@@ -291,7 +292,7 @@ describe('GameSession', () => {
 
   describe('abilities', () => {
     const abilityContent: DungeonContent = {
-      name: 'Test', theme: '', atmosphere: '',
+      name: 'Test', theme: '', atmosphere: '', biomeId: 'fungal',
       entranceRoomId: 'room_a',
       bossId: 'boss_1',
       rooms: [
@@ -345,7 +346,7 @@ describe('GameSession', () => {
 
   describe('puzzles', () => {
     const puzzleContent: DungeonContent = {
-      name: 'Test', theme: '', atmosphere: '',
+      name: 'Test', theme: '', atmosphere: '', biomeId: 'fungal',
       entranceRoomId: 'room_a',
       bossId: 'boss_1',
       rooms: [

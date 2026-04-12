@@ -1,4 +1,4 @@
-import type { RoomType, InteractableSlot } from '../types.js';
+import type { RoomType, InteractableSlot, LootDrop } from '../types.js';
 
 export interface RoomChit {
   id: string;
@@ -23,7 +23,7 @@ export interface MobPoolEntry {
     defense: number;
     initiative: number;
   };
-  lootTable: string[];
+  lootTable: LootDrop[];
 }
 
 export interface PuzzleTemplate {

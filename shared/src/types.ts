@@ -123,6 +123,19 @@ export interface Room {
   interactables?: InteractableInstance[];
 }
 
+// === Loot Drops ===
+export interface GeneratedLootDrop {
+  slot: EquipmentSlot;
+  skullRating: 1 | 2 | 3;
+  rarityWeights?: Partial<Record<Rarity, number>>;
+}
+
+export interface ConsumableLootDrop {
+  consumableId: string;
+}
+
+export type LootDrop = GeneratedLootDrop | ConsumableLootDrop;
+
 // === Mobs ===
 export interface MobTemplate {
   id: string;
@@ -133,7 +146,7 @@ export interface MobTemplate {
   damage: number;
   defense: number;
   initiative: number;
-  lootTable: string[];
+  lootTable: LootDrop[];
 }
 
 export interface MobInstance {
@@ -306,6 +319,7 @@ export interface DungeonContent {
   name: string;
   theme: string;
   atmosphere: string;
+  biomeId: string;
   rooms: Room[];
   mobs: MobTemplate[];
   items: Item[];
