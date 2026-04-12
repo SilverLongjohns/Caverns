@@ -18,12 +18,6 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
   );
 
   return {
-    joinLobby: (playerName: string, roomCode?: string, className?: string) =>
-      send({ type: 'join_lobby', playerName, roomCode, className }),
-    startGame: (apiKey?: string, difficulty?: 'easy' | 'medium' | 'hard') =>
-      send({ type: 'start_game', apiKey, difficulty }),
-    setDifficulty: (difficulty: 'easy' | 'medium' | 'hard') =>
-      send({ type: 'set_difficulty', difficulty }),
     gridMove: (direction: GridDirection) => send({ type: 'grid_move', direction }),
     combatAction: (
       action: 'attack' | 'defend' | 'use_item' | 'flee',
@@ -59,7 +53,6 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     },
     deleteCharacter: (characterId: string) =>
       send({ type: 'delete_character', characterId }),
-    setReady: (ready: boolean) => send({ type: 'set_ready', ready }),
     listWorlds: () => send({ type: 'list_worlds' }),
     createWorld: (name: string) => send({ type: 'create_world', name }),
     joinWorld: (inviteCode: string) => send({ type: 'join_world', inviteCode }),
@@ -70,6 +63,16 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     overworldMove: (x: number, y: number) => {
       send({ type: 'overworld_move', targetX: x, targetY: y });
     },
+    portalReady: () => send({ type: 'portal_ready' }),
+    portalUnready: () => send({ type: 'portal_unready' }),
+    portalEnter: () => send({ type: 'portal_enter' }),
+    interactOverworld: (interactableId: string) =>
+      send({ type: 'overworld_interact', interactableId }),
+    stashDeposit: (from: 'inventory' | 'consumables', fromIndex: number) =>
+      send({ type: 'stash_deposit', from, fromIndex }),
+    stashWithdraw: (stashIndex: number, to: 'inventory' | 'consumables') =>
+      send({ type: 'stash_withdraw', stashIndex, to }),
+    closeStash: () => useGameStore.setState({ openStash: null, stashError: null }),
     leaveWorld: () => {
       send({ type: 'leave_world' });
       useGameStore.setState({

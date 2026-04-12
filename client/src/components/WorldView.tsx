@@ -1,12 +1,30 @@
 import { useGameStore } from '../store/gameStore.js';
 import { WorldMapView } from './WorldMapView.js';
+import { StashModal } from './StashModal.js';
 
 interface Props {
   onLeaveWorld: () => void;
   onMove: (x: number, y: number) => void;
+  onPortalReady: () => void;
+  onPortalUnready: () => void;
+  onPortalEnter: () => void;
+  onInteract: (interactableId: string) => void;
+  onStashDeposit: (from: 'inventory' | 'consumables', fromIndex: number) => void;
+  onStashWithdraw: (stashIndex: number, to: 'inventory' | 'consumables') => void;
+  onStashClose: () => void;
 }
 
-export function WorldView({ onLeaveWorld, onMove }: Props) {
+export function WorldView({
+  onLeaveWorld,
+  onMove,
+  onPortalReady,
+  onPortalUnready,
+  onPortalEnter,
+  onInteract,
+  onStashDeposit,
+  onStashWithdraw,
+  onStashClose,
+}: Props) {
   const currentWorld = useGameStore((s) => s.currentWorld);
   const members = useGameStore((s) => s.worldMembers);
 
@@ -22,7 +40,13 @@ export function WorldView({ onLeaveWorld, onMove }: Props) {
       </header>
       <div className="world-body">
         <main className="world-main">
-          <WorldMapView onMove={onMove} />
+          <WorldMapView
+            onMove={onMove}
+            onPortalReady={onPortalReady}
+            onPortalUnready={onPortalUnready}
+            onPortalEnter={onPortalEnter}
+            onInteract={onInteract}
+          />
         </main>
         <aside className="world-side">
           <h3 className="world-side-title">Party</h3>
@@ -37,6 +61,11 @@ export function WorldView({ onLeaveWorld, onMove }: Props) {
           </ul>
         </aside>
       </div>
+      <StashModal
+        onDeposit={onStashDeposit}
+        onWithdraw={onStashWithdraw}
+        onClose={onStashClose}
+      />
     </div>
   );
 }

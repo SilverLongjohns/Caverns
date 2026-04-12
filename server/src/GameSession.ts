@@ -62,6 +62,12 @@ const allItemsById = new Map<string, Item>(
   [...allItemsList, ...allUniqueItemsList].map(i => [i.id, i])
 );
 
+export interface GameSessionOrigin {
+  worldId: string;
+  portalId: string;
+  portalPos: { x: number; y: number };
+}
+
 export class GameSession {
   private rooms: Map<string, Room>;
   private mobs: Map<string, MobTemplate>;
@@ -114,10 +120,11 @@ export class GameSession {
     broadcast: (msg: ServerMessage) => void,
     sendTo: (playerId: string, msg: ServerMessage) => void,
     content?: DungeonContent,
-    private onGameOver?: () => void,
+    private onGameOver?: (origin?: GameSessionOrigin) => void,
     private characters: CharacterRepository | null = null,
     private activeSessions: ActiveSessionMap | null = null,
-    private sessionId: string = 'dev-session',
+    public readonly sessionId: string = 'dev-session',
+    private readonly origin?: GameSessionOrigin,
   ) {
     this.broadcast = broadcast;
     this.sendTo = sendTo;
@@ -193,6 +200,18 @@ export class GameSession {
 
   hasPlayer(connectionId: string): boolean {
     return this.playerManager.getPlayer(connectionId) != null;
+  }
+
+  getPlayerName(connectionId: string): string | undefined {
+    return this.playerNames.get(connectionId);
+  }
+
+  getOrigin(): GameSessionOrigin | undefined {
+    return this.origin;
+  }
+
+  getAllConnectionIds(): string[] {
+    return [...this.playerIds];
   }
 
   /**
@@ -1002,14 +1021,14 @@ export class GameSession {
         setTimeout(async () => {
           await this.finalizeGracefulEnd();
           this.broadcast({ type: 'game_over', result: 'victory' });
-          this.onGameOver?.();
+          this.onGameOver?.(this.origin);
         }, TIMING_CONFIG.postVictoryLootDelayMs);
       }
     }
     if (this.playerManager.allPlayersDowned()) {
       void this.finalizeWipe().then(() => {
         this.broadcast({ type: 'game_over', result: 'wipe' });
-        this.onGameOver?.();
+        this.onGameOver?.(this.origin);
       });
     }
   }

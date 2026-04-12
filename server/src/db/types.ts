@@ -44,10 +44,11 @@ export interface WorldMembersTable {
   joined_at: Date;
 }
 
-export interface AccountStashTable {
-  account_id: string;
-  items: Item[];
+export interface CharacterStashTable {
+  character_id: string;
+  items: (Item | null)[];
   gold: number;
+  capacity: number;
 }
 
 export interface SessionsTable {
@@ -60,7 +61,7 @@ export interface SessionsTable {
 export interface Database {
   accounts: AccountsTable;
   characters: CharactersTable;
-  account_stash: AccountStashTable;
+  character_stash: CharacterStashTable;
   sessions: SessionsTable;
   worlds: WorldsTable;
   world_members: WorldMembersTable;

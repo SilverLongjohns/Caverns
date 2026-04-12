@@ -12,24 +12,6 @@ import type { OverworldMap } from './overworld.js';
 
 // === Client -> Server ===
 
-export interface JoinLobbyMessage {
-  type: 'join_lobby';
-  playerName: string;
-  roomCode?: string;
-  className?: string;
-}
-
-export interface StartGameMessage {
-  type: 'start_game';
-  apiKey?: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
-}
-
-export interface SetDifficultyMessage {
-  type: 'set_difficulty';
-  difficulty: 'easy' | 'medium' | 'hard';
-}
-
 export interface GridMoveMessage {
   type: 'grid_move';
   direction: GridDirection;
@@ -146,11 +128,6 @@ export interface DeleteCharacterMessage {
   characterId: string;
 }
 
-export interface SetReadyMessage {
-  type: 'set_ready';
-  ready: boolean;
-}
-
 // === World membership ===
 
 export interface ListWorldsMessage {
@@ -182,10 +159,36 @@ export interface OverworldMoveMessage {
   targetY: number;
 }
 
+export interface PortalReadyMessage {
+  type: 'portal_ready';
+}
+
+export interface PortalUnreadyMessage {
+  type: 'portal_unready';
+}
+
+export interface PortalEnterMessage {
+  type: 'portal_enter';
+}
+
+export interface OverworldInteractMessage {
+  type: 'overworld_interact';
+  interactableId: string;
+}
+
+export interface StashDepositMessage {
+  type: 'stash_deposit';
+  from: 'inventory' | 'consumables';
+  fromIndex: number;
+}
+
+export interface StashWithdrawMessage {
+  type: 'stash_withdraw';
+  stashIndex: number;
+  to: 'inventory' | 'consumables';
+}
+
 export type ClientMessage =
-  | JoinLobbyMessage
-  | StartGameMessage
-  | SetDifficultyMessage
   | GridMoveMessage
   | CombatActionMessage
   | LootChoiceMessage
@@ -207,33 +210,20 @@ export type ClientMessage =
   | CreateCharacterMessage
   | SelectCharacterMessage
   | DeleteCharacterMessage
-  | SetReadyMessage
   | ListWorldsMessage
   | CreateWorldMessage
   | JoinWorldMessage
   | SelectWorldMessage
   | LeaveWorldMessage
-  | OverworldMoveMessage;
+  | OverworldMoveMessage
+  | PortalReadyMessage
+  | PortalUnreadyMessage
+  | PortalEnterMessage
+  | OverworldInteractMessage
+  | StashDepositMessage
+  | StashWithdrawMessage;
 
 // === Server -> Client ===
-
-export interface LobbyPlayer {
-  connectionId: string;
-  accountId: string;
-  displayName: string;
-  isHost: boolean;
-  ready: boolean;
-  character?: { id: string; name: string; className: string; level: number };
-}
-
-export interface LobbyStateMessage {
-  type: 'lobby_state';
-  players: LobbyPlayer[];
-  hostId: string;
-  yourId: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  roomCode: string;
-}
 
 export interface CharacterSummary {
   id: string;
@@ -318,6 +308,21 @@ export interface OverworldTickMessage {
 export interface WorldMoveRejectedMessage {
   type: 'world_move_rejected';
   reason: 'unreachable' | 'out_of_bounds' | 'not_walkable';
+}
+
+export interface PortalMusterUpdateMessage {
+  type: 'portal_muster_update';
+  portalId: string;
+  readyMembers: WorldMemberSummary[];
+}
+
+export interface DungeonEnteredMessage {
+  type: 'dungeon_entered';
+  dungeonSessionId: string;
+}
+
+export interface DungeonReturnedMessage {
+  type: 'dungeon_returned';
 }
 
 export interface AuthResultMessage {
@@ -552,6 +557,33 @@ export interface LevelUpMessage {
   newLevel: number;
 }
 
+export interface StashView {
+  items: (Item | null)[];
+  capacity: number;
+}
+
+export interface CharacterItemsView {
+  inventory: (Item | null)[];
+  consumables: (Item | null)[];
+}
+
+export interface StashOpenedMessage {
+  type: 'stash_opened';
+  stash: StashView;
+  character: CharacterItemsView;
+}
+
+export interface StashUpdatedMessage {
+  type: 'stash_updated';
+  stash: StashView;
+  character: CharacterItemsView;
+}
+
+export interface StashErrorMessage {
+  type: 'stash_error';
+  reason: string;
+}
+
 export interface TorchPickupMessage {
   type: 'torch_pickup';
   playerId: string;
@@ -560,7 +592,6 @@ export interface TorchPickupMessage {
 }
 
 export type ServerMessage =
-  | LobbyStateMessage
   | GameStartMessage
   | GenerationStatusMessage
   | RoomRevealMessage
@@ -589,6 +620,9 @@ export type ServerMessage =
   | ErrorMessage
   | LevelUpMessage
   | TorchPickupMessage
+  | StashOpenedMessage
+  | StashUpdatedMessage
+  | StashErrorMessage
   | AuthResultMessage
   | AuthErrorMessage
   | CharacterListMessage
@@ -599,4 +633,7 @@ export type ServerMessage =
   | WorldMemberJoinedMessage
   | WorldMemberLeftMessage
   | OverworldTickMessage
-  | WorldMoveRejectedMessage;
+  | WorldMoveRejectedMessage
+  | PortalMusterUpdateMessage
+  | DungeonEnteredMessage
+  | DungeonReturnedMessage;

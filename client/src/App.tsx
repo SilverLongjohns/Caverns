@@ -2,7 +2,6 @@ import { useGameStore, selectCurrentView } from './store/gameStore.js';
 import { useWebSocket } from './hooks/useWebSocket.js';
 import { useGameActions } from './hooks/useGameActions.js';
 import { useGridMovement } from './hooks/useGridMovement.js';
-import { Lobby } from './components/Lobby.js';
 import { LoginScreen } from './components/LoginScreen.js';
 import { CharacterSelect } from './components/CharacterSelect.js';
 import { WorldSelect } from './components/WorldSelect.js';
@@ -99,15 +98,17 @@ export function App() {
       );
       break;
     case 'in_world':
-      content = <WorldView onLeaveWorld={actions.leaveWorld} onMove={actions.overworldMove} />;
-      break;
-    case 'in_lobby':
       content = (
-        <Lobby
-          onJoin={actions.joinLobby}
-          onStart={actions.startGame}
-          onSetDifficulty={actions.setDifficulty}
-          onSetReady={actions.setReady}
+        <WorldView
+          onLeaveWorld={actions.leaveWorld}
+          onMove={actions.overworldMove}
+          onPortalReady={actions.portalReady}
+          onPortalUnready={actions.portalUnready}
+          onPortalEnter={actions.portalEnter}
+          onInteract={actions.interactOverworld}
+          onStashDeposit={actions.stashDeposit}
+          onStashWithdraw={actions.stashWithdraw}
+          onStashClose={actions.closeStash}
         />
       );
       break;
@@ -122,9 +123,9 @@ export function App() {
           </p>
           <button
             className="lobby-return-btn"
-            onClick={() => useGameStore.setState({ gameOver: null, connectionStatus: 'in_lobby' })}
+            onClick={() => useGameStore.setState({ gameOver: null })}
           >
-            Return to Lobby
+            Return to Overworld
           </button>
         </div>
       );

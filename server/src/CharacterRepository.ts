@@ -1,5 +1,6 @@
 import type { Kysely } from 'kysely';
 import { CLASS_STARTER_ITEMS, STARTER_POTION } from '@caverns/shared';
+import type { Item } from '@caverns/shared';
 import type { Database, CharactersTable } from './db/types.js';
 import type { CharacterSnapshot } from './characterAdapter.js';
 
@@ -82,6 +83,21 @@ export class CharacterRepository {
         consumables: JSON.stringify(snap.consumables) as never,
         gold: snap.gold,
         keychain: JSON.stringify(snap.keychain) as never,
+        last_played_at: new Date(),
+      })
+      .where('id', '=', id)
+      .execute();
+  }
+
+  async snapshotInventory(
+    id: string,
+    inventory: (Item | null)[],
+    consumables: (Item | null)[],
+  ): Promise<void> {
+    await this.db.updateTable('characters')
+      .set({
+        inventory: JSON.stringify(inventory) as never,
+        consumables: JSON.stringify(consumables) as never,
         last_played_at: new Date(),
       })
       .where('id', '=', id)

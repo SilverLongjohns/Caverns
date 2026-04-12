@@ -5,7 +5,6 @@ import type {
   CombatState,
   Item,
   ServerMessage,
-  LobbyPlayer,
   CharacterSummary,
   AccountSummary,
   WorldSummary,
@@ -19,8 +18,7 @@ export type ClientView =
   | 'world_select'
   | 'character_select'
   | 'in_world'
-  | 'in_lobby'   // legacy — kept until Phase 5 retires the old lobby flow
-  | 'in_dungeon' // placeholder for Phase 5 — unused in Phase 2
+  | 'in_dungeon'
   | 'game_over'
   | 'generating';
 import { saveSessionToken, clearSessionToken } from '../auth/sessionStorage.js';
@@ -34,7 +32,7 @@ export interface TextLogEntry {
 let logIdCounter = 0;
 
 export interface GameStore {
-  connectionStatus: 'disconnected' | 'connected' | 'in_lobby' | 'in_game';
+  connectionStatus: 'disconnected' | 'connected' | 'in_game';
   setConnectionStatus: (status: GameStore['connectionStatus']) => void;
   authStatus: 'unauthenticated' | 'authenticated' | 'character_selected';
   account: AccountSummary | null;
@@ -47,9 +45,16 @@ export interface GameStore {
   worldMap: OverworldMap | null;
   worldMembers: WorldMemberSummary[];
   overworldPathPreview: { x: number; y: number }[];
+  currentPortalMuster: { portalId: string; readyMembers: WorldMemberSummary[] } | null;
+  currentDungeonSessionId: string | null;
+  openStash: {
+    items: (Item | null)[];
+    capacity: number;
+    inventory: (Item | null)[];
+    consumables: (Item | null)[];
+  } | null;
+  stashError: string | null;
   authError: string | null;
-  lobbyPlayers: LobbyPlayer[];
-  isHost: boolean;
   playerId: string;
   players: Record<string, Player>;
   rooms: Record<string, Room>;
@@ -66,8 +71,6 @@ export interface GameStore {
   activePuzzle: { roomId: string; puzzleId: string; description: string; options: string[] } | null;
   generationStatus: 'idle' | 'generating' | 'failed';
   generationError: string | null;
-  lobbyDifficulty: 'easy' | 'medium' | 'hard';
-  roomCode: string;
   scoutThreats: Record<string, Partial<Record<string, boolean>>>;
   selectedInteractableId: string | null;
   selectInteractable: (id: string | null) => void;
@@ -108,9 +111,11 @@ const initialState = {
   worldMap: null,
   worldMembers: [] as WorldMemberSummary[],
   overworldPathPreview: [] as { x: number; y: number }[],
+  currentPortalMuster: null as GameStore['currentPortalMuster'],
+  currentDungeonSessionId: null as string | null,
+  openStash: null as GameStore['openStash'],
+  stashError: null as string | null,
   authError: null,
-  lobbyPlayers: [] as LobbyPlayer[],
-  isHost: false,
   playerId: '',
   players: {},
   rooms: {},
@@ -127,8 +132,6 @@ const initialState = {
   activePuzzle: null,
   generationStatus: 'idle' as const,
   generationError: null,
-  lobbyDifficulty: 'medium' as const,
-  roomCode: '',
   scoutThreats: {},
   selectedInteractableId: null,
   pendingInteractActions: null,
@@ -152,19 +155,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   handleServerMessage: (msg: ServerMessage) => {
     switch (msg.type) {
-      case 'lobby_state':
-        set((state) => ({
-          connectionStatus: state.gameOver ? state.connectionStatus : 'in_lobby',
-          lobbyPlayers: msg.players,
-          isHost: msg.hostId === msg.yourId,
-          playerId: msg.yourId,
-          lobbyDifficulty: msg.difficulty,
-          roomCode: msg.roomCode,
-          authStatus:
-            state.authStatus === 'authenticated' ? 'character_selected' : state.authStatus,
-        }));
-        break;
-
       case 'auth_result':
         saveSessionToken(msg.token);
         set({
@@ -248,6 +238,81 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case 'world_move_rejected':
         set({ overworldPathPreview: [] });
+        break;
+
+      case 'portal_muster_update':
+        set((state) => {
+          // Only track the muster for the portal our member is currently standing on.
+          const mine = state.worldMembers.find((m) => m.characterId === state.selectedCharacterId);
+          if (!mine) return {};
+          const onPortal = state.worldMap?.portals.find((p) => p.x === mine.pos.x && p.y === mine.pos.y);
+          if (!onPortal || onPortal.id !== msg.portalId) {
+            // Muster update for a different portal — ignore unless we were already tracking it.
+            if (state.currentPortalMuster?.portalId === msg.portalId && msg.readyMembers.length === 0) {
+              return { currentPortalMuster: null };
+            }
+            return {};
+          }
+          if (msg.readyMembers.length === 0) return { currentPortalMuster: null };
+          return { currentPortalMuster: { portalId: msg.portalId, readyMembers: msg.readyMembers } };
+        });
+        break;
+
+      case 'dungeon_entered':
+        set({
+          currentDungeonSessionId: msg.dungeonSessionId,
+          currentPortalMuster: null,
+          currentWorld: null,
+          worldMap: null,
+          worldMembers: [],
+          overworldPathPreview: [],
+          openStash: null,
+          stashError: null,
+        });
+        break;
+
+      case 'stash_opened':
+        set({
+          openStash: {
+            items: msg.stash.items,
+            capacity: msg.stash.capacity,
+            inventory: msg.character.inventory,
+            consumables: msg.character.consumables,
+          },
+          stashError: null,
+        });
+        break;
+
+      case 'stash_updated':
+        set((state) => {
+          if (!state.openStash) return {};
+          return {
+            openStash: {
+              items: msg.stash.items,
+              capacity: msg.stash.capacity,
+              inventory: msg.character.inventory,
+              consumables: msg.character.consumables,
+            },
+            stashError: null,
+          };
+        });
+        break;
+
+      case 'stash_error':
+        set({ stashError: msg.reason });
+        break;
+
+      case 'dungeon_returned':
+        set({
+          currentDungeonSessionId: null,
+          connectionStatus: 'connected',
+          players: {},
+          rooms: {},
+          currentRoomId: '',
+          activeCombat: null,
+          gameOver: null,
+          textLog: [],
+        });
         break;
 
       case 'game_start':
@@ -612,7 +677,6 @@ export function selectCurrentView(state: GameStore): ClientView {
   if (state.gameOver) return 'game_over';
   if (state.connectionStatus === 'in_game') return 'in_dungeon';
   if (state.currentWorld) return 'in_world';
-  if (state.connectionStatus === 'in_lobby') return 'in_lobby';
   if (state.authStatus === 'authenticated' && state.selectedWorldId && !state.selectedCharacterId) return 'character_select';
   if (state.authStatus === 'authenticated' && !state.selectedWorldId) return 'world_select';
   if (state.authStatus === 'unauthenticated') return 'login';

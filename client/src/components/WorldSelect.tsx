@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import { CaveBackground } from './CaveBackground.js';
 import { WorldCreatePanel } from './WorldCreatePanel.js';
@@ -19,24 +19,10 @@ export function WorldSelect({ onList, onSelect, onCreate, onJoin, onLogout }: Pr
   const account = useGameStore((s) => s.account);
   const error = useGameStore((s) => s.worldError);
   const [view, setView] = useState<SubView>('list');
-  const autoOpenedRef = useRef(false);
 
   useEffect(() => {
     onList();
   }, [onList]);
-
-  // Auto-open the create form the first time we see an empty world list —
-  // but only once, so re-entering 'list' after a successful create doesn't
-  // race against the server's world_list response and bounce us back.
-  useEffect(() => {
-    if (autoOpenedRef.current) return;
-    if (worlds.length === 0 && view === 'list') {
-      autoOpenedRef.current = true;
-      setView('create');
-    } else if (worlds.length > 0) {
-      autoOpenedRef.current = true;
-    }
-  }, [worlds.length, view]);
 
   if (view === 'create') {
     return (

@@ -40,10 +40,11 @@ export async function createTestDb(): Promise<{ db: Kysely<Database>; cleanup: (
       last_played_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now()
     );
-    CREATE TABLE account_stash (
-      account_id uuid PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+    CREATE TABLE character_stash (
+      character_id uuid PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
       items jsonb NOT NULL DEFAULT '[]',
-      gold int NOT NULL DEFAULT 0
+      gold int NOT NULL DEFAULT 0,
+      capacity int NOT NULL DEFAULT 20
     );
     CREATE TABLE sessions (
       token text PRIMARY KEY,

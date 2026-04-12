@@ -1,4 +1,4 @@
-import type { ServerMessage, WorldMemberSummary, OverworldMap, OverworldTickStep } from '@caverns/shared';
+import type { ServerMessage, WorldMemberSummary, OverworldMap, OverworldTickStep, OverworldPortal, OverworldInteractable } from '@caverns/shared';
 import { OVERWORLD_MAPS, isWalkable, getTile, findOverworldPath } from '@caverns/shared';
 import type { WorldRepository } from './WorldRepository.js';
 import type { CharacterRepository } from './CharacterRepository.js';
@@ -39,6 +39,31 @@ export interface WorldSessionDeps {
 
 export type MoveResult = 'ok' | 'unreachable' | 'out_of_bounds' | 'not_walkable';
 
+export interface DungeonPartyMember {
+  connectionId: string;
+  accountId: string;
+  characterId: string;
+  displayName: string;
+  characterName: string;
+  className: string;
+  level: number;
+}
+
+export interface OutboundDungeonHandle {
+  sessionId: string;
+  portalId: string;
+  portalPos: { x: number; y: number };
+  party: DungeonPartyMember[];
+}
+
+export type BeginDungeonEntryResult =
+  | {
+      status: 'ok';
+      origin: { worldId: string; portalId: string; portalPos: { x: number; y: number } };
+      party: DungeonPartyMember[];
+    }
+  | { status: 'not_on_portal' | 'not_ready' | 'not_member' };
+
 function resolveStartPos(
   saved: { x: number; y: number } | null,
   map: OverworldMap,
@@ -55,6 +80,8 @@ export class WorldSession {
   readonly worldName: string;
   private readonly map: OverworldMap;
   private members = new Map<string, WorldSessionMember>();
+  private musters = new Map<string /* portalId */, Set<string /* connectionId */>>();
+  private outboundDungeons = new Map<string /* sessionId */, OutboundDungeonHandle>();
   private tickHandle: ReturnType<typeof setInterval> | undefined;
   private worldRepo: WorldRepository;
   private characterRepo: CharacterRepository;
@@ -68,14 +95,13 @@ export class WorldSession {
     this.characterRepo = deps.characterRepo;
     this.broadcast = deps.broadcast;
     this.sendTo = deps.sendTo;
-    // TODO(post-v1): resolve map ID from world row. For now, every world uses 'starter'.
     const map = OVERWORLD_MAPS.starter;
     if (!map) throw new Error('starter overworld map missing');
     this.map = map;
   }
 
   async addConnection(args: AddConnectionArgs): Promise<void> {
-    const firstMember = this.members.size === 0;
+    const firstMember = this.members.size === 0 && this.outboundDungeons.size === 0;
     if (firstMember) {
       await this.hydrate();
     }
@@ -92,7 +118,7 @@ export class WorldSession {
       path: [],
     };
     this.members.set(member.connectionId, member);
-    if (firstMember) this.startTickLoop();
+    if (this.tickHandle === undefined) this.startTickLoop();
 
     this.sendTo(member.connectionId, {
       type: 'world_state',
@@ -118,6 +144,7 @@ export class WorldSession {
       console.error('[WorldSession] snapshot on remove failed', e);
     }
 
+    this.setUnreadyAtPortal(connectionId);
     this.members.delete(connectionId);
     this.broadcast({
       type: 'world_member_left',
@@ -127,8 +154,10 @@ export class WorldSession {
 
     if (this.members.size === 0) {
       this.stopTickLoop();
-      await this.snapshot();
-      return 'destroyed';
+      if (this.outboundDungeons.size === 0) {
+        await this.snapshot();
+        return 'destroyed';
+      }
     }
     return 'still_active';
   }
@@ -161,8 +190,187 @@ export class WorldSession {
     return this.members.size;
   }
 
+  outboundDungeonCount(): number {
+    return this.outboundDungeons.size;
+  }
+
+  getInteractableAtMember(connectionId: string, interactableId: string): OverworldInteractable | null {
+    const member = this.members.get(connectionId);
+    if (!member) return null;
+    const it = this.map.interactables.find((i) => i.id === interactableId);
+    if (!it) return null;
+    if (it.x !== member.pos.x || it.y !== member.pos.y) return null;
+    return it;
+  }
+
+  outboundDungeonSessionIdFor(connectionId: string): string | undefined {
+    for (const h of this.outboundDungeons.values()) {
+      if (h.party.some((p) => p.connectionId === connectionId)) return h.sessionId;
+    }
+    return undefined;
+  }
+
   getMembers(): WorldMemberSummary[] {
     return [...this.members.values()].map((m) => this.toSummary(m));
+  }
+
+  // === Portal muster (Task 2) ===
+
+  private getPortalAt(pos: { x: number; y: number }): OverworldPortal | undefined {
+    return this.map.portals.find((p) => p.x === pos.x && p.y === pos.y);
+  }
+
+  setReadyAtPortal(connectionId: string): 'ok' | 'not_on_portal' | 'not_member' {
+    const member = this.members.get(connectionId);
+    if (!member) return 'not_member';
+    const portal = this.getPortalAt(member.pos);
+    if (!portal) return 'not_on_portal';
+
+    let muster = this.musters.get(portal.id);
+    if (!muster) {
+      muster = new Set();
+      this.musters.set(portal.id, muster);
+    }
+    muster.add(connectionId);
+    this.broadcastMuster(portal.id);
+    return 'ok';
+  }
+
+  setUnreadyAtPortal(connectionId: string): void {
+    for (const [portalId, set] of [...this.musters]) {
+      if (set.delete(connectionId)) {
+        if (set.size === 0) this.musters.delete(portalId);
+        this.broadcastMuster(portalId);
+      }
+    }
+  }
+
+  private broadcastMuster(portalId: string): void {
+    const set = this.musters.get(portalId) ?? new Set<string>();
+    const readyMembers: WorldMemberSummary[] = [];
+    for (const connId of set) {
+      const m = this.members.get(connId);
+      if (m) readyMembers.push(this.toSummary(m));
+    }
+    this.broadcast({
+      type: 'portal_muster_update',
+      portalId,
+      readyMembers,
+    });
+  }
+
+  // === Dungeon entry / return (Tasks 3 & 4) ===
+
+  /**
+   * Validate muster for the requester, clear it, and return the party. Caller
+   * is responsible for constructing the GameSession, calling
+   * registerOutboundDungeon and removePartyForDungeon, and routing connections.
+   */
+  beginDungeonEntry(requesterConnectionId: string): BeginDungeonEntryResult {
+    const member = this.members.get(requesterConnectionId);
+    if (!member) return { status: 'not_member' };
+    const portal = this.getPortalAt(member.pos);
+    if (!portal) return { status: 'not_on_portal' };
+
+    const muster = this.musters.get(portal.id);
+    if (!muster || !muster.has(requesterConnectionId)) return { status: 'not_ready' };
+
+    const party: DungeonPartyMember[] = [];
+    for (const connId of muster) {
+      const m = this.members.get(connId);
+      if (!m) continue;
+      party.push({
+        connectionId: m.connectionId,
+        accountId: m.accountId,
+        characterId: m.characterId,
+        displayName: m.displayName,
+        characterName: m.characterName,
+        className: m.className,
+        level: m.level,
+      });
+    }
+
+    // Clear muster so remaining members see it dissolve.
+    this.musters.delete(portal.id);
+    this.broadcastMuster(portal.id);
+
+    return {
+      status: 'ok',
+      origin: { worldId: this.worldId, portalId: portal.id, portalPos: { x: portal.x, y: portal.y } },
+      party,
+    };
+  }
+
+  registerOutboundDungeon(handle: OutboundDungeonHandle): void {
+    this.outboundDungeons.set(handle.sessionId, handle);
+  }
+
+  /**
+   * Remove party members from `members` without snapshotting overworld_pos
+   * (their position is fixed at the portal on return). Broadcasts
+   * world_member_left for each.
+   */
+  removePartyForDungeon(partyConnIds: string[]): void {
+    for (const connId of partyConnIds) {
+      const m = this.members.get(connId);
+      if (!m) continue;
+      this.setUnreadyAtPortal(connId);
+      this.members.delete(connId);
+      this.broadcast({
+        type: 'world_member_left',
+        connectionId: connId,
+        characterId: m.characterId,
+      });
+    }
+    if (this.members.size === 0) this.stopTickLoop();
+  }
+
+  /**
+   * Called when a dungeon ends. Snapshots portal pos for every party member,
+   * then re-admits members whose connections are still live.
+   */
+  async returnFromDungeon(sessionId: string, activeConnIds: Set<string>): Promise<void> {
+    const handle = this.outboundDungeons.get(sessionId);
+    if (!handle) return;
+    this.outboundDungeons.delete(sessionId);
+
+    const pos = handle.portalPos;
+    for (const p of handle.party) {
+      try {
+        await this.characterRepo.snapshotOverworldPos(p.characterId, pos);
+      } catch (e) {
+        console.error('[WorldSession] snapshot on dungeon return failed', e);
+      }
+    }
+
+    for (const p of handle.party) {
+      if (!activeConnIds.has(p.connectionId)) continue;
+      const member: WorldSessionMember = {
+        connectionId: p.connectionId,
+        accountId: p.accountId,
+        characterId: p.characterId,
+        displayName: p.displayName,
+        characterName: p.characterName,
+        className: p.className,
+        level: p.level,
+        pos: { ...pos },
+        path: [],
+      };
+      this.members.set(p.connectionId, member);
+      this.sendTo(p.connectionId, { type: 'dungeon_returned' });
+      this.sendTo(p.connectionId, {
+        type: 'world_state',
+        worldId: this.worldId,
+        worldName: this.worldName,
+        map: this.map,
+        members: this.getMembers(),
+      });
+      this.broadcast(
+        { type: 'world_member_joined', member: this.toSummary(member) },
+        p.connectionId,
+      );
+    }
+    if (this.members.size > 0 && this.tickHandle === undefined) this.startTickLoop();
   }
 
   /** Test-only hook for deterministic tick-driving. */
@@ -207,6 +415,18 @@ export class WorldSession {
       const arrived = member.path.length === 0;
       steps.push({ connectionId: member.connectionId, x: next.x, y: next.y, arrived });
       if (arrived) arrivedMembers.push(member);
+
+      // Auto-unready if we walked off a portal muster.
+      for (const [portalId, set] of this.musters) {
+        if (!set.has(member.connectionId)) continue;
+        const portal = this.map.portals.find((p) => p.id === portalId);
+        if (!portal) continue;
+        if (portal.x !== member.pos.x || portal.y !== member.pos.y) {
+          set.delete(member.connectionId);
+          if (set.size === 0) this.musters.delete(portalId);
+          this.broadcastMuster(portalId);
+        }
+      }
     }
 
     if (steps.length > 0) {
@@ -223,14 +443,11 @@ export class WorldSession {
   }
 
   private async hydrate(): Promise<void> {
-    // Phase 4: nothing to hydrate. Per-member positions resolved in addConnection.
-    // Phase 5: check for abandoned dungeon instances owned by this world.
     void this.worldRepo;
     void this.characterRepo;
   }
 
   private async snapshot(): Promise<void> {
-    // Phase 4: members snapshot individually on removal/arrival.
-    // Phase 5+: write world.state jsonb via worldRepo.snapshotState.
+    // Members snapshot individually on removal/arrival.
   }
 }

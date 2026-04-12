@@ -1228,7 +1228,61 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 }
 .world-map-container {
   display: inline-block;
+  position: relative;
 }
+.overworld-interact-prompt {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #d4a857;
+  color: #d4a857;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 6px rgba(212, 168, 87, 0.5);
+  pointer-events: none;
+  z-index: 5;
+}
+.portal-muster-panel {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.88);
+  border: 1px solid #5a3;
+  padding: 0.75rem 1rem;
+  min-width: 220px;
+  font-size: 0.85rem;
+  box-shadow: 0 0 12px rgba(80, 200, 80, 0.25);
+}
+.portal-muster-title {
+  margin: 0 0 0.5rem 0;
+  color: #7d7;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.portal-muster-list { list-style: none; padding: 0; margin: 0 0 0.6rem 0; }
+.portal-muster-member { padding: 0.2rem 0; }
+.portal-muster-meta { color: #888; margin-left: 0.4rem; }
+.portal-muster-empty { color: #555; font-style: italic; }
+.portal-muster-actions { display: flex; gap: 0.5rem; }
+.portal-muster-btn {
+  flex: 1;
+  background: #111;
+  color: #ccc;
+  border: 1px solid #444;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.portal-muster-btn:hover:not(:disabled) { background: #222; border-color: #7d7; color: #7d7; }
+.portal-muster-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.portal-muster-btn-enter { border-color: #5a3; color: #7d7; }
 .world-side {
   width: 220px;
   border-left: 1px solid #333;
@@ -1835,5 +1889,115 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   padding: 0.5rem 1rem;
   cursor: pointer;
   font-family: inherit;
+}
+
+/* === Stash modal === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.stash-modal {
+  background: #1a1410;
+  border: 1px solid #d4a857;
+  box-shadow: 0 0 24px rgba(212, 168, 87, 0.25);
+  padding: 1.25rem 1.5rem;
+  min-width: 640px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  color: #d4a857;
+  font-family: inherit;
+}
+.stash-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 8px rgba(212, 168, 87, 0.4);
+}
+.stash-error {
+  color: #ff8080;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+}
+.stash-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.stash-panel {
+  border: 1px solid #3d3122;
+  padding: 0.75rem;
+  background: #0e0a08;
+}
+.stash-panel-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  color: #d4a857;
+  border-bottom: 1px solid #3d3122;
+  padding-bottom: 0.3rem;
+}
+.stash-count {
+  color: #7a6e5a;
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+.stash-section-title {
+  margin: 0.6rem 0 0.3rem 0;
+  font-size: 0.8rem;
+  color: #7a6e5a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stash-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem;
+}
+.stash-slot-grid-wide {
+  grid-template-columns: repeat(4, 1fr);
+}
+.stash-slot {
+  background: #1a1410;
+  border: 1px solid #3d3122;
+  color: #d4ffd4;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  text-align: left;
+  min-height: 2rem;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stash-slot.filled:hover {
+  background: #2a2015;
+  border-color: #d4a857;
+}
+.stash-slot.empty {
+  color: #3d3122;
+  cursor: default;
+}
+.stash-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+.stash-close-btn {
+  background: transparent;
+  color: #d4a857;
+  border: 1px solid #d4a857;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.05em;
+}
+.stash-close-btn:hover {
+  background: #2a2015;
 }
 
