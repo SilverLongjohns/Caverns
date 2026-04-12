@@ -96,12 +96,18 @@ describe('ProceduralGenerator', () => {
     }
   });
 
-  it('all mob loot tables reference items in the dungeon', () => {
+  it('all mob loot tables have valid LootDrop entries', () => {
     const dungeon = generateProceduralDungeon(3);
     const itemIds = new Set(dungeon.items.map(i => i.id));
+    const validSlots = ['weapon', 'offhand', 'armor', 'accessory'];
     for (const mob of dungeon.mobs) {
-      for (const lootId of mob.lootTable) {
-        expect(itemIds.has(lootId), `Mob ${mob.id} references unknown item ${lootId}`).toBe(true);
+      for (const drop of mob.lootTable) {
+        if ('consumableId' in drop) {
+          expect(itemIds.has(drop.consumableId), `Mob ${mob.id} references unknown consumable ${drop.consumableId}`).toBe(true);
+        } else if ('slot' in drop) {
+          expect(validSlots.includes(drop.slot), `Mob ${mob.id} has invalid slot ${drop.slot}`).toBe(true);
+          expect([1, 2, 3].includes(drop.skullRating), `Mob ${mob.id} has invalid skullRating`).toBe(true);
+        }
       }
     }
   });

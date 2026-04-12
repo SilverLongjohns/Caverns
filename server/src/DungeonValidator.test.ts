@@ -57,7 +57,7 @@ describe('DungeonValidator', () => {
       ...DRIPPING_HALLS,
       mobs: DRIPPING_HALLS.mobs.map((m) =>
         m.id === 'fungal_crawler'
-          ? { ...m, lootTable: ['nonexistent_weapon'] }
+          ? { ...m, lootTable: [{ consumableId: 'nonexistent_weapon' }] }
           : m
       ),
     };

@@ -6,7 +6,7 @@
     "skullRating": 1,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 15, "damage": 6, "defense": 1, "initiative": 7 },
-    "lootTable": ["rat_fang_necklace", "crude_bandage"]
+    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "crude_bandage" }]
   },
   {
     "id": "cave_bat_swarm",
@@ -15,7 +15,7 @@
     "skullRating": 1,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 18, "damage": 8, "defense": 1, "initiative": 9 },
-    "lootTable": ["crude_bandage", "cave_moss_poultice"]
+    "lootTable": [{ "consumableId": "crude_bandage" }, { "consumableId": "cave_moss_poultice" }]
   },
   {
     "id": "warren_spider",
@@ -24,7 +24,7 @@
     "skullRating": 1,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 16, "damage": 7, "defense": 2, "initiative": 6 },
-    "lootTable": ["spider_fang_pendant", "cave_moss_poultice"]
+    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "cave_moss_poultice" }]
   },
   {
     "id": "goblin_scrapper",
@@ -33,7 +33,7 @@
     "skullRating": 1,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 20, "damage": 7, "defense": 2, "initiative": 5 },
-    "lootTable": ["iron_dagger", "cloth_armor", "crude_bandage"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }, { "consumableId": "crude_bandage" }]
   },
   {
     "id": "rubble_slime",
@@ -42,7 +42,7 @@
     "skullRating": 1,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 25, "damage": 6, "defense": 3, "initiative": 2 },
-    "lootTable": ["leather_scraps", "cave_moss_poultice"]
+    "lootTable": [{ "consumableId": "leather_scraps" }, { "consumableId": "cave_moss_poultice" }]
   },
   {
     "id": "feral_miner",
@@ -51,7 +51,7 @@
     "skullRating": 1,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 22, "damage": 9, "defense": 1, "initiative": 4 },
-    "lootTable": ["miners_pick", "rot_gut_flask", "leather_scraps"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "rot_gut_flask" }, { "consumableId": "leather_scraps" }]
   },
   {
     "id": "alpha_wolf",
@@ -60,7 +60,7 @@
     "skullRating": 2,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 45, "damage": 12, "defense": 3, "initiative": 7 },
-    "lootTable": ["hide_tunic", "lucky_rabbit_foot", "minor_hp_potion"]
+    "lootTable": [{ "slot": "armor", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }, { "consumableId": "minor_hp_potion" }]
   },
   {
     "id": "bandit_captain",
@@ -69,7 +69,7 @@
     "skullRating": 2,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 50, "damage": 14, "defense": 5, "initiative": 5 },
-    "lootTable": ["bandit_sabre", "iron_chain_scraps", "hp_potion"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "hp_potion" }]
   },
   {
     "id": "cave_troll",
@@ -78,7 +78,7 @@
     "skullRating": 2,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 55, "damage": 16, "defense": 6, "initiative": 2 },
-    "lootTable": ["rusted_mace", "wooden_shield", "hp_potion"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "offhand", "skullRating": 2 }, { "consumableId": "hp_potion" }]
   },
   {
     "id": "the_rat_king",
@@ -87,7 +87,7 @@
     "skullRating": 3,
     "biomes": ["starter"],
     "baseStats": { "maxHp": 130, "damage": 18, "defense": 5, "initiative": 6 },
-    "lootTable": ["bandit_sabre", "tarnished_locket", "iron_chain_scraps"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "armor", "skullRating": 3 }]
   },
 
   {
@@ -97,7 +97,7 @@
     "skullRating": 1,
     "biomes": ["fungal"],
     "baseStats": { "maxHp": 25, "damage": 8, "defense": 2, "initiative": 4 },
-    "lootTable": ["spore_dagger", "fungal_wrap"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
   },
   {
     "id": "cave_lurker",
@@ -106,7 +106,7 @@
     "skullRating": 1,
     "biomes": ["fungal"],
     "baseStats": { "maxHp": 20, "damage": 10, "defense": 1, "initiative": 6 },
-    "lootTable": ["lurker_fang", "shadow_cloak"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
   },
   {
     "id": "spore_shambler",
@@ -115,7 +115,7 @@
     "skullRating": 1,
     "biomes": ["fungal"],
     "baseStats": { "maxHp": 30, "damage": 7, "defense": 3, "initiative": 2 },
-    "lootTable": ["fungal_wrap", "leather_scraps"]
+    "lootTable": [{ "slot": "armor", "skullRating": 1 }, { "consumableId": "leather_scraps" }]
   },
   {
     "id": "glowcap_swarm",
@@ -124,7 +124,7 @@
     "skullRating": 1,
     "biomes": ["fungal"],
     "baseStats": { "maxHp": 15, "damage": 10, "defense": 1, "initiative": 8 },
-    "lootTable": ["spore_dagger", "throwing_spore"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "throwing_spore" }]
   },
   {
     "id": "sporecap_brute",
@@ -133,7 +133,7 @@
     "skullRating": 2,
     "biomes": ["fungal"],
     "baseStats": { "maxHp": 60, "damage": 14, "defense": 5, "initiative": 3 },
-    "lootTable": ["brute_hammer", "sporecap_plate", "vitality_ring"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }]
   },
   {
     "id": "mycelium_guardian",
@@ -142,7 +142,7 @@
     "skullRating": 2,
     "biomes": ["fungal"],
     "baseStats": { "maxHp": 70, "damage": 12, "defense": 6, "initiative": 2 },
-    "lootTable": ["mycelium_staff", "fungal_shield", "hp_potion"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "offhand", "skullRating": 2 }, { "consumableId": "hp_potion" }]
   },
   {
     "id": "mycelium_king",
@@ -151,7 +151,7 @@
     "skullRating": 3,
     "biomes": ["fungal"],
     "baseStats": { "maxHp": 200, "damage": 25, "defense": 8, "initiative": 5 },
-    "lootTable": ["kings_crown", "mycelium_blade", "spore_heart"]
+    "lootTable": [{ "slot": "accessory", "skullRating": 3 }, { "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }]
   },
 
   {
@@ -161,7 +161,7 @@
     "skullRating": 1,
     "biomes": ["crystal"],
     "baseStats": { "maxHp": 20, "damage": 9, "defense": 3, "initiative": 5 },
-    "lootTable": ["crystal_shard_blade", "crystal_dust"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "crystal_dust" }]
   },
   {
     "id": "prism_wisp",
@@ -170,7 +170,7 @@
     "skullRating": 1,
     "biomes": ["crystal"],
     "baseStats": { "maxHp": 15, "damage": 11, "defense": 1, "initiative": 9 },
-    "lootTable": ["prism_rapier", "crystal_dust"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "crystal_dust" }]
   },
   {
     "id": "crystal_spider",
@@ -179,7 +179,7 @@
     "skullRating": 1,
     "biomes": ["crystal"],
     "baseStats": { "maxHp": 22, "damage": 8, "defense": 2, "initiative": 7 },
-    "lootTable": ["crystal_lattice_mail", "crystal_buckler"]
+    "lootTable": [{ "slot": "armor", "skullRating": 1 }, { "slot": "offhand", "skullRating": 1 }]
   },
   {
     "id": "resonance_stalker",
@@ -188,7 +188,7 @@
     "skullRating": 1,
     "biomes": ["crystal"],
     "baseStats": { "maxHp": 18, "damage": 10, "defense": 2, "initiative": 8 },
-    "lootTable": ["refraction_pendant", "prism_flask"]
+    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "prism_flask" }]
   },
   {
     "id": "geode_golem",
@@ -197,7 +197,7 @@
     "skullRating": 2,
     "biomes": ["crystal"],
     "baseStats": { "maxHp": 65, "damage": 15, "defense": 7, "initiative": 2 },
-    "lootTable": ["geode_maul", "geode_plate", "prism_flask"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "prism_flask" }]
   },
   {
     "id": "facet_matriarch",
@@ -206,7 +206,7 @@
     "skullRating": 2,
     "biomes": ["crystal"],
     "baseStats": { "maxHp": 55, "damage": 18, "defense": 4, "initiative": 5 },
-    "lootTable": ["prism_focus", "refraction_pendant", "crystal_grenade"]
+    "lootTable": [{ "slot": "offhand", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }, { "consumableId": "crystal_grenade" }]
   },
   {
     "id": "prismatic_colossus",
@@ -215,7 +215,7 @@
     "skullRating": 3,
     "biomes": ["crystal"],
     "baseStats": { "maxHp": 220, "damage": 22, "defense": 10, "initiative": 4 },
-    "lootTable": ["resonance_blade", "crystal_heart_gem", "prism_focus"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "offhand", "skullRating": 3 }]
   },
 
   {
@@ -225,7 +225,7 @@
     "skullRating": 1,
     "biomes": ["flooded"],
     "baseStats": { "maxHp": 28, "damage": 7, "defense": 3, "initiative": 2 },
-    "lootTable": ["corroded_cutlass", "kelp_wrap"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
   },
   {
     "id": "cave_eel",
@@ -234,7 +234,7 @@
     "skullRating": 1,
     "biomes": ["flooded"],
     "baseStats": { "maxHp": 18, "damage": 11, "defense": 1, "initiative": 8 },
-    "lootTable": ["barbed_harpoon", "brine_tonic"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "brine_tonic" }]
   },
   {
     "id": "tide_crawler",
@@ -243,7 +243,7 @@
     "skullRating": 1,
     "biomes": ["flooded"],
     "baseStats": { "maxHp": 25, "damage": 8, "defense": 4, "initiative": 4 },
-    "lootTable": ["driftwood_shield", "barnacle_mail"]
+    "lootTable": [{ "slot": "offhand", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
   },
   {
     "id": "salt_wraith",
@@ -252,7 +252,7 @@
     "skullRating": 1,
     "biomes": ["flooded"],
     "baseStats": { "maxHp": 16, "damage": 10, "defense": 2, "initiative": 7 },
-    "lootTable": ["pearl_earring", "sea_foam_salve"]
+    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "sea_foam_salve" }]
   },
   {
     "id": "abyssal_angler",
@@ -261,7 +261,7 @@
     "skullRating": 2,
     "biomes": ["flooded"],
     "baseStats": { "maxHp": 70, "damage": 16, "defense": 5, "initiative": 3 },
-    "lootTable": ["trident_of_the_deep", "shell_aegis", "sea_foam_salve"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "offhand", "skullRating": 2 }, { "consumableId": "sea_foam_salve" }]
   },
   {
     "id": "kraken_spawn",
@@ -270,7 +270,7 @@
     "skullRating": 2,
     "biomes": ["flooded"],
     "baseStats": { "maxHp": 60, "damage": 18, "defense": 4, "initiative": 6 },
-    "lootTable": ["tidecaller_ring", "abyssal_plate", "depth_charge"]
+    "lootTable": [{ "slot": "accessory", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "depth_charge" }]
   },
   {
     "id": "the_drowned_leviathan",
@@ -279,17 +279,17 @@
     "skullRating": 3,
     "biomes": ["flooded"],
     "baseStats": { "maxHp": 250, "damage": 20, "defense": 9, "initiative": 3 },
-    "lootTable": ["leviathan_tooth", "leviathan_eye", "shell_aegis"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "offhand", "skullRating": 3 }]
   },
 
   {
     "id": "bone_rattler",
     "name": "Bone Rattler",
-    "description": "A skeleton reassembled wrong — too many arms, joints bending the wrong way. It moves with a horrible clicking sound.",
+    "description": "A skeleton reassembled wrong -- too many arms, joints bending the wrong way. It moves with a horrible clicking sound.",
     "skullRating": 1,
     "biomes": ["bone"],
     "baseStats": { "maxHp": 22, "damage": 8, "defense": 2, "initiative": 5 },
-    "lootTable": ["sharpened_femur", "bone_weave_armor"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "armor", "skullRating": 1 }]
   },
   {
     "id": "marrow_leech",
@@ -298,7 +298,7 @@
     "skullRating": 1,
     "biomes": ["bone"],
     "baseStats": { "maxHp": 16, "damage": 12, "defense": 1, "initiative": 6 },
-    "lootTable": ["finger_bone_ring", "marrow_paste"]
+    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "marrow_paste" }]
   },
   {
     "id": "skull_sentinel",
@@ -307,7 +307,7 @@
     "skullRating": 1,
     "biomes": ["bone"],
     "baseStats": { "maxHp": 18, "damage": 9, "defense": 3, "initiative": 7 },
-    "lootTable": ["skull_cap_shield", "spirit_draught"]
+    "lootTable": [{ "slot": "offhand", "skullRating": 1 }, { "consumableId": "spirit_draught" }]
   },
   {
     "id": "grave_warden",
@@ -316,7 +316,7 @@
     "skullRating": 1,
     "biomes": ["bone"],
     "baseStats": { "maxHp": 30, "damage": 7, "defense": 4, "initiative": 4 },
-    "lootTable": ["rib_cage_flail", "vertebrae_necklace"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "slot": "accessory", "skullRating": 1 }]
   },
   {
     "id": "bone_colossus",
@@ -325,7 +325,7 @@
     "skullRating": 2,
     "biomes": ["bone"],
     "baseStats": { "maxHp": 75, "damage": 14, "defense": 6, "initiative": 2 },
-    "lootTable": ["skull_crusher", "ossified_carapace", "spirit_draught"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "spirit_draught" }]
   },
   {
     "id": "lich_remnant",
@@ -334,7 +334,7 @@
     "skullRating": 2,
     "biomes": ["bone"],
     "baseStats": { "maxHp": 50, "damage": 20, "defense": 3, "initiative": 7 },
-    "lootTable": ["ossuary_lantern", "death_shroud_amulet", "bone_shard_bomb"]
+    "lootTable": [{ "slot": "offhand", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }, { "consumableId": "bone_shard_bomb" }]
   },
   {
     "id": "the_charnel_king",
@@ -343,7 +343,7 @@
     "skullRating": 3,
     "biomes": ["bone"],
     "baseStats": { "maxHp": 230, "damage": 24, "defense": 10, "initiative": 5 },
-    "lootTable": ["death_rattle_scythe", "death_shroud_amulet", "ossified_carapace"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "armor", "skullRating": 3 }]
   },
 
   {
@@ -353,7 +353,7 @@
     "skullRating": 1,
     "biomes": ["volcanic"],
     "baseStats": { "maxHp": 16, "damage": 10, "defense": 1, "initiative": 9 },
-    "lootTable": ["slag_cleaver", "magma_salve"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "magma_salve" }]
   },
   {
     "id": "magma_beetle",
@@ -362,7 +362,7 @@
     "skullRating": 1,
     "biomes": ["volcanic"],
     "baseStats": { "maxHp": 30, "damage": 7, "defense": 5, "initiative": 3 },
-    "lootTable": ["cinder_mail", "ember_band"]
+    "lootTable": [{ "slot": "armor", "skullRating": 1 }, { "slot": "accessory", "skullRating": 1 }]
   },
   {
     "id": "ash_stalker",
@@ -371,7 +371,7 @@
     "skullRating": 1,
     "biomes": ["volcanic"],
     "baseStats": { "maxHp": 20, "damage": 11, "defense": 2, "initiative": 8 },
-    "lootTable": ["obsidian_edge", "magma_salve"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 1 }, { "consumableId": "magma_salve" }]
   },
   {
     "id": "lava_slime",
@@ -380,7 +380,7 @@
     "skullRating": 1,
     "biomes": ["volcanic"],
     "baseStats": { "maxHp": 35, "damage": 6, "defense": 4, "initiative": 1 },
-    "lootTable": ["ember_band", "volcanic_tonic"]
+    "lootTable": [{ "slot": "accessory", "skullRating": 1 }, { "consumableId": "volcanic_tonic" }]
   },
   {
     "id": "obsidian_sentinel",
@@ -389,7 +389,7 @@
     "skullRating": 2,
     "biomes": ["volcanic"],
     "baseStats": { "maxHp": 65, "damage": 16, "defense": 7, "initiative": 4 },
-    "lootTable": ["magma_forged_axe", "volcanic_plate", "volcanic_tonic"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 2 }, { "slot": "armor", "skullRating": 2 }, { "consumableId": "volcanic_tonic" }]
   },
   {
     "id": "pyroclast_wyrm",
@@ -398,7 +398,7 @@
     "skullRating": 2,
     "biomes": ["volcanic"],
     "baseStats": { "maxHp": 55, "damage": 20, "defense": 4, "initiative": 6 },
-    "lootTable": ["ember_ward", "cinderstone_pendant", "fire_bomb"]
+    "lootTable": [{ "slot": "offhand", "skullRating": 2 }, { "slot": "accessory", "skullRating": 2 }, { "consumableId": "fire_bomb" }]
   },
   {
     "id": "the_forge_titan",
@@ -407,6 +407,6 @@
     "skullRating": 3,
     "biomes": ["volcanic"],
     "baseStats": { "maxHp": 280, "damage": 28, "defense": 11, "initiative": 3 },
-    "lootTable": ["inferno_greatsword", "heart_of_the_forge", "magma_core_armor"]
+    "lootTable": [{ "slot": "weapon", "skullRating": 3 }, { "slot": "accessory", "skullRating": 3 }, { "slot": "armor", "skullRating": 3 }]
   }
 ]

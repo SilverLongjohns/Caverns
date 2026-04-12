@@ -8,6 +8,9 @@ import {
   type DungeonContent,
   type ServerMessage,
   type GridDirection,
+  type LootDrop,
+  type GeneratedLootDrop,
+  type ConsumableLootDrop,
   DRIPPING_HALLS,
   clampCritMultiplier,
   clampDamageReduction,
@@ -23,6 +26,7 @@ import {
   computePlayerStats,
   type EquippedEffect,
 } from '@caverns/shared';
+import { generateItem } from '@caverns/itemgen';
 import { PlayerManager } from './PlayerManager.js';
 import { CombatManager, type CombatPlayerInfo } from './CombatManager.js';
 import { LootManager } from './LootManager.js';
@@ -83,6 +87,7 @@ export class GameSession {
   private playerGridPositions = new Map<string, GridPosition>();
   private lastGridMove = new Map<string, number>();
   private roomMobInstances = new Map<string, MobInstance[]>();
+  private biomeId: string;
   private started = false;
   private pendingDefend: {
     roomId: string;
@@ -106,6 +111,7 @@ export class GameSession {
       }
     };
     this.content = content ?? DRIPPING_HALLS;
+    this.biomeId = this.content.biomeId;
     this.rooms = new Map(this.content.rooms.map((r) => [r.id, r]));
     this.mobs = new Map(this.content.mobs.map((m) => [m.id, m]));
     this.items = new Map(this.content.items.map((i) => [i.id, i]));
@@ -1022,28 +1028,24 @@ export class GameSession {
     return false;
   }
 
-  private rollMobLoot(lootTable: string[], skullRating: number): Item | undefined {
-    const weights = LOOT_CONFIG.skullRarityWeights[String(skullRating)]
-      ?? LOOT_CONFIG.skullRarityWeights['2'];
+  private rollMobLoot(lootTable: LootDrop[], _skullRating: number): Item | undefined {
+    if (lootTable.length === 0) return undefined;
 
-    // Resolve items and assign weights by rarity
-    const candidates: { item: Item; weight: number }[] = [];
-    for (const itemId of lootTable) {
-      const item = this.items.get(itemId);
-      if (item) {
-        candidates.push({ item, weight: weights[item.rarity] ?? 1 });
-      }
-    }
-    if (candidates.length === 0) return undefined;
+    // Pick one random entry from the loot table
+    const drop = lootTable[Math.floor(Math.random() * lootTable.length)];
 
-    // Weighted random pick
-    const total = candidates.reduce((sum, c) => sum + c.weight, 0);
-    let roll = Math.random() * total;
-    for (const c of candidates) {
-      roll -= c.weight;
-      if (roll <= 0) return c.item;
+    if ('consumableId' in drop) {
+      // ConsumableLootDrop — look up from items map
+      return this.items.get((drop as ConsumableLootDrop).consumableId);
     }
-    return candidates[0].item;
+
+    // GeneratedLootDrop — generate a procedural item
+    const genDrop = drop as GeneratedLootDrop;
+    return generateItem({
+      slot: genDrop.slot,
+      skullRating: genDrop.skullRating,
+      biomeId: this.biomeId,
+    });
   }
 
   private nextLootInstanceId = 1;

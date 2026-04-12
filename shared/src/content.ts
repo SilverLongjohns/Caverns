@@ -73,6 +73,7 @@ export const DRIPPING_HALLS: DungeonContent = {
   name: 'The Dripping Halls',
   theme: 'A waterlogged cave system with bioluminescent fungi and ancient stonework.',
   atmosphere: 'Water drips constantly. The air is thick and humid. Faint blue-green light pulses from fungal clusters on the walls.',
+  biomeId: 'fungal',
   entranceRoomId: 'entrance',
   bossId: 'mycelium_king',
 
@@ -91,7 +92,6 @@ export const DRIPPING_HALLS: DungeonContent = {
       description: 'A low-ceilinged chamber carpeted in luminous mushrooms. Water pools in the center, reflecting the eerie glow.',
       exits: { south: 'entrance', north: 'spore_den', east: 'crystal_pool' },
       encounter: { mobId: 'fungal_crawler', skullRating: 1 },
-      loot: [{ itemId: 'spore_dagger', location: 'floor' }],
     },
     {
       id: 'dripping_tunnel',
@@ -116,7 +116,6 @@ export const DRIPPING_HALLS: DungeonContent = {
       description: 'Thick clouds of luminescent spores drift through the air. Massive mushroom caps form a canopy overhead. Something large shuffles in the haze.',
       exits: { south: 'fungal_grotto', east: 'mushroom_cathedral' },
       encounter: { mobId: 'fungal_crawler', skullRating: 1 },
-      loot: [{ itemId: 'fungal_shield', location: 'chest' }],
     },
     {
       id: 'lurker_den',
@@ -126,7 +125,6 @@ export const DRIPPING_HALLS: DungeonContent = {
       exits: { west: 'dripping_tunnel' },
       encounter: { mobId: 'cave_lurker', skullRating: 1 },
       loot: [
-        { itemId: 'bone_amulet', location: 'hidden' },
         { itemId: 'hp_potion', location: 'floor' },
       ],
     },
@@ -137,10 +135,8 @@ export const DRIPPING_HALLS: DungeonContent = {
       description: 'An enormous cavern with towering mushroom stalks reaching up like pillars. The ceiling is lost in darkness above. A deep thrumming vibration fills the space.',
       exits: { south: 'crystal_pool', west: 'spore_den', north: 'throne_antechamber' },
       encounter: { mobId: 'sporecap_brute', skullRating: 2 },
-      loot: [
-        { itemId: 'mycelium_staff', location: 'chest' },
-        { itemId: 'chain_vest', location: 'chest' },
-      ],
+
+
     },
     {
       id: 'hidden_cache',
@@ -149,7 +145,6 @@ export const DRIPPING_HALLS: DungeonContent = {
       description: 'Behind a curtain of hanging roots, a small hollow in the rock reveals a forgotten stash. Someone hid supplies here long ago.',
       exits: { west: 'crystal_pool' },
       loot: [
-        { itemId: 'glowing_orb', location: 'chest' },
         { itemId: 'elixir', location: 'chest' },
         { itemId: 'throwing_spore', location: 'chest' },
       ],
@@ -182,7 +177,7 @@ export const DRIPPING_HALLS: DungeonContent = {
       damage: 8,
       defense: 2,
       initiative: 4,
-      lootTable: ['spore_dagger', 'fungal_wrap'],
+      lootTable: [{ slot: 'weapon', skullRating: 1 }, { slot: 'armor', skullRating: 1 }],
     },
     {
       id: 'cave_lurker',
@@ -193,7 +188,7 @@ export const DRIPPING_HALLS: DungeonContent = {
       damage: 10,
       defense: 1,
       initiative: 6,
-      lootTable: ['lurker_fang', 'shadow_cloak'],
+      lootTable: [{ slot: 'weapon', skullRating: 1 }, { slot: 'armor', skullRating: 1 }],
     },
     {
       id: 'sporecap_brute',
@@ -204,7 +199,7 @@ export const DRIPPING_HALLS: DungeonContent = {
       damage: 14,
       defense: 5,
       initiative: 3,
-      lootTable: ['brute_hammer', 'sporecap_plate', 'vitality_ring'],
+      lootTable: [{ slot: 'weapon', skullRating: 2 }, { slot: 'armor', skullRating: 2 }, { slot: 'accessory', skullRating: 2 }],
     },
     {
       id: 'mycelium_king',
@@ -215,30 +210,11 @@ export const DRIPPING_HALLS: DungeonContent = {
       damage: 25,
       defense: 8,
       initiative: 5,
-      lootTable: ['kings_crown', 'mycelium_blade', 'spore_heart'],
+      lootTable: [{ slot: 'accessory', skullRating: 3 }, { slot: 'weapon', skullRating: 3 }, { slot: 'accessory', skullRating: 3 }],
     },
   ],
 
   items: [
-    // === Weapons ===
-    { id: 'spore_dagger', name: 'Spore-Crusted Dagger', description: 'A short blade with a faintly glowing fungal growth along the edge.', rarity: 'common', slot: 'weapon', stats: { damage: 8 } },
-    { id: 'lurker_fang', name: 'Lurker Fang Blade', description: "A jagged blade fashioned from a Cave Lurker's oversized fang.", rarity: 'uncommon', slot: 'weapon', stats: { damage: 12 } },
-    { id: 'brute_hammer', name: 'Sporecap War Hammer', description: 'A massive hammer made from a petrified mushroom stalk. Slow but devastating.', rarity: 'rare', slot: 'weapon', stats: { damage: 18 } },
-    { id: 'mycelium_staff', name: 'Staff of the Deep Mycelium', description: 'A twisted staff of living fungal matter. It pulses with a warm, healing light.', rarity: 'rare', slot: 'weapon', stats: { damage: 6, maxHp: 15 } },
-    { id: 'mycelium_blade', name: 'Blade of the Mycelium King', description: "A sword formed from the King's own tendrils. It writhes in your grip.", rarity: 'legendary', slot: 'weapon', stats: { damage: 22, initiative: 2 } },
-    // === Offhand ===
-    { id: 'fungal_shield', name: 'Fungal Buckler', description: 'A small shield grown from hardened mushroom caps. Surprisingly tough.', rarity: 'uncommon', slot: 'offhand', stats: { defense: 4 } },
-    { id: 'glowing_orb', name: 'Bioluminescent Orb', description: 'A glass sphere containing living fungi. Pulses with a soothing glow.', rarity: 'rare', slot: 'offhand', stats: { maxHp: 10, initiative: 2 } },
-    // === Armor ===
-    { id: 'fungal_wrap', name: 'Fungal Fiber Wrap', description: 'A crude wrapping of woven fungal fibers. Offers minimal protection.', rarity: 'common', slot: 'armor', stats: { defense: 2 } },
-    { id: 'shadow_cloak', name: 'Lurker-Skin Cloak', description: 'A cloak made from pale lurker hide. Light and easy to move in.', rarity: 'uncommon', slot: 'armor', stats: { defense: 3, initiative: 2 } },
-    { id: 'chain_vest', name: 'Rusted Chain Vest', description: 'Ancient chainmail found deep in the caves. Still holds together.', rarity: 'uncommon', slot: 'armor', stats: { defense: 5 } },
-    { id: 'sporecap_plate', name: 'Sporecap Plate Armor', description: 'Armor crafted from petrified mushroom caps. Heavy but incredibly durable.', rarity: 'rare', slot: 'armor', stats: { defense: 8, maxHp: 10, initiative: -2 } },
-    // === Accessories ===
-    { id: 'bone_amulet', name: 'Bone Charm Amulet', description: 'A necklace of small bones that rattles faintly. You feel tougher wearing it.', rarity: 'common', slot: 'accessory', stats: { maxHp: 10 } },
-    { id: 'vitality_ring', name: 'Ring of Vitality', description: 'A moss-covered ring that pulses with life energy.', rarity: 'rare', slot: 'accessory', stats: { maxHp: 15, defense: 2 } },
-    { id: 'kings_crown', name: 'Crown of the Mycelium King', description: 'A living crown of fungal tendrils. It whispers secrets of the deep.', rarity: 'legendary', slot: 'accessory', stats: { maxHp: 20, defense: 3, initiative: 3 } },
-    { id: 'spore_heart', name: 'Spore Heart', description: 'A pulsing organ from the Mycelium King. Warm to the touch.', rarity: 'legendary', slot: 'accessory', stats: { maxHp: 25, damage: 5 } },
     // === Consumables ===
     { id: 'leather_scraps', name: 'Leather Scrap Bandage', description: 'Makeshift bandages from old leather. Not great, but better than bleeding.', rarity: 'common', slot: 'consumable', stats: { healAmount: 10 } },
     { id: 'hp_potion', name: 'Health Potion', description: 'A standard healing draught. Tastes like mushroom soup.', rarity: 'uncommon', slot: 'consumable', stats: { healAmount: 25 } },

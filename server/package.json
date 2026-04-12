@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
+    "@caverns/itemgen": "*",
     "@caverns/roomgrid": "*",
     "@caverns/shared": "*",
     "ws": "^8.18.0"
