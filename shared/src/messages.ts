@@ -234,6 +234,12 @@ export interface PlayerUpdateMessage {
   player: Player;
 }
 
+export interface GoldUpdateMessage {
+  type: 'gold_update';
+  playerId: string;
+  gold: number;
+}
+
 export interface GameOverMessage {
   type: 'game_over';
   result: 'victory' | 'wipe';
@@ -373,6 +379,7 @@ export type ServerMessage =
   | LootPromptMessage
   | LootResultMessage
   | PlayerUpdateMessage
+  | GoldUpdateMessage
   | GameOverMessage
   | TextLogMessage
   | PuzzlePromptMessage

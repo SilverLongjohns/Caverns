@@ -39,25 +39,39 @@ describe('DungeonValidator', () => {
     expect(errors).toContainEqual(expect.stringContaining('fake_mob'));
   });
 
-  it('rejects room loot referencing nonexistent item', () => {
+  it('rejects room drops referencing unknown dropSpecId', () => {
     const dungeon = {
       ...DRIPPING_HALLS,
       rooms: DRIPPING_HALLS.rooms.map((r) =>
         r.id === 'fungal_grotto'
-          ? { ...r, loot: [{ itemId: 'fake_item', location: 'chest' as const }] }
+          ? { ...r, drops: { dropSpecId: 'fake_spec' } }
           : r
       ),
     };
     const errors = validateDungeon(dungeon, { minRooms: 6, maxRooms: 16 });
-    expect(errors).toContainEqual(expect.stringContaining('fake_item'));
+    expect(errors).toContainEqual(expect.stringContaining('fake_spec'));
   });
 
-  it('rejects mob lootTable referencing nonexistent item', () => {
+  it('rejects mob drops referencing nonexistent consumable', () => {
     const dungeon = {
       ...DRIPPING_HALLS,
       mobs: DRIPPING_HALLS.mobs.map((m) =>
         m.id === 'fungal_crawler'
-          ? { ...m, lootTable: [{ consumableId: 'nonexistent_weapon' }] }
+          ? {
+              ...m,
+              drops: {
+                drops: {
+                  pools: [
+                    {
+                      rolls: 1,
+                      entries: [
+                        { type: 'consumable' as const, consumableId: 'nonexistent_weapon' },
+                      ],
+                    },
+                  ],
+                },
+              },
+            }
           : m
       ),
     };

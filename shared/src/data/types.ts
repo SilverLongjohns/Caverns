@@ -1,4 +1,4 @@
-import type { RoomType, InteractableSlot, LootDrop } from '../types.js';
+import type { RoomType, InteractableSlot, DropSpecRef } from '../types.js';
 
 export interface RoomChit {
   id: string;
@@ -23,7 +23,7 @@ export interface MobPoolEntry {
     defense: number;
     initiative: number;
   };
-  lootTable: LootDrop[];
+  drops: DropSpecRef;
 }
 
 export interface PuzzleTemplate {
@@ -42,7 +42,8 @@ export interface BiomeDefinition {
   mobDensity: number;
   skull1Weight: number;
   skull2Weight: number;
-  lootDensity: number;
+  roomDropSpecId: string;
+  puzzleRewardSpecId: string;
   isStarter?: boolean;
   bossRoom: {
     name: string;

@@ -8,9 +8,8 @@ import {
   type DungeonContent,
   type ServerMessage,
   type GridDirection,
-  type LootDrop,
-  type GeneratedLootDrop,
-  type ConsumableLootDrop,
+  type DropSpecRef,
+  DROP_SPECS,
   DRIPPING_HALLS,
   clampCritMultiplier,
   clampDamageReduction,
@@ -26,7 +25,7 @@ import {
   computePlayerStats,
   type EquippedEffect,
 } from '@caverns/shared';
-import { generateItem } from '@caverns/itemgen';
+import { resolveDrops, type DropResult } from './DropResolver.js';
 import { PlayerManager } from './PlayerManager.js';
 import { CombatManager, type CombatPlayerInfo } from './CombatManager.js';
 import { LootManager } from './LootManager.js';
@@ -1007,99 +1006,113 @@ export class GameSession {
     }
   }
 
-  /** Strip the _N instance suffix added by dropLoot (e.g. "crystal_key_3" → "crystal_key"). */
-  private stripInstanceSuffix(instanceId: string): string {
-    const lastUnderscore = instanceId.lastIndexOf('_');
-    if (lastUnderscore === -1) return instanceId;
-    const suffix = instanceId.slice(lastUnderscore + 1);
-    // Only strip if the suffix is a pure number (instance counter)
-    if (/^\d+$/.test(suffix)) return instanceId.slice(0, lastUnderscore);
-    return instanceId;
-  }
+  private nextLootInstanceId = 1;
 
-  private isKeyItem(itemId: string): boolean {
-    for (const room of this.rooms.values()) {
-      if (room.lockedExits) {
-        for (const keyId of Object.values(room.lockedExits)) {
-          if (keyId === itemId) return true;
-        }
+  private resolveAndRouteDrops(
+    roomId: string,
+    ref: DropSpecRef,
+    sourceSkullRating?: 1 | 2 | 3,
+  ): void {
+    const results: DropResult[] = resolveDrops(ref, {
+      sourceSkullRating,
+      biomeId: this.biomeId,
+      registry: DROP_SPECS,
+      itemsById: this.items,
+    });
+
+    const itemsForLootFlow: Item[] = [];
+    for (const result of results) {
+      switch (result.kind) {
+        case 'item':
+          itemsForLootFlow.push({
+            ...result.item,
+            id: `${result.item.id}_${this.nextLootInstanceId++}`,
+          });
+          break;
+        case 'gold':
+          this.awardGoldToRoom(roomId, result.amount);
+          break;
+        case 'key':
+          this.awardKeyToRoomParty(roomId, result.keyId);
+          break;
+        case 'material':
+          this.broadcastToRoom(roomId, {
+            type: 'text_log',
+            message: `${result.count}x ${result.materialId} dropped (not yet collectible)`,
+            logType: 'loot',
+          });
+          break;
       }
     }
-    return false;
+
+    if (itemsForLootFlow.length > 0) {
+      this.runLootFlow(roomId, itemsForLootFlow);
+    }
   }
 
-  private rollMobLoot(lootTable: LootDrop[], _skullRating: number): Item | undefined {
-    if (lootTable.length === 0) return undefined;
-
-    // Pick one random entry from the loot table
-    const drop = lootTable[Math.floor(Math.random() * lootTable.length)];
-
-    if ('consumableId' in drop) {
-      // ConsumableLootDrop — look up from items map
-      return this.items.get((drop as ConsumableLootDrop).consumableId);
+  private awardGoldToRoom(roomId: string, amount: number): void {
+    const playerIds = this.playerManager
+      .getPlayersInRoom(roomId)
+      .filter((p) => p.status !== 'downed')
+      .map((p) => p.id);
+    if (playerIds.length === 0) return;
+    for (const pid of playerIds) {
+      const newTotal = this.playerManager.addGold(pid, amount);
+      this.sendTo(pid, { type: 'gold_update', playerId: pid, gold: newTotal });
     }
-
-    // GeneratedLootDrop — generate a procedural item
-    const genDrop = drop as GeneratedLootDrop;
-    return generateItem({
-      slot: genDrop.slot,
-      skullRating: genDrop.skullRating,
-      biomeId: this.biomeId,
+    this.broadcastToRoom(roomId, {
+      type: 'text_log',
+      message: `Everyone gains ${amount} gold.`,
+      logType: 'loot',
     });
   }
 
-  private nextLootInstanceId = 1;
+  private awardKeyToRoomParty(roomId: string, keyId: string): void {
+    const playerIds = this.playerManager
+      .getPlayersInRoom(roomId)
+      .filter((p) => p.status !== 'downed')
+      .map((p) => p.id);
+    if (playerIds.length > 0) {
+      this.addKeyToParty(playerIds[0], keyId);
+    }
+  }
 
-  private dropLoot(roomId: string): void {
-    const room = this.rooms.get(roomId);
-    if (!room) return;
-    const droppedItems: Item[] = [];
-    if (room.loot) {
-      for (const lootEntry of room.loot) {
-        const item = this.items.get(lootEntry.itemId);
-        if (item) droppedItems.push({ ...item, id: `${item.id}_${this.nextLootInstanceId++}` });
-      }
-    }
-    if (room.encounter) {
-      const template = this.mobs.get(room.encounter.mobId);
-      if (template && template.lootTable.length > 0) {
-        const item = this.rollMobLoot(template.lootTable, room.encounter.skullRating);
-        if (item) droppedItems.push({ ...item, id: `${item.id}_${this.nextLootInstanceId++}` });
-      }
-    }
-    // Separate key items from regular loot.
-    // Item IDs have an instance suffix (e.g. "crystal_key_3"), so strip it to
-    // match the base ID stored in room.lockedExits.
-    const regularItems: Item[] = [];
-    const foundKeyBaseIds: string[] = [];
-    for (const item of droppedItems) {
-      const baseId = this.stripInstanceSuffix(item.id);
-      if (this.isKeyItem(baseId)) {
-        foundKeyBaseIds.push(baseId);
-      } else {
-        regularItems.push(item);
-      }
-    }
-
+  private runLootFlow(roomId: string, regularItems: Item[]): void {
+    if (regularItems.length === 0) return;
     const playerIds = this.playerManager.getPlayersInRoom(roomId)
       .filter((p) => p.status !== 'downed').map((p) => p.id);
-
-    // Award keys to party (use the base ID so it matches lockedExits)
-    for (const keyId of foundKeyBaseIds) {
-      if (playerIds.length > 0) {
-        this.addKeyToParty(playerIds[0], keyId);
-      }
-    }
-
-    if (regularItems.length === 0) return;
     if (playerIds.length === 0) return;
+
+    const room = this.rooms.get(roomId);
+    const location = room?.lootLocation ?? 'floor';
+    const prefix =
+      location === 'chest' ? 'A chest contains' :
+      location === 'hidden' ? 'Hidden in the room:' :
+      'On the floor:';
+
     for (const item of regularItems) {
-      this.broadcastToRoom(roomId, { type: 'text_log', message: `{${item.rarity}:${item.name}} dropped!`, logType: 'loot' });
+      this.broadcastToRoom(roomId, {
+        type: 'text_log',
+        message: `${prefix} {${item.rarity}:${item.name}}`,
+        logType: 'loot',
+      });
     }
     if (playerIds.length > 1) {
       this.broadcastToRoom(roomId, { type: 'loot_prompt', items: regularItems, timeout: LOOT_CONFIG.timeoutMs });
     }
     this.lootManager.startLootRound(roomId, regularItems, playerIds);
+  }
+
+  private dropLoot(roomId: string): void {
+    const room = this.rooms.get(roomId);
+    if (!room) return;
+
+    if (room.encounter) {
+      const mob = this.mobs.get(room.encounter.mobId);
+      if (mob) {
+        this.resolveAndRouteDrops(roomId, mob.drops, room.encounter.skullRating);
+      }
+    }
   }
 
   private handleLootAwarded(item: Item, winnerId: string): void {
@@ -1826,21 +1839,8 @@ export class GameSession {
     const room = this.rooms.get(roomId);
     if (!room?.encounter) return;
     const template = this.mobs.get(room.encounter.mobId);
-    if (!template || template.lootTable.length === 0) return;
-    const item = this.rollMobLoot(template.lootTable, room.encounter.skullRating);
-    if (!item) return;
-
-    const playerIds = this.playerManager.getPlayersInRoom(roomId)
-      .filter(p => p.status !== 'downed').map(p => p.id);
-    if (playerIds.length === 0) return;
-
-    const instanceItem = { ...item, id: `${item.id}_${this.nextLootInstanceId++}` };
-    this.broadcastToRoom(roomId, {
-      type: 'text_log',
-      message: `[${instanceItem.rarity.toUpperCase()}] ${instanceItem.name} found by pickpocket!`,
-      logType: 'loot',
-    });
-    this.lootManager.startLootRound(roomId, [instanceItem], playerIds);
+    if (!template) return;
+    this.resolveAndRouteDrops(roomId, template.drops, room.encounter.skullRating);
   }
 
   handleItemEffectAction(playerId: string, effectId: string, targetId?: string): void {

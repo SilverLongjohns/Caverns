@@ -1511,6 +1511,13 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   text-shadow: 0 0 4px rgba(212, 168, 87, 0.4);
 }
 
+.hud-gold {
+  color: #d4a857;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 4px rgba(212, 168, 87, 0.4);
+}
+
 /* === Stat Allocation === */
 .stat-allocation {
   margin-top: 0.75rem;

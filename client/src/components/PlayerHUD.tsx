@@ -68,6 +68,7 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable, onAllocate
       <h3>{player.name}</h3>
       <div className="hud-class">{player.className}</div>
       <div className="hud-level">Lv {player.level}</div>
+      <div className="hud-gold">Gold {player.gold ?? 0}</div>
 
       <div className="hp-bar-container">
         <div className="hp-bar" style={{ width: `${hpPercent}%`, backgroundColor: hpColor }} />

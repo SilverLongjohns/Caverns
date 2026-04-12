@@ -7,7 +7,8 @@
     "mobDensity": 0.4,
     "skull1Weight": 0.9,
     "skull2Weight": 0.1,
-    "lootDensity": 0.35,
+    "roomDropSpecId": "fungal_room_common",
+    "puzzleRewardSpecId": "fungal_puzzle_reward",
     "isStarter": true,
     "bossRoom": {
       "name": "The Warren Den",
@@ -27,7 +28,8 @@
     "mobDensity": 0.5,
     "skull1Weight": 0.8,
     "skull2Weight": 0.2,
-    "lootDensity": 0.4,
+    "roomDropSpecId": "fungal_room_common",
+    "puzzleRewardSpecId": "fungal_puzzle_reward",
     "bossRoom": {
       "name": "Throne of the Mycelium King",
       "description": "A vast domed chamber pulsing with bioluminescence. At its center, a towering mass of interwoven fungal tendrils shaped vaguely like a seated figure on a throne of living mushroom."
@@ -46,7 +48,8 @@
     "mobDensity": 0.5,
     "skull1Weight": 0.75,
     "skull2Weight": 0.25,
-    "lootDensity": 0.45,
+    "roomDropSpecId": "fungal_room_common",
+    "puzzleRewardSpecId": "fungal_puzzle_reward",
     "bossRoom": {
       "name": "The Prismatic Heart",
       "description": "An enormous geode cracked open from within. A creature of living crystal sits at the center, light bending around it in impossible ways."
@@ -65,7 +68,8 @@
     "mobDensity": 0.55,
     "skull1Weight": 0.7,
     "skull2Weight": 0.3,
-    "lootDensity": 0.35,
+    "roomDropSpecId": "fungal_room_common",
+    "puzzleRewardSpecId": "fungal_puzzle_reward",
     "bossRoom": {
       "name": "The Sunken Throne",
       "description": "A vast flooded chamber where the water reaches your waist. Something enormous stirs beneath the dark surface, displacing waves against the ancient pillars."
@@ -84,7 +88,8 @@
     "mobDensity": 0.6,
     "skull1Weight": 0.65,
     "skull2Weight": 0.35,
-    "lootDensity": 0.4,
+    "roomDropSpecId": "fungal_room_common",
+    "puzzleRewardSpecId": "fungal_puzzle_reward",
     "bossRoom": {
       "name": "The Bone Throne",
       "description": "A cathedral of fused skeletons. At its apex, a massive figure assembled from thousands of bones sits upon a throne of ribcages, eye sockets burning with pale fire."
@@ -103,7 +108,8 @@
     "mobDensity": 0.6,
     "skull1Weight": 0.6,
     "skull2Weight": 0.4,
-    "lootDensity": 0.35,
+    "roomDropSpecId": "fungal_room_common",
+    "puzzleRewardSpecId": "fungal_puzzle_reward",
     "bossRoom": {
       "name": "The Molten Core",
       "description": "A cavern split by rivers of lava. On a basalt island at the center, a creature of slag and flame rises from the magma, its body crackling with volcanic fury."

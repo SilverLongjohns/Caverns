@@ -99,7 +99,8 @@ export const DRIPPING_HALLS: DungeonContent = {
       name: 'Dripping Tunnel',
       description: 'Water streams down the walls in thin rivulets. The tunnel slopes gently downward. Glowing lichen marks the path.',
       exits: { west: 'entrance', north: 'crystal_pool', east: 'lurker_den' },
-      loot: [{ itemId: 'leather_scraps', location: 'floor' }],
+      drops: { dropSpecId: 'fungal_room_common' },
+      lootLocation: 'floor',
     },
     {
       id: 'crystal_pool',
@@ -124,9 +125,8 @@ export const DRIPPING_HALLS: DungeonContent = {
       description: 'A cramped alcove littered with bones and old equipment. Something was nesting here.',
       exits: { west: 'dripping_tunnel' },
       encounter: { mobId: 'cave_lurker', skullRating: 1 },
-      loot: [
-        { itemId: 'hp_potion', location: 'floor' },
-      ],
+      drops: { dropSpecId: 'fungal_room_common' },
+      lootLocation: 'floor',
     },
     {
       id: 'mushroom_cathedral',
@@ -144,10 +144,8 @@ export const DRIPPING_HALLS: DungeonContent = {
       name: 'Hidden Cache',
       description: 'Behind a curtain of hanging roots, a small hollow in the rock reveals a forgotten stash. Someone hid supplies here long ago.',
       exits: { west: 'crystal_pool' },
-      loot: [
-        { itemId: 'elixir', location: 'chest' },
-        { itemId: 'throwing_spore', location: 'chest' },
-      ],
+      drops: { dropSpecId: 'fungal_room_common' },
+      lootLocation: 'chest',
     },
     {
       id: 'throne_antechamber',
@@ -155,7 +153,8 @@ export const DRIPPING_HALLS: DungeonContent = {
       name: 'Throne Antechamber',
       description: 'The fungal growth here is unnervingly organized — mushrooms line the walls in symmetric rows as if planted deliberately. The air vibrates with a low pulse. A massive archway opens to the north.',
       exits: { south: 'mushroom_cathedral', north: 'boss_room' },
-      loot: [{ itemId: 'hp_potion_large', location: 'floor' }],
+      drops: { dropSpecId: 'fungal_room_common' },
+      lootLocation: 'floor',
     },
     {
       id: 'boss_room',
@@ -177,7 +176,7 @@ export const DRIPPING_HALLS: DungeonContent = {
       damage: 8,
       defense: 2,
       initiative: 4,
-      lootTable: [{ slot: 'weapon', skullRating: 1 }, { slot: 'armor', skullRating: 1 }],
+      drops: { dropSpecId: 'fungal_mob_common' },
     },
     {
       id: 'cave_lurker',
@@ -188,7 +187,7 @@ export const DRIPPING_HALLS: DungeonContent = {
       damage: 10,
       defense: 1,
       initiative: 6,
-      lootTable: [{ slot: 'weapon', skullRating: 1 }, { slot: 'armor', skullRating: 1 }],
+      drops: { dropSpecId: 'fungal_mob_common' },
     },
     {
       id: 'sporecap_brute',
@@ -199,7 +198,7 @@ export const DRIPPING_HALLS: DungeonContent = {
       damage: 14,
       defense: 5,
       initiative: 3,
-      lootTable: [{ slot: 'weapon', skullRating: 2 }, { slot: 'armor', skullRating: 2 }, { slot: 'accessory', skullRating: 2 }],
+      drops: { dropSpecId: 'fungal_mob_elite' },
     },
     {
       id: 'mycelium_king',
@@ -210,7 +209,7 @@ export const DRIPPING_HALLS: DungeonContent = {
       damage: 25,
       defense: 8,
       initiative: 5,
-      lootTable: [{ slot: 'accessory', skullRating: 3 }, { slot: 'weapon', skullRating: 3 }, { slot: 'accessory', skullRating: 3 }],
+      drops: { dropSpecId: 'fungal_boss' },
     },
   ],
 

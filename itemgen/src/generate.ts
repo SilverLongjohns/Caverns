@@ -24,13 +24,33 @@ function rollRarity(rng: () => number): Rarity {
   return 'common';
 }
 
+function rollRarityFromWeights(
+  weights: Partial<Record<Rarity, number>>,
+  rng: () => number,
+): Rarity {
+  const entries = (Object.entries(weights) as [Rarity, number | undefined][])
+    .filter(([, w]) => w != null && w > 0) as [Rarity, number][];
+  if (entries.length === 0) return rollRarity(rng);
+  const total = entries.reduce((s, [, w]) => s + w, 0);
+  let roll = rng() * total;
+  for (const [rarity, w] of entries) {
+    roll -= w;
+    if (roll <= 0) return rarity;
+  }
+  return entries[entries.length - 1][0];
+}
+
 export function generateItem(request: ItemGenerationRequest): Item {
   const { slot, skullRating, biomeId, seed } = request;
   const rng = createRng(seed);
   const palette = getPalette(biomeId);
 
-  // Roll rarity
-  const rarity = request.rarity ?? rollRarity(rng);
+  // Roll rarity — explicit rarity wins; otherwise use provided weights, else defaults
+  const rarity =
+    request.rarity ??
+    (request.rarityWeights
+      ? rollRarityFromWeights(request.rarityWeights, rng)
+      : rollRarity(rng));
 
   // Roll material
   const material = rollMaterial(palette, slot, skullRating, rng);

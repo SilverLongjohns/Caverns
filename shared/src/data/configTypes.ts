@@ -24,8 +24,6 @@ export interface RarityWeights {
 export interface LootConfig {
   timeoutMs: number;
   skullRarityWeights: Record<string, RarityWeights>;
-  defaultLootWeights: RarityWeights;
-  starterLootWeights: RarityWeights;
 }
 
 export interface PlayerConfig {

@@ -1,14 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DRIPPING_HALLS } from './content.js';
-import type { Direction, GeneratedLootDrop, ConsumableLootDrop } from './types.js';
-
-function isConsumableLootDrop(drop: unknown): drop is ConsumableLootDrop {
-  return typeof drop === 'object' && drop !== null && 'consumableId' in drop;
-}
-
-function isGeneratedLootDrop(drop: unknown): drop is GeneratedLootDrop {
-  return typeof drop === 'object' && drop !== null && 'slot' in drop && 'skullRating' in drop;
-}
+import { DROP_SPECS } from './dropSpecs.js';
+import type { Direction } from './types.js';
 
 describe('Dripping Halls dungeon content', () => {
   it('has an entrance room', () => {
@@ -42,32 +35,23 @@ describe('Dripping Halls dungeon content', () => {
     }
   });
 
-  it('all room loot itemIds reference valid items', () => {
-    const itemIds = new Set(DRIPPING_HALLS.items.map((i) => i.id));
+  it('all room drop spec refs resolve to a registered DropSpec', () => {
     for (const room of DRIPPING_HALLS.rooms) {
-      if (room.loot) {
-        for (const loot of room.loot) {
-          expect(itemIds.has(loot.itemId), `Room ${room.id} references unknown item ${loot.itemId}`).toBe(true);
-        }
+      if (!room.drops) continue;
+      if ('dropSpecId' in room.drops) {
+        expect(DROP_SPECS[room.drops.dropSpecId], `Room ${room.id} references unknown drop spec ${room.drops.dropSpecId}`).toBeDefined();
+      } else {
+        expect(room.drops.drops.pools.length).toBeGreaterThanOrEqual(1);
       }
     }
   });
 
-  it('all mob loot tables have valid LootDrop entries', () => {
-    const itemIds = new Set(DRIPPING_HALLS.items.map((i) => i.id));
-    const validSlots = ['weapon', 'offhand', 'armor', 'accessory'];
-    const validSkullRatings = [1, 2, 3];
-
+  it('all mob drop spec refs resolve to a registered DropSpec', () => {
     for (const mob of DRIPPING_HALLS.mobs) {
-      for (const drop of mob.lootTable) {
-        if (isConsumableLootDrop(drop)) {
-          expect(itemIds.has(drop.consumableId), `Mob ${mob.id} loot table references unknown consumable ${drop.consumableId}`).toBe(true);
-        } else if (isGeneratedLootDrop(drop)) {
-          expect(validSlots.includes(drop.slot), `Mob ${mob.id} loot table has invalid slot ${drop.slot}`).toBe(true);
-          expect(validSkullRatings.includes(drop.skullRating), `Mob ${mob.id} loot table has invalid skullRating ${drop.skullRating}`).toBe(true);
-        } else {
-          expect.unreachable(`Mob ${mob.id} has an invalid loot drop entry`);
-        }
+      if ('dropSpecId' in mob.drops) {
+        expect(DROP_SPECS[mob.drops.dropSpecId], `Mob ${mob.id} references unknown drop spec ${mob.drops.dropSpecId}`).toBeDefined();
+      } else {
+        expect(mob.drops.drops.pools.length).toBeGreaterThanOrEqual(1);
       }
     }
   });

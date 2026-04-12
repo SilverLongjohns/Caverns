@@ -263,6 +263,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
         }));
         break;
 
+      case 'gold_update':
+        set((state) => {
+          const player = state.players[msg.playerId];
+          if (!player) return {};
+          return {
+            players: {
+              ...state.players,
+              [msg.playerId]: { ...player, gold: msg.gold },
+            },
+          };
+        });
+        break;
+
       case 'game_over':
         set({
           gameOver: { result: msg.result },

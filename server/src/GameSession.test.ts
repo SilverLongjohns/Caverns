@@ -181,7 +181,7 @@ describe('GameSession', () => {
         { id: 'start', type: 'tunnel' as const, name: 'Start', description: 'The beginning.', exits: { north: 'boss' } },
         { id: 'boss', type: 'boss' as const, name: 'Boss Room', description: 'The end.', exits: { south: 'start' }, encounter: { mobId: 'test_boss', skullRating: 3 as const } },
       ],
-      mobs: [{ id: 'test_boss', name: 'Test Boss', description: 'A test.', skullRating: 3 as const, maxHp: 100, damage: 10, defense: 5, initiative: 5, lootTable: [] }],
+      mobs: [{ id: 'test_boss', name: 'Test Boss', description: 'A test.', skullRating: 3 as const, maxHp: 100, damage: 10, defense: 5, initiative: 5, drops: { drops: { pools: [] } } }],
       items: [],
     };
 
@@ -241,7 +241,7 @@ describe('GameSession', () => {
         { id: 'room_a', type: 'tunnel', name: 'A', description: '', exits: { north: 'room_b' }, lockedExits: { north: 'test_key' } },
         { id: 'room_b', type: 'boss', name: 'B', description: '', exits: { south: 'room_a' }, encounter: { mobId: 'boss_1', skullRating: 3 } },
       ],
-      mobs: [{ id: 'boss_1', name: 'Boss', description: '', skullRating: 3, maxHp: 100, damage: 10, defense: 5, initiative: 5, lootTable: [] }],
+      mobs: [{ id: 'boss_1', name: 'Boss', description: '', skullRating: 3, maxHp: 100, damage: 10, defense: 5, initiative: 5, drops: { drops: { pools: [] } } }],
       items: [],
     };
 
@@ -300,7 +300,7 @@ describe('GameSession', () => {
         { id: 'room_b', type: 'chamber', name: 'B', description: '', exits: { south: 'room_a' },
           encounter: { mobId: 'mob_1', skullRating: 1 } },
       ],
-      mobs: [{ id: 'mob_1', name: 'Slime', description: '', skullRating: 1, maxHp: 30, damage: 5, defense: 2, initiative: 3, lootTable: [] }],
+      mobs: [{ id: 'mob_1', name: 'Slime', description: '', skullRating: 1, maxHp: 30, damage: 5, defense: 2, initiative: 3, drops: { drops: { pools: [] } } }],
       items: [],
     };
 
@@ -356,7 +356,7 @@ describe('GameSession', () => {
         { id: 'room_c', type: 'boss', name: 'Boss', description: '', exits: { south: 'room_b' },
           encounter: { mobId: 'boss_1', skullRating: 3 } },
       ],
-      mobs: [{ id: 'boss_1', name: 'Boss', description: '', skullRating: 3, maxHp: 100, damage: 10, defense: 5, initiative: 5, lootTable: [] }],
+      mobs: [{ id: 'boss_1', name: 'Boss', description: '', skullRating: 3, maxHp: 100, damage: 10, defense: 5, initiative: 5, drops: { drops: { pools: [] } } }],
       items: [],
     };
 
