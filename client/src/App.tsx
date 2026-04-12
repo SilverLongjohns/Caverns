@@ -3,6 +3,9 @@ import { useWebSocket } from './hooks/useWebSocket.js';
 import { useGameActions } from './hooks/useGameActions.js';
 import { useGridMovement } from './hooks/useGridMovement.js';
 import { Lobby } from './components/Lobby.js';
+import { LoginScreen } from './components/LoginScreen.js';
+import { CharacterSelect } from './components/CharacterSelect.js';
+import { clearSessionToken } from './auth/sessionStorage.js';
 import { TextLog } from './components/TextLog.js';
 import { MiniMap } from './components/MiniMap.js';
 import { PlayerHUD } from './components/PlayerHUD.js';
@@ -18,6 +21,7 @@ export function App() {
   const wsRef = useWebSocket();
   const actions = useGameActions(wsRef);
   const connectionStatus = useGameStore((s) => s.connectionStatus);
+  const authStatus = useGameStore((s) => s.authStatus);
   const gameOver = useGameStore((s) => s.gameOver);
   const generationStatus = useGameStore((s) => s.generationStatus);
   const generationError = useGameStore((s) => s.generationError);
@@ -25,6 +29,7 @@ export function App() {
   const rooms = useGameStore((s) => s.rooms);
   const currentRoomId = useGameStore((s) => s.currentRoomId);
   const levelUpGlow = useGameStore((s) => s.levelUpGlow);
+  const selectedCharacterId = useGameStore((s) => s.selectedCharacterId);
 
   const inExploration = connectionStatus === 'in_game' && !gameOver && !activeCombat;
   const currentRoom = rooms[currentRoomId];
@@ -58,8 +63,30 @@ export function App() {
         </p>
       </div>
     );
+  } else if (authStatus === 'unauthenticated') {
+    content = <LoginScreen onLogin={actions.login} />;
+  } else if (authStatus === 'authenticated' && !selectedCharacterId) {
+    const handleLogout = () => {
+      actions.logout();
+      clearSessionToken();
+      useGameStore.setState({
+        authStatus: 'unauthenticated',
+        account: null,
+        characters: [],
+        selectedCharacterId: null,
+        authError: null,
+      });
+    };
+    content = (
+      <CharacterSelect
+        onSelect={actions.selectCharacter}
+        onCreate={actions.createCharacter}
+        onDelete={actions.deleteCharacter}
+        onLogout={handleLogout}
+      />
+    );
   } else if (connectionStatus === 'connected' || connectionStatus === 'in_lobby') {
-    content = <Lobby onJoin={actions.joinLobby} onStart={actions.startGame} onSetDifficulty={actions.setDifficulty} />;
+    content = <Lobby onJoin={actions.joinLobby} onStart={actions.startGame} onSetDifficulty={actions.setDifficulty} onSetReady={actions.setReady} />;
   } else if (gameOver) {
     content = (
       <div className="screen-center">

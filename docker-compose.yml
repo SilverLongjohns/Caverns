@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: caverns
+      POSTGRES_PASSWORD: caverns
+      POSTGRES_DB: caverns
+    ports:
+      - "5432:5432"
+    volumes:
+      - caverns-pgdata:/var/lib/postgresql/data
+volumes:
+  caverns-pgdata:

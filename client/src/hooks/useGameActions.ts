@@ -1,11 +1,17 @@
 import { useCallback } from 'react';
 import type { ClientMessage, Direction, GridDirection } from '@caverns/shared';
+import { useGameStore } from '../store/gameStore';
 
 export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
   const send = useCallback(
     (msg: ClientMessage) => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify(msg));
+      const ws = wsRef.current;
+      const id = (ws as unknown as { __id?: number } | null)?.__id;
+      if (ws?.readyState === WebSocket.OPEN) {
+        console.log('[send] SEND', msg.type, 'via ws', id);
+        ws.send(JSON.stringify(msg));
+      } else {
+        console.warn('[send] DROPPED', msg.type, 'via ws', id, 'readyState=', ws?.readyState);
       }
     },
     [wsRef]
@@ -43,5 +49,16 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     debugGiveItem: (itemId: string) => send({ type: 'debug_give_item', itemId }),
     allocateStat: (statId: string, points: number) =>
       send({ type: 'allocate_stat', statId, points }),
+    login: (name: string) => send({ type: 'login', name }),
+    logout: () => send({ type: 'logout' }),
+    createCharacter: (name: string, className: string) =>
+      send({ type: 'create_character', name, class: className }),
+    selectCharacter: (characterId: string) => {
+      send({ type: 'select_character', characterId });
+      useGameStore.setState({ selectedCharacterId: characterId });
+    },
+    deleteCharacter: (characterId: string) =>
+      send({ type: 'delete_character', characterId }),
+    setReady: (ready: boolean) => send({ type: 'set_ready', ready }),
   };
 }
