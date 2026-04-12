@@ -71,6 +71,7 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
       send({ type: 'leave_world' });
       useGameStore.setState({
         currentWorld: null,
+        worldMap: null,
         worldMembers: [],
         selectedCharacterId: null,
       });

@@ -20,6 +20,8 @@ interface TileGridViewProps {
   alert?: { x: number; y: number } | null;
   visibleTiles?: Set<string>;
   exploredTiles?: Set<string>;
+  /** Optional per-tile char resolver. Return null to fall back to the dungeon renderer. */
+  charLookup?: (tileType: string, x: number, y: number) => string | null;
 }
 
 const WATER_CHARS: Record<string, [string, string]> = {
@@ -42,7 +44,7 @@ const WaterChar = memo(function WaterChar({ theme }: { theme?: string | null }) 
   return <>{char}</>;
 });
 
-export function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles }: TileGridViewProps) {
+export function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles, charLookup }: TileGridViewProps) {
   const { width, height, tiles, themes } = tileGrid;
 
   // Build entity lookup: "x,y" -> EntityOverlay
@@ -80,7 +82,8 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
             </span>
           );
         } else {
-          const char = getTileChar(tiles as any, x, y);
+          const override = charLookup?.(tileType, x, y) ?? null;
+          const char = override ?? getTileChar(tiles as any, x, y);
           const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
           cells.push(
             <span key={x} className={tileClass}>
@@ -114,7 +117,8 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
             </span>
           );
         } else {
-          const char = getTileChar(tiles as any, x, y);
+          const override = charLookup?.(tileType, x, y) ?? null;
+          const char = override ?? getTileChar(tiles as any, x, y);
           const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
           cells.push(
             <span key={x} className={tileClass}>

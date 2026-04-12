@@ -1131,6 +1131,118 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 .tile-hazard   { color: #dd2222; text-shadow: 0 0 3px rgba(221, 34, 34, 0.3); }
 .tile-bridge   { color: #aa7744; }
 
+/* === Overworld Tile Colors === */
+.tile-grass       { color: #2a5a2a; }
+.tile-path        { color: #8a7a4a; }
+.tile-town_floor  { color: #6a4a2a; }
+.tile-door        { color: #ddaa33; text-shadow: 0 0 3px rgba(221, 170, 51, 0.4); }
+
+.tile-grass.tile-explored,
+.tile-path.tile-explored,
+.tile-town_floor.tile-explored,
+.tile-door.tile-explored { opacity: 0.5; }
+
+/* === Overworld Entity Overlays === */
+.overworld-interactable {
+  color: #44ddee;
+  text-shadow: 0 0 4px rgba(68, 221, 238, 0.6);
+  animation: overworld-pulse 2s ease-in-out infinite;
+}
+.overworld-portal {
+  color: #ff6622;
+  text-shadow: 0 0 5px rgba(255, 102, 34, 0.7);
+}
+.overworld-member {
+  color: #cccccc;
+}
+.overworld-self {
+  color: #ffffaa;
+  text-shadow: 0 0 4px rgba(255, 255, 170, 0.6);
+}
+.overworld-member.class-vanguard  { color: #ff8844; }
+.overworld-member.class-pyromancer { color: #ff5522; }
+.overworld-member.class-cleric    { color: #ffff88; }
+.overworld-member.class-rogue     { color: #88ff88; }
+.overworld-self.class-vanguard  { color: #ffaa66; }
+.overworld-self.class-pyromancer { color: #ff7744; }
+.overworld-self.class-cleric    { color: #ffffaa; }
+.overworld-self.class-rogue     { color: #aaffaa; }
+
+@keyframes overworld-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* === Overworld Layout === */
+.world-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+}
+.world-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0 0.5rem 0;
+  border-bottom: 1px solid #333;
+}
+.world-title {
+  margin: 0;
+  color: #ccbb66;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+}
+.world-leave-btn {
+  background: transparent;
+  border: 1px solid #555;
+  color: #aaa;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.world-leave-btn:hover { color: #fff; border-color: #aaa; }
+.world-body {
+  display: flex;
+  flex: 1;
+  gap: 1rem;
+  overflow: hidden;
+  padding-top: 0.5rem;
+}
+.world-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+}
+.world-map-container {
+  display: inline-block;
+}
+.world-side {
+  width: 220px;
+  border-left: 1px solid #333;
+  padding-left: 0.75rem;
+  overflow-y: auto;
+}
+.world-side-title {
+  margin: 0 0 0.5rem 0;
+  color: #888;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+.world-member-list { list-style: none; padding: 0; margin: 0; }
+.world-member {
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #222;
+}
+.world-member-name { font-weight: bold; }
+.world-member-meta { color: #777; font-size: 0.85rem; }
+
 /* === LoS Shadow States === */
 .tile-unseen {
   color: transparent;

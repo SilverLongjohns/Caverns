@@ -497,6 +497,7 @@ wss.on('connection', (ws) => {
           characterName: ch.name,
           className: ch.class,
           level: ch.level,
+          savedPos: ch.overworld_pos ?? null,
         });
         break;
       }

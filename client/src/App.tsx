@@ -48,6 +48,7 @@ export function App() {
       selectedWorldId: null,
       worldError: null,
       currentWorld: null,
+      worldMap: null,
       worldMembers: [],
       authError: null,
     });

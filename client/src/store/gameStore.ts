@@ -10,6 +10,7 @@ import type {
   AccountSummary,
   WorldSummary,
   WorldMemberSummary,
+  OverworldMap,
 } from '@caverns/shared';
 
 export type ClientView =
@@ -43,6 +44,7 @@ export interface GameStore {
   selectedWorldId: string | null;
   worldError: string | null;
   currentWorld: { id: string; name: string } | null;
+  worldMap: OverworldMap | null;
   worldMembers: WorldMemberSummary[];
   authError: string | null;
   lobbyPlayers: LobbyPlayer[];
@@ -102,6 +104,7 @@ const initialState = {
   selectedWorldId: null,
   worldError: null,
   currentWorld: null,
+  worldMap: null,
   worldMembers: [] as WorldMemberSummary[],
   authError: null,
   lobbyPlayers: [] as LobbyPlayer[],
@@ -202,6 +205,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       case 'world_state':
         set({
           currentWorld: { id: msg.worldId, name: msg.worldName },
+          worldMap: msg.map,
           worldMembers: msg.members,
         });
         break;

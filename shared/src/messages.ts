@@ -8,6 +8,7 @@ import type {
   CombatParticipant,
   OutcomeType,
 } from './types.js';
+import type { OverworldMap } from './overworld.js';
 
 // === Client -> Server ===
 
@@ -273,12 +274,14 @@ export interface WorldMemberSummary {
   displayName: string;
   className: string;
   level: number;
+  pos: { x: number; y: number };
 }
 
 export interface WorldStateMessage {
   type: 'world_state';
   worldId: string;
   worldName: string;
+  map: OverworldMap;
   members: WorldMemberSummary[];
 }
 

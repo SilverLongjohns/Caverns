@@ -1,4 +1,5 @@
-import type { ServerMessage, WorldMemberSummary } from '@caverns/shared';
+import type { ServerMessage, WorldMemberSummary, OverworldMap } from '@caverns/shared';
+import { OVERWORLD_MAPS, isWalkable, getTile } from '@caverns/shared';
 import type { WorldRepository } from './WorldRepository.js';
 import type { CharacterRepository } from './CharacterRepository.js';
 
@@ -10,6 +11,18 @@ export interface WorldSessionMember {
   characterName: string;
   className: string;
   level: number;
+  pos: { x: number; y: number };
+}
+
+export interface AddConnectionArgs {
+  connectionId: string;
+  accountId: string;
+  characterId: string;
+  displayName: string;
+  characterName: string;
+  className: string;
+  level: number;
+  savedPos: { x: number; y: number } | null;
 }
 
 export interface WorldSessionDeps {
@@ -21,9 +34,21 @@ export interface WorldSessionDeps {
   sendTo: (connectionId: string, msg: ServerMessage) => void;
 }
 
+function resolveStartPos(
+  saved: { x: number; y: number } | null,
+  map: OverworldMap,
+): { x: number; y: number } {
+  if (saved) {
+    const t = getTile(map, saved.x, saved.y);
+    if (t && isWalkable(t)) return saved;
+  }
+  return map.spawnTile;
+}
+
 export class WorldSession {
   readonly worldId: string;
   readonly worldName: string;
+  private readonly map: OverworldMap;
   private members = new Map<string, WorldSessionMember>();
   private worldRepo: WorldRepository;
   private characterRepo: CharacterRepository;
@@ -37,18 +62,34 @@ export class WorldSession {
     this.characterRepo = deps.characterRepo;
     this.broadcast = deps.broadcast;
     this.sendTo = deps.sendTo;
+    // TODO(post-v1): resolve map ID from world row. For now, every world uses 'starter'.
+    const map = OVERWORLD_MAPS.starter;
+    if (!map) throw new Error('starter overworld map missing');
+    this.map = map;
   }
 
-  async addConnection(member: WorldSessionMember): Promise<void> {
+  async addConnection(args: AddConnectionArgs): Promise<void> {
     if (this.members.size === 0) {
       await this.hydrate();
     }
+    const pos = resolveStartPos(args.savedPos, this.map);
+    const member: WorldSessionMember = {
+      connectionId: args.connectionId,
+      accountId: args.accountId,
+      characterId: args.characterId,
+      displayName: args.displayName,
+      characterName: args.characterName,
+      className: args.className,
+      level: args.level,
+      pos,
+    };
     this.members.set(member.connectionId, member);
 
     this.sendTo(member.connectionId, {
       type: 'world_state',
       worldId: this.worldId,
       worldName: this.worldName,
+      map: this.map,
       members: this.getMembers(),
     });
 
@@ -98,12 +139,13 @@ export class WorldSession {
       displayName: m.displayName,
       className: m.className,
       level: m.level,
+      pos: m.pos,
     };
   }
 
   private async hydrate(): Promise<void> {
     // Phase 2: nothing to load.
-    // Phase 3: read the authored overworld map.
+    // Phase 3: map is loaded in the constructor.
     // Phase 4+: load per-character overworld_pos for returning members.
     // Phase 5: check for abandoned dungeon instances owned by this world.
     void this.worldRepo;
