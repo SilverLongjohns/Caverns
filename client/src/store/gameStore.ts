@@ -8,6 +8,7 @@ import type {
   LobbyPlayer,
   CharacterSummary,
   AccountSummary,
+  WorldSummary,
 } from '@caverns/shared';
 import { saveSessionToken, clearSessionToken } from '../auth/sessionStorage.js';
 
@@ -26,6 +27,9 @@ export interface GameStore {
   account: AccountSummary | null;
   characters: CharacterSummary[];
   selectedCharacterId: string | null;
+  worlds: WorldSummary[];
+  selectedWorldId: string | null;
+  worldError: string | null;
   authError: string | null;
   lobbyPlayers: LobbyPlayer[];
   isHost: boolean;
@@ -80,6 +84,9 @@ const initialState = {
   account: null,
   characters: [],
   selectedCharacterId: null,
+  worlds: [],
+  selectedWorldId: null,
+  worldError: null,
   authError: null,
   lobbyPlayers: [] as LobbyPlayer[],
   isHost: false,
@@ -154,6 +161,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case 'character_list':
         set({ characters: msg.characters });
+        break;
+
+      case 'world_list':
+        set((state) => {
+          const stillExists = state.selectedWorldId &&
+            msg.worlds.some((w) => w.id === state.selectedWorldId);
+          return {
+            worlds: msg.worlds,
+            selectedWorldId: stillExists ? state.selectedWorldId : null,
+            worldError: null,
+          };
+        });
+        break;
+
+      case 'world_selected':
+        set({ selectedWorldId: msg.worldId, worldError: null });
+        break;
+
+      case 'world_error':
+        set({ worldError: msg.reason });
         break;
 
       case 'game_start':

@@ -5,6 +5,7 @@ import { useGridMovement } from './hooks/useGridMovement.js';
 import { Lobby } from './components/Lobby.js';
 import { LoginScreen } from './components/LoginScreen.js';
 import { CharacterSelect } from './components/CharacterSelect.js';
+import { WorldSelect } from './components/WorldSelect.js';
 import { clearSessionToken } from './auth/sessionStorage.js';
 import { TextLog } from './components/TextLog.js';
 import { MiniMap } from './components/MiniMap.js';
@@ -30,6 +31,7 @@ export function App() {
   const currentRoomId = useGameStore((s) => s.currentRoomId);
   const levelUpGlow = useGameStore((s) => s.levelUpGlow);
   const selectedCharacterId = useGameStore((s) => s.selectedCharacterId);
+  const selectedWorldId = useGameStore((s) => s.selectedWorldId);
 
   const inExploration = connectionStatus === 'in_game' && !gameOver && !activeCombat;
   const currentRoom = rooms[currentRoomId];
@@ -65,6 +67,30 @@ export function App() {
     );
   } else if (authStatus === 'unauthenticated') {
     content = <LoginScreen onLogin={actions.login} />;
+  } else if (authStatus === 'authenticated' && !selectedWorldId) {
+    const handleLogout = () => {
+      actions.logout();
+      clearSessionToken();
+      useGameStore.setState({
+        authStatus: 'unauthenticated',
+        account: null,
+        characters: [],
+        selectedCharacterId: null,
+        worlds: [],
+        selectedWorldId: null,
+        worldError: null,
+        authError: null,
+      });
+    };
+    content = (
+      <WorldSelect
+        onList={actions.listWorlds}
+        onSelect={actions.selectWorld}
+        onCreate={actions.createWorld}
+        onJoin={actions.joinWorld}
+        onLogout={handleLogout}
+      />
+    );
   } else if (authStatus === 'authenticated' && !selectedCharacterId) {
     const handleLogout = () => {
       actions.logout();
@@ -74,6 +100,9 @@ export function App() {
         account: null,
         characters: [],
         selectedCharacterId: null,
+        worlds: [],
+        selectedWorldId: null,
+        worldError: null,
         authError: null,
       });
     };

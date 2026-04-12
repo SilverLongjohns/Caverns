@@ -150,6 +150,27 @@ export interface SetReadyMessage {
   ready: boolean;
 }
 
+// === World membership ===
+
+export interface ListWorldsMessage {
+  type: 'list_worlds';
+}
+
+export interface CreateWorldMessage {
+  type: 'create_world';
+  name: string;
+}
+
+export interface JoinWorldMessage {
+  type: 'join_world';
+  inviteCode: string;
+}
+
+export interface SelectWorldMessage {
+  type: 'select_world';
+  worldId: string;
+}
+
 export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
@@ -175,7 +196,11 @@ export type ClientMessage =
   | CreateCharacterMessage
   | SelectCharacterMessage
   | DeleteCharacterMessage
-  | SetReadyMessage;
+  | SetReadyMessage
+  | ListWorldsMessage
+  | CreateWorldMessage
+  | JoinWorldMessage
+  | SelectWorldMessage;
 
 // === Server -> Client ===
 
@@ -210,6 +235,30 @@ export interface CharacterSummary {
 export interface AccountSummary {
   id: string;
   displayName: string;
+}
+
+export interface WorldSummary {
+  id: string;
+  name: string;
+  ownerDisplayName: string;
+  memberCount: number;
+  isOwner: boolean;
+  inviteCode: string;
+}
+
+export interface WorldListMessage {
+  type: 'world_list';
+  worlds: WorldSummary[];
+}
+
+export interface WorldSelectedMessage {
+  type: 'world_selected';
+  worldId: string;
+}
+
+export interface WorldErrorMessage {
+  type: 'world_error';
+  reason: string;
 }
 
 export interface AuthResultMessage {
@@ -483,4 +532,7 @@ export type ServerMessage =
   | TorchPickupMessage
   | AuthResultMessage
   | AuthErrorMessage
-  | CharacterListMessage;
+  | CharacterListMessage
+  | WorldListMessage
+  | WorldSelectedMessage
+  | WorldErrorMessage;

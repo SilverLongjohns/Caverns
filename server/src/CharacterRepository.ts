@@ -30,10 +30,11 @@ export interface CreateCharacterInput {
 export class CharacterRepository {
   constructor(private db: Kysely<Database>) {}
 
-  async listForAccount(accountId: string): Promise<CharactersTable[]> {
+  async listForWorld(accountId: string, worldId: string): Promise<CharactersTable[]> {
     return this.db.selectFrom('characters')
       .selectAll()
       .where('account_id', '=', accountId)
+      .where('world_id', '=', worldId)
       .orderBy('created_at', 'asc')
       .execute();
   }
@@ -43,12 +44,13 @@ export class CharacterRepository {
       .where('id', '=', id).executeTakeFirst();
   }
 
-  async create(accountId: string, input: CreateCharacterInput): Promise<CharactersTable> {
-    const existing = await this.listForAccount(accountId);
+  async create(accountId: string, worldId: string, input: CreateCharacterInput): Promise<CharactersTable> {
+    const existing = await this.listForWorld(accountId, worldId);
     if (existing.length >= SLOT_CAP) throw new Error('Character slot limit reached');
     const inserted = await this.db.insertInto('characters')
       .values({
         account_id: accountId,
+        world_id: worldId,
         name: input.name.trim(),
         class: input.class,
         equipment: JSON.stringify(starterEquipment(input.class)),

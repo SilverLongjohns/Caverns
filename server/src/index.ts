@@ -14,6 +14,7 @@ import { runMigrations } from './db/migrate.js';
 import { NameAuthProvider } from './auth/NameAuthProvider.js';
 import { SessionStore } from './auth/SessionStore.js';
 import { CharacterRepository } from './CharacterRepository.js';
+import { WorldRepository } from './WorldRepository.js';
 import { ActiveSessionMap } from './ActiveSessionMap.js';
 import type { CharactersTable } from './db/types.js';
 
@@ -23,6 +24,7 @@ const PORT = Number(process.env.PORT) || 3001;
 const nameAuth = db ? new NameAuthProvider(db) : null;
 const sessionStore = db ? new SessionStore(db) : null;
 const characterRepo = db ? new CharacterRepository(db) : null;
+const worldRepo = db ? new WorldRepository(db) : null;
 const activeSessions = new ActiveSessionMap();
 
 // Per-connection auth state.
@@ -30,6 +32,7 @@ interface ConnectionAccount {
   accountId: string;
   sessionToken: string;
   characterId?: string;
+  selectedWorldId: string | null;
 }
 const connectionAccounts = new Map<string, ConnectionAccount>();
 
@@ -63,13 +66,44 @@ async function sendAuthResult(ws: WebSocket, accountId: string, token: string): 
     .select(['id', 'display_name'])
     .where('id', '=', accountId)
     .executeTakeFirstOrThrow();
-  const list = await characterRepo.listForAccount(accountId);
+  // Characters are scoped to a selected world, so send empty here — the
+  // client will receive a populated character_list after select_world.
   sendToWs(ws, {
     type: 'auth_result',
     token,
     account: { id: acc.id, displayName: acc.display_name },
-    characters: list.map(toSummary),
+    characters: [],
   });
+}
+
+async function sendWorldList(ws: WebSocket, accountId: string): Promise<void> {
+  if (!worldRepo || !db) return;
+  const dbRef = db;
+  const rows = await worldRepo.listForAccount(accountId);
+  const summaries = await Promise.all(rows.map(async (w) => {
+    const owner = await dbRef
+      .selectFrom('accounts')
+      .select(['display_name'])
+      .where('id', '=', w.owner_account_id)
+      .executeTakeFirst();
+    return {
+      id: w.id,
+      name: w.name,
+      ownerDisplayName: owner?.display_name ?? 'Unknown',
+      memberCount: await worldRepo.countMembers(w.id),
+      isOwner: w.owner_account_id === accountId,
+      inviteCode: w.invite_code,
+    };
+  }));
+  sendToWs(ws, { type: 'world_list', worlds: summaries });
+}
+
+async function sendCharacterListForWorld(
+  ws: WebSocket, accountId: string, worldId: string | null,
+): Promise<void> {
+  if (!characterRepo) return;
+  const list = worldId ? await characterRepo.listForWorld(accountId, worldId) : [];
+  sendToWs(ws, { type: 'character_list', characters: list.map(toSummary) });
 }
 
 function sendToWs(ws: WebSocket, msg: ServerMessage): void {
@@ -200,8 +234,9 @@ wss.on('connection', (ws) => {
           break;
         }
         const token = await sessionStore.create(result.accountId);
-        connectionAccounts.set(playerId, { accountId: result.accountId, sessionToken: token });
+        connectionAccounts.set(playerId, { accountId: result.accountId, sessionToken: token, selectedWorldId: null });
         await sendAuthResult(ws, result.accountId, token);
+        await sendWorldList(ws, result.accountId);
         break;
       }
 
@@ -215,7 +250,7 @@ wss.on('connection', (ws) => {
           sendTo(playerId, { type: 'auth_error', reason: 'Session expired' });
           break;
         }
-        connectionAccounts.set(playerId, { accountId: info.accountId, sessionToken: info.token });
+        connectionAccounts.set(playerId, { accountId: info.accountId, sessionToken: info.token, selectedWorldId: null });
         // If there's no active game session owning any character for this
         // account, any lingering in_use flag is stranded from a dead
         // connection (e.g. browser refresh race). Clear before sending the
@@ -225,6 +260,7 @@ wss.on('connection', (ws) => {
           try { await characterRepo.clearInUseForAccount(info.accountId); } catch (e) { console.error(e); }
         }
         await sendAuthResult(ws, info.accountId, info.token);
+        await sendWorldList(ws, info.accountId);
         // Reconnection reattach to an active run.
         if (existingSessionId) {
           const room = rooms.get(existingSessionId);
@@ -281,20 +317,90 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case 'list_worlds': {
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx || !worldRepo) {
+          sendTo(playerId, { type: 'world_error', reason: 'Not logged in' });
+          break;
+        }
+        await sendWorldList(ws, ctx.accountId);
+        break;
+      }
+
+      case 'create_world': {
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx || !worldRepo) {
+          sendTo(playerId, { type: 'world_error', reason: 'Not logged in' });
+          break;
+        }
+        try {
+          await worldRepo.create(ctx.accountId, msg.name);
+        } catch (e) {
+          sendTo(playerId, { type: 'world_error', reason: (e as Error).message });
+          break;
+        }
+        await sendWorldList(ws, ctx.accountId);
+        break;
+      }
+
+      case 'join_world': {
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx || !worldRepo) {
+          sendTo(playerId, { type: 'world_error', reason: 'Not logged in' });
+          break;
+        }
+        const code = msg.inviteCode.trim().toUpperCase();
+        const world = await worldRepo.getByInviteCode(code);
+        if (!world) {
+          sendTo(playerId, { type: 'world_error', reason: 'Invite code not found' });
+          break;
+        }
+        if (world.owner_account_id === ctx.accountId) {
+          sendTo(playerId, { type: 'world_error', reason: 'You already own this world' });
+          break;
+        }
+        if (await worldRepo.isMember(world.id, ctx.accountId)) {
+          sendTo(playerId, { type: 'world_error', reason: 'You are already a member' });
+          break;
+        }
+        await worldRepo.addMember(world.id, ctx.accountId);
+        await sendWorldList(ws, ctx.accountId);
+        break;
+      }
+
+      case 'select_world': {
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx || !worldRepo) {
+          sendTo(playerId, { type: 'world_error', reason: 'Not logged in' });
+          break;
+        }
+        if (!(await worldRepo.isMember(msg.worldId, ctx.accountId))) {
+          sendTo(playerId, { type: 'world_error', reason: 'Not a member of that world' });
+          break;
+        }
+        ctx.selectedWorldId = msg.worldId;
+        sendTo(playerId, { type: 'world_selected', worldId: msg.worldId });
+        await sendCharacterListForWorld(ws, ctx.accountId, msg.worldId);
+        break;
+      }
+
       case 'create_character': {
         const ctx = connectionAccounts.get(playerId);
         if (!ctx || !characterRepo) {
           sendTo(playerId, { type: 'auth_error', reason: 'Not logged in' });
           break;
         }
+        if (!ctx.selectedWorldId) {
+          sendTo(playerId, { type: 'world_error', reason: 'No world selected' });
+          break;
+        }
         try {
-          await characterRepo.create(ctx.accountId, { name: msg.name, class: msg.class });
+          await characterRepo.create(ctx.accountId, ctx.selectedWorldId, { name: msg.name, class: msg.class });
         } catch (e) {
           sendTo(playerId, { type: 'auth_error', reason: (e as Error).message });
           break;
         }
-        const list = await characterRepo.listForAccount(ctx.accountId);
-        sendTo(playerId, { type: 'character_list', characters: list.map(toSummary) });
+        await sendCharacterListForWorld(ws, ctx.accountId, ctx.selectedWorldId);
         break;
       }
 
@@ -302,8 +408,7 @@ wss.on('connection', (ws) => {
         const ctx = connectionAccounts.get(playerId);
         if (!ctx || !characterRepo) break;
         await characterRepo.delete(ctx.accountId, msg.characterId);
-        const list = await characterRepo.listForAccount(ctx.accountId);
-        sendTo(playerId, { type: 'character_list', characters: list.map(toSummary) });
+        await sendCharacterListForWorld(ws, ctx.accountId, ctx.selectedWorldId);
         break;
       }
 
@@ -313,6 +418,10 @@ wss.on('connection', (ws) => {
         const ch = await characterRepo.getById(msg.characterId);
         if (!ch || ch.account_id !== ctx.accountId) {
           sendTo(playerId, { type: 'error', message: 'Character not found' });
+          break;
+        }
+        if (!ctx.selectedWorldId || ch.world_id !== ctx.selectedWorldId) {
+          sendTo(playerId, { type: 'world_error', reason: 'Character is not in the selected world' });
           break;
         }
         if (ch.in_use) {

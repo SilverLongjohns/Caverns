@@ -60,5 +60,12 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     deleteCharacter: (characterId: string) =>
       send({ type: 'delete_character', characterId }),
     setReady: (ready: boolean) => send({ type: 'set_ready', ready }),
+    listWorlds: () => send({ type: 'list_worlds' }),
+    createWorld: (name: string) => send({ type: 'create_world', name }),
+    joinWorld: (inviteCode: string) => send({ type: 'join_world', inviteCode }),
+    selectWorld: (worldId: string) => {
+      send({ type: 'select_world', worldId });
+      useGameStore.setState({ selectedWorldId: worldId });
+    },
   };
 }
