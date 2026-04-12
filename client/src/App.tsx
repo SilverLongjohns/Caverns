@@ -50,6 +50,7 @@ export function App() {
       currentWorld: null,
       worldMap: null,
       worldMembers: [],
+      overworldPathPreview: [],
       authError: null,
     });
   };
@@ -98,7 +99,7 @@ export function App() {
       );
       break;
     case 'in_world':
-      content = <WorldView onLeaveWorld={actions.leaveWorld} />;
+      content = <WorldView onLeaveWorld={actions.leaveWorld} onMove={actions.overworldMove} />;
       break;
     case 'in_lobby':
       content = (

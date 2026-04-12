@@ -502,6 +502,16 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case 'overworld_move': {
+        const session = getWorldSession(playerId);
+        if (!session) break;
+        const result = session.requestMove(playerId, { x: msg.targetX, y: msg.targetY });
+        if (result !== 'ok') {
+          sendTo(playerId, { type: 'world_move_rejected', reason: result });
+        }
+        break;
+      }
+
       case 'leave_world': {
         const ctx = connectionAccounts.get(playerId);
         await detachFromWorldSession(playerId);

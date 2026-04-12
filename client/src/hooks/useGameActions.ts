@@ -67,12 +67,16 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
       send({ type: 'select_world', worldId });
       useGameStore.setState({ selectedWorldId: worldId });
     },
+    overworldMove: (x: number, y: number) => {
+      send({ type: 'overworld_move', targetX: x, targetY: y });
+    },
     leaveWorld: () => {
       send({ type: 'leave_world' });
       useGameStore.setState({
         currentWorld: null,
         worldMap: null,
         worldMembers: [],
+        overworldPathPreview: [],
         selectedCharacterId: null,
       });
     },

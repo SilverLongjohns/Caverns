@@ -176,6 +176,12 @@ export interface LeaveWorldMessage {
   type: 'leave_world';
 }
 
+export interface OverworldMoveMessage {
+  type: 'overworld_move';
+  targetX: number;
+  targetY: number;
+}
+
 export type ClientMessage =
   | JoinLobbyMessage
   | StartGameMessage
@@ -206,7 +212,8 @@ export type ClientMessage =
   | CreateWorldMessage
   | JoinWorldMessage
   | SelectWorldMessage
-  | LeaveWorldMessage;
+  | LeaveWorldMessage
+  | OverworldMoveMessage;
 
 // === Server -> Client ===
 
@@ -294,6 +301,23 @@ export interface WorldMemberLeftMessage {
   type: 'world_member_left';
   connectionId: string;
   characterId: string;
+}
+
+export interface OverworldTickStep {
+  connectionId: string;
+  x: number;
+  y: number;
+  arrived: boolean;
+}
+
+export interface OverworldTickMessage {
+  type: 'overworld_tick';
+  steps: OverworldTickStep[];
+}
+
+export interface WorldMoveRejectedMessage {
+  type: 'world_move_rejected';
+  reason: 'unreachable' | 'out_of_bounds' | 'not_walkable';
 }
 
 export interface AuthResultMessage {
@@ -573,4 +597,6 @@ export type ServerMessage =
   | WorldErrorMessage
   | WorldStateMessage
   | WorldMemberJoinedMessage
-  | WorldMemberLeftMessage;
+  | WorldMemberLeftMessage
+  | OverworldTickMessage
+  | WorldMoveRejectedMessage;

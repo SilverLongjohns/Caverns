@@ -3,9 +3,10 @@ import { WorldMapView } from './WorldMapView.js';
 
 interface Props {
   onLeaveWorld: () => void;
+  onMove: (x: number, y: number) => void;
 }
 
-export function WorldView({ onLeaveWorld }: Props) {
+export function WorldView({ onLeaveWorld, onMove }: Props) {
   const currentWorld = useGameStore((s) => s.currentWorld);
   const members = useGameStore((s) => s.worldMembers);
 
@@ -21,7 +22,7 @@ export function WorldView({ onLeaveWorld }: Props) {
       </header>
       <div className="world-body">
         <main className="world-main">
-          <WorldMapView />
+          <WorldMapView onMove={onMove} />
         </main>
         <aside className="world-side">
           <h3 className="world-side-title">Party</h3>

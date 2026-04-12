@@ -22,6 +22,8 @@ interface TileGridViewProps {
   exploredTiles?: Set<string>;
   /** Optional per-tile char resolver. Return null to fall back to the dungeon renderer. */
   charLookup?: (tileType: string, x: number, y: number) => string | null;
+  /** Optional click handler for tiles. */
+  onTileClick?: (x: number, y: number) => void;
 }
 
 const WATER_CHARS: Record<string, [string, string]> = {
@@ -44,7 +46,7 @@ const WaterChar = memo(function WaterChar({ theme }: { theme?: string | null }) 
   return <>{char}</>;
 });
 
-export function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles, charLookup }: TileGridViewProps) {
+export function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles, charLookup, onTileClick }: TileGridViewProps) {
   const { width, height, tiles, themes } = tileGrid;
 
   // Build entity lookup: "x,y" -> EntityOverlay
@@ -129,7 +131,17 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
       }
     }
     rows.push(
-      <div key={y} className="room-row">
+      <div
+        key={y}
+        className="room-row"
+        onClick={onTileClick ? (e) => {
+          const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+          const charWidth = rect.width / width;
+          const x = Math.floor((e.clientX - rect.left) / charWidth);
+          if (x >= 0 && x < width) onTileClick(x, y);
+        } : undefined}
+        style={onTileClick ? { cursor: 'pointer' } : undefined}
+      >
         {cells}
       </div>
     );

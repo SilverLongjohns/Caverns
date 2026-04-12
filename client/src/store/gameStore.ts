@@ -46,6 +46,7 @@ export interface GameStore {
   currentWorld: { id: string; name: string } | null;
   worldMap: OverworldMap | null;
   worldMembers: WorldMemberSummary[];
+  overworldPathPreview: { x: number; y: number }[];
   authError: string | null;
   lobbyPlayers: LobbyPlayer[];
   isHost: boolean;
@@ -106,6 +107,7 @@ const initialState = {
   currentWorld: null,
   worldMap: null,
   worldMembers: [] as WorldMemberSummary[],
+  overworldPathPreview: [] as { x: number; y: number }[],
   authError: null,
   lobbyPlayers: [] as LobbyPlayer[],
   isHost: false,
@@ -223,6 +225,29 @@ export const useGameStore = create<GameStore>((set, get) => ({
         set((state) => ({
           worldMembers: state.worldMembers.filter((m) => m.connectionId !== msg.connectionId),
         }));
+        break;
+
+      case 'overworld_tick': {
+        const state = get();
+        const byId = new Map(msg.steps.map((s) => [s.connectionId, s] as const));
+        const members = state.worldMembers.map((m) => {
+          const step = byId.get(m.connectionId);
+          return step ? { ...m, pos: { x: step.x, y: step.y } } : m;
+        });
+        let nextPreview = state.overworldPathPreview;
+        if (nextPreview.length > 0) {
+          // Drop preview tiles matching any step this tick (self-progress).
+          const stepKeys = new Set(msg.steps.map((s) => `${s.x},${s.y}`));
+          const filtered = nextPreview.filter((p) => !stepKeys.has(`${p.x},${p.y}`));
+          if (filtered.length !== nextPreview.length) nextPreview = filtered;
+          if (msg.steps.some((s) => s.arrived)) nextPreview = [];
+        }
+        set({ worldMembers: members, overworldPathPreview: nextPreview });
+        break;
+      }
+
+      case 'world_move_rejected':
+        set({ overworldPathPreview: [] });
         break;
 
       case 'game_start':

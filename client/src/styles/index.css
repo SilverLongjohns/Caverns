@@ -1148,6 +1148,15 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   text-shadow: 0 0 4px rgba(68, 221, 238, 0.6);
   animation: overworld-pulse 2s ease-in-out infinite;
 }
+.overworld-path-preview {
+  color: #66bb99;
+  opacity: 0.45;
+  animation: overworld-trail 1.8s ease-in-out infinite;
+}
+@keyframes overworld-trail {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.6; }
+}
 .overworld-portal {
   color: #ff6622;
   text-shadow: 0 0 5px rgba(255, 102, 34, 0.7);

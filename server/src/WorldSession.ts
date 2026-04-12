@@ -1,7 +1,9 @@
-import type { ServerMessage, WorldMemberSummary, OverworldMap } from '@caverns/shared';
-import { OVERWORLD_MAPS, isWalkable, getTile } from '@caverns/shared';
+import type { ServerMessage, WorldMemberSummary, OverworldMap, OverworldTickStep } from '@caverns/shared';
+import { OVERWORLD_MAPS, isWalkable, getTile, findOverworldPath } from '@caverns/shared';
 import type { WorldRepository } from './WorldRepository.js';
 import type { CharacterRepository } from './CharacterRepository.js';
+
+const TICK_INTERVAL_MS = 250;
 
 export interface WorldSessionMember {
   connectionId: string;
@@ -12,6 +14,7 @@ export interface WorldSessionMember {
   className: string;
   level: number;
   pos: { x: number; y: number };
+  path: { x: number; y: number }[];
 }
 
 export interface AddConnectionArgs {
@@ -34,6 +37,8 @@ export interface WorldSessionDeps {
   sendTo: (connectionId: string, msg: ServerMessage) => void;
 }
 
+export type MoveResult = 'ok' | 'unreachable' | 'out_of_bounds' | 'not_walkable';
+
 function resolveStartPos(
   saved: { x: number; y: number } | null,
   map: OverworldMap,
@@ -50,6 +55,7 @@ export class WorldSession {
   readonly worldName: string;
   private readonly map: OverworldMap;
   private members = new Map<string, WorldSessionMember>();
+  private tickHandle: ReturnType<typeof setInterval> | undefined;
   private worldRepo: WorldRepository;
   private characterRepo: CharacterRepository;
   private broadcast: (msg: ServerMessage, exceptConnectionId?: string) => void;
@@ -69,7 +75,8 @@ export class WorldSession {
   }
 
   async addConnection(args: AddConnectionArgs): Promise<void> {
-    if (this.members.size === 0) {
+    const firstMember = this.members.size === 0;
+    if (firstMember) {
       await this.hydrate();
     }
     const pos = resolveStartPos(args.savedPos, this.map);
@@ -82,8 +89,10 @@ export class WorldSession {
       className: args.className,
       level: args.level,
       pos,
+      path: [],
     };
     this.members.set(member.connectionId, member);
+    if (firstMember) this.startTickLoop();
 
     this.sendTo(member.connectionId, {
       type: 'world_state',
@@ -103,6 +112,12 @@ export class WorldSession {
     const member = this.members.get(connectionId);
     if (!member) return 'still_active';
 
+    try {
+      await this.characterRepo.snapshotOverworldPos(member.characterId, member.pos);
+    } catch (e) {
+      console.error('[WorldSession] snapshot on remove failed', e);
+    }
+
     this.members.delete(connectionId);
     this.broadcast({
       type: 'world_member_left',
@@ -110,13 +125,32 @@ export class WorldSession {
       characterId: member.characterId,
     });
 
-    // Phase 5 invariant: `&& outboundDungeons.size === 0` — teardown must not
-    // happen while a dungeon instance is still tied to this world.
     if (this.members.size === 0) {
+      this.stopTickLoop();
       await this.snapshot();
       return 'destroyed';
     }
     return 'still_active';
+  }
+
+  requestMove(connectionId: string, target: { x: number; y: number }): MoveResult {
+    const member = this.members.get(connectionId);
+    if (!member) return 'unreachable';
+
+    if (
+      target.x < 0 || target.y < 0 ||
+      target.x >= this.map.width || target.y >= this.map.height
+    ) {
+      return 'out_of_bounds';
+    }
+    const tile = getTile(this.map, target.x, target.y);
+    if (!tile || !isWalkable(tile)) return 'not_walkable';
+
+    const path = findOverworldPath(this.map, member.pos, target);
+    if (path === null) return 'unreachable';
+
+    member.path = path;
+    return 'ok';
   }
 
   hasMember(connectionId: string): boolean {
@@ -131,6 +165,11 @@ export class WorldSession {
     return [...this.members.values()].map((m) => this.toSummary(m));
   }
 
+  /** Test-only hook for deterministic tick-driving. */
+  async runTickForTest(): Promise<void> {
+    await this.tick();
+  }
+
   private toSummary(m: WorldSessionMember): WorldMemberSummary {
     return {
       connectionId: m.connectionId,
@@ -143,18 +182,55 @@ export class WorldSession {
     };
   }
 
+  private startTickLoop(): void {
+    if (this.tickHandle) return;
+    this.tickHandle = setInterval(() => {
+      this.tick().catch((e) => console.error('[WorldSession] tick error', e));
+    }, TICK_INTERVAL_MS);
+  }
+
+  private stopTickLoop(): void {
+    if (this.tickHandle) {
+      clearInterval(this.tickHandle);
+      this.tickHandle = undefined;
+    }
+  }
+
+  private async tick(): Promise<void> {
+    const steps: OverworldTickStep[] = [];
+    const arrivedMembers: WorldSessionMember[] = [];
+
+    for (const member of this.members.values()) {
+      if (member.path.length === 0) continue;
+      const next = member.path.shift()!;
+      member.pos = next;
+      const arrived = member.path.length === 0;
+      steps.push({ connectionId: member.connectionId, x: next.x, y: next.y, arrived });
+      if (arrived) arrivedMembers.push(member);
+    }
+
+    if (steps.length > 0) {
+      this.broadcast({ type: 'overworld_tick', steps });
+    }
+
+    for (const m of arrivedMembers) {
+      try {
+        await this.characterRepo.snapshotOverworldPos(m.characterId, m.pos);
+      } catch (e) {
+        console.error('[WorldSession] snapshot on arrival failed', e);
+      }
+    }
+  }
+
   private async hydrate(): Promise<void> {
-    // Phase 2: nothing to load.
-    // Phase 3: map is loaded in the constructor.
-    // Phase 4+: load per-character overworld_pos for returning members.
+    // Phase 4: nothing to hydrate. Per-member positions resolved in addConnection.
     // Phase 5: check for abandoned dungeon instances owned by this world.
     void this.worldRepo;
     void this.characterRepo;
   }
 
   private async snapshot(): Promise<void> {
-    // Phase 2: nothing to persist.
-    // Phase 4+: write per-character overworld_pos.
+    // Phase 4: members snapshot individually on removal/arrival.
     // Phase 5+: write world.state jsonb via worldRepo.snapshotState.
   }
 }

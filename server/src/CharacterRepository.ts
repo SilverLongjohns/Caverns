@@ -88,6 +88,16 @@ export class CharacterRepository {
       .execute();
   }
 
+  async snapshotOverworldPos(id: string, pos: { x: number; y: number }): Promise<void> {
+    await this.db.updateTable('characters')
+      .set({
+        overworld_pos: JSON.stringify(pos) as never,
+        last_played_at: new Date(),
+      })
+      .where('id', '=', id)
+      .execute();
+  }
+
   async markInUse(id: string, inUse: boolean): Promise<void> {
     await this.db.updateTable('characters')
       .set({ in_use: inUse })
