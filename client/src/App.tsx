@@ -109,6 +109,10 @@ export function App() {
           onStashDeposit={actions.stashDeposit}
           onStashWithdraw={actions.stashWithdraw}
           onStashClose={actions.closeStash}
+          onShopBuy={actions.shopBuy}
+          onShopSell={actions.shopSell}
+          onShopReroll={actions.shopReroll}
+          onShopClose={actions.closeShop}
         />
       );
       break;

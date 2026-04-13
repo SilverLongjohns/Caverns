@@ -30,6 +30,7 @@ export interface Item {
   stats: ItemStats;
   effect?: string;
   effectParams?: Record<string, number>;
+  skullRating?: 1 | 2 | 3;
 }
 
 // === Drop Specs ===

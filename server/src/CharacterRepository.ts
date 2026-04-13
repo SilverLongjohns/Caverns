@@ -151,4 +151,11 @@ export class CharacterRepository {
       .executeTakeFirst();
     return Number(result.numUpdatedRows ?? 0);
   }
+
+  async setGold(id: string, gold: number): Promise<void> {
+    await this.db.updateTable('characters')
+      .set({ gold, last_played_at: new Date() })
+      .where('id', '=', id)
+      .execute();
+  }
 }

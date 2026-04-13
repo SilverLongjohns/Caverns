@@ -3,7 +3,8 @@ import { readFileSync, existsSync, statSync } from 'fs';
 import { join, extname } from 'path';
 import { fileURLToPath } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
-import type { ClientMessage, ServerMessage, CharacterSummary } from '@caverns/shared';
+import type { ClientMessage, ServerMessage, CharacterSummary, Item } from '@caverns/shared';
+import { SHOP_TEMPLATES } from '@caverns/shared';
 import { GameSession } from './GameSession.js';
 import { generateProceduralDungeon } from './ProceduralGenerator.js';
 import { db } from './db/connection.js';
@@ -12,11 +13,20 @@ import { NameAuthProvider } from './auth/NameAuthProvider.js';
 import { SessionStore } from './auth/SessionStore.js';
 import { CharacterRepository } from './CharacterRepository.js';
 import { StashRepository } from './StashRepository.js';
+import { ShopRepository } from './ShopRepository.js';
 import { WorldRepository } from './WorldRepository.js';
 import { WorldSession } from './WorldSession.js';
 import * as worldSessionManager from './worldSessionManager.js';
 import { ActiveSessionMap } from './ActiveSessionMap.js';
 import type { CharactersTable } from './db/types.js';
+import {
+  generateRotating,
+  buildShopView,
+  applyBuyFixed,
+  applyBuyRotating,
+  applySell,
+  applyReroll,
+} from './ShopManager.js';
 
 const PORT = Number(process.env.PORT) || 3001;
 
@@ -25,8 +35,21 @@ const nameAuth = db ? new NameAuthProvider(db) : null;
 const sessionStore = db ? new SessionStore(db) : null;
 const characterRepo = db ? new CharacterRepository(db) : null;
 const stashRepo = db ? new StashRepository(db) : null;
+const shopRepo = db ? new ShopRepository(db) : null;
 const worldRepo = db ? new WorldRepository(db) : null;
 const activeSessions = new ActiveSessionMap();
+
+// === Item lookup map (used by shop handlers) ===
+const __dirnameForItems = fileURLToPath(new URL('.', import.meta.url));
+const _allItemsList: Item[] = JSON.parse(
+  readFileSync(join(__dirnameForItems, '../../shared/src/data/items.json'), 'utf-8')
+);
+const _allUniqueItemsList: Item[] = JSON.parse(
+  readFileSync(join(__dirnameForItems, '../../shared/src/data/uniqueItems.json'), 'utf-8')
+);
+const allItemsById = new Map<string, Item>(
+  [..._allItemsList, ..._allUniqueItemsList].map((i) => [i.id, i])
+);
 
 // Per-connection auth state.
 interface ConnectionAccount {
@@ -618,6 +641,35 @@ wss.on('connection', (ws) => {
             stash: { items: stash.items, capacity: stash.capacity },
             character: { inventory: ch.inventory, consumables: ch.consumables },
           });
+        } else if (it.kind === 'shop') {
+          const ctx = connectionAccounts.get(playerId);
+          if (!ctx?.characterId || !shopRepo || !characterRepo) break;
+          const shopId = it.shopId;
+          if (!shopId) {
+            sendTo(playerId, { type: 'shop_error', reason: 'shop_missing_id' });
+            break;
+          }
+          const template = SHOP_TEMPLATES[shopId];
+          if (!template) {
+            sendTo(playerId, { type: 'shop_error', reason: 'unknown_shop' });
+            break;
+          }
+          await shopRepo.ensure(ctx.characterId, shopId);
+          let state = await shopRepo.get(ctx.characterId, shopId);
+          if (state.rotating_items.length === 0) {
+            const rotating = generateRotating(template, { biomeId: 'fungal', rng: Math.random });
+            await shopRepo.setRotating(ctx.characterId, shopId, rotating);
+            state = await shopRepo.get(ctx.characterId, shopId);
+          }
+          const ch = await characterRepo.getById(ctx.characterId);
+          if (!ch) break;
+          const view = buildShopView(template, state.rotating_items, allItemsById);
+          sendTo(playerId, {
+            type: 'shop_opened',
+            shop: view,
+            gold: ch.gold,
+            character: { inventory: ch.inventory, consumables: ch.consumables },
+          });
         }
         break;
       }
@@ -694,6 +746,134 @@ wss.on('connection', (ws) => {
           type: 'stash_updated',
           stash: { items, capacity: stash.capacity },
           character: { inventory: newInventory, consumables: newConsumables },
+        });
+        break;
+      }
+
+      case 'shop_buy': {
+        if (dungeonConnections.has(playerId)) {
+          sendTo(playerId, { type: 'shop_error', reason: 'in_dungeon' });
+          break;
+        }
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx?.characterId || !shopRepo || !characterRepo) break;
+        const template = SHOP_TEMPLATES[msg.shopId];
+        if (!template) {
+          sendTo(playerId, { type: 'shop_error', reason: 'unknown_shop' });
+          break;
+        }
+        const character = await characterRepo.getById(ctx.characterId);
+        if (!character) break;
+        const state = await shopRepo.get(ctx.characterId, msg.shopId);
+        let result;
+        if (msg.slotType === 'fixed') {
+          result = applyBuyFixed(
+            template,
+            { gold: character.gold, inventory: character.inventory, consumables: character.consumables },
+            msg.index,
+            allItemsById,
+          );
+        } else {
+          result = applyBuyRotating(
+            template,
+            {
+              gold: character.gold,
+              inventory: character.inventory,
+              consumables: character.consumables,
+              rotating: state.rotating_items,
+            },
+            msg.index,
+          );
+        }
+        if (!result.ok) {
+          sendTo(playerId, { type: 'shop_error', reason: result.reason });
+          break;
+        }
+        await characterRepo.snapshotInventory(ctx.characterId, result.state.inventory, result.state.consumables);
+        await characterRepo.setGold(ctx.characterId, result.state.gold);
+        const rotatingAfterBuy = 'rotating' in result.state
+          ? (result.state as { rotating: (Item | null)[] }).rotating
+          : null;
+        if (rotatingAfterBuy) {
+          await shopRepo.setRotating(ctx.characterId, msg.shopId, rotatingAfterBuy);
+        }
+        const latest = await shopRepo.get(ctx.characterId, msg.shopId);
+        sendTo(playerId, {
+          type: 'shop_updated',
+          shop: buildShopView(template, latest.rotating_items, allItemsById),
+          gold: result.state.gold,
+          character: { inventory: result.state.inventory, consumables: result.state.consumables },
+        });
+        break;
+      }
+
+      case 'shop_sell': {
+        if (dungeonConnections.has(playerId)) {
+          sendTo(playerId, { type: 'shop_error', reason: 'in_dungeon' });
+          break;
+        }
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx?.characterId || !shopRepo || !characterRepo) break;
+        const template = SHOP_TEMPLATES[msg.shopId];
+        if (!template) {
+          sendTo(playerId, { type: 'shop_error', reason: 'unknown_shop' });
+          break;
+        }
+        const character = await characterRepo.getById(ctx.characterId);
+        if (!character) break;
+        const result = applySell(
+          template,
+          { gold: character.gold, inventory: character.inventory, consumables: character.consumables },
+          msg.from,
+          msg.fromIndex,
+        );
+        if (!result.ok) {
+          sendTo(playerId, { type: 'shop_error', reason: result.reason });
+          break;
+        }
+        await characterRepo.snapshotInventory(ctx.characterId, result.state.inventory, result.state.consumables);
+        await characterRepo.setGold(ctx.characterId, result.state.gold);
+        const latest = await shopRepo.get(ctx.characterId, msg.shopId);
+        sendTo(playerId, {
+          type: 'shop_updated',
+          shop: buildShopView(template, latest.rotating_items, allItemsById),
+          gold: result.state.gold,
+          character: { inventory: result.state.inventory, consumables: result.state.consumables },
+        });
+        break;
+      }
+
+      case 'shop_reroll': {
+        if (dungeonConnections.has(playerId)) {
+          sendTo(playerId, { type: 'shop_error', reason: 'in_dungeon' });
+          break;
+        }
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx?.characterId || !shopRepo || !characterRepo) break;
+        const template = SHOP_TEMPLATES[msg.shopId];
+        if (!template) {
+          sendTo(playerId, { type: 'shop_error', reason: 'unknown_shop' });
+          break;
+        }
+        const character = await characterRepo.getById(ctx.characterId);
+        if (!character) break;
+        const state = await shopRepo.get(ctx.characterId, msg.shopId);
+        const result = applyReroll(
+          template,
+          { gold: character.gold, rotating: state.rotating_items },
+          { biomeId: 'fungal', rng: Math.random },
+        );
+        if (!result.ok) {
+          sendTo(playerId, { type: 'shop_error', reason: result.reason });
+          break;
+        }
+        await characterRepo.setGold(ctx.characterId, result.state.gold);
+        await shopRepo.setRotating(ctx.characterId, msg.shopId, result.state.rotating);
+        sendTo(playerId, {
+          type: 'shop_updated',
+          shop: buildShopView(template, result.state.rotating, allItemsById),
+          gold: result.state.gold,
+          character: { inventory: character.inventory, consumables: character.consumables },
         });
         break;
       }

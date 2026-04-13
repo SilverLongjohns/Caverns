@@ -73,6 +73,12 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     stashWithdraw: (stashIndex: number, to: 'inventory' | 'consumables') =>
       send({ type: 'stash_withdraw', stashIndex, to }),
     closeStash: () => useGameStore.setState({ openStash: null, stashError: null }),
+    shopBuy: (shopId: string, slotType: 'fixed' | 'rotating', index: number) =>
+      send({ type: 'shop_buy', shopId, slotType, index }),
+    shopSell: (shopId: string, from: 'inventory' | 'consumables', fromIndex: number) =>
+      send({ type: 'shop_sell', shopId, from, fromIndex }),
+    shopReroll: (shopId: string) => send({ type: 'shop_reroll', shopId }),
+    closeShop: () => useGameStore.setState({ openShop: null, shopError: null }),
     leaveWorld: () => {
       send({ type: 'leave_world' });
       useGameStore.setState({

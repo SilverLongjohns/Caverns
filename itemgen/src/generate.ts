@@ -79,5 +79,5 @@ export function generateItem(request: ItemGenerationRequest): Item {
   const idSuffix = Math.floor(rng() * 0xFFFFFF).toString(16).padStart(6, '0');
   const id = `gen_${slot}_${idSuffix}`;
 
-  return { id, name, description, rarity, slot, stats };
+  return { id, name, description, rarity, slot, stats, skullRating };
 }
