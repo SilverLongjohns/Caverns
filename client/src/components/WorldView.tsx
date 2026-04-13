@@ -1,6 +1,7 @@
 import { useGameStore } from '../store/gameStore.js';
 import { WorldMapView } from './WorldMapView.js';
 import { StashModal } from './StashModal.js';
+import { ShopModal } from './ShopModal.js';
 
 interface Props {
   onLeaveWorld: () => void;
@@ -12,6 +13,10 @@ interface Props {
   onStashDeposit: (from: 'inventory' | 'consumables', fromIndex: number) => void;
   onStashWithdraw: (stashIndex: number, to: 'inventory' | 'consumables') => void;
   onStashClose: () => void;
+  onShopBuy: (shopId: string, slotType: 'fixed' | 'rotating', index: number) => void;
+  onShopSell: (shopId: string, from: 'inventory' | 'consumables', fromIndex: number) => void;
+  onShopReroll: (shopId: string) => void;
+  onShopClose: () => void;
 }
 
 export function WorldView({
@@ -24,6 +29,10 @@ export function WorldView({
   onStashDeposit,
   onStashWithdraw,
   onStashClose,
+  onShopBuy,
+  onShopSell,
+  onShopReroll,
+  onShopClose,
 }: Props) {
   const currentWorld = useGameStore((s) => s.currentWorld);
   const members = useGameStore((s) => s.worldMembers);
@@ -65,6 +74,12 @@ export function WorldView({
         onDeposit={onStashDeposit}
         onWithdraw={onStashWithdraw}
         onClose={onStashClose}
+      />
+      <ShopModal
+        onBuy={onShopBuy}
+        onSell={onShopSell}
+        onReroll={onShopReroll}
+        onClose={onShopClose}
       />
     </div>
   );

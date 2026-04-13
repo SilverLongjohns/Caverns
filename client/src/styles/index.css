@@ -2001,3 +2001,68 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   background: #2a2015;
 }
 
+
+/* ── Shop Modal ──────────────────────────────────────────────── */
+.shop-modal {
+  background: #0b0d0a;
+  border: 2px solid #d4af37;
+  padding: 1rem 1.5rem;
+  max-width: 720px;
+  width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  color: #d4d4c8;
+  font-family: inherit;
+}
+
+.shop-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.shop-modal-header h2 { flex: 1; margin: 0; color: #d4af37; }
+.shop-gold { color: #d4af37; font-weight: bold; }
+.shop-close-btn {
+  background: transparent; border: 1px solid #555; color: #ccc;
+  width: 28px; height: 28px; font-size: 18px; cursor: pointer;
+}
+
+.shop-error {
+  background: #2a0a0a; color: #ff8080; padding: 0.4rem 0.6rem;
+  margin-bottom: 0.5rem; border: 1px solid #661515;
+}
+
+.shop-section { margin-bottom: 1rem; }
+.shop-section h3 { margin: 0 0 0.4rem 0; color: #a89968; font-size: 0.9rem; text-transform: uppercase; }
+
+.shop-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.shop-reroll-btn {
+  background: #1a1a12; border: 1px solid #d4af37; color: #d4af37;
+  padding: 0.3rem 0.7rem; cursor: pointer;
+}
+.shop-reroll-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.shop-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.shop-slot {
+  background: #13140e;
+  border: 1px solid #333;
+  color: inherit;
+  padding: 0.5rem 0.6rem;
+  min-width: 120px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+.shop-slot:hover:not(:disabled) { border-color: #d4af37; }
+.shop-slot:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.shop-slot-name { font-size: 0.85rem; }
+.shop-slot-empty { color: #555; text-align: center; }
+.shop-price { color: #d4af37; font-size: 0.8rem; margin-top: 0.2rem; }

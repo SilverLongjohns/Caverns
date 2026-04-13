@@ -51,6 +51,14 @@ export interface CharacterStashTable {
   capacity: number;
 }
 
+export interface CharacterShopStateTable {
+  character_id: string;
+  shop_id: string;
+  rotating_items: (Item | null)[];
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface SessionsTable {
   token: string;
   account_id: string;
@@ -62,6 +70,7 @@ export interface Database {
   accounts: AccountsTable;
   characters: CharactersTable;
   character_stash: CharacterStashTable;
+  character_shop_state: CharacterShopStateTable;
   sessions: SessionsTable;
   worlds: WorldsTable;
   world_members: WorldMembersTable;

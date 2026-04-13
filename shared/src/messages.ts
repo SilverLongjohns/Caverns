@@ -188,6 +188,25 @@ export interface StashWithdrawMessage {
   to: 'inventory' | 'consumables';
 }
 
+export interface ShopBuyMessage {
+  type: 'shop_buy';
+  shopId: string;
+  slotType: 'fixed' | 'rotating';
+  index: number;
+}
+
+export interface ShopSellMessage {
+  type: 'shop_sell';
+  shopId: string;
+  from: 'inventory' | 'consumables';
+  fromIndex: number;
+}
+
+export interface ShopRerollMessage {
+  type: 'shop_reroll';
+  shopId: string;
+}
+
 export type ClientMessage =
   | GridMoveMessage
   | CombatActionMessage
@@ -221,7 +240,10 @@ export type ClientMessage =
   | PortalEnterMessage
   | OverworldInteractMessage
   | StashDepositMessage
-  | StashWithdrawMessage;
+  | StashWithdrawMessage
+  | ShopBuyMessage
+  | ShopSellMessage
+  | ShopRerollMessage;
 
 // === Server -> Client ===
 
@@ -584,6 +606,45 @@ export interface StashErrorMessage {
   reason: string;
 }
 
+export interface ShopFixedSlotView {
+  consumableId: string;
+  item: Item;
+  price: number;
+}
+
+export interface ShopRotatingSlotView {
+  item: Item | null;
+  price: number | null;
+}
+
+export interface ShopView {
+  shopId: string;
+  name: string;
+  fixed: ShopFixedSlotView[];
+  rotating: ShopRotatingSlotView[];
+  rerollCost: number;
+  sellBackPct: number;
+}
+
+export interface ShopOpenedMessage {
+  type: 'shop_opened';
+  shop: ShopView;
+  gold: number;
+  character: CharacterItemsView;
+}
+
+export interface ShopUpdatedMessage {
+  type: 'shop_updated';
+  shop: ShopView;
+  gold: number;
+  character: CharacterItemsView;
+}
+
+export interface ShopErrorMessage {
+  type: 'shop_error';
+  reason: string;
+}
+
 export interface TorchPickupMessage {
   type: 'torch_pickup';
   playerId: string;
@@ -636,4 +697,7 @@ export type ServerMessage =
   | WorldMoveRejectedMessage
   | PortalMusterUpdateMessage
   | DungeonEnteredMessage
-  | DungeonReturnedMessage;
+  | DungeonReturnedMessage
+  | ShopOpenedMessage
+  | ShopUpdatedMessage
+  | ShopErrorMessage;

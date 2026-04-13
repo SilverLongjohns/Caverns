@@ -26,8 +26,10 @@ export interface OverworldInteractable {
   id: string;
   x: number;
   y: number;
-  kind: 'stash' | 'npc';
+  kind: 'stash' | 'npc' | 'shop';
   label: string;
+  /** Only present when kind === 'shop' */
+  shopId?: string;
 }
 
 export interface OverworldMap {
@@ -157,6 +159,14 @@ const STARTER_MAP: OverworldMap = {
       y: 6,
       kind: 'stash',
       label: 'Adventurer\u2019s Stash',
+    },
+    {
+      id: 'starter_shop',
+      x: 8,
+      y: 6,
+      kind: 'shop',
+      label: 'General Store',
+      shopId: 'starter_general_store',
     },
   ],
 };
