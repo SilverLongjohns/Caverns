@@ -1,8 +1,19 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import type { TileKind } from '@caverns/shared';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { OverworldMap, TileKind } from '@caverns/shared';
 import { findOverworldPath } from '@caverns/shared';
+import { getVisibleTiles } from '@caverns/roomgrid';
+import type { Tile } from '@caverns/roomgrid';
 import { useGameStore } from '../store/gameStore.js';
 import { TileGridView, type EntityOverlay } from './TileGridView.js';
+import { SignTooltip } from './SignTooltip.js';
+
+function toLosTiles(map: OverworldMap): Tile[][] {
+  return map.tiles.map((row) =>
+    row.map((kind) => ({
+      type: (kind === 'wall' || kind === 'pillar' ? 'wall' : 'floor') as Tile['type'],
+    })),
+  );
+}
 
 interface Props {
   onMove: (x: number, y: number) => void;
@@ -20,6 +31,7 @@ const OVERWORLD_CHARS: Record<TileKind, string> = {
   water: '~',
   town_floor: '.',
   door: '+',
+  pillar: '‖',
 };
 
 export function WorldMapView({ onMove, onPortalReady, onPortalUnready, onPortalEnter, onInteract }: Props) {
@@ -28,6 +40,11 @@ export function WorldMapView({ onMove, onPortalReady, onPortalUnready, onPortalE
   const myCharacterId = useGameStore((s) => s.selectedCharacterId);
   const pathPreview = useGameStore((s) => s.overworldPathPreview);
   const muster = useGameStore((s) => s.currentPortalMuster);
+  const currentWorldId = useGameStore((s) => s.currentWorld?.id ?? null);
+  const visitedTilesByWorld = useGameStore((s) => s.visitedTiles);
+  const markVisited = useGameStore((s) => s.markVisited);
+
+  const losTiles = useMemo(() => (worldMap ? toLosTiles(worldMap) : null), [worldMap]);
 
   const tileGrid = useMemo(() => {
     if (!worldMap) return null;
@@ -35,7 +52,7 @@ export function WorldMapView({ onMove, onPortalReady, onPortalUnready, onPortalE
       width: worldMap.width,
       height: worldMap.height,
       tiles: worldMap.tiles as unknown as string[][],
-      themes: undefined,
+      themes: worldMap.themes,
     };
   }, [worldMap]);
 
@@ -51,8 +68,24 @@ export function WorldMapView({ onMove, onPortalReady, onPortalUnready, onPortalE
 
   const standingOnInteractable = useMemo(() => {
     if (!worldMap || !mine) return null;
-    return worldMap.interactables.find((i) => i.x === mine.pos.x && i.y === mine.pos.y) ?? null;
+    const found = worldMap.interactables.find((i) => i.x === mine.pos.x && i.y === mine.pos.y) ?? null;
+    if (found && found.kind === 'sign') return null;
+    return found;
   }, [worldMap, mine]);
+
+  const signTooltipMap = useMemo(() => {
+    const m = new Map<string, string>();
+    if (!worldMap) return m;
+    for (const it of worldMap.interactables) {
+      if (it.kind === 'sign' && it.tooltip) {
+        m.set(`${it.x},${it.y}`, it.tooltip);
+      }
+    }
+    return m;
+  }, [worldMap]);
+
+  const [hoveredSign, setHoveredSign] = useState<string | null>(null);
+  const gridWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!standingOnInteractable) return;
@@ -76,12 +109,15 @@ export function WorldMapView({ onMove, onPortalReady, onPortalUnready, onPortalE
       list.push({ x: step.x, y: step.y, char: '·', className: 'overworld-path-preview' });
     }
     for (const it of worldMap.interactables) {
-      list.push({
-        x: it.x,
-        y: it.y,
-        char: it.kind === 'stash' ? '$' : '!',
-        className: 'overworld-interactable',
-      });
+      let char = '!';
+      let className = 'overworld-interactable';
+      if (it.kind === 'stash') char = '$';
+      else if (it.kind === 'shop') char = '!';
+      else if (it.kind === 'sign') {
+        char = '\u00B6';
+        className = 'overworld-interactable tile-sign';
+      }
+      list.push({ x: it.x, y: it.y, char, className });
     }
     for (const p of worldMap.portals) {
       list.push({ x: p.x, y: p.y, char: '>', className: 'overworld-portal' });
@@ -98,10 +134,37 @@ export function WorldMapView({ onMove, onPortalReady, onPortalUnready, onPortalE
     return list;
   }, [worldMap, worldMembers, myCharacterId, pathPreview]);
 
+  const visibleTiles = useMemo(() => {
+    const set = new Set<string>();
+    if (!worldMap || !losTiles) return set;
+    const observers: { x: number; y: number }[] = [];
+    for (const m of worldMembers) {
+      observers.push({ x: m.pos.x, y: m.pos.y });
+    }
+    for (const obs of observers) {
+      for (const p of getVisibleTiles(losTiles, obs, 200)) {
+        set.add(`${p.x},${p.y}`);
+      }
+    }
+    for (const i of worldMap.interactables) set.add(`${i.x},${i.y}`);
+    for (const p of worldMap.portals) set.add(`${p.x},${p.y}`);
+    return set;
+  }, [losTiles, worldMap, worldMembers]);
+
+  useEffect(() => {
+    if (!currentWorldId || visibleTiles.size === 0) return;
+    markVisited(currentWorldId, visibleTiles);
+  }, [currentWorldId, visibleTiles, markVisited]);
+
+  const exploredTiles = useMemo(() => {
+    if (!currentWorldId) return new Set<string>();
+    return visitedTilesByWorld[currentWorldId] ?? new Set<string>();
+  }, [currentWorldId, visitedTilesByWorld]);
+
   const handleTileClick = useCallback((x: number, y: number) => {
     if (!worldMap || !mine) return;
     const clickedInteractable = worldMap.interactables.find((i) => i.x === x && i.y === y);
-    if (clickedInteractable && mine.pos.x === x && mine.pos.y === y) {
+    if (clickedInteractable && clickedInteractable.kind !== 'sign' && mine.pos.x === x && mine.pos.y === y) {
       onInteract(clickedInteractable.id);
       return;
     }
@@ -116,14 +179,55 @@ export function WorldMapView({ onMove, onPortalReady, onPortalUnready, onPortalE
 
   const charLookup = (tileType: string) => OVERWORLD_CHARS[tileType as TileKind] ?? null;
 
+  const handleGridMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (signTooltipMap.size === 0) {
+      if (hoveredSign !== null) setHoveredSign(null);
+      return;
+    }
+    const wrap = gridWrapRef.current;
+    if (!wrap) return;
+    const rows = wrap.querySelectorAll('.room-row');
+    if (rows.length === 0) return;
+    let foundTip: string | null = null;
+    for (let yi = 0; yi < rows.length; yi++) {
+      const row = rows[yi] as HTMLElement;
+      const rect = row.getBoundingClientRect();
+      if (
+        e.clientY >= rect.top &&
+        e.clientY < rect.bottom &&
+        e.clientX >= rect.left &&
+        e.clientX < rect.right
+      ) {
+        const charWidth = rect.width / tileGrid.width;
+        const xi = Math.floor((e.clientX - rect.left) / charWidth);
+        const tip = signTooltipMap.get(`${xi},${yi}`);
+        if (tip) foundTip = tip;
+        break;
+      }
+    }
+    if (foundTip !== hoveredSign) setHoveredSign(foundTip);
+  };
+
+  const handleGridMouseLeave = () => {
+    if (hoveredSign !== null) setHoveredSign(null);
+  };
+
   return (
     <div className="world-map-container">
-      <TileGridView
-        tileGrid={tileGrid}
-        entities={entities}
-        charLookup={charLookup}
-        onTileClick={handleTileClick}
-      />
+      <div
+        ref={gridWrapRef}
+        onMouseMove={handleGridMouseMove}
+        onMouseLeave={handleGridMouseLeave}
+      >
+        <TileGridView
+          tileGrid={tileGrid}
+          entities={entities}
+          charLookup={charLookup}
+          onTileClick={handleTileClick}
+          visibleTiles={visibleTiles}
+          exploredTiles={exploredTiles}
+        />
+      </div>
       {standingOnInteractable && (
         <div className="overworld-interact-prompt">
           [E] {standingOnInteractable.label ?? `Use ${standingOnInteractable.kind}`}
@@ -160,6 +264,7 @@ export function WorldMapView({ onMove, onPortalReady, onPortalUnready, onPortalE
           </div>
         </div>
       )}
+      <SignTooltip text={hoveredSign} />
     </div>
   );
 }

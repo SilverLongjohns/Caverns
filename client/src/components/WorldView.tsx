@@ -1,11 +1,10 @@
 import { useGameStore } from '../store/gameStore.js';
-import { WorldMapView } from './WorldMapView.js';
+import { TownView } from './TownView.js';
 import { StashModal } from './StashModal.js';
 import { ShopModal } from './ShopModal.js';
 
 interface Props {
   onLeaveWorld: () => void;
-  onMove: (x: number, y: number) => void;
   onPortalReady: () => void;
   onPortalUnready: () => void;
   onPortalEnter: () => void;
@@ -21,7 +20,6 @@ interface Props {
 
 export function WorldView({
   onLeaveWorld,
-  onMove,
   onPortalReady,
   onPortalUnready,
   onPortalEnter,
@@ -49,8 +47,7 @@ export function WorldView({
       </header>
       <div className="world-body">
         <main className="world-main">
-          <WorldMapView
-            onMove={onMove}
+          <TownView
             onPortalReady={onPortalReady}
             onPortalUnready={onPortalUnready}
             onPortalEnter={onPortalEnter}

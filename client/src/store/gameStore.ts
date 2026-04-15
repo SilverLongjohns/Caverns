@@ -97,9 +97,33 @@ export interface GameStore {
   torchFuel: number;
   torchMaxFuel: number;
   exploredTiles: Set<string>;
+  visitedTiles: Record<string, Set<string>>;
+  markVisited: (worldId: string, tiles: Iterable<string>) => void;
   handleServerMessage: (msg: ServerMessage) => void;
   setLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
   reset: () => void;
+}
+
+const FOG_KEY_PREFIX = 'caverns.fog.';
+
+function loadFogFromStorage(worldId: string): Set<string> | null {
+  try {
+    const raw = localStorage.getItem(FOG_KEY_PREFIX + worldId);
+    if (!raw) return null;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return null;
+    return new Set(arr.filter((v): v is string => typeof v === 'string'));
+  } catch {
+    return null;
+  }
+}
+
+function saveFogToStorage(worldId: string, set: Set<string>): void {
+  try {
+    localStorage.setItem(FOG_KEY_PREFIX + worldId, JSON.stringify(Array.from(set)));
+  } catch {
+    // ignore quota / private mode errors
+  }
 }
 
 const initialState = {
@@ -148,12 +172,27 @@ const initialState = {
   torchFuel: 0,
   torchMaxFuel: 0,
   exploredTiles: new Set<string>(),
+  visitedTiles: {} as Record<string, Set<string>>,
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
   ...initialState,
 
   setConnectionStatus: (status) => set({ connectionStatus: status }),
+  markVisited: (worldId, tiles) => set((state) => {
+    const existing = state.visitedTiles[worldId];
+    const next = new Set(existing ?? []);
+    let changed = false;
+    for (const t of tiles) {
+      if (!next.has(t)) {
+        next.add(t);
+        changed = true;
+      }
+    }
+    if (!changed) return {};
+    saveFogToStorage(worldId, next);
+    return { visitedTiles: { ...state.visitedTiles, [worldId]: next } };
+  }),
   selectInteractable: (id) => set({ selectedInteractableId: id }),
   setLootChoice: (itemId, choice) => set((state) => ({
     lootChoices: { ...state.lootChoices, [itemId]: choice },
@@ -201,10 +240,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'world_state':
-        set({
-          currentWorld: { id: msg.worldId, name: msg.worldName },
-          worldMap: msg.map,
-          worldMembers: msg.members,
+        set((state) => {
+          const existing = state.visitedTiles[msg.worldId];
+          let visitedForWorld = existing;
+          if (!visitedForWorld) {
+            const loaded = loadFogFromStorage(msg.worldId);
+            visitedForWorld = loaded ?? new Set<string>([
+              `${msg.map.spawnTile.x},${msg.map.spawnTile.y}`,
+            ]);
+            if (!loaded) saveFogToStorage(msg.worldId, visitedForWorld);
+          }
+          return {
+            currentWorld: { id: msg.worldId, name: msg.worldName },
+            worldMap: msg.map,
+            worldMembers: msg.members,
+            visitedTiles: { ...state.visitedTiles, [msg.worldId]: visitedForWorld },
+          };
         });
         break;
 
@@ -247,18 +298,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'portal_muster_update':
-        set((state) => {
-          // Only track the muster for the portal our member is currently standing on.
-          const mine = state.worldMembers.find((m) => m.characterId === state.selectedCharacterId);
-          if (!mine) return {};
-          const onPortal = state.worldMap?.portals.find((p) => p.x === mine.pos.x && p.y === mine.pos.y);
-          if (!onPortal || onPortal.id !== msg.portalId) {
-            // Muster update for a different portal — ignore unless we were already tracking it.
-            if (state.currentPortalMuster?.portalId === msg.portalId && msg.readyMembers.length === 0) {
-              return { currentPortalMuster: null };
-            }
-            return {};
-          }
+        set(() => {
           if (msg.readyMembers.length === 0) return { currentPortalMuster: null };
           return { currentPortalMuster: { portalId: msg.portalId, readyMembers: msg.readyMembers } };
         });

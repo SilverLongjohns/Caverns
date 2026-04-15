@@ -85,7 +85,7 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
           );
         } else {
           const override = charLookup?.(tileType, x, y) ?? null;
-          const char = override ?? getTileChar(tiles as any, x, y);
+          const char = override ?? (tileType === 'pillar' ? '‖' : getTileChar(tiles as any, x, y));
           const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
           cells.push(
             <span key={x} className={tileClass}>
@@ -120,7 +120,7 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
           );
         } else {
           const override = charLookup?.(tileType, x, y) ?? null;
-          const char = override ?? getTileChar(tiles as any, x, y);
+          const char = override ?? (tileType === 'pillar' ? '‖' : getTileChar(tiles as any, x, y));
           const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
           cells.push(
             <span key={x} className={tileClass}>
