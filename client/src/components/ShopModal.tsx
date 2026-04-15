@@ -1,5 +1,23 @@
+import { useEffect, useState } from 'react';
 import type { Item } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore.js';
+
+function pickLine(): string {
+  return SHOPKEEP_LINES[Math.floor(Math.random() * SHOPKEEP_LINES.length)];
+}
+
+const SHOPKEEP_LINES = [
+  '"... Enough questions. Are you buying something?"',
+  '"Coin on the counter or hands off the wares, sump."',
+  '"I\u2019ve seen sharper blades in a sewing kit. Upgrade?"',
+  '"Everything has a price."',
+  '"Down from the Halls, are you? Be a dear and die somewhere obvious."',
+  '"Buy low, sell cheap, loot it off your corpse."',
+  '"Don\u2019t touch what you can\u2019t afford."',
+  '"Fresh stock, honest weights. Standard arrangement."',
+  '"You break it, you bleed for it."',
+  '"I don\u2019t haggle."',
+];
 
 interface Props {
   onBuy: (shopId: string, slotType: 'fixed' | 'rotating', index: number) => void;
@@ -11,6 +29,11 @@ interface Props {
 export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
   const shop = useGameStore((s) => s.openShop);
   const error = useGameStore((s) => s.shopError);
+  const [greeting, setGreeting] = useState(pickLine);
+  const isOpen = shop !== null;
+  useEffect(() => {
+    if (isOpen) setGreeting(pickLine());
+  }, [isOpen]);
   if (!shop) return null;
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -24,6 +47,20 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
           <button className="shop-close-btn" onClick={onClose}>×</button>
         </header>
 
+        <div className="shop-body">
+          <aside className="shop-keeper-col">
+            <div className="town-portrait shop-keeper-portrait">
+              <img
+                className="town-portrait-img shop-keeper-portrait-img"
+                src="/portraits/shopkeep.png"
+                alt="Shopkeeper"
+              />
+            </div>
+            <div className="shop-keeper-name">The Proprietor</div>
+            <div className="shop-keeper-line">{greeting}</div>
+          </aside>
+
+          <div className="shop-main">
         {error && <div className="shop-error">{error}</div>}
 
         <section className="shop-section">
@@ -90,6 +127,8 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
             ))}
           </div>
         </section>
+          </div>
+        </div>
       </div>
     </div>
   );

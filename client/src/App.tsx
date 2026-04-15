@@ -101,7 +101,6 @@ export function App() {
       content = (
         <WorldView
           onLeaveWorld={actions.leaveWorld}
-          onMove={actions.overworldMove}
           onPortalReady={actions.portalReady}
           onPortalUnready={actions.portalUnready}
           onPortalEnter={actions.portalEnter}

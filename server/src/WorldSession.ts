@@ -199,7 +199,6 @@ export class WorldSession {
     if (!member) return null;
     const it = this.map.interactables.find((i) => i.id === interactableId);
     if (!it) return null;
-    if (it.x !== member.pos.x || it.y !== member.pos.y) return null;
     return it;
   }
 
@@ -223,7 +222,7 @@ export class WorldSession {
   setReadyAtPortal(connectionId: string): 'ok' | 'not_on_portal' | 'not_member' {
     const member = this.members.get(connectionId);
     if (!member) return 'not_member';
-    const portal = this.getPortalAt(member.pos);
+    const portal = this.getPortalAt(member.pos) ?? this.map.portals[0];
     if (!portal) return 'not_on_portal';
 
     let muster = this.musters.get(portal.id);
@@ -269,7 +268,7 @@ export class WorldSession {
   beginDungeonEntry(requesterConnectionId: string): BeginDungeonEntryResult {
     const member = this.members.get(requesterConnectionId);
     if (!member) return { status: 'not_member' };
-    const portal = this.getPortalAt(member.pos);
+    const portal = this.getPortalAt(member.pos) ?? this.map.portals[0];
     if (!portal) return { status: 'not_on_portal' };
 
     const muster = this.musters.get(portal.id);

@@ -1230,11 +1230,252 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   display: inline-block;
   position: relative;
 }
-.overworld-interact-prompt {
+
+/* === Town View === */
+.town-view {
+  padding: 2rem;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.town-panels {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+.town-panel {
+  background: rgba(20, 18, 12, 0.85);
+  border: 1px solid #5a4a2a;
+  color: #c9b37a;
+  padding: 1.25rem 1.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.town-panel-npc {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1rem;
+  min-height: 120px;
+}
+.town-portrait {
+  flex: 0 0 96px;
+  width: 96px;
+  height: 96px;
+  border: 1px solid #5a4a2a;
+  background: #050302;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+.town-portrait::before {
+  content: '';
   position: absolute;
-  bottom: 0.75rem;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.35) 2px,
+    rgba(0, 0, 0, 0.35) 3px
+  );
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: multiply;
+}
+.town-portrait::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(212, 168, 87, 0.18) 0%,
+    rgba(212, 168, 87, 0) 70%
+  );
+  pointer-events: none;
+  z-index: 3;
+  animation: portrait-flicker 4.2s infinite steps(1, end);
+}
+@keyframes portrait-flicker {
+  0%, 97%, 100% { opacity: 1; }
+  97.5% { opacity: 0.55; }
+  98% { opacity: 1; }
+  98.5% { opacity: 0.7; }
+  99% { opacity: 1; }
+}
+.town-panel-npc:hover .town-portrait {
+  border-color: #d4a857;
+}
+.town-portrait-placeholder {
+  font-size: 2.4rem;
+  color: #4a3a1e;
+  text-shadow: 0 0 6px rgba(212, 168, 87, 0.15);
+}
+.town-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  display: block;
+  filter: brightness(0.55) contrast(1.15) saturate(0.35) sepia(0.5) hue-rotate(-15deg)
+    drop-shadow(0 0 4px rgba(212, 168, 87, 0.4));
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+.town-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+.town-panel:hover:not(.town-panel-portal) {
+  border-color: #d4a857;
+  background: rgba(40, 32, 16, 0.9);
+}
+.town-panel-portal {
+  grid-column: 1 / -1;
+  cursor: default;
+  border-color: #5a3;
+}
+.town-panel-icon {
+  font-size: 1.8rem;
+  color: #d4a857;
+}
+.town-panel-portal .town-panel-icon {
+  color: #8f5;
+}
+.town-panel-title {
+  font-size: 1.1rem;
+  color: #e9d59a;
+  text-shadow: 0 0 3px rgba(212, 168, 87, 0.3);
+}
+.town-panel-desc {
+  font-size: 0.85rem;
+  color: #8a7a52;
+}
+.town-muster {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #3a4a2a;
+}
+.town-muster-count {
+  color: #8f5;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+.town-muster-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.town-muster-member {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #3a5a2a;
+  background: rgba(0, 0, 0, 0.4);
+  font-size: 0.85rem;
+}
+.town-muster-empty {
+  color: #6a6052;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+.town-muster-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.town-btn {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #5a4a2a;
+  color: #c9b37a;
+  padding: 0.45rem 1rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.town-btn:hover:not(:disabled) {
+  border-color: #d4a857;
+  color: #e9d59a;
+}
+.town-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.town-btn-enter {
+  border-color: #5a3;
+  color: #8f5;
+}
+.town-btn-enter:hover:not(:disabled) {
+  border-color: #8f5;
+  color: #cfc;
+}
+.bulletin-modal {
+  background: rgba(20, 18, 12, 0.96);
+  border: 1px solid #5a4a2a;
+  color: #c9b37a;
+  padding: 0;
+  min-width: 420px;
+  max-width: 560px;
+}
+.bulletin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #3a2e1a;
+}
+.bulletin-header h2 {
+  margin: 0;
+  color: #e9d59a;
+  font-size: 1.1rem;
+}
+.bulletin-close {
+  background: none;
+  border: none;
+  color: #c9b37a;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+.bulletin-body {
+  padding: 1.5rem 1.25rem;
+}
+.bulletin-empty {
+  color: #8a7a52;
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0;
+}
+.sign-tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: #1a1812;
+  border: 1px solid #d9b36a;
+  color: #d9b36a;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  z-index: 1000;
+  text-shadow: 0 0 2px rgba(217, 179, 106, 0.3);
+  max-width: 280px;
+}
+.overworld-interact-prompt {
+  position: fixed;
+  bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 500;
   background: rgba(0, 0, 0, 0.85);
   border: 1px solid #d4a857;
   color: #d4a857;
@@ -1246,9 +1487,10 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   z-index: 5;
 }
 .portal-muster-panel {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 500;
   background: rgba(0, 0, 0, 0.88);
   border: 1px solid #5a3;
   padding: 0.75rem 1rem;
@@ -1353,6 +1595,11 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   0%, 100% { text-shadow: 0 0 4px #ff2200, 0 0 8px #aa0000; }
   50% { text-shadow: 0 0 8px #ff4400, 0 0 16px #cc2200; }
 }
+
+/* Pillars — standing stone */
+.tile-pillar { color: #8a8070; text-shadow: 0 0 3px rgba(138, 128, 112, 0.4); }
+.tile-pillar.tile-theme-rock { color: #9a8a78; text-shadow: 0 0 4px rgba(154, 138, 120, 0.5); }
+.tile-sign { color: #d9b36a; }
 
 /* Torch on wall — warm amber glow */
 .tile-wall.tile-theme-torch {
@@ -2026,6 +2273,45 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 
 .shop-modal-header h2 { flex: 1; margin: 0; color: #d4af37; }
 .shop-gold { color: #d4af37; font-weight: bold; }
+.shop-body {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+.shop-keeper-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  border: 1px solid #3a2e1a;
+  background: rgba(10, 8, 4, 0.6);
+}
+.shop-keeper-portrait {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+}
+.shop-keeper-portrait-img {
+  object-fit: contain !important;
+  object-position: center top;
+}
+.shop-main { min-width: 0; }
+.shop-keeper-name {
+  color: #d4af37;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 3px rgba(212, 175, 55, 0.3);
+  text-align: center;
+}
+.shop-keeper-line {
+  color: #9a8a52;
+  font-size: 0.85rem;
+  font-style: italic;
+  line-height: 1.35;
+  text-align: center;
+}
 .shop-close-btn {
   background: transparent; border: 1px solid #555; color: #ccc;
   width: 28px; height: 28px; font-size: 18px; cursor: pointer;
