@@ -19,7 +19,6 @@ type InteractionMode = 'none' | 'move' | 'attack';
 
 const DIRS = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
 const TILE_COSTS: Record<string, number> = { floor: 1, water: 2, hazard: 1, bridge: 1 };
-const MOVE_ANIM_STEP_MS = 120;
 
 /** BFS from start, returns map of "x,y" -> {remaining MP, parent key} */
 function bfsMovement(
@@ -82,10 +81,10 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('none');
   const [combatLogStart] = useState(() => textLog.length);
   const [hoverTile, setHoverTile] = useState<{ x: number; y: number } | null>(null);
-  // Animation uses a ref to avoid React re-renders per frame.
-  // A single counter state triggers re-render only when animation starts/ends.
-  const [animFrame, setAnimFrame] = useState(0);
-  const animPosRef = useRef<Record<string, { x: number; y: number }> | null>(null);
+
+  // Animation state: which entity is animating and its path
+  const [animatingId, setAnimatingId] = useState<string | null>(null);
+  const [animPath, setAnimPath] = useState<{ x: number; y: number }[] | null>(null);
 
   const isMyTurn = currentTurnId === playerId;
 
@@ -127,13 +126,11 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
     const targetKey = `${hoverTile.x},${hoverTile.y}`;
 
     if (bfsResult.has(targetKey)) {
-      // Target in range — show full path + ghost at target
       const path = tracePath(bfsResult, targetKey);
       return { hoverPath: path, ghostPos: hoverTile };
     }
 
-    // Target out of range — find the furthest tile we can reach along BFS path toward hover
-    // Use a simple approach: find the reachable tile closest to the hover target
+    // Target out of range — find the reachable tile closest to the hover target
     let bestKey: string | null = null;
     let bestDist = Infinity;
     for (const [key, entry] of bfsResult) {
@@ -171,46 +168,28 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
     return highlights;
   }, [movementRange, interactionMode, hoverPath]);
 
-  // Movement animation: when arenaMovePath arrives, animate tile by tile using rAF.
-  // Uses a mutable ref for positions to avoid allocating new objects per frame.
-  // Triggers re-render via a lightweight counter bump.
+  // When arenaMovePath arrives from server, set animation state.
+  // ArenaGrid handles the DOM animation; we just track start/end for the entity exclusion.
   useEffect(() => {
     if (!arenaMovePath || !arenaMovePath.path || arenaMovePath.path.length === 0) {
-      animPosRef.current = null;
-      setAnimFrame((f) => f + 1);
+      setAnimatingId(null);
+      setAnimPath(null);
       return;
     }
 
     const { moverId, path } = arenaMovePath;
-    // Build the animated positions object once, mutate in place
-    const animPos: Record<string, { x: number; y: number }> = { ...arenaPositions };
-    animPos[moverId] = path[0];
-    animPosRef.current = animPos;
-    setAnimFrame((f) => f + 1);
+    setAnimatingId(moverId);
+    setAnimPath(path);
 
-    let stepIndex = 1;
-    let lastStepTime = 0;
-    let rafId: number;
+    // Clear animation state after the path finishes playing
+    const duration = path.length * 100 + 50; // match MOVE_ANIM_STEP_MS in ArenaGrid
+    const timer = setTimeout(() => {
+      setAnimatingId(null);
+      setAnimPath(null);
+    }, duration);
 
-    const animate = (timestamp: number) => {
-      if (!lastStepTime) lastStepTime = timestamp;
-      if (timestamp - lastStepTime >= MOVE_ANIM_STEP_MS) {
-        if (stepIndex >= path.length) {
-          animPosRef.current = null;
-          setAnimFrame((f) => f + 1);
-          return;
-        }
-        animPos[moverId] = path[stepIndex];
-        stepIndex++;
-        lastStepTime = timestamp;
-        setAnimFrame((f) => f + 1);
-      }
-      rafId = requestAnimationFrame(animate);
-    };
-
-    rafId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafId);
-  }, [arenaMovePath]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => clearTimeout(timer);
+  }, [arenaMovePath]);
 
   const adjacentEnemies = useMemo(() => {
     if (!activeCombat || !arenaPositions[playerId]) return new Set<string>();
@@ -245,7 +224,6 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
 
     if (interactionMode === 'move') {
       if (ghostPos) {
-        // Move to ghost position (handles both in-range and out-of-range clicks)
         onArenaMove(ghostPos.x, ghostPos.y);
       }
       return;
@@ -273,11 +251,6 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
 
   if (!activeCombat || !arenaGrid) return null;
 
-  // Use animating positions during animation, otherwise real positions
-  // animFrame is used to trigger re-renders when animation steps change
-  void animFrame;
-  const displayPositions = animPosRef.current ?? arenaPositions;
-
   return (
     <div className="arena-view">
       <TurnOrderBar
@@ -289,7 +262,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
       <div className="arena-main">
         <ArenaGrid
           grid={arenaGrid}
-          positions={displayPositions}
+          positions={arenaPositions}
           participants={activeCombat.participants}
           playerId={playerId}
           movementRange={interactionMode === 'move' ? movementRange : null}
@@ -299,6 +272,8 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
           onTileHoverEnd={interactionMode === 'move' ? handleTileHoverEnd : undefined}
           tileHighlights={tileHighlights}
           ghostEntity={interactionMode === 'move' ? ghostPos : null}
+          animatingId={animatingId}
+          animPath={animPath}
         />
         <ArenaUnitPanel participants={activeCombat.participants} />
       </div>

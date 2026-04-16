@@ -2559,10 +2559,20 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   justify-content: center;
   align-items: center;
   padding: 12px;
+  position: relative;
 }
 
 .arena-grid-container .room-grid {
   border: 1px solid #222;
+  position: relative;
+}
+
+.arena-anim-entity {
+  position: absolute;
+  text-align: center;
+  pointer-events: none;
+  z-index: 10;
+  font-weight: bold;
 }
 
 .arena-grid-container .room-row span {
