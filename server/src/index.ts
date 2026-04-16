@@ -446,15 +446,11 @@ wss.on('connection', (ws) => {
           sendTo(playerId, { type: 'world_error', reason: 'Invite code not found' });
           break;
         }
-        if (world.owner_account_id === ctx.accountId) {
-          sendTo(playerId, { type: 'world_error', reason: 'You already own this world' });
-          break;
+        const alreadyMember = world.owner_account_id === ctx.accountId
+          || await worldRepo.isMember(world.id, ctx.accountId);
+        if (!alreadyMember) {
+          await worldRepo.addMember(world.id, ctx.accountId);
         }
-        if (await worldRepo.isMember(world.id, ctx.accountId)) {
-          sendTo(playerId, { type: 'world_error', reason: 'You are already a member' });
-          break;
-        }
-        await worldRepo.addMember(world.id, ctx.accountId);
         ctx.selectedWorldId = world.id;
         sendTo(playerId, { type: 'world_selected', worldId: world.id, inviteCode: world.invite_code });
         await sendCharacterListForWorld(ws, ctx.accountId, world.id);
