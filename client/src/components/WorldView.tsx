@@ -2,6 +2,7 @@ import { useGameStore } from '../store/gameStore.js';
 import { TownView } from './TownView.js';
 import { StashModal } from './StashModal.js';
 import { ShopModal } from './ShopModal.js';
+import { getClassPortrait } from '../classPortraits.js';
 
 interface Props {
   onLeaveWorld: () => void;
@@ -57,13 +58,25 @@ export function WorldView({
         <aside className="world-side">
           <h3 className="world-side-title">Party</h3>
           <ul className="world-member-list">
-            {members.map((m) => (
-              <li key={m.connectionId} className="world-member">
-                <span className={`world-member-name class-${m.className}`}>{m.characterName}</span>
-                <span className="world-member-meta">Lv {m.level} {m.className}</span>
-                <span className="world-member-meta">{m.displayName}</span>
-              </li>
-            ))}
+            {members.map((m) => {
+              const portrait = getClassPortrait(m.className);
+              return (
+                <li key={m.connectionId} className="world-member">
+                  <div className="town-portrait world-member-portrait">
+                    {portrait ? (
+                      <img className="town-portrait-img" src={portrait} alt={m.className} />
+                    ) : (
+                      <span className="town-portrait-placeholder">☉</span>
+                    )}
+                  </div>
+                  <div className="world-member-info">
+                    <span className={`world-member-name class-${m.className}`}>{m.characterName}</span>
+                    <span className="world-member-meta">Lv {m.level} {m.className}</span>
+                    <span className="world-member-meta">{m.displayName}</span>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </aside>
       </div>

@@ -26,6 +26,7 @@ function starterConsumables() {
 export interface CreateCharacterInput {
   name: string;
   class: string;
+  statAllocations: Record<string, number>;
 }
 
 export class CharacterRepository {
@@ -54,6 +55,7 @@ export class CharacterRepository {
         world_id: worldId,
         name: input.name.trim(),
         class: input.class,
+        stat_allocations: JSON.stringify(input.statAllocations) as never,
         equipment: JSON.stringify(starterEquipment(input.class)),
         inventory: JSON.stringify(Array(7).fill(null)),
         consumables: JSON.stringify(starterConsumables()),

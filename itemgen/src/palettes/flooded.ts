@@ -15,12 +15,12 @@ export const FLOODED_PALETTE: BiomePalette = {
     adjectives: [
       'corroded', 'briny', 'sunken', 'waterlogged', 'salt-crusted',
       'barnacled', 'drowned', 'murky', 'tidal', 'fathomless',
-      'drenched', 'sodden', 'submerged', 'brackish', 'abyssal',
+      'pitted', 'sodden', 'seized', 'brackish', 'abyssal',
     ],
     prefixes: [
       'Tide', 'Depth', 'Brine', 'Wave', 'Surge',
       'Current', 'Abyss', 'Torrent', 'Reef', 'Kelp',
-      'Ebb', 'Shoal', 'Drift', 'Maelstrom', 'Chasm',
+      'Ebb', 'Shoal', 'Drift', 'Rust', 'Chasm',
     ],
     suffixes: [
       'crash', 'surge', 'tide', 'current', 'undertow',

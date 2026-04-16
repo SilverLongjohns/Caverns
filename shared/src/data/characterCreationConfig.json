@@ -1,0 +1,6 @@
+{
+  "pointBudget": 10,
+  "perStatMin": 0,
+  "perStatMax": 5,
+  "statIds": ["vitality", "ferocity", "toughness", "speed", "tactics"]
+}

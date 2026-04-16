@@ -45,8 +45,9 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
       send({ type: 'allocate_stat', statId, points }),
     login: (name: string) => send({ type: 'login', name }),
     logout: () => send({ type: 'logout' }),
-    createCharacter: (name: string, className: string) =>
-      send({ type: 'create_character', name, class: className }),
+    createCharacter: useCallback((name: string, className: string, statPoints: Record<string, number>) => {
+      send({ type: 'create_character', name, class: className, statPoints });
+    }, [send]),
     selectCharacter: (characterId: string) => {
       send({ type: 'select_character', characterId });
       useGameStore.setState({ selectedCharacterId: characterId });

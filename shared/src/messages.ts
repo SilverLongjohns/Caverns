@@ -116,6 +116,7 @@ export interface CreateCharacterMessage {
   type: 'create_character';
   name: string;
   class: string;
+  statPoints: Record<string, number>;
 }
 
 export interface SelectCharacterMessage {
@@ -279,6 +280,7 @@ export interface WorldListMessage {
 export interface WorldSelectedMessage {
   type: 'world_selected';
   worldId: string;
+  inviteCode: string;
 }
 
 export interface WorldErrorMessage {
@@ -352,6 +354,8 @@ export interface AuthResultMessage {
   token: string;
   account: AccountSummary;
   characters: CharacterSummary[];
+  selectedWorldId: string | null;
+  selectedWorldInviteCode: string | null;
 }
 
 export interface AuthErrorMessage {

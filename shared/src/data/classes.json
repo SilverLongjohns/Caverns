@@ -1,15 +1,15 @@
 [
   {
     "id": "vanguard",
-    "displayName": "Vanguard",
-    "description": "A stalwart defender who draws enemy attention and shields allies.",
+    "displayName": "Templar",
+    "description": "A plated bulwark who pulls fire and holds the line.",
     "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
     "starterWeaponId": "vanguard_iron_mace",
     "starterOffhandId": "vanguard_tower_shield",
     "abilities": [
       {
         "id": "shield_wall",
-        "name": "Shield Wall",
+        "name": "Null Ward",
         "description": "Taunt all enemies for 2 turns. Gain +50% defense.",
         "energyCost": 15,
         "targetType": "none",
@@ -21,7 +21,7 @@
       },
       {
         "id": "rally",
-        "name": "Rally",
+        "name": "Banner Pulse",
         "description": "All allies gain +3 defense for 2 turns.",
         "energyCost": 20,
         "targetType": "none",
@@ -34,15 +34,15 @@
   },
   {
     "id": "shadowblade",
-    "displayName": "Shadowblade",
-    "description": "A lethal striker who hits fast and picks pockets.",
-    "baseStats": { "maxHp": 35, "damage": 7, "defense": 1, "initiative": 9 },
+    "displayName": "Phaseknife",
+    "description": "A blink-footed killer who slips in, opens a throat, and is gone.",
+    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
     "starterWeaponId": "shadowblade_twin_daggers",
     "starterOffhandId": "shadowblade_smoke_cloak",
     "abilities": [
       {
         "id": "backstab",
-        "name": "Backstab",
+        "name": "Phase Strike",
         "description": "Deal 2.5x damage, bypass target defense.",
         "energyCost": 25,
         "targetType": "enemy",
@@ -53,7 +53,7 @@
       },
       {
         "id": "pickpocket",
-        "name": "Pickpocket",
+        "name": "Glean",
         "description": "30% chance for extra loot after combat.",
         "energyCost": 0,
         "targetType": "none",
@@ -67,15 +67,15 @@
   },
   {
     "id": "cleric",
-    "displayName": "Cleric",
-    "description": "A holy healer who mends wounds and wards against death.",
-    "baseStats": { "maxHp": 40, "damage": 4, "defense": 2, "initiative": 5 },
+    "displayName": "Suturist",
+    "description": "A field surgeon who knits flesh and keeps the dying upright.",
+    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
     "starterWeaponId": "cleric_blessed_staff",
     "starterOffhandId": "cleric_holy_symbol",
     "abilities": [
       {
         "id": "heal",
-        "name": "Heal",
+        "name": "Suture",
         "description": "Restore 30% of target ally's max HP.",
         "energyCost": 10,
         "targetType": "ally",
@@ -86,7 +86,7 @@
       },
       {
         "id": "blessed_ward",
-        "name": "Blessed Ward",
+        "name": "Crash Graft",
         "description": "Target ally cannot be downed for 1 turn.",
         "energyCost": 20,
         "targetType": "ally",
@@ -99,15 +99,15 @@
   },
   {
     "id": "artificer",
-    "displayName": "Artificer",
-    "description": "A cunning inventor who disrupts enemies and scouts ahead.",
-    "baseStats": { "maxHp": 35, "damage": 5, "defense": 1, "initiative": 7 },
+    "displayName": "Junk Prophet",
+    "description": "A ragged tinkerer whose scrap tools break enemy nerve.",
+    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
     "starterWeaponId": "artificer_repeating_crossbow",
     "starterOffhandId": "artificer_toolkit",
     "abilities": [
       {
         "id": "smoke_bomb",
-        "name": "Smoke Bomb",
+        "name": "Static Hymn",
         "description": "All enemies skip their next turn.",
         "energyCost": 25,
         "targetType": "none",
@@ -118,7 +118,7 @@
       },
       {
         "id": "scout_drone",
-        "name": "Scout Drone",
+        "name": "Reliquary Drone",
         "description": "Detect enemies in adjacent rooms.",
         "energyCost": 0,
         "targetType": "none",

@@ -17,7 +17,6 @@ import type {
 export type ClientView =
   | 'connecting'
   | 'login'
-  | 'world_select'
   | 'character_select'
   | 'in_world'
   | 'in_dungeon'
@@ -42,6 +41,7 @@ export interface GameStore {
   selectedCharacterId: string | null;
   worlds: WorldSummary[];
   selectedWorldId: string | null;
+  selectedWorldInviteCode: string | null;
   worldError: string | null;
   currentWorld: { id: string; name: string } | null;
   worldMap: OverworldMap | null;
@@ -134,6 +134,7 @@ const initialState = {
   selectedCharacterId: null,
   worlds: [],
   selectedWorldId: null,
+  selectedWorldInviteCode: null,
   worldError: null,
   currentWorld: null,
   worldMap: null,
@@ -206,6 +207,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
           authStatus: 'authenticated',
           account: msg.account,
           characters: msg.characters,
+          selectedWorldId: msg.selectedWorldId,
+          selectedWorldInviteCode: msg.selectedWorldInviteCode,
           authError: null,
         });
         break;
@@ -232,7 +235,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'world_selected':
-        set({ selectedWorldId: msg.worldId, worldError: null });
+        set({ selectedWorldId: msg.worldId, selectedWorldInviteCode: msg.inviteCode, worldError: null });
         break;
 
       case 'world_error':
@@ -751,8 +754,7 @@ export function selectCurrentView(state: GameStore): ClientView {
   if (state.gameOver) return 'game_over';
   if (state.connectionStatus === 'in_game') return 'in_dungeon';
   if (state.currentWorld) return 'in_world';
-  if (state.authStatus === 'authenticated' && state.selectedWorldId && !state.selectedCharacterId) return 'character_select';
-  if (state.authStatus === 'authenticated' && !state.selectedWorldId) return 'world_select';
+  if (state.authStatus === 'authenticated') return 'character_select';
   if (state.authStatus === 'unauthenticated') return 'login';
   return 'connecting';
 }

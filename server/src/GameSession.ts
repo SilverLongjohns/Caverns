@@ -24,8 +24,10 @@ import {
   getPlayerEquippedEffects,
   computePlayerStats,
   type EquippedEffect,
+  type EquipmentSlot,
 } from '@caverns/shared';
 import { resolveDrops, type DropResult } from './DropResolver.js';
+import { generateItem } from '@caverns/itemgen';
 import { PlayerManager } from './PlayerManager.js';
 import { CombatManager, type CombatPlayerInfo } from './CombatManager.js';
 import { LootManager } from './LootManager.js';
@@ -74,6 +76,7 @@ export class GameSession {
   private items: Map<string, Item>;
   private revealedRooms = new Set<string>();
   private clearedRooms = new Set<string>();
+  private roomDropsProcessed = new Set<string>();
   private solvedPuzzles = new Set<string>();
   private activePuzzleSolver = new Map<string, string>(); // roomId -> playerId
   private combats = new Map<string, CombatManager>();
@@ -1348,6 +1351,11 @@ export class GameSession {
         this.resolveAndRouteDrops(roomId, mob.drops, room.encounter.skullRating);
       }
     }
+
+    if (room.drops && !this.roomDropsProcessed.has(roomId)) {
+      this.roomDropsProcessed.add(roomId);
+      this.resolveAndRouteDrops(roomId, room.drops, room.encounter?.skullRating);
+    }
   }
 
   private handleLootAwarded(item: Item, winnerId: string): void {
@@ -1625,8 +1633,12 @@ export class GameSession {
 
     const isSolo = this.playerIds.length === 1;
     const isSecretRoom = player.roomId.startsWith('secret_');
+    // Secret-room loot is freshly generated from itemgen so it never pulls
+    // from the static content pool (which is just consumables + starter gear
+    // in procedural dungeons). Bias rarity heavily toward rare+ since these
+    // rooms are a reward.
     const lootOverride = isSecretRoom
-      ? this.content.items.filter(i => i.rarity === 'rare' || i.rarity === 'legendary' || i.rarity === 'unique')
+      ? this.buildSecretRoomLootPool()
       : undefined;
     const result = this.interactionResolver.resolve(
       playerId,
@@ -1747,13 +1759,20 @@ export class GameSession {
     if (!this.revealedRooms.has(targetRoomId)) {
       this.revealedRooms.add(targetRoomId);
       this.broadcast({ type: 'room_reveal', room: targetRoom });
-      const newGrid = this.createRoomGrid(targetRoomId);
-      if (targetRoom.encounter && !this.clearedRooms.has(targetRoomId)) {
-        const template = this.mobs.get(targetRoom.encounter.mobId);
-        if (template) {
-          const mobs = this.buildEncounterMobs(targetRoomId, template);
-          this.mobAIManager.registerRoom(targetRoomId, newGrid, mobs);
-        }
+    }
+    if (!this.roomGrids.has(targetRoomId)) {
+      this.createRoomGrid(targetRoomId);
+    }
+    if (
+      targetRoom.encounter &&
+      !this.clearedRooms.has(targetRoomId) &&
+      !this.roomMobInstances.has(targetRoomId)
+    ) {
+      const template = this.mobs.get(targetRoom.encounter.mobId);
+      if (template) {
+        const grid = this.roomGrids.get(targetRoomId)!;
+        const mobs = this.buildEncounterMobs(targetRoomId, template);
+        this.mobAIManager.registerRoom(targetRoomId, grid, mobs);
       }
     }
 
@@ -1836,10 +1855,6 @@ export class GameSession {
   debugTeleport(playerId: string, roomId: string): void {
     const room = this.rooms.get(roomId);
     if (!room) return;
-    // Ensure room grid exists (may not if room was only revealed via debugRevealAll)
-    if (!this.roomGrids.has(roomId)) {
-      this.createRoomGrid(roomId);
-    }
     this.teleportPlayer(playerId, roomId, 'You are teleported through space...');
   }
 
@@ -1865,6 +1880,22 @@ export class GameSession {
         this.sendTo(playerId, { type: 'room_reveal', room });
       }
     }
+  }
+
+  private buildSecretRoomLootPool(): Item[] {
+    const slots: EquipmentSlot[] = ['weapon', 'offhand', 'armor', 'accessory'];
+    const pool: Item[] = [];
+    for (const slot of slots) {
+      pool.push(
+        generateItem({
+          slot,
+          skullRating: 2,
+          biomeId: this.biomeId,
+          rarityWeights: { rare: 70, legendary: 25, uncommon: 5 },
+        }),
+      );
+    }
+    return pool;
   }
 
   private createSecretRoom(interactableId: string, sourceRoomId: string): void {

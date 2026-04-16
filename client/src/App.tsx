@@ -4,7 +4,6 @@ import { useGameActions } from './hooks/useGameActions.js';
 import { useGridMovement } from './hooks/useGridMovement.js';
 import { LoginScreen } from './components/LoginScreen.js';
 import { CharacterSelect } from './components/CharacterSelect.js';
-import { WorldSelect } from './components/WorldSelect.js';
 import { WorldView } from './components/WorldView.js';
 import { clearSessionToken } from './auth/sessionStorage.js';
 import { TextLog } from './components/TextLog.js';
@@ -76,17 +75,6 @@ export function App() {
     case 'login':
       content = <LoginScreen onLogin={actions.login} />;
       break;
-    case 'world_select':
-      content = (
-        <WorldSelect
-          onList={actions.listWorlds}
-          onSelect={actions.selectWorld}
-          onCreate={actions.createWorld}
-          onJoin={actions.joinWorld}
-          onLogout={handleLogout}
-        />
-      );
-      break;
     case 'character_select':
       content = (
         <CharacterSelect
@@ -94,6 +82,7 @@ export function App() {
           onCreate={actions.createCharacter}
           onDelete={actions.deleteCharacter}
           onLogout={handleLogout}
+          onJoinWorld={actions.joinWorld}
         />
       );
       break;

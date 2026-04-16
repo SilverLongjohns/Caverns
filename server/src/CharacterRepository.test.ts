@@ -31,28 +31,28 @@ describe.skipIf(!process.env.DATABASE_URL)('CharacterRepository', () => {
   afterEach(async () => { await cleanup(); });
 
   it('creates and lists characters', async () => {
-    await repo.create(accountId, worldId, { name: 'Slasher', class: 'vanguard' });
-    await repo.create(accountId, worldId, { name: 'Sparker', class: 'pyromancer' });
+    await repo.create(accountId, worldId, { name: 'Slasher', class: 'vanguard', statAllocations: {} });
+    await repo.create(accountId, worldId, { name: 'Sparker', class: 'pyromancer', statAllocations: {} });
     const list = await repo.listForWorld(accountId, worldId);
     expect(list.length).toBe(2);
     expect(list.map((c) => c.name).sort()).toEqual(['Slasher', 'Sparker']);
   });
 
   it('rejects creation past the slot cap', async () => {
-    await repo.create(accountId, worldId, { name: 'A', class: 'vanguard' });
-    await repo.create(accountId, worldId, { name: 'B', class: 'vanguard' });
-    await repo.create(accountId, worldId, { name: 'C', class: 'vanguard' });
-    await expect(repo.create(accountId, worldId, { name: 'D', class: 'vanguard' })).rejects.toThrow(/slot/i);
+    await repo.create(accountId, worldId, { name: 'A', class: 'vanguard', statAllocations: {} });
+    await repo.create(accountId, worldId, { name: 'B', class: 'vanguard', statAllocations: {} });
+    await repo.create(accountId, worldId, { name: 'C', class: 'vanguard', statAllocations: {} });
+    await expect(repo.create(accountId, worldId, { name: 'D', class: 'vanguard', statAllocations: {} })).rejects.toThrow(/slot/i);
   });
 
   it('deletes a character', async () => {
-    const c = await repo.create(accountId, worldId, { name: 'Doomed', class: 'vanguard' });
+    const c = await repo.create(accountId, worldId, { name: 'Doomed', class: 'vanguard', statAllocations: {} });
     await repo.delete(accountId, c.id);
     expect((await repo.listForWorld(accountId, worldId)).length).toBe(0);
   });
 
   it('writes a snapshot', async () => {
-    const c = await repo.create(accountId, worldId, { name: 'Alice', class: 'vanguard' });
+    const c = await repo.create(accountId, worldId, { name: 'Alice', class: 'vanguard', statAllocations: {} });
     await repo.snapshot(c.id, {
       name: 'Alice', class: 'vanguard', level: 3, xp: 50,
       stat_allocations: { strength: 1 },
@@ -67,7 +67,7 @@ describe.skipIf(!process.env.DATABASE_URL)('CharacterRepository', () => {
   });
 
   it('marks and clears in_use', async () => {
-    const c = await repo.create(accountId, worldId, { name: 'Alice', class: 'vanguard' });
+    const c = await repo.create(accountId, worldId, { name: 'Alice', class: 'vanguard', statAllocations: {} });
     await repo.markInUse(c.id, true);
     expect((await repo.getById(c.id))?.in_use).toBe(true);
     await repo.markInUse(c.id, false);
@@ -75,7 +75,7 @@ describe.skipIf(!process.env.DATABASE_URL)('CharacterRepository', () => {
   });
 
   it('wipes carry but keeps progression', async () => {
-    const c = await repo.create(accountId, worldId, { name: 'Alice', class: 'vanguard' });
+    const c = await repo.create(accountId, worldId, { name: 'Alice', class: 'vanguard', statAllocations: {} });
     await repo.snapshot(c.id, {
       name: 'Alice', class: 'vanguard', level: 4, xp: 90,
       stat_allocations: { strength: 1 },
@@ -94,10 +94,19 @@ describe.skipIf(!process.env.DATABASE_URL)('CharacterRepository', () => {
   });
 
   it('clearAllInUse releases stranded locks', async () => {
-    const c = await repo.create(accountId, worldId, { name: 'Alice', class: 'vanguard' });
+    const c = await repo.create(accountId, worldId, { name: 'Alice', class: 'vanguard', statAllocations: {} });
     await repo.markInUse(c.id, true);
     const cleared = await repo.clearAllInUse();
     expect(cleared).toBeGreaterThanOrEqual(1);
     expect((await repo.getById(c.id))?.in_use).toBe(false);
+  });
+
+  it('persists statAllocations from create input', async () => {
+    const ch = await repo.create(accountId, worldId, {
+      name: 'Hero',
+      class: 'vanguard',
+      statAllocations: { vitality: 3, ferocity: 2 },
+    });
+    expect(ch.stat_allocations).toEqual({ vitality: 3, ferocity: 2 });
   });
 });

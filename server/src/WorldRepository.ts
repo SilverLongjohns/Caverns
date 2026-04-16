@@ -121,6 +121,17 @@ export class WorldRepository {
       .execute();
   }
 
+  async ensureDefaultWorld(accountId: string): Promise<WorldsTable> {
+    const owned = await this.db.selectFrom('worlds')
+      .selectAll()
+      .where('owner_account_id', '=', accountId)
+      .where('name', '=', 'Default')
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst();
+    if (owned) return owned as WorldsTable;
+    return this.create(accountId, 'Default');
+  }
+
   async countMembers(worldId: string): Promise<number> {
     const result = await this.db.selectFrom('world_members')
       .select((eb) => eb.fn.countAll<string>().as('count'))

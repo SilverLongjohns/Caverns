@@ -15,17 +15,17 @@ export const CRYSTAL_PALETTE: BiomePalette = {
     adjectives: [
       'shimmering', 'prismatic', 'faceted', 'gleaming', 'radiant',
       'refracting', 'brilliant', 'crystalline', 'translucent', 'luminous',
-      'scintillating', 'sparkling', 'vibrating', 'resonant', 'fractured',
+      'scintillating', 'sparking', 'humming', 'resonant', 'fractured',
     ],
     prefixes: [
       'Prism', 'Shard', 'Gleam', 'Ray', 'Refract',
-      'Beam', 'Luster', 'Facet', 'Light', 'Quartz',
+      'Beam', 'Lens', 'Facet', 'Signal', 'Quartz',
       'Veil', 'Glint', 'Shine', 'Focus', 'Hue',
     ],
     suffixes: [
       'lance', 'flash', 'beam', 'glare', 'pulse',
       'spark', 'shard', 'glint', 'ray', 'burst',
-      'dazzle', 'refract', 'gleam', 'shine', 'radiance',
+      'dazzle', 'refract', 'gleam', 'shine', 'hum',
     ],
     baseTypes: {
       weapon: ['shard blade', 'crystal sword', 'quartz dagger', 'prism lance', 'facet spear', 'resonance staff', 'geode maul', 'lattice axe'],
