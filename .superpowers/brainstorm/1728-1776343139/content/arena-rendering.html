@@ -1,0 +1,63 @@
+<h2>How should the tactics arena render?</h2>
+<p class="subtitle">Your existing tile grid is ASCII rendered in a monospace pre block. Here are three directions for the combat arena.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Pure ASCII (same as exploration)</h3>
+      <p>Reuse the exact same TileGridView renderer. Players are <code>@</code>, mobs are letters, walls are <code>#</code>. Movement range shown with highlight colors. Consistent with the rest of the game's CRT aesthetic. Fast to build.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="font-family: monospace; font-size: 14px; line-height: 1.3; background: #0a0a0a; color: #33ff33; padding: 16px; white-space: pre;">################
+#..............#
+#...<span style="color:#4488ff">@</span>...#...<span style="color:#ff4444">G</span>.#
+#......#.......#
+#...<span style="background:#1a3a1a">.</span><span style="background:#1a3a1a">.</span><span style="background:#1a3a1a">.</span>.......#
+#~~.<span style="background:#1a3a1a">.</span><span style="background:#1a3a1a">.</span><span style="background:#1a3a1a">.</span>..#....#
+#~~............#
+#..........<span style="color:#ff4444">S</span>..#
+#...#..........#
+#..<span style="color:#4488ff">@</span>....<span style="color:#ff4444">G</span>....#
+################
+<span style="color:#666">Movement range shown as highlighted tiles</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>ASCII with grid overlay</h3>
+      <p>Same ASCII characters but rendered on a visible grid (subtle cell borders). Makes tile boundaries obvious for counting movement. Hover/click cells to move. Slightly more "game board" feel.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.0; background: #0a0a0a; color: #33ff33; padding: 16px; white-space: pre; letter-spacing: 2px;"><span style="color:#222">┌─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┐</span>
+<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>#<span style="color:#222">│</span>
+<span style="color:#222">├─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┤</span>
+<span style="color:#222">│</span>#<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span><span style="color:#4488ff">@</span><span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>#<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span><span style="color:#ff4444">G</span><span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>#<span style="color:#222">│</span>
+<span style="color:#222">├─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┤</span>
+<span style="color:#222">│</span>#<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>~<span style="color:#222">│</span>~<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span>.<span style="color:#222">│</span><span style="color:#ff4444">S</span><span style="color:#222">│</span>.<span style="color:#222">│</span>#<span style="color:#222">│</span>
+<span style="color:#222">└─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┘</span>
+<span style="color:#666">Grid lines make tile counting easy</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Tile-based with simple sprites</h3>
+      <p>Ditch monospace text. Render a proper tile grid using small colored squares or simple emoji/unicode sprites in a CSS grid. More visual clarity for terrain types. Bigger departure from the CRT aesthetic.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="background: #0a0a0a; padding: 16px; display: inline-grid; grid-template-columns: repeat(12, 24px); grid-template-rows: repeat(6, 24px); gap: 1px;">
+          <div style="background:#333;width:24px;height:24px"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div>
+          <div style="background:#333"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#4488ff;font-weight:bold">@</div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#333"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#ff4444;font-weight:bold">G</div><div style="background:#1a1a1a"></div><div style="background:#333"></div>
+          <div style="background:#333"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a3a5a"></div><div style="background:#1a3a5a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#333"></div>
+          <div style="background:#333"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#ff4444;font-weight:bold">S</div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#333"></div>
+          <div style="background:#333"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#4488ff;font-weight:bold">@</div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#333"></div><div style="background:#1a1a1a"></div><div style="background:#1a1a1a"></div><div style="background:#333"></div>
+          <div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div><div style="background:#333"></div>
+        </div>
+        <div style="color:#666; font-size: 12px; margin-top: 8px;">Colored tile squares, bigger departure from CRT look</div>
+      </div>
+    </div>
+  </div>
+</div>

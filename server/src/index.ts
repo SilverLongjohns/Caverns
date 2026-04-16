@@ -936,6 +936,14 @@ wss.on('connection', (ws) => {
         }
         break;
       }
+      case 'arena_move': {
+        getGameSession(playerId)?.handleArenaMove(playerId, (msg as any).targetX, (msg as any).targetY);
+        break;
+      }
+      case 'arena_end_turn': {
+        getGameSession(playerId)?.handleArenaEndTurn(playerId);
+        break;
+      }
       case 'defend_result': {
         getGameSession(playerId)?.handleDefendResult(playerId, msg.damageReduction);
         break;

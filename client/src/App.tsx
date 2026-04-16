@@ -12,10 +12,12 @@ import { PlayerHUD } from './components/PlayerHUD.js';
 import { PartyPanel } from './components/PartyPanel.js';
 import { ActionBar } from './components/ActionBar.js';
 import { CombatView } from './components/CombatView.js';
+import { ArenaView } from './components/ArenaView.js';
 import { RoomView } from './components/RoomView.js';
 import { Compass } from './components/Compass.js';
 import { ChatInput } from './components/ChatInput.js';
 import { DebugPanel } from './components/DebugPanel.js';
+import { CombatIntro } from './components/CombatIntro.js';
 
 export function App() {
   const wsRef = useWebSocket();
@@ -24,9 +26,11 @@ export function App() {
   const connectionStatus = useGameStore((s) => s.connectionStatus);
   const gameOver = useGameStore((s) => s.gameOver);
   const activeCombat = useGameStore((s) => s.activeCombat);
+  const arenaGrid = useGameStore((s) => s.arenaGrid);
   const rooms = useGameStore((s) => s.rooms);
   const currentRoomId = useGameStore((s) => s.currentRoomId);
   const levelUpGlow = useGameStore((s) => s.levelUpGlow);
+  const arenaIntro = useGameStore((s) => s.arenaIntro);
 
   const inExploration = connectionStatus === 'in_game' && !gameOver && !activeCombat;
   const currentRoom = rooms[currentRoomId];
@@ -127,7 +131,13 @@ export function App() {
       content = (
         <div className="game-layout">
           <div className="main-column">
-            {activeCombat ? (
+            {activeCombat && arenaGrid ? (
+              <ArenaView
+                onCombatAction={actions.combatAction}
+                onArenaMove={actions.arenaMove}
+                onArenaEndTurn={actions.arenaEndTurn}
+              />
+            ) : activeCombat ? (
               <CombatView
                 onCombatAction={actions.combatAction}
                 onRevive={actions.revive}
@@ -177,6 +187,7 @@ export function App() {
           onGiveItem={actions.debugGiveItem}
         />
       )}
+      {arenaIntro && <CombatIntro enemyNames={arenaIntro.enemyNames} />}
       <div className="crt-overlay" />
       {levelUpGlow && <div className="level-up-glow" />}
     </>

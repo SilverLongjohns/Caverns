@@ -59,6 +59,16 @@ export interface DefendResultMessage {
   damageReduction: number;
 }
 
+export interface ArenaMoveMessage {
+  type: 'arena_move';
+  targetX: number;
+  targetY: number;
+}
+
+export interface ArenaEndTurnMessage {
+  type: 'arena_end_turn';
+}
+
 export interface PuzzleAnswerMessage {
   type: 'puzzle_answer';
   roomId: string;
@@ -244,7 +254,9 @@ export type ClientMessage =
   | StashWithdrawMessage
   | ShopBuyMessage
   | ShopSellMessage
-  | ShopRerollMessage;
+  | ShopRerollMessage
+  | ArenaMoveMessage
+  | ArenaEndTurnMessage;
 
 // === Server -> Client ===
 
@@ -399,6 +411,21 @@ export interface PlayerMovedMessage {
 export interface CombatStartMessage {
   type: 'combat_start';
   combat: CombatState;
+}
+
+export interface ArenaCombatStartMessage {
+  type: 'arena_combat_start';
+  tileGrid: import('./types.js').TileGrid;
+  positions: Record<string, { x: number; y: number }>;
+  combat: CombatState;
+}
+
+export interface ArenaPositionsUpdateMessage {
+  type: 'arena_positions_update';
+  positions: Record<string, { x: number; y: number }>;
+  movementRemaining: number;
+  path?: { x: number; y: number }[];
+  moverId: string;
 }
 
 export interface CombatTurnMessage {
@@ -704,4 +731,6 @@ export type ServerMessage =
   | DungeonReturnedMessage
   | ShopOpenedMessage
   | ShopUpdatedMessage
-  | ShopErrorMessage;
+  | ShopErrorMessage
+  | ArenaCombatStartMessage
+  | ArenaPositionsUpdateMessage;
