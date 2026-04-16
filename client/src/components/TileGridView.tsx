@@ -24,6 +24,12 @@ interface TileGridViewProps {
   charLookup?: (tileType: string, x: number, y: number) => string | null;
   /** Optional click handler for tiles. */
   onTileClick?: (x: number, y: number) => void;
+  /** Optional mouse-enter handler per tile (for hover tracking). */
+  onTileHover?: (x: number, y: number) => void;
+  /** Optional handler when mouse leaves the grid. */
+  onTileHoverEnd?: () => void;
+  /** Extra CSS classes to apply to specific tiles, keyed by "x,y". */
+  tileHighlights?: Map<string, string>;
 }
 
 const WATER_CHARS: Record<string, [string, string]> = {
@@ -46,7 +52,7 @@ const WaterChar = memo(function WaterChar({ theme }: { theme?: string | null }) 
   return <>{char}</>;
 });
 
-export function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles, charLookup, onTileClick }: TileGridViewProps) {
+export const TileGridView = memo(function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles, charLookup, onTileClick, onTileHover, onTileHoverEnd, tileHighlights }: TileGridViewProps) {
   const { width, height, tiles, themes } = tileGrid;
 
   // Build entity lookup: "x,y" -> EntityOverlay
@@ -100,10 +106,12 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
       const entity = entityMap.get(key);
       const tileType = tiles[y][x];
       const theme = themes?.[y]?.[x];
+      const highlightClass = tileHighlights?.get(key) ?? '';
 
       if (entity) {
+        const cls = highlightClass ? `${entity.className} ${highlightClass}` : entity.className;
         cells.push(
-          <span key={x} className={entity.className} style={entity.style}>
+          <span key={x} className={cls} style={entity.style}>
             {entity.char}
           </span>
         );
@@ -111,10 +119,11 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
         const tileClass = theme
           ? `tile-${tileType} tile-theme-${theme}`
           : `tile-${tileType}`;
+        const cls = highlightClass ? `${tileClass} ${highlightClass}` : tileClass;
 
         if (tileType === 'water') {
           cells.push(
-            <span key={x} className={tileClass}>
+            <span key={x} className={cls}>
               <WaterChar theme={theme} />
             </span>
           );
@@ -123,13 +132,14 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
           const char = override ?? (tileType === 'pillar' ? '‖' : getTileChar(tiles as any, x, y));
           const displayChar = (tileType === 'wall' && theme === 'torch') ? '†' : char;
           cells.push(
-            <span key={x} className={tileClass}>
+            <span key={x} className={cls}>
               {displayChar}
             </span>
           );
         }
       }
     }
+    const rowY = y;
     rows.push(
       <div
         key={y}
@@ -138,7 +148,13 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
           const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
           const charWidth = rect.width / width;
           const x = Math.floor((e.clientX - rect.left) / charWidth);
-          if (x >= 0 && x < width) onTileClick(x, y);
+          if (x >= 0 && x < width) onTileClick(x, rowY);
+        } : undefined}
+        onMouseMove={onTileHover ? (e) => {
+          const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+          const charWidth = rect.width / width;
+          const x = Math.floor((e.clientX - rect.left) / charWidth);
+          if (x >= 0 && x < width) onTileHover(x, rowY);
         } : undefined}
         style={onTileClick ? { cursor: 'pointer' } : undefined}
       >
@@ -148,7 +164,7 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
   }
 
   return (
-    <pre className="room-grid" style={{ position: 'relative' }}>
+    <pre className="room-grid" style={{ position: 'relative' }} onMouseLeave={onTileHoverEnd}>
       {rows}
       {alert && (
         <span
@@ -164,4 +180,4 @@ export function TileGridView({ tileGrid, entities, alert, visibleTiles, explored
       )}
     </pre>
   );
-}
+});

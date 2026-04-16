@@ -72,6 +72,12 @@ export interface GameStore {
   pendingDefendQte: { pendingDamage: number; actorName: string } | null;
   combatAnim: { attackerId: string; targetId: string } | null;
   dyingMobIds: Set<string>;
+  arenaGrid: import('@caverns/shared').TileGrid | null;
+  arenaPositions: Record<string, { x: number; y: number }>;
+  arenaMovementRemaining: number;
+  arenaActionTaken: boolean;
+  arenaMovePath: { moverId: string; path: { x: number; y: number }[] } | null;
+  arenaIntro: { enemyNames: string[] } | null;
   activePuzzle: { roomId: string; puzzleId: string; description: string; options: string[] } | null;
   generationStatus: 'idle' | 'generating' | 'failed';
   generationError: string | null;
@@ -160,6 +166,12 @@ const initialState = {
   pendingDefendQte: null,
   combatAnim: null,
   dyingMobIds: new Set<string>(),
+  arenaGrid: null,
+  arenaPositions: {},
+  arenaMovementRemaining: 0,
+  arenaActionTaken: false,
+  arenaMovePath: null,
+  arenaIntro: null,
   activePuzzle: null,
   generationStatus: 'idle' as const,
   generationError: null,
@@ -445,8 +457,34 @@ export const useGameStore = create<GameStore>((set, get) => ({
         set({ activeCombat: msg.combat, currentTurnId: msg.combat.currentTurnId });
         break;
 
+      case 'arena_combat_start': {
+        const enemyNames = msg.combat.participants
+          .filter((p: { type: string }) => p.type === 'mob')
+          .map((p: { name: string }) => p.name);
+        set({
+          activeCombat: msg.combat,
+          currentTurnId: msg.combat.currentTurnId,
+          arenaGrid: msg.tileGrid,
+          arenaPositions: msg.positions,
+          arenaMovementRemaining: 0,
+          arenaActionTaken: false,
+          arenaMovePath: null,
+          arenaIntro: { enemyNames },
+        });
+        setTimeout(() => useGameStore.setState({ arenaIntro: null }), 2800);
+        break;
+      }
+
+      case 'arena_positions_update':
+        set({
+          arenaPositions: msg.positions,
+          arenaMovementRemaining: msg.movementRemaining,
+          arenaMovePath: msg.path ? { moverId: msg.moverId, path: msg.path } : null,
+        });
+        break;
+
       case 'combat_turn':
-        set({ currentTurnId: msg.currentTurnId });
+        set({ currentTurnId: msg.currentTurnId, arenaActionTaken: false });
         break;
 
       case 'combat_action_result':
@@ -509,7 +547,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'combat_end':
-        set({ activeCombat: null, currentTurnId: null, pendingDefendQte: null, dyingMobIds: new Set() });
+        set({
+          activeCombat: null, currentTurnId: null,
+          pendingDefendQte: null, dyingMobIds: new Set(),
+          arenaGrid: null, arenaPositions: {},
+          arenaMovementRemaining: 0, arenaActionTaken: false,
+          arenaMovePath: null, arenaIntro: null,
+        });
         break;
 
       case 'loot_prompt':
@@ -556,6 +600,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
           pendingDefendQte: null,
           combatAnim: null,
           dyingMobIds: new Set(),
+          arenaGrid: null, arenaPositions: {},
+          arenaMovementRemaining: 0, arenaActionTaken: false,
+          arenaMovePath: null, arenaIntro: null,
         });
         break;
 

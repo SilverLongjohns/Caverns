@@ -29,7 +29,9 @@ import {
 import { resolveDrops, type DropResult } from './DropResolver.js';
 import { generateItem } from '@caverns/itemgen';
 import { PlayerManager } from './PlayerManager.js';
-import { CombatManager, type CombatPlayerInfo } from './CombatManager.js';
+import { type CombatPlayerInfo } from './CombatManager.js';
+import { ArenaCombatManager } from './ArenaCombatManager.js';
+import { buildArenaGrid, placeStartingPositions } from './arenaGridBuilder.js';
 import { LootManager } from './LootManager.js';
 import { AbilityResolver } from './AbilityResolver.js';
 import { InteractionResolver } from './InteractionResolver.js';
@@ -79,7 +81,7 @@ export class GameSession {
   private roomDropsProcessed = new Set<string>();
   private solvedPuzzles = new Set<string>();
   private activePuzzleSolver = new Map<string, string>(); // roomId -> playerId
-  private combats = new Map<string, CombatManager>();
+  private combats = new Map<string, ArenaCombatManager>();
   private playerManager = new PlayerManager();
   private lootManager: LootManager;
   private content: DungeonContent;
@@ -753,7 +755,18 @@ export class GameSession {
       this.playerManager.setStatus(p.id, 'in_combat');
       this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(p.id)! });
     }
-    const combat = new CombatManager(roomId, combatPlayers, mobInstances, playerEffects, usedDungeonEffects);
+    // Generate arena grid
+    const biomeId = this.content.biomeId;
+    const room = this.rooms.get(roomId)!;
+    const arenaGrid = buildArenaGrid(room.type, biomeId);
+    const playerIds = combatPlayers.map(p => p.id);
+    const mobInstanceIds = mobInstances.map(m => m.instanceId);
+    const positions = placeStartingPositions(arenaGrid, playerIds, mobInstanceIds);
+
+    const combat = new ArenaCombatManager(
+      roomId, arenaGrid, combatPlayers, mobInstances, positions,
+      playerEffects, usedDungeonEffects,
+    );
     this.combats.set(roomId, combat);
 
     // Build encounter text
@@ -785,8 +798,14 @@ export class GameSession {
       message: encounterText,
       logType: 'combat',
     });
-    this.broadcastToRoom(roomId, { type: 'combat_start', combat: combat.getState() });
+    this.broadcastToRoom(roomId, {
+      type: 'arena_combat_start',
+      tileGrid: arenaGrid,
+      positions,
+      combat: combat.getCombatState(),
+    } as any);
     const firstTurnId = combat.getCurrentTurnId();
+    combat.startTurn(firstTurnId);
     if (combat.isMobTurn(firstTurnId)) {
       this.processMobTurn(roomId, combat);
     } else {
@@ -807,7 +826,42 @@ export class GameSession {
       className: player.className,
     }, getPlayerEquippedEffects(player), [...(player.usedEffects ?? [])]);
     this.broadcastToRoom(roomId, { type: 'text_log', message: `${player.name} joins the fight!`, logType: 'combat' });
-    this.broadcastToRoom(roomId, { type: 'combat_start', combat: combat.getState() });
+    this.broadcastToRoom(roomId, {
+      type: 'arena_combat_start',
+      tileGrid: combat.getGrid(),
+      positions: combat.getAllPositions(),
+      combat: combat.getCombatState(),
+    } as any);
+  }
+
+  handleArenaMove(playerId: string, targetX: number, targetY: number): void {
+    const player = this.playerManager.getPlayer(playerId);
+    if (!player || player.status !== 'in_combat') return;
+    const combat = this.combats.get(player.roomId);
+    if (!combat || !combat.isPlayerTurn(playerId)) return;
+
+    const result = combat.handleMove(playerId, { x: targetX, y: targetY });
+    if (result.success) {
+      this.broadcastToRoom(player.roomId, {
+        type: 'arena_positions_update',
+        positions: combat.getAllPositions(),
+        movementRemaining: result.movementRemaining,
+        path: result.path,
+        moverId: playerId,
+      } as any);
+    } else {
+      this.sendTo(playerId, { type: 'error', message: 'Cannot move there.' });
+    }
+  }
+
+  handleArenaEndTurn(playerId: string): void {
+    const player = this.playerManager.getPlayer(playerId);
+    if (!player || player.status !== 'in_combat') return;
+    const combat = this.combats.get(player.roomId);
+    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    combat.cancelAfkTimer();
+    combat.advanceTurn();
+    this.afterCombatTurn(player.roomId, combat);
   }
 
   handleCombatAction(
@@ -821,6 +875,20 @@ export class GameSession {
     const combat = this.combats.get(player.roomId);
     if (!combat || !combat.isPlayerTurn(playerId)) return;
     combat.cancelAfkTimer();
+    // Validate adjacency for attack
+    if (action === 'attack' && targetId) {
+      if (!combat.validateAttack(playerId, targetId)) {
+        this.sendTo(playerId, { type: 'error', message: 'Target is not adjacent.' });
+        return;
+      }
+    }
+    // Validate flee requires edge tile
+    if (action === 'flee') {
+      if (!combat.canFlee(playerId)) {
+        this.sendTo(playerId, { type: 'error', message: 'Must be on an edge tile to flee.' });
+        return;
+      }
+    }
     let itemDamage: number | undefined;
     let itemHealing: number | undefined;
     if (action === 'use_item' && itemIndex !== undefined) {
@@ -844,6 +912,7 @@ export class GameSession {
       this.broadcastToRoom(combatRoomId, { type: 'combat_action_result', ...result } as any);
       this.narrateCombatAction(combatRoomId, result);
     }
+    combat.markActionTaken(playerId);
     if (action === 'flee' && result?.fled) {
       this.playerManager.setStatus(playerId, 'exploring');
       // Send combat_end to the fleeing player before moving them out of the room,
@@ -943,7 +1012,7 @@ export class GameSession {
     this.afterCombatTurn(roomId, combat);
   }
 
-  private afterCombatTurn(roomId: string, combat: CombatManager): void {
+  private afterCombatTurn(roomId: string, combat: ArenaCombatManager): void {
     if (combat.isComplete()) {
       const result = combat.getResult();
       // Delay combat end on victory so the client disintegration animation plays
@@ -952,6 +1021,7 @@ export class GameSession {
       return;
     }
     const currentId = combat.getCurrentTurnId();
+    combat.startTurn(currentId);
     if (combat.isMobTurn(currentId)) {
       // Delay mob turns so attack animations play out before the next action
       setTimeout(() => this.processMobTurn(roomId, combat), TIMING_CONFIG.mobTurnDelayMs);
@@ -1081,7 +1151,7 @@ export class GameSession {
     }
   }
 
-  private processMobTurn(roomId: string, combat: CombatManager): void {
+  private processMobTurn(roomId: string, combat: ArenaCombatManager): void {
     const mobId = combat.getCurrentTurnId();
 
     const resolver = combat.getEffectResolver();
@@ -1098,7 +1168,15 @@ export class GameSession {
       }
     }
 
-    const result = combat.resolveMobTurn(mobId);
+    const { combat: result, path: mobPath } = combat.resolveMobTurn(mobId);
+    // Broadcast mob position after arena movement (include path for animation)
+    this.broadcastToRoom(roomId, {
+      type: 'arena_positions_update',
+      positions: combat.getAllPositions(),
+      movementRemaining: 0,
+      moverId: mobId,
+      path: mobPath.length > 0 ? mobPath : undefined,
+    } as any);
     if (!result) {
       combat.advanceTurn();
       this.afterCombatTurn(roomId, combat);
@@ -1131,9 +1209,20 @@ export class GameSession {
     this.afterCombatTurn(roomId, combat);
   }
 
-  private broadcastTurnPrompt(combat: CombatManager): void {
+  private broadcastTurnPrompt(combat: ArenaCombatManager): void {
     const state = combat.getState();
     this.broadcastToRoom(state.roomId, { type: 'combat_turn', currentTurnId: state.currentTurnId, roundNumber: state.roundNumber });
+    // Send initial movement remaining for the new turn
+    const currentTurn = state.currentTurnId;
+    const turnState = combat.getTurnState(currentTurn);
+    if (turnState) {
+      this.broadcastToRoom(state.roomId, {
+        type: 'arena_positions_update',
+        positions: combat.getAllPositions(),
+        movementRemaining: turnState.movementRemaining,
+        moverId: currentTurn,
+      } as any);
+    }
     // If this turn belongs to a disconnected player, arm the AFK auto-skip.
     const turnId = state.currentTurnId;
     if (turnId && this.playerManager.getPlayer(turnId) && this.disconnectedConnections.has(turnId)) {

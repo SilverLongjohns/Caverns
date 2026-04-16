@@ -51,7 +51,7 @@ describe('GameSession', () => {
 
     // Player is within detection range — trigger check
     s.mobAIManager.checkDetection(roomId);
-    return messages.some((m) => m.msg.type === 'combat_start');
+    return messages.some((m) => m.msg.type === 'arena_combat_start' || m.msg.type === 'combat_start');
   }
 
   /**
@@ -146,7 +146,7 @@ describe('GameSession', () => {
     movePlayerThroughExit(session, 'p1', 'south');
     messages.length = 0;
     movePlayerThroughExit(session, 'p1', 'north');
-    const combatStart = messages.find((m) => m.msg.type === 'combat_start');
+    const combatStart = messages.find((m) => m.msg.type === 'arena_combat_start' || m.msg.type === 'combat_start');
     expect(combatStart).toBeUndefined();
   });
 
@@ -338,7 +338,7 @@ describe('GameSession', () => {
     movePlayerThroughExit(session, 'p1', 'north');
     const triggered = walkPlayerToMob(session, 'p1', messages);
     if (triggered) {
-      const combatStart = messages.find(m => m.msg.type === 'combat_start');
+      const combatStart = messages.find(m => m.msg.type === 'arena_combat_start' || m.msg.type === 'combat_start');
       const mobs = combatStart!.msg.combat.participants.filter((p: any) => p.type === 'mob');
       expect(mobs.length).toBeGreaterThan(1);
     }

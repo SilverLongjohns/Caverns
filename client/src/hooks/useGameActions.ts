@@ -90,5 +90,7 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
         selectedCharacterId: null,
       });
     },
+    arenaMove: (targetX: number, targetY: number) => send({ type: 'arena_move', targetX, targetY }),
+    arenaEndTurn: () => send({ type: 'arena_end_turn' }),
   };
 }
