@@ -452,7 +452,8 @@ export interface ArenaPositionsUpdateMessage {
   positions: Record<string, { x: number; y: number }>;
   movementRemaining: number;
   path?: { x: number; y: number }[];
-  moverId: string;
+  moverId?: string;
+  combat?: CombatState;
 }
 
 export interface CombatTurnMessage {

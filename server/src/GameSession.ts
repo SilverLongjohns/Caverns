@@ -827,10 +827,18 @@ export class GameSession {
       className: player.className,
     }, getPlayerEquippedEffects(player), [...(player.usedEffects ?? [])]);
     this.broadcastToRoom(roomId, { type: 'text_log', message: `${player.name} joins the fight!`, logType: 'combat' });
-    this.broadcastToRoom(roomId, {
+    // Send full combat start only to the joining player (not the intro-triggering broadcast)
+    this.sendTo(playerId, {
       type: 'arena_combat_start',
       tileGrid: combat.getGrid(),
       positions: combat.getAllPositions(),
+      combat: combat.getCombatState(),
+    } as any);
+    // Update positions + combat state for everyone else so they see the new player
+    this.broadcastToRoom(roomId, {
+      type: 'arena_positions_update',
+      positions: combat.getAllPositions(),
+      movementRemaining: 0,
       combat: combat.getCombatState(),
     } as any);
   }

@@ -498,7 +498,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         set({
           arenaPositions: msg.positions,
           arenaMovementRemaining: msg.movementRemaining,
-          arenaMovePath: msg.path ? { moverId: msg.moverId, path: msg.path } : null,
+          arenaMovePath: msg.path && msg.moverId ? { moverId: msg.moverId, path: msg.path } : null,
+          ...(msg.combat ? { activeCombat: msg.combat, currentTurnId: msg.combat.currentTurnId } : {}),
         });
         break;
 

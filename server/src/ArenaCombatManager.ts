@@ -229,6 +229,35 @@ export class ArenaCombatManager {
   }
   addPlayer(player: CombatPlayerInfo, effects?: EquippedEffect[], usedEffects?: string[]): void {
     this.combatManager.addPlayer(player, effects, usedEffects);
+    // Place the new player on a free walkable tile near existing players
+    this.placeNewPlayer(player.id);
+  }
+
+  private placeNewPlayer(id: string): void {
+    const occupied = this.getOccupied();
+    // Gather existing player positions to spawn near them
+    const playerPositions: { x: number; y: number }[] = [];
+    for (const [pid, pos] of this.positions) {
+      if (pid === id) continue;
+      const p = this.combatManager.getParticipant(pid);
+      if (p && p.type === 'player' && p.alive) playerPositions.push(pos);
+    }
+    // Try tiles adjacent to existing players first, then any walkable tile
+    const candidates: { x: number; y: number; dist: number }[] = [];
+    for (let y = 0; y < this.grid.height; y++) {
+      for (let x = 0; x < this.grid.width; x++) {
+        if (getMovementCost(this.grid.tiles[y][x]) === Infinity) continue;
+        if (occupied.has(`${x},${y}`)) continue;
+        const minDist = playerPositions.length > 0
+          ? Math.min(...playerPositions.map(p => Math.abs(p.x - x) + Math.abs(p.y - y)))
+          : 0;
+        candidates.push({ x, y, dist: minDist });
+      }
+    }
+    candidates.sort((a, b) => a.dist - b.dist);
+    if (candidates.length > 0) {
+      this.positions.set(id, { x: candidates[0].x, y: candidates[0].y });
+    }
   }
   resolvePlayerAction(playerId: string, action: Parameters<CombatManager['resolvePlayerAction']>[1]) {
     return this.combatManager.resolvePlayerAction(playerId, action);
