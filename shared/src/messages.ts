@@ -4,6 +4,7 @@ import type {
   Player,
   Room,
   Item,
+  Equipment,
   CombatState,
   CombatParticipant,
   OutcomeType,
@@ -220,6 +221,26 @@ export interface ShopRerollMessage {
   shopId: string;
 }
 
+export interface OpenCharacterPanelMessage {
+  type: 'open_character_panel';
+}
+
+export interface OverworldEquipItemMessage {
+  type: 'overworld_equip_item';
+  inventoryIndex: number;
+}
+
+export interface OverworldDropItemMessage {
+  type: 'overworld_drop_item';
+  inventoryIndex: number;
+}
+
+export interface OverworldAllocateStatMessage {
+  type: 'overworld_allocate_stat';
+  statId: string;
+  points: number;
+}
+
 export type ClientMessage =
   | GridMoveMessage
   | CombatActionMessage
@@ -258,7 +279,11 @@ export type ClientMessage =
   | ShopSellMessage
   | ShopRerollMessage
   | ArenaMoveMessage
-  | ArenaEndTurnMessage;
+  | ArenaEndTurnMessage
+  | OpenCharacterPanelMessage
+  | OverworldEquipItemMessage
+  | OverworldDropItemMessage
+  | OverworldAllocateStatMessage;
 
 // === Server -> Client ===
 
@@ -685,6 +710,39 @@ export interface TorchPickupMessage {
   fuel: number;
 }
 
+export interface CharacterPanelView {
+  name: string;
+  className: string;
+  level: number;
+  xp: number;
+  gold: number;
+  equipment: Equipment;
+  inventory: (Item | null)[];
+  consumables: (Item | null)[];
+  statAllocations: Record<string, number>;
+  unspentStatPoints: number;
+  maxHp: number;
+  damage: number;
+  defense: number;
+  initiative: number;
+  maxEnergy: number;
+}
+
+export interface CharacterPanelOpenedMessage {
+  type: 'character_panel_opened';
+  character: CharacterPanelView;
+}
+
+export interface CharacterPanelUpdatedMessage {
+  type: 'character_panel_updated';
+  character: CharacterPanelView;
+}
+
+export interface CharacterPanelErrorMessage {
+  type: 'character_panel_error';
+  reason: string;
+}
+
 export type ServerMessage =
   | GameStartMessage
   | GenerationStatusMessage
@@ -735,4 +793,7 @@ export type ServerMessage =
   | ShopUpdatedMessage
   | ShopErrorMessage
   | ArenaCombatStartMessage
-  | ArenaPositionsUpdateMessage;
+  | ArenaPositionsUpdateMessage
+  | CharacterPanelOpenedMessage
+  | CharacterPanelUpdatedMessage
+  | CharacterPanelErrorMessage;

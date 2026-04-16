@@ -12,6 +12,7 @@ import type {
   OverworldMap,
   ShopView,
   CharacterItemsView,
+  CharacterPanelView,
 } from '@caverns/shared';
 
 export type ClientView =
@@ -58,6 +59,8 @@ export interface GameStore {
   stashError: string | null;
   openShop: (ShopView & { gold: number; character: CharacterItemsView }) | null;
   shopError: string | null;
+  openCharacterPanel: CharacterPanelView | null;
+  characterPanelError: string | null;
   authError: string | null;
   playerId: string;
   players: Record<string, Player>;
@@ -152,6 +155,8 @@ const initialState = {
   stashError: null as string | null,
   openShop: null as GameStore['openShop'],
   shopError: null as string | null,
+  openCharacterPanel: null as CharacterPanelView | null,
+  characterPanelError: null as string | null,
   authError: null,
   playerId: '',
   players: {},
@@ -331,6 +336,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
           stashError: null,
           openShop: null,
           shopError: null,
+          openCharacterPanel: null,
+          characterPanelError: null,
         });
         break;
 
@@ -389,6 +396,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case 'shop_error':
         set({ shopError: msg.reason });
+        break;
+
+      case 'character_panel_opened':
+        set({ openCharacterPanel: msg.character, characterPanelError: null });
+        break;
+
+      case 'character_panel_updated':
+        set({ openCharacterPanel: msg.character, characterPanelError: null });
+        break;
+
+      case 'character_panel_error':
+        set({ characterPanelError: msg.reason });
         break;
 
       case 'dungeon_returned':

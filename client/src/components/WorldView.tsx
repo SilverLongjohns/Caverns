@@ -2,6 +2,7 @@ import { useGameStore } from '../store/gameStore.js';
 import { TownView } from './TownView.js';
 import { StashModal } from './StashModal.js';
 import { ShopModal } from './ShopModal.js';
+import { CharacterModal } from './CharacterModal.js';
 import { getClassPortrait } from '../classPortraits.js';
 
 interface Props {
@@ -17,6 +18,11 @@ interface Props {
   onShopSell: (shopId: string, from: 'inventory' | 'consumables', fromIndex: number) => void;
   onShopReroll: (shopId: string) => void;
   onShopClose: () => void;
+  onOpenCharacterPanel: () => void;
+  onCharacterEquip: (inventoryIndex: number) => void;
+  onCharacterDrop: (inventoryIndex: number) => void;
+  onCharacterAllocateStat: (statId: string) => void;
+  onCharacterClose: () => void;
 }
 
 export function WorldView({
@@ -32,6 +38,11 @@ export function WorldView({
   onShopSell,
   onShopReroll,
   onShopClose,
+  onOpenCharacterPanel,
+  onCharacterEquip,
+  onCharacterDrop,
+  onCharacterAllocateStat,
+  onCharacterClose,
 }: Props) {
   const currentWorld = useGameStore((s) => s.currentWorld);
   const members = useGameStore((s) => s.worldMembers);
@@ -53,6 +64,7 @@ export function WorldView({
             onPortalUnready={onPortalUnready}
             onPortalEnter={onPortalEnter}
             onInteract={onInteract}
+            onOpenCharacterPanel={onOpenCharacterPanel}
           />
         </main>
         <aside className="world-side">
@@ -90,6 +102,12 @@ export function WorldView({
         onSell={onShopSell}
         onReroll={onShopReroll}
         onClose={onShopClose}
+      />
+      <CharacterModal
+        onEquipItem={onCharacterEquip}
+        onDropItem={onCharacterDrop}
+        onAllocateStat={onCharacterAllocateStat}
+        onClose={onCharacterClose}
       />
     </div>
   );

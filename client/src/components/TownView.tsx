@@ -1,20 +1,19 @@
-import { useState } from 'react';
 import { useGameStore } from '../store/gameStore.js';
+import { getClassPortrait } from '../classPortraits.js';
 
 interface Props {
   onPortalReady: () => void;
   onPortalUnready: () => void;
   onPortalEnter: () => void;
   onInteract: (interactableId: string) => void;
+  onOpenCharacterPanel: () => void;
 }
 
-export function TownView({ onPortalReady, onPortalUnready, onPortalEnter, onInteract }: Props) {
+export function TownView({ onPortalReady, onPortalUnready, onPortalEnter, onInteract, onOpenCharacterPanel }: Props) {
   const worldMap = useGameStore((s) => s.worldMap);
   const muster = useGameStore((s) => s.currentPortalMuster);
   const members = useGameStore((s) => s.worldMembers);
   const selectedCharacterId = useGameStore((s) => s.selectedCharacterId);
-  const [bulletinOpen, setBulletinOpen] = useState(false);
-
   if (!worldMap) return null;
 
   const shop = worldMap.interactables.find((i) => i.kind === 'shop');
@@ -31,7 +30,7 @@ export function TownView({ onPortalReady, onPortalUnready, onPortalEnter, onInte
     <div className="town-view">
       <div className="town-panels">
         {stash && (
-          <button className="town-panel town-panel-npc" onClick={() => onInteract(stash.id)}>
+          <button className="town-panel town-panel-npc" onClick={() => { new Audio('/audio/open_audio.mp3').play(); onInteract(stash.id); }}>
             <div className="town-portrait" aria-hidden="true">
               <span className="town-portrait-placeholder">▣</span>
             </div>
@@ -42,7 +41,7 @@ export function TownView({ onPortalReady, onPortalUnready, onPortalEnter, onInte
           </button>
         )}
         {shop && (
-          <button className="town-panel town-panel-npc" onClick={() => onInteract(shop.id)}>
+          <button className="town-panel town-panel-npc" onClick={() => { new Audio('/audio/open_audio.mp3').play(); onInteract(shop.id); }}>
             <div className="town-portrait">
               <img
                 className="town-portrait-img"
@@ -56,11 +55,29 @@ export function TownView({ onPortalReady, onPortalUnready, onPortalEnter, onInte
             </div>
           </button>
         )}
-        <button className="town-panel" onClick={() => setBulletinOpen(true)}>
+        {mine && (() => {
+          const portrait = getClassPortrait(mine.className);
+          return (
+            <button className="town-panel town-panel-npc" onClick={() => { new Audio('/audio/open_audio.mp3').play(); onOpenCharacterPanel(); }}>
+              <div className="town-portrait" aria-hidden="true">
+                {portrait ? (
+                  <img className="town-portrait-img" src={portrait} alt={mine.className} />
+                ) : (
+                  <span className="town-portrait-placeholder">?</span>
+                )}
+              </div>
+              <div className="town-panel-body">
+                <div className="town-panel-title">{mine.characterName}</div>
+                <div className="town-panel-desc">Manage equipment and stats</div>
+              </div>
+            </button>
+          );
+        })()}
+        <div className="town-panel town-panel-disabled">
           <div className="town-panel-icon">¶</div>
           <div className="town-panel-title">Bulletin Board</div>
-          <div className="town-panel-desc">Village notices and quests</div>
-        </button>
+          <div className="town-panel-desc">No notices posted</div>
+        </div>
         {portal && (
           <div className="town-panel town-panel-portal">
             <div className="town-panel-icon">⌘</div>
@@ -104,24 +121,6 @@ export function TownView({ onPortalReady, onPortalUnready, onPortalEnter, onInte
         )}
       </div>
 
-      {bulletinOpen && (
-        <div className="modal-backdrop" onClick={() => setBulletinOpen(false)}>
-          <div className="bulletin-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="bulletin-header">
-              <h2>Bulletin Board</h2>
-              <button className="bulletin-close" onClick={() => setBulletinOpen(false)}>
-                ×
-              </button>
-            </div>
-            <div className="bulletin-body">
-              <p className="bulletin-empty">
-                The board is bare. A few rusty nails hold nothing but weathered scraps of
-                parchment — no quests have been posted yet.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

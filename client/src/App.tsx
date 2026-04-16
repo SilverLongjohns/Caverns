@@ -18,6 +18,7 @@ import { Compass } from './components/Compass.js';
 import { ChatInput } from './components/ChatInput.js';
 import { DebugPanel } from './components/DebugPanel.js';
 import { CombatIntro } from './components/CombatIntro.js';
+import { MusicPlayer } from './components/MusicPlayer.js';
 
 export function App() {
   const wsRef = useWebSocket();
@@ -105,6 +106,11 @@ export function App() {
           onShopSell={actions.shopSell}
           onShopReroll={actions.shopReroll}
           onShopClose={actions.closeShop}
+          onOpenCharacterPanel={actions.openCharacterPanel}
+          onCharacterEquip={actions.overworldEquipItem}
+          onCharacterDrop={actions.overworldDropItem}
+          onCharacterAllocateStat={(statId) => actions.overworldAllocateStat(statId, 1)}
+          onCharacterClose={actions.closeCharacterPanel}
         />
       );
       break;
@@ -189,6 +195,7 @@ export function App() {
         />
       )}
       {arenaIntro && <CombatIntro enemyNames={arenaIntro.enemyNames} />}
+      <MusicPlayer />
       <div className="crt-overlay" />
       {levelUpGlow && <div className="level-up-glow" />}
     </>
