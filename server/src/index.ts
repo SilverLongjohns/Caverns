@@ -928,7 +928,7 @@ wss.on('connection', (ws) => {
       }
       case 'combat_action': {
         if (msg.action === 'use_ability' && msg.abilityId) {
-          getGameSession(playerId)?.handleUseAbility(playerId, msg.abilityId, msg.targetId);
+          getGameSession(playerId)?.handleUseAbility(playerId, msg.abilityId, msg.targetId, msg.targetX, msg.targetY);
         } else if (msg.action === 'use_item_effect' && msg.effectId) {
           getGameSession(playerId)?.handleItemEffectAction(playerId, msg.effectId, msg.targetId);
         } else {

@@ -26,6 +26,8 @@ export interface CombatActionMessage {
   critMultiplier?: number;
   abilityId?: string;
   effectId?: string;
+  targetX?: number;  // for area abilities: the targeted tile
+  targetY?: number;
 }
 
 export interface LootChoiceMessage {

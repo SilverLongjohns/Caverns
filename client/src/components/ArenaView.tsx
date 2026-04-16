@@ -4,6 +4,7 @@ import { ArenaGrid } from './ArenaGrid.js';
 import { TurnOrderBar } from './TurnOrderBar.js';
 import { ArenaUnitPanel } from './ArenaUnitPanel.js';
 import { ArenaActionBar } from './ArenaActionBar.js';
+import type { AbilityDefinition } from '@caverns/shared';
 
 interface ArenaViewProps {
   onCombatAction: (
@@ -13,9 +14,10 @@ interface ArenaViewProps {
   ) => void;
   onArenaMove: (targetX: number, targetY: number) => void;
   onArenaEndTurn: () => void;
+  onUseAbility: (abilityId: string, targetId?: string, targetX?: number, targetY?: number) => void;
 }
 
-type InteractionMode = 'none' | 'move' | 'attack';
+type InteractionMode = 'none' | 'move' | 'attack' | 'target_ability_single' | 'target_ability_area';
 
 const DIRS = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
 const TILE_COSTS: Record<string, number> = { floor: 1, water: 2, hazard: 1, bridge: 1 };
@@ -67,7 +69,36 @@ function tracePath(bfs: Map<string, { remaining: number; parent: string | null }
   return path;
 }
 
-export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: ArenaViewProps) {
+/** Bresenham LoS — duplicated from server (same pattern as BFS duplication) */
+function hasLineOfSight(
+  grid: { width: number; height: number; tiles: string[][] },
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  maxRange: number,
+): boolean {
+  const dx = Math.abs(to.x - from.x);
+  const dy = Math.abs(to.y - from.y);
+  if (Math.max(dx, dy) > maxRange) return false;
+  if (dx === 0 && dy === 0) return true;
+
+  const sx = from.x < to.x ? 1 : -1;
+  const sy = from.y < to.y ? 1 : -1;
+  let err = dx - dy;
+  let x = from.x;
+  let y = from.y;
+
+  while (true) {
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x += sx; }
+    if (e2 < dx) { err += dx; y += sy; }
+    if (x === to.x && y === to.y) break;
+    const tile = grid.tiles[y]?.[x];
+    if (!tile || tile === 'wall' || tile === 'chasm') return false;
+  }
+  return true;
+}
+
+export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAbility }: ArenaViewProps) {
   const playerId = useGameStore((s) => s.playerId);
   const activeCombat = useGameStore((s) => s.activeCombat);
   const arenaGrid = useGameStore((s) => s.arenaGrid);
@@ -81,6 +112,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('none');
   const [combatLogStart] = useState(() => textLog.length);
   const [hoverTile, setHoverTile] = useState<{ x: number; y: number } | null>(null);
+  const [targetingAbility, setTargetingAbility] = useState<AbilityDefinition | null>(null);
 
   // Animation state: which entity is animating and its path
   const [animatingId, setAnimatingId] = useState<string | null>(null);
@@ -152,21 +184,73 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
     return { hoverPath: null, ghostPos: null };
   }, [bfsResult, hoverTile, arenaGrid, arenaPositions, playerId]);
 
-  // Build tile highlights: range tiles + path trace
+  // Build tile highlights: range tiles + path trace + ability targeting
   const tileHighlights = useMemo(() => {
     const highlights = new Map<string, string>();
+
     if (movementRange && interactionMode === 'move') {
       for (const key of movementRange) {
         highlights.set(key, 'arena-move-highlight');
       }
     }
+
     if (hoverPath) {
       for (const step of hoverPath) {
         highlights.set(`${step.x},${step.y}`, 'arena-path-trace');
       }
     }
+
+    // Single-target ability: highlight valid targets in range + LoS
+    if (interactionMode === 'target_ability_single' && targetingAbility && arenaGrid) {
+      const myPos = arenaPositions[playerId];
+      if (myPos) {
+        const range = targetingAbility.range ?? 1;
+        for (const p of activeCombat!.participants) {
+          if (p.hp <= 0) continue;
+          const isEnemy = p.type !== 'player';
+          const isAlly = p.type === 'player' && p.id !== playerId;
+          const wantEnemy = targetingAbility.targetType === 'enemy';
+          const wantAlly = targetingAbility.targetType === 'ally';
+          if ((wantEnemy && !isEnemy) || (wantAlly && !isAlly)) continue;
+
+          const pos = arenaPositions[p.id];
+          if (!pos) continue;
+
+          if (targetingAbility.range) {
+            if (hasLineOfSight(arenaGrid, myPos, pos, range)) {
+              highlights.set(`${pos.x},${pos.y}`, 'arena-range-highlight');
+            }
+          } else {
+            if (Math.abs(pos.x - myPos.x) + Math.abs(pos.y - myPos.y) === 1) {
+              highlights.set(`${pos.x},${pos.y}`, 'arena-range-highlight');
+            }
+          }
+        }
+      }
+    }
+
+    // Area ability: highlight AoE radius around hovered tile
+    if (interactionMode === 'target_ability_area' && targetingAbility && arenaGrid && hoverTile) {
+      const myPos = arenaPositions[playerId];
+      if (myPos && targetingAbility.range) {
+        if (hasLineOfSight(arenaGrid, myPos, hoverTile, targetingAbility.range)) {
+          const radius = targetingAbility.areaRadius ?? 0;
+          for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+              if (Math.abs(dx) + Math.abs(dy) > radius) continue;
+              const ax = hoverTile.x + dx;
+              const ay = hoverTile.y + dy;
+              if (ax >= 0 && ax < arenaGrid.width && ay >= 0 && ay < arenaGrid.height) {
+                highlights.set(`${ax},${ay}`, 'arena-area-highlight');
+              }
+            }
+          }
+        }
+      }
+    }
+
     return highlights;
-  }, [movementRange, interactionMode, hoverPath]);
+  }, [movementRange, interactionMode, hoverPath, targetingAbility, arenaGrid, arenaPositions, playerId, activeCombat, hoverTile]);
 
   // When arenaMovePath arrives from server, set animation state.
   // ArenaGrid handles the DOM animation; we just track start/end for the entity exclusion.
@@ -239,7 +323,48 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
         }
       }
     }
-  }, [isMyTurn, interactionMode, ghostPos, arenaPositions, adjacentEnemies, onArenaMove, onCombatAction]);
+
+    if (interactionMode === 'target_ability_single' && targetingAbility && arenaGrid) {
+      const myPos = arenaPositions[playerId];
+      if (!myPos) return;
+
+      for (const [id, pos] of Object.entries(arenaPositions)) {
+        if (pos.x !== x || pos.y !== y) continue;
+        const participant = activeCombat?.participants.find(p => p.id === id);
+        if (!participant || participant.hp <= 0) continue;
+
+        const isEnemy = participant.type !== 'player';
+        const isAlly = participant.type === 'player' && participant.id !== playerId;
+        const wantEnemy = targetingAbility.targetType === 'enemy';
+        const wantAlly = targetingAbility.targetType === 'ally';
+        if ((wantEnemy && !isEnemy) || (wantAlly && !isAlly)) continue;
+
+        if (targetingAbility.range) {
+          if (!hasLineOfSight(arenaGrid, myPos, pos, targetingAbility.range)) continue;
+        } else {
+          if (Math.abs(pos.x - myPos.x) + Math.abs(pos.y - myPos.y) !== 1) continue;
+        }
+
+        onUseAbility(targetingAbility.id, id);
+        useGameStore.setState({ arenaActionTaken: true });
+        setInteractionMode('none');
+        setTargetingAbility(null);
+        return;
+      }
+    }
+
+    if (interactionMode === 'target_ability_area' && targetingAbility && arenaGrid) {
+      const myPos = arenaPositions[playerId];
+      if (!myPos || !targetingAbility.range) return;
+
+      if (hasLineOfSight(arenaGrid, myPos, { x, y }, targetingAbility.range)) {
+        onUseAbility(targetingAbility.id, undefined, x, y);
+        useGameStore.setState({ arenaActionTaken: true });
+        setInteractionMode('none');
+        setTargetingAbility(null);
+      }
+    }
+  }, [isMyTurn, interactionMode, ghostPos, arenaPositions, adjacentEnemies, onArenaMove, onCombatAction, targetingAbility, arenaGrid, playerId, activeCombat, onUseAbility]);
 
   const handleTileHover = useCallback((x: number, y: number) => {
     setHoverTile((prev) => (prev?.x === x && prev?.y === y) ? prev : { x, y });
@@ -266,10 +391,10 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
           participants={activeCombat.participants}
           playerId={playerId}
           movementRange={interactionMode === 'move' ? movementRange : null}
-          isTargeting={interactionMode === 'attack'}
+          isTargeting={interactionMode === 'attack' || interactionMode === 'target_ability_single' || interactionMode === 'target_ability_area'}
           onTileClick={handleTileClick}
-          onTileHover={interactionMode === 'move' ? handleTileHover : undefined}
-          onTileHoverEnd={interactionMode === 'move' ? handleTileHoverEnd : undefined}
+          onTileHover={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHover : undefined}
+          onTileHoverEnd={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHoverEnd : undefined}
           tileHighlights={tileHighlights}
           ghostEntity={interactionMode === 'move' ? ghostPos : null}
           animatingId={animatingId}
@@ -293,6 +418,19 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn }: Arena
           onCombatAction('use_item', targetId, index);
           useGameStore.setState({ arenaActionTaken: true });
         }}
+        onAbilityMode={(ability) => {
+          if (ability.targetType === 'area_enemy' || ability.targetType === 'area_ally') {
+            setInteractionMode('target_ability_area');
+          } else {
+            setInteractionMode('target_ability_single');
+          }
+          setTargetingAbility(ability);
+        }}
+        onCancelAbility={() => {
+          setInteractionMode('none');
+          setTargetingAbility(null);
+        }}
+        onUseAbility={onUseAbility}
       />
       <div className="arena-combat-log">
         {combatLogLines.map((entry) => (

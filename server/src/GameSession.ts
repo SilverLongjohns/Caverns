@@ -38,6 +38,7 @@ import { InteractionResolver } from './InteractionResolver.js';
 import { buildTileGrid } from './tileGridBuilder.js';
 import { RoomGrid } from '@caverns/roomgrid';
 import type { RoomGridConfig, TileType, GridPosition } from '@caverns/roomgrid';
+import { hasLineOfSight, isAdjacent } from './arenaMovement.js';
 import { MobAIManager } from './MobAIManager.js';
 import { exitPosition } from './tileGridBuilder.js';
 import type { CharacterRepository } from './CharacterRepository.js';
@@ -2043,7 +2044,7 @@ export class GameSession {
     this.secretRoomLinks.set(interactableId, { secretRoomId: roomId, sourceRoomId });
   }
 
-  handleUseAbility(playerId: string, abilityId: string, targetId?: string): void {
+  handleUseAbility(playerId: string, abilityId: string, targetId?: string, targetX?: number, targetY?: number): void {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
 
@@ -2061,15 +2062,163 @@ export class GameSession {
       return;
     }
 
-    // Resolve ability effects through AbilityResolver
+    // Check if action already taken this turn
+    const turnState = combat.getTurnState(playerId);
+    if (turnState?.actionTaken) {
+      this.sendTo(playerId, { type: 'error', message: 'Action already taken this turn.' });
+      return;
+    }
+
     const participants = combat.getParticipantsArray();
-    const caster = participants.find(p => p.id === playerId);
-    const target = targetId ? participants.find(p => p.id === targetId) : null;
+    const caster = participants.find((p: { id: string }) => p.id === playerId);
     if (!caster) return;
 
-    const result = this.abilityResolver.resolveAllEffects(ability.effects, caster, target ?? null, participants);
+    // --- Area ability (area_enemy / area_ally) ---
+    if (ability.targetType === 'area_enemy' || ability.targetType === 'area_ally') {
+      if (targetX === undefined || targetY === undefined) {
+        this.sendTo(playerId, { type: 'error', message: 'Area ability requires target coordinates.' });
+        return;
+      }
 
-    // Sync healing to PlayerManager so it persists beyond combat
+      const casterPos = combat.getPosition(playerId);
+      if (!casterPos) return;
+      const targetTile = { x: targetX, y: targetY };
+
+      if (ability.range && !hasLineOfSight(combat.getGrid(), casterPos, targetTile, ability.range)) {
+        this.sendTo(playerId, { type: 'error', message: 'Target out of range or blocked.' });
+        return;
+      }
+
+      // Find all valid targets within areaRadius (Manhattan distance)
+      const radius = ability.areaRadius ?? 0;
+      const isEnemy = ability.targetType === 'area_enemy';
+      const hitTargets = participants.filter((p: { alive: boolean; type: string; id: string }) => {
+        if (!p.alive) return false;
+        if (isEnemy ? (p.type === caster.type || p.id === playerId) : (p.type !== caster.type)) return false;
+        const pos = combat.getPosition(p.id);
+        if (!pos) return false;
+        return Math.abs(pos.x - targetX) + Math.abs(pos.y - targetY) <= radius;
+      });
+
+      // Resolve effects against each target individually
+      let totalDamage = 0;
+      let totalHealing = 0;
+      const allBuffs: string[] = [];
+      const downedTargets: string[] = [];
+
+      for (const hitTarget of hitTargets) {
+        const result = this.abilityResolver.resolveAllEffects(ability.effects, caster, hitTarget, participants);
+        if (result.damage) totalDamage += result.damage;
+        if (result.healing) totalHealing += result.healing;
+        if (result.buffsApplied) allBuffs.push(...result.buffsApplied);
+        if (result.targetDowned) downedTargets.push(hitTarget.id);
+
+        // Sync healing to PlayerManager
+        if (result.healing) {
+          const targetPlayer = this.playerManager.getPlayer(hitTarget.id);
+          if (targetPlayer) {
+            this.playerManager.healPlayer(hitTarget.id, result.healing);
+            this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(hitTarget.id)! });
+          }
+        }
+      }
+
+      this.playerManager.spendEnergy(playerId, ability.energyCost);
+
+      // Broadcast combined result
+      this.broadcastToRoom(player.roomId, {
+        type: 'combat_action_result',
+        actorId: playerId,
+        actorName: player.name,
+        action: 'use_ability',
+        abilityId: ability.id,
+        abilityName: ability.name,
+        damage: totalDamage || undefined,
+        healing: totalHealing || undefined,
+        buffsApplied: allBuffs.length > 0 ? allBuffs : undefined,
+      } as any);
+
+      // Narrate
+      if (hitTargets.length > 0) {
+        const hitNames = hitTargets.map((t: { name: string }) => t.name).join(', ');
+        if (totalDamage) {
+          this.broadcastToRoom(player.roomId, { type: 'text_log', message: `${player.name} uses ${ability.name}, hitting ${hitNames} for ${totalDamage} total damage!`, logType: 'combat' });
+        } else {
+          this.broadcastToRoom(player.roomId, { type: 'text_log', message: `${player.name} uses ${ability.name}, affecting ${hitNames}!`, logType: 'combat' });
+        }
+      } else {
+        this.broadcastToRoom(player.roomId, { type: 'text_log', message: `${player.name} uses ${ability.name}, but hits nothing!`, logType: 'combat' });
+      }
+
+      // Handle downed targets
+      for (const downedId of downedTargets) {
+        const targetPlayer = this.playerManager.getPlayer(downedId);
+        if (targetPlayer) {
+          this.playerManager.takeDamage(downedId, 999);
+          this.broadcast({ type: 'player_update', player: targetPlayer });
+        }
+      }
+
+      combat.markActionTaken(playerId);
+      this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
+      this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+      combat.advanceTurn();
+      this.afterCombatTurn(player.roomId, combat);
+      return;
+    }
+
+    // --- Ranged single-target ability (has range, not area) ---
+    if (ability.range && ability.targetType === 'enemy') {
+      if (!targetId) {
+        this.sendTo(playerId, { type: 'error', message: 'Ability requires a target.' });
+        return;
+      }
+
+      const casterPos = combat.getPosition(playerId);
+      const targetPos = combat.getPosition(targetId);
+      if (!casterPos || !targetPos) return;
+
+      if (!hasLineOfSight(combat.getGrid(), casterPos, targetPos, ability.range)) {
+        this.sendTo(playerId, { type: 'error', message: 'Target out of range or blocked.' });
+        return;
+      }
+
+      // Fall through to standard single-target resolution below
+    }
+
+    // --- Melee-range enemy ability (no range field) ---
+    if (!ability.range && ability.targetType === 'enemy' && targetId) {
+      const casterPos = combat.getPosition(playerId);
+      const targetPos = combat.getPosition(targetId);
+      if (!casterPos || !targetPos || !isAdjacent(casterPos, targetPos)) {
+        this.sendTo(playerId, { type: 'error', message: 'Target is not adjacent.' });
+        return;
+      }
+    }
+
+    // --- Flanking bonus: boost effect multiplier when caster + ally both adjacent ---
+    let effectsToUse = ability.effects;
+    if (ability.flankingMultiplier && targetId) {
+      const casterPos = combat.getPosition(playerId);
+      const targetPos = combat.getPosition(targetId);
+      if (casterPos && targetPos && isAdjacent(casterPos, targetPos)) {
+        const allyAdjacent = participants.some((p: { id: string; type: string; hp: number }) => {
+          if (p.id === playerId || p.type !== 'player' || p.hp <= 0) return false;
+          const allyPos = combat.getPosition(p.id);
+          return allyPos ? isAdjacent(allyPos, targetPos) : false;
+        });
+        if (allyAdjacent) {
+          effectsToUse = ability.effects.map(e =>
+            e.type === 'deal_damage' ? { ...e, multiplier: ability.flankingMultiplier } : e
+          );
+        }
+      }
+    }
+
+    // --- Standard single-target / self resolution ---
+    const target = targetId ? participants.find((p: { id: string }) => p.id === targetId) : null;
+    const result = this.abilityResolver.resolveAllEffects(effectsToUse, caster, target ?? null, participants);
+
     if (result.healing && targetId) {
       const targetPlayer = this.playerManager.getPlayer(targetId);
       if (targetPlayer) {
@@ -2078,11 +2227,9 @@ export class GameSession {
       }
     }
 
-    // Spend energy
     this.playerManager.spendEnergy(playerId, ability.energyCost);
 
-    // Broadcast result
-    const targetParticipant = targetId ? participants.find(p => p.id === targetId) : null;
+    const targetParticipant = targetId ? participants.find((p: { id: string }) => p.id === targetId) : null;
     this.broadcastToRoom(player.roomId, {
       type: 'combat_action_result',
       actorId: playerId,
@@ -2100,14 +2247,8 @@ export class GameSession {
       buffsApplied: result.buffsApplied,
     } as any);
 
-    // Narrate
     this.narrateAbility(player.roomId, player.name, ability.name, targetParticipant?.name, result);
 
-    this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
-    // Sync player update (energy changed)
-    this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
-
-    // Handle target downed by ability
     if (result.targetDowned && targetId) {
       const targetPlayer = this.playerManager.getPlayer(targetId);
       if (targetPlayer) {
@@ -2116,6 +2257,9 @@ export class GameSession {
       }
     }
 
+    combat.markActionTaken(playerId);
+    this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
+    this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
     combat.advanceTurn();
     this.afterCombatTurn(player.roomId, combat);
   }

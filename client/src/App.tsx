@@ -136,6 +136,7 @@ export function App() {
                 onCombatAction={actions.combatAction}
                 onArenaMove={actions.arenaMove}
                 onArenaEndTurn={actions.arenaEndTurn}
+                onUseAbility={(abilityId, targetId, targetX, targetY) => actions.useAbility(abilityId, targetId, targetX, targetY)}
               />
             ) : activeCombat ? (
               <CombatView

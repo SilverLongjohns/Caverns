@@ -43,12 +43,13 @@
       {
         "id": "backstab",
         "name": "Phase Strike",
-        "description": "Deal 2.5x damage, bypass target defense.",
+        "description": "Deal 1.5x damage, bypass defense. Deals 2.5x when flanking with an ally.",
         "energyCost": 25,
         "targetType": "enemy",
+        "flankingMultiplier": 2.5,
         "passive": false,
         "effects": [
-          { "type": "deal_damage", "multiplier": 2.5, "ignoreDefense": true }
+          { "type": "deal_damage", "multiplier": 1.5, "ignoreDefense": true }
         ]
       },
       {
@@ -94,6 +95,18 @@
         "effects": [
           { "type": "prevent_down", "duration": 1 }
         ]
+      },
+      {
+        "id": "bone_spike",
+        "name": "Bone Spike",
+        "description": "Hurl a shard of sharpened bone at a distant enemy.",
+        "energyCost": 10,
+        "targetType": "enemy",
+        "range": 6,
+        "passive": false,
+        "effects": [
+          { "type": "deal_damage", "multiplier": 1.0, "ignoreDefense": false }
+        ]
       }
     ]
   },
@@ -108,12 +121,27 @@
       {
         "id": "smoke_bomb",
         "name": "Static Hymn",
-        "description": "All enemies skip their next turn.",
-        "energyCost": 25,
-        "targetType": "none",
+        "description": "Disrupt all enemies in an area, skipping their next turn.",
+        "energyCost": 20,
+        "targetType": "area_enemy",
+        "range": 5,
+        "areaRadius": 1,
         "passive": false,
         "effects": [
-          { "type": "skip_turn", "duration": 1, "targets": "all_enemies" }
+          { "type": "skip_turn", "duration": 1 }
+        ]
+      },
+      {
+        "id": "scrap_volley",
+        "name": "Scrap Volley",
+        "description": "Lob a cluster of jagged scrap into an area.",
+        "energyCost": 15,
+        "targetType": "area_enemy",
+        "range": 5,
+        "areaRadius": 1,
+        "passive": false,
+        "effects": [
+          { "type": "deal_damage", "multiplier": 0.5, "ignoreDefense": false }
         ]
       },
       {

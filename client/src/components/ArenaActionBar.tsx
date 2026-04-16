@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGameStore } from '../store/gameStore.js';
-import type { ItemStats } from '@caverns/shared';
+import { getClassDefinition } from '@caverns/shared';
+import type { AbilityDefinition, ItemStats } from '@caverns/shared';
 
 type ArenaActionMode =
   | { mode: 'idle' }
@@ -8,7 +9,9 @@ type ArenaActionMode =
   | { mode: 'move' }
   | { mode: 'target_attack' }
   | { mode: 'items' }
-  | { mode: 'target_item'; itemIndex: number };
+  | { mode: 'target_item'; itemIndex: number }
+  | { mode: 'abilities' }
+  | { mode: 'target_ability'; ability: AbilityDefinition };
 
 interface ArenaActionBarProps {
   isMyTurn: boolean;
@@ -23,6 +26,9 @@ interface ArenaActionBarProps {
   onFlee: () => void;
   onEndTurn: () => void;
   onUseItem: (index: number, targetId?: string) => void;
+  onAbilityMode: (ability: AbilityDefinition) => void;
+  onCancelAbility: () => void;
+  onUseAbility: (abilityId: string, targetId?: string, targetX?: number, targetY?: number) => void;
 }
 
 function formatItemStat(stats: ItemStats): string {
@@ -35,6 +41,7 @@ export function ArenaActionBar({
   isMyTurn, actionTaken, movementRemaining, canFlee,
   onMoveMode, onCancelMove, onAttackMode, onCancelAttack,
   onDefend, onFlee, onEndTurn, onUseItem,
+  onAbilityMode, onCancelAbility, onUseAbility,
 }: ArenaActionBarProps) {
   const player = useGameStore((s) => s.players[s.playerId]);
   const [mode, setMode] = useState<ArenaActionMode>({ mode: 'idle' });
@@ -43,6 +50,9 @@ export function ArenaActionBar({
     !isMyTurn ? { mode: 'idle' } :
     mode.mode === 'idle' ? { mode: 'main' } :
     mode;
+
+  const classDef = player ? getClassDefinition(player.className) : null;
+  const activeAbilities = classDef?.abilities.filter(a => !a.passive) ?? [];
 
   const handleMoveClick = () => {
     setMode({ mode: 'move' });
@@ -58,6 +68,7 @@ export function ArenaActionBar({
     setMode({ mode: 'main' });
     onCancelMove();
     onCancelAttack();
+    onCancelAbility();
   };
 
   const handleDefend = () => {
@@ -86,6 +97,16 @@ export function ArenaActionBar({
     }
   };
 
+  const handleAbilityClick = (ability: AbilityDefinition) => {
+    if (ability.targetType === 'none') {
+      onUseAbility(ability.id);
+      setMode({ mode: 'idle' });
+      return;
+    }
+    setMode({ mode: 'target_ability', ability });
+    onAbilityMode(ability);
+  };
+
   // Reset mode when turn changes
   if (!isMyTurn && mode.mode !== 'idle') {
     setMode({ mode: 'idle' });
@@ -110,6 +131,10 @@ export function ArenaActionBar({
           <button className="arena-btn arena-btn-defend" onClick={handleDefend}
             disabled={actionTaken}>
             Defend
+          </button>
+          <button className="arena-btn" onClick={() => setMode({ mode: 'abilities' })}
+            disabled={actionTaken || activeAbilities.length === 0}>
+            Abilities
           </button>
           <button className="arena-btn" onClick={() => setMode({ mode: 'items' })}
             disabled={actionTaken}>
@@ -137,6 +162,40 @@ export function ArenaActionBar({
       {effectiveMode.mode === 'target_attack' && (
         <>
           <span className="waiting-text">Click an adjacent enemy to attack...</span>
+          <button className="arena-btn" onClick={handleBackToMain}>Back</button>
+        </>
+      )}
+
+      {effectiveMode.mode === 'abilities' && (
+        <>
+          <div className="combat-item-list">
+            {activeAbilities.map((ability) => {
+              const notEnoughEnergy = !player || player.energy < ability.energyCost;
+              return (
+                <button
+                  key={ability.id}
+                  className={`ability-btn ${notEnoughEnergy ? 'no-energy' : ''}`}
+                  disabled={notEnoughEnergy}
+                  onClick={() => handleAbilityClick(ability)}
+                >
+                  {ability.name} <span className="energy-cost">{ability.energyCost}</span>
+                  <span className="ability-tooltip">{ability.description}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button className="arena-btn" onClick={handleBackToMain}>Back</button>
+        </>
+      )}
+
+      {effectiveMode.mode === 'target_ability' && (
+        <>
+          <span className="waiting-text">
+            {effectiveMode.ability.targetType === 'area_enemy' || effectiveMode.ability.targetType === 'area_ally'
+              ? `Click a tile to target ${effectiveMode.ability.name}...`
+              : `Click a target for ${effectiveMode.ability.name}...`
+            }
+          </span>
           <button className="arena-btn" onClick={handleBackToMain}>Back</button>
         </>
       )}
