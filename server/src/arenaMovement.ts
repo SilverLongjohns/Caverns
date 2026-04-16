@@ -184,3 +184,46 @@ export function isEdgeTile(grid: TileGrid, pos: { x: number; y: number }): boole
   }
   return false;
 }
+
+/**
+ * Bresenham line-of-sight check.
+ * Returns true if there is a clear line from `from` to `to` within `maxRange` (Chebyshev distance).
+ * Intermediate tiles that are wall or chasm block LoS. Start and end tiles are not checked.
+ */
+export function hasLineOfSight(
+  grid: TileGrid,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  maxRange: number,
+): boolean {
+  const dx = Math.abs(to.x - from.x);
+  const dy = Math.abs(to.y - from.y);
+
+  // Chebyshev distance check
+  if (Math.max(dx, dy) > maxRange) return false;
+
+  // Same tile
+  if (dx === 0 && dy === 0) return true;
+
+  // Bresenham line walk — check intermediate tiles
+  const sx = from.x < to.x ? 1 : -1;
+  const sy = from.y < to.y ? 1 : -1;
+  let err = dx - dy;
+  let x = from.x;
+  let y = from.y;
+
+  while (true) {
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x += sx; }
+    if (e2 < dx) { err += dx; y += sy; }
+
+    // Reached destination — don't check end tile
+    if (x === to.x && y === to.y) break;
+
+    // Check intermediate tile
+    const tile = grid.tiles[y]?.[x];
+    if (!tile || tile === 'wall' || tile === 'chasm') return false;
+  }
+
+  return true;
+}

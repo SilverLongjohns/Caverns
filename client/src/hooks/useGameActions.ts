@@ -33,8 +33,8 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     puzzleAnswer: (roomId: string, answerIndex: number) => send({ type: 'puzzle_answer', roomId, answerIndex }),
     interactAction: (interactableId: string, actionId: string) =>
       send({ type: 'interact_action', interactableId, actionId }),
-    useAbility: (abilityId: string, targetId?: string) =>
-      send({ type: 'combat_action', action: 'use_ability', abilityId, targetId }),
+    useAbility: (abilityId: string, targetId?: string, targetX?: number, targetY?: number) =>
+      send({ type: 'combat_action', action: 'use_ability', abilityId, targetId, targetX, targetY }),
     useItemEffect: (effectId: string, targetId?: string) =>
       send({ type: 'combat_action', action: 'use_item_effect', effectId, targetId }),
     chat: (text: string) => send({ type: 'chat', text }),

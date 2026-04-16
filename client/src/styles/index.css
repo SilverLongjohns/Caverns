@@ -2604,6 +2604,9 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   background: #1a3a1a !important;
 }
 
+.arena-area-highlight { background: rgba(180, 40, 40, 0.25) !important; }
+.arena-range-highlight { background: rgba(80, 120, 200, 0.15) !important; }
+
 .entity-ghost {
   color: #4488ff;
   opacity: 0.4;

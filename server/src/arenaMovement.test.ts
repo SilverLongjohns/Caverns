@@ -1,6 +1,6 @@
 // server/src/arenaMovement.test.ts
 import { describe, it, expect } from 'vitest';
-import { getMovementRange, findPath, getMovementCost } from './arenaMovement.js';
+import { getMovementRange, findPath, getMovementCost, hasLineOfSight } from './arenaMovement.js';
 import type { TileGrid } from '@caverns/shared';
 
 function makeGrid(tiles: string[][]): TileGrid {
@@ -114,5 +114,65 @@ describe('findPath', () => {
     const path = findPath(openGrid, { x: 1, y: 2 }, { x: 3, y: 2 }, 10, occupied);
     // All paths through column 2 are blocked, no way around in 3x3 interior
     expect(path).toBeNull();
+  });
+});
+
+describe('hasLineOfSight', () => {
+  const losGrid = makeGrid([
+    ['wall','wall','wall','wall','wall','wall','wall','wall','wall','wall'],
+    ['wall','floor','floor','floor','floor','floor','floor','floor','floor','wall'],
+    ['wall','floor','floor','floor','floor','floor','floor','floor','floor','wall'],
+    ['wall','floor','floor','floor','floor','floor','floor','floor','floor','wall'],
+    ['wall','floor','floor','floor','floor','floor','floor','floor','floor','wall'],
+    ['wall','wall','wall','wall','wall','wall','wall','wall','wall','wall'],
+  ]);
+
+  it('returns true for same tile', () => {
+    expect(hasLineOfSight(losGrid, { x: 1, y: 1 }, { x: 1, y: 1 }, 6)).toBe(true);
+  });
+
+  it('returns true for adjacent tile', () => {
+    expect(hasLineOfSight(losGrid, { x: 1, y: 1 }, { x: 2, y: 1 }, 6)).toBe(true);
+  });
+
+  it('returns true for diagonal within range', () => {
+    expect(hasLineOfSight(losGrid, { x: 1, y: 1 }, { x: 4, y: 4 }, 6)).toBe(true);
+  });
+
+  it('returns false when out of range', () => {
+    expect(hasLineOfSight(losGrid, { x: 1, y: 1 }, { x: 8, y: 4 }, 3)).toBe(false);
+  });
+
+  it('returns false when wall blocks LoS', () => {
+    const blockedGrid = makeGrid([
+      ['wall','wall','wall','wall','wall','wall','wall'],
+      ['wall','floor','floor','wall','floor','floor','wall'],
+      ['wall','floor','floor','wall','floor','floor','wall'],
+      ['wall','wall','wall','wall','wall','wall','wall'],
+    ]);
+    expect(hasLineOfSight(blockedGrid, { x: 1, y: 1 }, { x: 5, y: 1 }, 6)).toBe(false);
+  });
+
+  it('returns false when chasm blocks LoS', () => {
+    const chasmGrid = makeGrid([
+      ['wall','wall','wall','wall','wall','wall','wall'],
+      ['wall','floor','floor','chasm','floor','floor','wall'],
+      ['wall','wall','wall','wall','wall','wall','wall'],
+    ]);
+    expect(hasLineOfSight(chasmGrid, { x: 1, y: 1 }, { x: 5, y: 1 }, 6)).toBe(false);
+  });
+
+  it('uses Chebyshev distance (diagonals cost 1)', () => {
+    expect(hasLineOfSight(losGrid, { x: 1, y: 1 }, { x: 4, y: 4 }, 3)).toBe(true);
+    expect(hasLineOfSight(losGrid, { x: 1, y: 1 }, { x: 4, y: 4 }, 2)).toBe(false);
+  });
+
+  it('does not block on start or end tile', () => {
+    const edgeGrid = makeGrid([
+      ['wall','wall','wall','wall','wall'],
+      ['wall','floor','floor','floor','wall'],
+      ['wall','wall','wall','wall','wall'],
+    ]);
+    expect(hasLineOfSight(edgeGrid, { x: 1, y: 1 }, { x: 3, y: 1 }, 6)).toBe(true);
   });
 });
