@@ -30,7 +30,9 @@
       "Bash(mkdir -p ~/.config/superpowers/worktrees/Caverns)",
       "Bash(git -C /mnt/c/Users/jakeh/WebstormProjects/Caverns worktree add ~/.config/superpowers/worktrees/Caverns/item-generation -b feature/item-generation)",
       "Bash(npm test:*)",
-      "Bash(npm --version)"
+      "Bash(npm --version)",
+      "Bash(cp .claude/screenshots/Templar.png client/public/portraits/templar.png)",
+      "Bash(cp .claude/screenshots/Junkprophet.png client/public/portraits/junk_prophet.png)"
     ]
   }
 }

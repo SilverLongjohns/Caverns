@@ -128,6 +128,20 @@ describe.skipIf(!process.env.DATABASE_URL)('WorldRepository', () => {
     expect(await repo.isMember(world.id, accountId2)).toBe(false);
   });
 
+  it('ensureDefaultWorld creates a Default world on first call and reuses it after', async () => {
+    const ownerAccountId = accountId;
+    const first = await repo.ensureDefaultWorld(ownerAccountId);
+    expect(first.name).toBe('Default');
+    expect(first.owner_account_id).toBe(ownerAccountId);
+    expect(await repo.isMember(first.id, ownerAccountId)).toBe(true);
+
+    const second = await repo.ensureDefaultWorld(ownerAccountId);
+    expect(second.id).toBe(first.id);
+
+    const list = await repo.listForAccount(ownerAccountId);
+    expect(list.filter((w) => w.name === 'Default')).toHaveLength(1);
+  });
+
   it('snapshotState round-trips a jsonb value correctly', async () => {
     const world = await repo.create(accountId, 'MyWorld');
     const state = { floor: 1, bossDefeated: false, treasures: ['gold', 'gems'] };

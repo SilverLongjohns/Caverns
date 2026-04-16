@@ -526,14 +526,12 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
     }
   }
 
-  // 6. Assign room drop specs
+  // 6. Assign room loot location flavor from the room chit, if any. Room-level
+  // drops are only used for special cases (key, puzzle rewards); the bulk of
+  // loot comes from mob drops.
   for (const room of allRooms) {
     if (room.type === 'boss') continue;
     if (room.id === entranceRoomId) continue;
-    const biome = getBiomeForRoom(room, biomes, zoneEntries, zoneCount);
-    room.drops = { dropSpecId: biome.roomDropSpecId };
-
-    // Preserve location flavor from the room chit, if any.
     const chitForRoom = allRoomChits.find(c => room.id.startsWith(c.id + '_'));
     if (chitForRoom && chitForRoom.lootLocations.length > 0) {
       room.lootLocation = pick(chitForRoom.lootLocations) as 'chest' | 'floor' | 'hidden';
@@ -547,7 +545,31 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
 
   // Get rooms in the key zone
   const keyZoneRooms = getRoomsInZone(allRooms, keyZoneIndex);
-  const keyRoom = pick(keyZoneRooms.filter(r => r.type !== 'boss' && r.id !== entranceRoomId));
+  // Key must live on a mob in a combat room so it drops on clear. If the
+  // density roll produced no encounter in the key zone, force one onto a
+  // random eligible room so the key always has a carrier.
+  const eligibleKeyRooms = keyZoneRooms.filter(
+    r => r.type !== 'boss' && r.id !== entranceRoomId,
+  );
+  let keyRoom = pick(eligibleKeyRooms.filter(r => !!r.encounter));
+  if (!keyRoom) {
+    keyRoom = pick(eligibleKeyRooms);
+    const keyBiome = getBiomeForRoom(keyRoom, biomes, zoneEntries, zoneCount);
+    const biomeMobs = allMobPool.filter(
+      m => m.biomes.includes(keyBiome.id) && m.skullRating !== 3,
+    );
+    const skull2 = biomeMobs.filter(m => m.skullRating === 2);
+    const skull1 = biomeMobs.filter(m => m.skullRating === 1);
+    const forcedMob: MobPoolEntry | undefined =
+      (skull2.length > 0 && Math.random() < keyBiome.skull2Weight ? pick(skull2) : undefined) ??
+      (skull1.length > 0 ? pick(skull1) : undefined) ??
+      (biomeMobs.length > 0 ? pick(biomeMobs) : undefined);
+    if (!forcedMob) {
+      throw new Error(`No mobs available in biome ${keyBiome.id} for forced key encounter`);
+    }
+    keyRoom.encounter = { mobId: forcedMob.id, skullRating: forcedMob.skullRating };
+    usedMobIds.add(forcedMob.id);
+  }
   const keyDropSpec: DropSpec = {
     pools: [{ rolls: 1, entries: [{ type: 'key', keyId: finalBiome.keyItem.id }] }],
   };

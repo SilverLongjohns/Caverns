@@ -15,11 +15,11 @@ export const DRIPPING_HALLS_PALETTE: BiomePalette = {
     adjectives: [
       'gleaming', 'festering', 'whispering', 'pulsing', 'gnarled',
       'luminous', 'rotting', 'calcified', 'dripping', 'encrusted',
-      'writhing', 'pallid', 'iridescent', 'thorned', 'hollow',
+      'writhing', 'pallid', 'iridescent', 'thorned', 'humming',
     ],
     prefixes: [
       'Spore', 'Gloom', 'Bone', 'Dread', 'Rot',
-      'Pale', 'Deep', 'Myc', 'Fung', 'Crypt',
+      'Pale', 'Deep', 'Myc', 'Hypha', 'Crypt',
       'Dark', 'Blight', 'Murk', 'Wither', 'Shade',
     ],
     suffixes: [

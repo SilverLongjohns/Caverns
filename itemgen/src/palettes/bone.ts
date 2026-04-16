@@ -14,8 +14,8 @@ export const BONE_PALETTE: BiomePalette = {
   nameFragments: {
     adjectives: [
       'bleached', 'rattling', 'splintered', 'hollow', 'cracked',
-      'yellowed', 'dry', 'ancient', 'cursed', 'grim',
-      'fleshless', 'calcified', 'marrow-less', 'pale', 'sundered',
+      'yellowed', 'dry', 'ancient', 'wire-strung', 'grim',
+      'fleshless', 'calcified', 'reliquary', 'pale', 'sundered',
     ],
     prefixes: [
       'Bone', 'Death', 'Grave', 'Skull', 'Crypt',
