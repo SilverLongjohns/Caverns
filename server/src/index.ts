@@ -3,8 +3,8 @@ import { readFileSync, existsSync, statSync } from 'fs';
 import { join, extname } from 'path';
 import { fileURLToPath } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
-import type { ClientMessage, ServerMessage, CharacterSummary, Item } from '@caverns/shared';
-import { SHOP_TEMPLATES, validateStatPoints } from '@caverns/shared';
+import type { ClientMessage, ServerMessage, CharacterSummary, Item, CharacterPanelView, Equipment } from '@caverns/shared';
+import { SHOP_TEMPLATES, validateStatPoints, computePlayerStats, PROGRESSION_CONFIG, ENERGY_CONFIG } from '@caverns/shared';
 import { GameSession } from './GameSession.js';
 import { generateProceduralDungeon } from './ProceduralGenerator.js';
 import { db } from './db/connection.js';
@@ -80,6 +80,39 @@ function toSummary(row: CharactersTable): CharacterSummary {
     gold: row.gold,
     lastPlayedAt: row.last_played_at ? (row.last_played_at as Date).toISOString() : null,
     inUse: row.in_use,
+  };
+}
+
+function buildCharacterPanelView(ch: CharactersTable): CharacterPanelView {
+  // Build a temporary Player-like object to compute stats
+  const totalAllocated = Object.values(ch.stat_allocations).reduce((a, b) => a + b, 0);
+  const earnedPoints = (ch.level - 1) * PROGRESSION_CONFIG.statPointsPerLevel;
+  const unspentStatPoints = Math.max(0, earnedPoints - totalAllocated);
+
+  // Compute stats using a minimal Player shape
+  const tempPlayer = {
+    className: ch.class,
+    equipment: ch.equipment,
+    statAllocations: ch.stat_allocations,
+  } as import('@caverns/shared').Player;
+  const stats = computePlayerStats(tempPlayer);
+
+  return {
+    name: ch.name,
+    className: ch.class,
+    level: ch.level,
+    xp: ch.xp,
+    gold: ch.gold,
+    equipment: ch.equipment,
+    inventory: ch.inventory,
+    consumables: ch.consumables,
+    statAllocations: ch.stat_allocations,
+    unspentStatPoints,
+    maxHp: stats.maxHp,
+    damage: stats.damage,
+    defense: stats.defense,
+    initiative: stats.initiative,
+    maxEnergy: stats.maxEnergy,
   };
 }
 
@@ -918,6 +951,127 @@ wss.on('connection', (ws) => {
           shop: buildShopView(template, result.state.rotating, allItemsById),
           gold: result.state.gold,
           character: { inventory: character.inventory, consumables: character.consumables },
+        });
+        break;
+      }
+
+      case 'open_character_panel': {
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx?.characterId || !characterRepo) break;
+        if (dungeonConnections.has(playerId)) break;
+        const ch = await characterRepo.getById(ctx.characterId);
+        if (!ch) break;
+        sendTo(playerId, {
+          type: 'character_panel_opened',
+          character: buildCharacterPanelView(ch),
+        });
+        break;
+      }
+
+      case 'overworld_equip_item': {
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx?.characterId || !characterRepo) break;
+        if (dungeonConnections.has(playerId)) {
+          sendTo(playerId, { type: 'character_panel_error', reason: 'Cannot manage inventory in a dungeon.' });
+          break;
+        }
+        const ch = await characterRepo.getById(ctx.characterId);
+        if (!ch) break;
+        const inventory = [...ch.inventory];
+        const consumables = [...ch.consumables];
+        const equipment = { ...ch.equipment };
+        const item = inventory[msg.inventoryIndex];
+        if (!item) {
+          sendTo(playerId, { type: 'character_panel_error', reason: 'No item in that slot.' });
+          break;
+        }
+        if (item.slot === 'consumable') {
+          const emptyIdx = consumables.indexOf(null);
+          if (emptyIdx === -1) {
+            sendTo(playerId, { type: 'character_panel_error', reason: 'Pouch is full.' });
+            break;
+          }
+          consumables[emptyIdx] = item;
+          inventory[msg.inventoryIndex] = null;
+        } else {
+          const slot = item.slot as keyof Equipment;
+          const replaced = equipment[slot];
+          equipment[slot] = item;
+          inventory[msg.inventoryIndex] = replaced;
+        }
+        await characterRepo.snapshot(ctx.characterId, {
+          name: ch.name, class: ch.class, level: ch.level, xp: ch.xp,
+          stat_allocations: ch.stat_allocations, equipment, inventory, consumables,
+          gold: ch.gold, keychain: ch.keychain,
+        });
+        const updated = await characterRepo.getById(ctx.characterId);
+        if (!updated) break;
+        sendTo(playerId, {
+          type: 'character_panel_updated',
+          character: buildCharacterPanelView(updated),
+        });
+        break;
+      }
+
+      case 'overworld_drop_item': {
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx?.characterId || !characterRepo) break;
+        if (dungeonConnections.has(playerId)) {
+          sendTo(playerId, { type: 'character_panel_error', reason: 'Cannot manage inventory in a dungeon.' });
+          break;
+        }
+        const ch = await characterRepo.getById(ctx.characterId);
+        if (!ch) break;
+        const inventory = [...ch.inventory];
+        if (!inventory[msg.inventoryIndex]) {
+          sendTo(playerId, { type: 'character_panel_error', reason: 'No item in that slot.' });
+          break;
+        }
+        inventory[msg.inventoryIndex] = null;
+        await characterRepo.snapshotInventory(ctx.characterId, inventory, ch.consumables);
+        const updated = await characterRepo.getById(ctx.characterId);
+        if (!updated) break;
+        sendTo(playerId, {
+          type: 'character_panel_updated',
+          character: buildCharacterPanelView(updated),
+        });
+        break;
+      }
+
+      case 'overworld_allocate_stat': {
+        const ctx = connectionAccounts.get(playerId);
+        if (!ctx?.characterId || !characterRepo) break;
+        if (dungeonConnections.has(playerId)) {
+          sendTo(playerId, { type: 'character_panel_error', reason: 'Cannot allocate stats in a dungeon.' });
+          break;
+        }
+        const ch = await characterRepo.getById(ctx.characterId);
+        if (!ch) break;
+        const statDef = PROGRESSION_CONFIG.statDefinitions.find(s => s.id === msg.statId);
+        if (!statDef) {
+          sendTo(playerId, { type: 'character_panel_error', reason: 'Invalid stat.' });
+          break;
+        }
+        const totalAllocated = Object.values(ch.stat_allocations).reduce((a, b) => a + b, 0);
+        const earnedPoints = (ch.level - 1) * PROGRESSION_CONFIG.statPointsPerLevel;
+        const unspent = earnedPoints - totalAllocated;
+        if (unspent < msg.points) {
+          sendTo(playerId, { type: 'character_panel_error', reason: 'Not enough stat points.' });
+          break;
+        }
+        const newAllocations = { ...ch.stat_allocations };
+        newAllocations[msg.statId] = (newAllocations[msg.statId] ?? 0) + msg.points;
+        await characterRepo.snapshot(ctx.characterId, {
+          name: ch.name, class: ch.class, level: ch.level, xp: ch.xp,
+          stat_allocations: newAllocations, equipment: ch.equipment,
+          inventory: ch.inventory, consumables: ch.consumables,
+          gold: ch.gold, keychain: ch.keychain,
+        });
+        const updated = await characterRepo.getById(ctx.characterId);
+        if (!updated) break;
+        sendTo(playerId, {
+          type: 'character_panel_updated',
+          character: buildCharacterPanelView(updated),
         });
         break;
       }

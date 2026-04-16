@@ -37,7 +37,7 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                 <button
                   key={`inv-${i}`}
                   className={`stash-slot ${item ? 'filled' : 'empty'}`}
-                  onClick={() => item && onDeposit('inventory', i)}
+                  onClick={() => { if (item) { new Audio('/audio/stash.mp3').play(); onDeposit('inventory', i); } }}
                   disabled={!item}
                   title={item?.description ?? ''}
                 >
@@ -51,7 +51,7 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                 <button
                   key={`con-${i}`}
                   className={`stash-slot ${item ? 'filled' : 'empty'}`}
-                  onClick={() => item && onDeposit('consumables', i)}
+                  onClick={() => { if (item) { new Audio('/audio/stash.mp3').play(); onDeposit('consumables', i); } }}
                   disabled={!item}
                   title={item?.description ?? ''}
                 >
@@ -69,7 +69,7 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                 <button
                   key={`stash-${i}`}
                   className={`stash-slot ${item ? 'filled' : 'empty'}`}
-                  onClick={() => item && onWithdraw(i, inferStashTarget(item))}
+                  onClick={() => { if (item) { new Audio('/audio/stash.mp3').play(); onWithdraw(i, inferStashTarget(item)); } }}
                   disabled={!item}
                   title={item?.description ?? ''}
                 >

@@ -80,6 +80,11 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
       send({ type: 'shop_sell', shopId, from, fromIndex }),
     shopReroll: (shopId: string) => send({ type: 'shop_reroll', shopId }),
     closeShop: () => useGameStore.setState({ openShop: null, shopError: null }),
+    openCharacterPanel: () => send({ type: 'open_character_panel' }),
+    closeCharacterPanel: () => useGameStore.setState({ openCharacterPanel: null, characterPanelError: null }),
+    overworldEquipItem: (inventoryIndex: number) => send({ type: 'overworld_equip_item', inventoryIndex }),
+    overworldDropItem: (inventoryIndex: number) => send({ type: 'overworld_drop_item', inventoryIndex }),
+    overworldAllocateStat: (statId: string, points: number) => send({ type: 'overworld_allocate_stat', statId, points }),
     leaveWorld: () => {
       send({ type: 'leave_world' });
       useGameStore.setState({
