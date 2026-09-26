@@ -1167,6 +1167,11 @@ wss.on('connection', (ws) => {
         break;
       }
       case 'sandbox_start': {
+        const realDungeon = getDungeonInstance(playerId) && !sandboxHost.has(playerId);
+        if (connectionAccounts.has(playerId) || realDungeon) {
+          sendTo(playerId, { type: 'sandbox_error', message: 'Sandbox fights need a fresh connection: open the ?sandbox= URL in a new tab instead of from a logged-in session.' });
+          break;
+        }
         sandboxHost.handleStart(playerId, msg);
         break;
       }
