@@ -10,6 +10,7 @@ import type {
   OutcomeType,
 } from './types.js';
 import type { OverworldMap } from './overworld.js';
+import type { SandboxOverrides } from './sandbox/types.js';
 
 // === Client -> Server ===
 
@@ -101,6 +102,12 @@ export interface DebugRevealAllMessage {
 export interface DebugGiveItemMessage {
   type: 'debug_give_item';
   itemId: string;
+}
+
+export interface SandboxStartMessage {
+  type: 'sandbox_start';
+  preset: string;
+  overrides?: SandboxOverrides;
 }
 
 export interface AllocateStatMessage {
@@ -256,6 +263,7 @@ export type ClientMessage =
   | DebugTeleportMessage
   | DebugRevealAllMessage
   | DebugGiveItemMessage
+  | SandboxStartMessage
   | AllocateStatMessage
   | LoginMessage
   | ResumeSessionMessage
@@ -632,6 +640,11 @@ export interface ErrorMessage {
   message: string;
 }
 
+export interface SandboxErrorMessage {
+  type: 'sandbox_error';
+  message: string;
+}
+
 export interface LevelUpMessage {
   type: 'level_up';
   playerId: string;
@@ -797,4 +810,5 @@ export type ServerMessage =
   | ArenaPositionsUpdateMessage
   | CharacterPanelOpenedMessage
   | CharacterPanelUpdatedMessage
-  | CharacterPanelErrorMessage;
+  | CharacterPanelErrorMessage
+  | SandboxErrorMessage;
