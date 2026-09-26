@@ -77,14 +77,25 @@ export function createSandboxSession(setup: SandboxSetup, opts: SandboxSessionOp
   function runBotTurn(botId: string): void {
     const snap = session.getArenaSnapshot(SANDBOX_ROOM_ID);
     if (!snap || snap.currentTurnId !== botId) return;
+    const capturedRound = snap.roundNumber;
     const actions = decideTurn(snap, botId);
+    let attacked = false;
     const step = (i: number) => {
+      // The turn may have already ended (GameSession.handleCombatAction advances the
+      // turn after an attack) before this queued step fires. Re-check freshly and bail
+      // rather than fire a stale end_turn (or further action) into someone else's turn,
+      // or a new turn that happens to belong to this same bot again.
+      if (attacked) return;
+      const current = session.getArenaSnapshot(SANDBOX_ROOM_ID);
+      if (!current || current.currentTurnId !== botId || current.roundNumber !== capturedRound) return;
+      const action = actions[i];
       try {
-        apply(botId, actions[i]);
+        apply(botId, action);
       } catch (err) {
         opts.onError?.(err);
         return;
       }
+      if (action.type === 'attack') attacked = true;
       if (i + 1 < actions.length) later(() => step(i + 1), opts.botTurnDelayMs);
     };
     step(0);
