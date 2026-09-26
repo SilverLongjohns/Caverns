@@ -44,7 +44,7 @@ import { exitPosition } from './tileGridBuilder.js';
 import type { CharacterRepository } from './CharacterRepository.js';
 import type { ActiveSessionMap } from './ActiveSessionMap.js';
 import { playerFromCharacter, characterSnapshotFromPlayer } from './characterAdapter.js';
-import type { InteractableDefinition, InteractableInstance, MobPoolEntry } from '@caverns/shared';
+import type { InteractableDefinition, InteractableInstance, MobPoolEntry, TileGrid } from '@caverns/shared';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
@@ -71,6 +71,22 @@ export interface GameSessionOrigin {
   worldId: string;
   portalId: string;
   portalPos: { x: number; y: number };
+}
+
+export interface SessionTiming {
+  mobTurnDelayMs: number;
+  victoryDelayMs: number;
+  postVictoryLootDelayMs: number;
+  defendTimeoutMs: number;
+}
+
+export interface ArenaSnapshot {
+  grid: TileGrid;
+  positions: Record<string, { x: number; y: number }>;
+  participants: { id: string; type: 'player' | 'mob'; hp: number }[];
+  currentTurnId: string;
+  roundNumber: number;
+  movementRemaining: number;
 }
 
 export class GameSession {
@@ -121,6 +137,13 @@ export class GameSession {
     rawDamage: number;
     timeout: ReturnType<typeof setTimeout>;
   } | null = null;
+  private timing: SessionTiming = {
+    mobTurnDelayMs: TIMING_CONFIG.mobTurnDelayMs,
+    victoryDelayMs: TIMING_CONFIG.victoryDelayMs,
+    postVictoryLootDelayMs: TIMING_CONFIG.postVictoryLootDelayMs,
+    defendTimeoutMs: QTE_CONFIG.defendTimeoutMs,
+  };
+  private disposed = false;
 
   constructor(
     broadcast: (msg: ServerMessage) => void,
@@ -185,6 +208,53 @@ export class GameSession {
     this.playerIds.push(id);
     this.playerNames.set(id, name);
     this.playerClasses.set(id, className);
+  }
+
+  /** Register a fully built Player (sandbox); used instead of DB hydration. Call before startGame(). */
+  addPrebuiltPlayer(player: Player): void {
+    this.addPlayer(player.id, player.name, player.className);
+    this.hydratedPlayers.set(player.id, player);
+  }
+
+  setTiming(overrides: Partial<SessionTiming>): void {
+    this.timing = { ...this.timing, ...overrides };
+  }
+
+  /** Start arena combat in a room with exactly these mobs (sandbox entry point). */
+  startArenaCombat(roomId: string, mobInstances: MobInstance[]): void {
+    this.roomMobInstances.set(roomId, mobInstances);
+    this.startCombat(roomId, mobInstances);
+  }
+
+  getArenaSnapshot(roomId: string): ArenaSnapshot | null {
+    const combat = this.combats.get(roomId);
+    if (!combat) return null;
+    const state = combat.getState();
+    return {
+      grid: combat.getGrid(),
+      positions: combat.getAllPositions(),
+      participants: combat.getParticipantsArray()
+        .filter((p) => p.alive)
+        .map((p) => ({ id: p.id, type: p.type, hp: p.hp })),
+      currentTurnId: state.currentTurnId,
+      roundNumber: state.roundNumber,
+      movementRemaining: combat.getTurnState(state.currentTurnId)?.movementRemaining ?? 0,
+    };
+  }
+
+  /** Stop all timers and make pending callbacks no-ops. The session is unusable afterwards. */
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.mobAIManager.destroy();
+    for (const t of this.goldWriteTimers.values()) clearTimeout(t);
+    this.goldWriteTimers.clear();
+    if (this.pendingDefend) {
+      clearTimeout(this.pendingDefend.timeout);
+      this.pendingDefend = null;
+    }
+    for (const combat of this.combats.values()) combat.cancelAfkTimer();
+    this.combats.clear();
   }
 
   /**
@@ -1022,10 +1092,11 @@ export class GameSession {
   }
 
   private afterCombatTurn(roomId: string, combat: ArenaCombatManager): void {
+    if (this.disposed) return;
     if (combat.isComplete()) {
       const result = combat.getResult();
       // Delay combat end on victory so the client disintegration animation plays
-      const delay = result === 'victory' ? TIMING_CONFIG.victoryDelayMs : 0;
+      const delay = result === 'victory' ? this.timing.victoryDelayMs : 0;
       setTimeout(() => this.finishCombat(roomId, result as 'victory' | 'flee' | 'wipe'), delay);
       return;
     }
@@ -1033,13 +1104,14 @@ export class GameSession {
     combat.startTurn(currentId);
     if (combat.isMobTurn(currentId)) {
       // Delay mob turns so attack animations play out before the next action
-      setTimeout(() => this.processMobTurn(roomId, combat), TIMING_CONFIG.mobTurnDelayMs);
+      setTimeout(() => this.processMobTurn(roomId, combat), this.timing.mobTurnDelayMs);
     } else {
       this.broadcastTurnPrompt(combat);
     }
   }
 
   private finishCombat(roomId: string, result: 'victory' | 'flee' | 'wipe'): void {
+    if (this.disposed) return;
     const combat = this.combats.get(roomId);
     if (combat) {
       const consumed = combat.getConsumedEffects();
@@ -1101,14 +1173,16 @@ export class GameSession {
       if (room?.type === 'boss') {
         // Delay so loot prompt and victory text are visible before game_over
         setTimeout(async () => {
+          if (this.disposed) return;
           await this.finalizeGracefulEnd();
           this.broadcast({ type: 'game_over', result: 'victory' });
           this.onGameOver?.(this.origin);
-        }, TIMING_CONFIG.postVictoryLootDelayMs);
+        }, this.timing.postVictoryLootDelayMs);
       }
     }
     if (this.playerManager.allPlayersDowned()) {
       void this.finalizeWipe().then(() => {
+        if (this.disposed) return;
         this.broadcast({ type: 'game_over', result: 'wipe' });
         this.onGameOver?.(this.origin);
       });
@@ -1161,6 +1235,7 @@ export class GameSession {
   }
 
   private processMobTurn(roomId: string, combat: ArenaCombatManager): void {
+    if (this.disposed) return;
     const mobId = combat.getCurrentTurnId();
 
     const resolver = combat.getEffectResolver();
@@ -1197,7 +1272,7 @@ export class GameSession {
       this.narrateDefendQteStart(roomId, result);
       const timeout = setTimeout(() => {
         this.resolveDefend(roomId, result.targetId!, result.pendingDamage!, 0);
-      }, QTE_CONFIG.defendTimeoutMs);
+      }, this.timing.defendTimeoutMs);
       this.pendingDefend = {
         roomId, targetId: result.targetId, mobId,
         rawDamage: result.pendingDamage, timeout,

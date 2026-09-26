@@ -62,6 +62,7 @@ export interface GameStore {
   openCharacterPanel: CharacterPanelView | null;
   characterPanelError: string | null;
   authError: string | null;
+  sandboxError: string | null;
   playerId: string;
   players: Record<string, Player>;
   rooms: Record<string, Room>;
@@ -158,6 +159,7 @@ const initialState = {
   openCharacterPanel: null as CharacterPanelView | null,
   characterPanelError: null as string | null,
   authError: null,
+  sandboxError: null,
   playerId: '',
   players: {},
   rooms: {},
@@ -437,6 +439,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           pendingLoot: null,
           pendingDefendQte: null,
           gameOver: null,
+          sandboxError: null,
           playerPositions: msg.playerPositions ?? {},
           mobPositions: {},
         });
@@ -636,6 +639,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
         set((state) => ({
           textLog: [...state.textLog, { message: msg.message, logType: 'system', id: ++logIdCounter }],
         }));
+        break;
+
+      case 'sandbox_error':
+        set({ sandboxError: msg.message });
         break;
 
       case 'puzzle_prompt':

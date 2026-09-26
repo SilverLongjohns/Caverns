@@ -7,6 +7,8 @@ export interface EntityOverlay {
   char: string;
   className: string;
   style?: React.CSSProperties;
+  /** Glyph sprite URL; when set it's drawn instead of `char`. */
+  sprite?: string | null;
 }
 
 interface TileGridViewProps {
@@ -112,7 +114,9 @@ export const TileGridView = memo(function TileGridView({ tileGrid, entities, ale
         const cls = highlightClass ? `${entity.className} ${highlightClass}` : entity.className;
         cells.push(
           <span key={x} className={cls} style={entity.style}>
-            {entity.char}
+            {entity.sprite
+              ? <span className="entity-glyph" style={{ backgroundImage: `url(${entity.sprite})` }} />
+              : entity.char}
           </span>
         );
       } else {

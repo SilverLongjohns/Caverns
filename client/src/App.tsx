@@ -19,10 +19,13 @@ import { ChatInput } from './components/ChatInput.js';
 import { DebugPanel } from './components/DebugPanel.js';
 import { CombatIntro } from './components/CombatIntro.js';
 import { MusicPlayer } from './components/MusicPlayer.js';
+import { SandboxBar } from './components/SandboxBar.js';
+import { getSandboxRequest } from './sandbox/sandboxMode.js';
 
 export function App() {
   const wsRef = useWebSocket();
   const actions = useGameActions(wsRef);
+  const sandboxRequest = getSandboxRequest();
   const currentView = useGameStore(selectCurrentView);
   const connectionStatus = useGameStore((s) => s.connectionStatus);
   const gameOver = useGameStore((s) => s.gameOver);
@@ -187,6 +190,12 @@ export function App() {
   return (
     <>
       {content}
+      {import.meta.env.DEV && sandboxRequest && (
+        <SandboxBar
+          request={sandboxRequest}
+          onRestart={() => actions.sandboxStart(sandboxRequest.preset, sandboxRequest.overrides)}
+        />
+      )}
       {import.meta.env.DEV && connectionStatus === 'in_game' && !gameOver && (
         <DebugPanel
           onTeleport={actions.debugTeleport}

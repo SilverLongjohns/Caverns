@@ -27,6 +27,8 @@ import {
   applySell,
   applyReroll,
 } from './ShopManager.js';
+import { SandboxHost } from './sandbox/SandboxHost.js';
+import { isSandboxEnabled } from './sandbox/gate.js';
 
 const PORT = Number(process.env.PORT) || 3001;
 
@@ -294,6 +296,28 @@ function sendTo(playerId: string, msg: ServerMessage): void {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(msg));
   }
+}
+
+const sandboxHost = new SandboxHost({
+  sendTo,
+  register: (sessionId, gameSession, connId) => {
+    dungeonInstances.set(sessionId, { sessionId, worldId: 'sandbox', gameSession, connections: new Set([connId]) });
+    dungeonConnections.set(connId, sessionId);
+  },
+  unregister: (sessionId, connId) => {
+    dungeonInstances.delete(sessionId);
+    dungeonConnections.delete(connId);
+  },
+});
+
+if (isSandboxEnabled()) console.log('[sandbox] Sandbox mode ON: sandbox_start and debug_* messages are enabled');
+
+/** debug_* messages are dev-only; refuse them unless sandbox mode is on. */
+function allowDebug(connId: string, type: string): boolean {
+  if (isSandboxEnabled()) return true;
+  console.warn(`[sandbox] refused ${type} from ${connId}: sandbox mode is off`);
+  sendTo(connId, { type: 'sandbox_error', message: `${type} requires sandbox mode (npm run dev:sandbox)` });
+  return false;
 }
 
 wss.on('connection', (ws) => {
@@ -1142,15 +1166,27 @@ wss.on('connection', (ws) => {
         // TODO: world chat scoped to WorldSession members (Phase 5.5).
         break;
       }
+      case 'sandbox_start': {
+        const realDungeon = getDungeonInstance(playerId) && !sandboxHost.has(playerId);
+        if (connectionAccounts.has(playerId) || realDungeon) {
+          sendTo(playerId, { type: 'sandbox_error', message: 'Sandbox fights need a fresh connection: open the ?sandbox= URL in a new tab instead of from a logged-in session.' });
+          break;
+        }
+        sandboxHost.handleStart(playerId, msg);
+        break;
+      }
       case 'debug_teleport': {
+        if (!allowDebug(playerId, msg.type)) break;
         getGameSession(playerId)?.debugTeleport(playerId, msg.roomId);
         break;
       }
       case 'debug_reveal_all': {
+        if (!allowDebug(playerId, msg.type)) break;
         getGameSession(playerId)?.debugRevealAll(playerId);
         break;
       }
       case 'debug_give_item': {
+        if (!allowDebug(playerId, msg.type)) break;
         getGameSession(playerId)?.debugGiveItem(playerId, msg.itemId);
         break;
       }
@@ -1159,6 +1195,11 @@ wss.on('connection', (ws) => {
 
   ws.on('close', async () => {
     clients.delete(playerId);
+    if (sandboxHost.has(playerId)) {
+      sandboxHost.stop(playerId);
+      connectionAccounts.delete(playerId);
+      return;
+    }
     // If the player was in a portal-spawned dungeon, mark them disconnected on
     // the GameSession and keep them in dungeonConnections so reconnect can
     // re-attach. Don't detach them or clear in_use — GameSession owns both.

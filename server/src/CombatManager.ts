@@ -33,6 +33,7 @@ interface InternalParticipant {
   isDefending: boolean;
   alive: boolean;
   className?: string;
+  templateId?: string;
   buffs: ActiveBuff[];
 }
 
@@ -70,7 +71,7 @@ export class CombatManager {
         id: m.instanceId, type: 'mob', name: m.name,
         hp: m.hp, maxHp: m.maxHp, damage: m.damage,
         defense: m.defense, initiative: m.initiative,
-        isDefending: false, alive: true, buffs: [],
+        isDefending: false, alive: true, templateId: m.templateId, buffs: [],
       });
     }
     this.rollInitiativeOrder();
@@ -483,6 +484,7 @@ export class CombatManager {
       .map((p) => ({
         id: p.id, type: p.type, name: p.name, hp: p.hp, maxHp: p.maxHp, initiative: p.initiative,
         className: p.className,
+        templateId: p.templateId,
         buffs: p.buffs.length > 0 ? [...p.buffs] : undefined,
       }));
     return {

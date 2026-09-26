@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import type { ServerMessage } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore.js';
 import { loadSessionToken } from '../auth/sessionStorage.js';
+import { getSandboxRequest } from '../sandbox/sandboxMode.js';
+import { recordSandboxEvent } from '../sandbox/sandboxHook.js';
 
 export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null);
@@ -19,6 +21,11 @@ export function useWebSocket() {
     ws.onopen = () => {
       console.log('[useWebSocket] OPEN ws', (ws as unknown as { __id: number }).__id, 'wsRef still us?', wsRef.current === ws);
       setConnectionStatus('connected');
+      const sandbox = getSandboxRequest();
+      if (sandbox) {
+        ws.send(JSON.stringify({ type: 'sandbox_start', preset: sandbox.preset, overrides: sandbox.overrides }));
+        return;
+      }
       const token = loadSessionToken();
       if (token) {
         ws.send(JSON.stringify({ type: 'resume_session', token }));
@@ -28,6 +35,7 @@ export function useWebSocket() {
       try {
         const msg: ServerMessage = JSON.parse(event.data);
         console.log('[recv]', msg.type, 'via ws', (ws as unknown as { __id: number }).__id);
+        recordSandboxEvent(msg);
         handleServerMessage(msg);
       } catch (err) {
         console.error('[recv] parse error', err);
