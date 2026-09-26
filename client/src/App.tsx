@@ -190,7 +190,7 @@ export function App() {
   return (
     <>
       {content}
-      {sandboxRequest && (
+      {import.meta.env.DEV && sandboxRequest && (
         <SandboxBar
           request={sandboxRequest}
           onRestart={() => actions.sandboxStart(sandboxRequest.preset, sandboxRequest.overrides)}

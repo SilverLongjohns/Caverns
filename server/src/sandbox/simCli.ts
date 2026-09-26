@@ -16,13 +16,28 @@ async function main(): Promise<number> {
     const value = args[++i];
     if (value === undefined) { console.error(`Missing value for ${flag}\n${USAGE}`); return 2; }
     switch (flag) {
-      case '--seeds': seeds = Number(value); break;
-      case '--seed': startSeed = Number(value); break;
+      case '--seeds': {
+        const n = Number(value);
+        if (!Number.isInteger(n) || n <= 0) { console.error(`--seeds must be a positive integer (got "${value}")\n${USAGE}`); return 2; }
+        seeds = n;
+        break;
+      }
+      case '--seed': {
+        const n = Number(value);
+        if (!Number.isInteger(n)) { console.error(`--seed must be an integer (got "${value}")\n${USAGE}`); return 2; }
+        startSeed = n;
+        break;
+      }
       case '--party': overrides.party = value.split(','); break;
       case '--mobs': overrides.mobs = value.split(','); break;
       case '--room': overrides.room = value; break;
       case '--biome': overrides.biome = value; break;
-      case '--level': overrides.level = Number(value); break;
+      case '--level': {
+        const n = Number(value);
+        if (!Number.isInteger(n) || n <= 0) { console.error(`--level must be a positive integer (got "${value}")\n${USAGE}`); return 2; }
+        overrides.level = n;
+        break;
+      }
       default: console.error(`Unknown option ${flag}\n${USAGE}`); return 2;
     }
   }

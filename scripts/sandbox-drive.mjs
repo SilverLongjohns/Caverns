@@ -128,10 +128,11 @@ async function assertCellVisible(x, y) {
     page.locator('.arena-viewport').boundingBox(),
     cell(x, y).boundingBox(),
   ]);
+  const tolerance = 0.5;
   const inside = viewportBox && cellBox
-    && cellBox.x >= viewportBox.x && cellBox.y >= viewportBox.y
-    && cellBox.x + cellBox.width <= viewportBox.x + viewportBox.width
-    && cellBox.y + cellBox.height <= viewportBox.y + viewportBox.height;
+    && cellBox.x >= viewportBox.x - tolerance && cellBox.y >= viewportBox.y - tolerance
+    && cellBox.x + cellBox.width <= viewportBox.x + viewportBox.width + tolerance
+    && cellBox.y + cellBox.height <= viewportBox.y + viewportBox.height + tolerance;
   if (!inside) throw new Error(`Cell ${x},${y} is outside the visible arena window — pan first (--pan)`);
 }
 

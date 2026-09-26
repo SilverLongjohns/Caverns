@@ -1,6 +1,7 @@
 import type { CombatState, ServerMessage } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore.js';
 
+// "ready" (spec §3) = 'my_turn' | 'waiting'.
 type SandboxStatus = 'connecting' | 'my_turn' | 'waiting' | 'ended' | 'error';
 
 interface SandboxEvent { t: number; type: string; detail?: unknown }
