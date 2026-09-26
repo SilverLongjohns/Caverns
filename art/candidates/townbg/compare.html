@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camp Backdrop Candidates</title>
+<style>
+  :root { --bg: #0a0806; --fg: #c8b89a; --gold: #d4a857; --line: #3d3122; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: 'Courier New', monospace; padding: 24px 16px 64px; }
+  header { max-width: 1400px; margin: 0 auto 20px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: baseline; justify-content: space-between; }
+  h1 { margin: 0; color: var(--gold); font-size: 22px; letter-spacing: .15em; text-shadow: 0 0 10px rgba(212,168,87,.4); }
+  label { cursor: pointer; user-select: none; }
+  .card { max-width: 1400px; margin: 0 auto 36px; }
+  .card h2 { margin: 0 0 4px; color: var(--gold); font-size: 18px; letter-spacing: .1em; }
+  .card p { margin: 0 0 10px; font-size: 14px; opacity: .85; }
+  .frame { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--line); overflow: hidden; background: #000; }
+  .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.55); display: none; }
+  .panels { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); width: min(56%, 900px); display: none;
+            grid-template-columns: 1fr 1fr; gap: 1.2%; }
+  .panels div { aspect-ratio: 365 / 150; background: rgba(20,18,12,.85); border: 1px solid #5a4a2a; }
+  body.ingame .overlay { display: block; }
+  body.ingame .panels { display: grid; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CAMP BACKDROP — CANDIDATES</h1>
+  <label><input type="checkbox" id="ingame"> show in-game overlay (55% dark + town panels)</label>
+</header>
+
+<h1 style="max-width:1400px;margin:8px auto 16px;font-size:16px;color:#77ccee;letter-spacing:.2em">— QUD RETRO-FUTURE CONCEPTS —</h1>
+<section class="card">
+  <h2>1 — The Husk</h2>
+  <p>A settlement inside the ribcage of a colossal fallen machine on salt flats. Glowing glyphs on the hull, a teal reactor-housing fire, twin moons, and a sealed hatch leading down. Styled on the Phaseknife.</p>
+  <div class="frame"><img src="qud_husk.png" alt="1 — The Husk"><div class="overlay"></div><div class="panels"><div></div><div></div><div></div><div></div></div></div>
+</section>
+<section class="card">
+  <h2>2 — Monolith Bazaar</h2>
+  <p>A patchwork market at the foot of a glyph-covered monolith, with a dead walker robot, bulbous fungus-trees, a ringed moon and a giant blast door cracked open with light spilling out. Styled on the Junk Prophet.</p>
+  <div class="frame"><img src="qud_monolith.png" alt="2 — Monolith Bazaar"><div class="overlay"></div><div class="panels"><div></div><div></div><div></div><div></div></div></div>
+</section>
+<section class="card">
+  <h2>3 — Antenna Waystation</h2>
+  <p>Parachute-silk tents strung between the pylons of an ancient antenna array, an oil-drum fire, a one-eyed sentinel robot, glass trees, a buried dome, a bunker stairwell and a shattered moon. Styled on the Shopkeep.</p>
+  <div class="frame"><img src="qud_waystation.png" alt="3 — Antenna Waystation"><div class="overlay"></div><div class="panels"><div></div><div></div><div></div><div></div></div></div>
+</section>
+<h1 style="max-width:1400px;margin:32px auto 16px;font-size:16px;color:#8a7a5e;letter-spacing:.2em">— EARLIER (CLASSIC) CANDIDATES —</h1>
+<section class="card">
+  <h2>A — faithful remake</h2>
+  <p>Closest to the current image: stone fire ring, tripods, valley with distant town lights, barrels and crates.</p>
+  <div class="frame"><img src="camp_a.png" alt="Candidate A"><div class="overlay"></div><div class="panels"><div></div><div></div><div></div><div></div></div></div>
+</section>
+
+<section class="card">
+  <h2>B — outpost + mine</h2>
+  <p>Tent, covered wagon, delvers gathered at the fire, and a glowing mine entrance in the cliff — ties the hub to the descent.</p>
+  <div class="frame"><img src="camp_b.png" alt="Candidate B"><div class="overlay"></div><div class="panels"><div></div><div></div><div></div><div></div></div></div>
+</section>
+
+<section class="card">
+  <h2>B · shopkeep-styled</h2>
+  <p>Camp B re-generated with the shopkeep portrait as style reference.</p>
+  <div class="frame"><img src="camp_b_shopkeep.png" alt="B shopkeep-styled"><div class="overlay"></div><div class="panels"><div></div><div></div><div></div><div></div></div></div>
+</section>
+
+<section class="card">
+  <h2>B · suturist-styled</h2>
+  <p>Camp B re-generated with the suturist portrait as style reference.</p>
+  <div class="frame"><img src="camp_b_suturist.png" alt="B suturist-styled"><div class="overlay"></div><div class="panels"><div></div><div></div><div></div><div></div></div></div>
+</section>
+
+<section class="card">
+  <h2>C — junkyard plateau</h2>
+  <p>Log seats around a small fire, heaps of scrap, mine carts, dead pines — the bleakest of the three.</p>
+  <div class="frame"><img src="camp_c.png" alt="Candidate C"><div class="overlay"></div><div class="panels"><div></div><div></div><div></div><div></div></div></div>
+</section>
+
+<script>
+  const box = document.getElementById('ingame');
+  box.addEventListener('change', () => document.body.classList.toggle('ingame', box.checked));
+</script>
+</body>
+</html>
