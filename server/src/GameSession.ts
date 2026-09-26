@@ -1173,6 +1173,7 @@ export class GameSession {
       if (room?.type === 'boss') {
         // Delay so loot prompt and victory text are visible before game_over
         setTimeout(async () => {
+          if (this.disposed) return;
           await this.finalizeGracefulEnd();
           this.broadcast({ type: 'game_over', result: 'victory' });
           this.onGameOver?.(this.origin);
@@ -1181,6 +1182,7 @@ export class GameSession {
     }
     if (this.playerManager.allPlayersDowned()) {
       void this.finalizeWipe().then(() => {
+        if (this.disposed) return;
         this.broadcast({ type: 'game_over', result: 'wipe' });
         this.onGameOver?.(this.origin);
       });
