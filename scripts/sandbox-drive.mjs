@@ -3,19 +3,32 @@ import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
+const ARROWS = { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown' };
+
 const USAGE = `Usage: node scripts/sandbox-drive.mjs "<preset>[?room=boss&seed=7]" [steps] [options]
 Steps (run in order):
   --wait ready|my-turn|ended   wait for sandbox state (ready is added first if no --wait given)
   --shot <name>                screenshot to <out>/<name>.png
-  --end-turn [n]               click End Turn on my next n turns (default 1)
+  --end-turn [n]               click End Turn on my next n turns (default 1, must be a positive integer)
   --attack-nearest             click Attack, then an adjacent enemy
-  --click x,y                  click arena cell x,y (pan it into view first)
-  --pan left|right|up|down[,n] press an arrow key n times
+  --click x,y                  click arena cell x,y — it must be inside the visible camera window;
+                                use --wait my-turn and --pan first
+  --pan left|right|up|down[,n] press an arrow key n times (n defaults to 1, must be a positive integer)
 Options:
   --out <dir>        output directory (default .sandbox/shots)
   --base <url>       client URL (default http://localhost:5173)
-  --viewport WxH     browser size (default 1600x1000)
+  --viewport WxH     browser size (default 1600x1000, W and H must be positive integers)
+Notes:
+  - Passing your own --wait suppresses the auto-inserted "--wait ready" before the first step —
+    add --wait ready explicitly if you also wait on something later (e.g. --wait ended).
+  - --wait ended needs the human seat to actually act (there's no idle/AFK auto-skip while
+    connected) — interleave --end-turn N (e.g. --end-turn 30) so the fight can conclude.
+  - The camera follows whichever unit's turn is active, so a manual --pan only sticks if you
+    do it during your own turn (--wait my-turn first).
 Needs the dev servers: npm run dev:sandbox`;
+
+const isPosInt = (s) => /^\d+$/.test(s) && Number(s) > 0;
+const isNonNegInt = (s) => /^\d+$/.test(s);
 
 const argv = process.argv.slice(2);
 if (!argv[0] || argv[0].startsWith('--')) { console.error(USAGE); process.exit(2); }
@@ -31,21 +44,50 @@ for (let i = 1; i < argv.length; i++) {
     if (v === undefined) { console.error(`Missing value for ${a}\n${USAGE}`); process.exit(2); }
     return v;
   };
+  const fail = (msg) => { console.error(`${msg}\n${USAGE}`); process.exit(2); };
   switch (a) {
     case '--base': base = next(); break;
     case '--out': out = next(); break;
-    case '--viewport': { const [w, h] = next().split('x').map(Number); viewport = { width: w, height: h }; break; }
+    case '--viewport': {
+      const v = next();
+      const m = /^(\d+)x(\d+)$/.exec(v);
+      if (!m || !isPosInt(m[1]) || !isPosInt(m[2])) fail(`Invalid --viewport "${v}" (expected WxH with positive integers, e.g. 1600x1000)`);
+      viewport = { width: Number(m[1]), height: Number(m[2]) };
+      break;
+    }
     case '--wait': steps.push({ kind: 'wait', what: next() }); break;
     case '--shot': steps.push({ kind: 'shot', name: next() }); break;
     case '--end-turn': {
-      const n = argv[i + 1] && !argv[i + 1].startsWith('--') ? Number(next()) : 1;
+      let n = 1;
+      if (argv[i + 1] && !argv[i + 1].startsWith('--')) {
+        const v = next();
+        if (!isPosInt(v)) fail(`Invalid --end-turn "${v}" (expected a positive integer)`);
+        n = Number(v);
+      }
       steps.push({ kind: 'end-turn', n });
       break;
     }
     case '--attack-nearest': steps.push({ kind: 'attack-nearest' }); break;
-    case '--click': { const [x, y] = next().split(',').map(Number); steps.push({ kind: 'click', x, y }); break; }
-    case '--pan': { const [dir, n = '1'] = next().split(','); steps.push({ kind: 'pan', dir, n: Number(n) }); break; }
-    default: console.error(`Unknown option ${a}\n${USAGE}`); process.exit(2);
+    case '--click': {
+      const v = next();
+      const m = /^(\d+),(\d+)$/.exec(v);
+      if (!m || !isNonNegInt(m[1]) || !isNonNegInt(m[2])) fail(`Invalid --click "${v}" (expected x,y with non-negative integers)`);
+      steps.push({ kind: 'click', x: Number(m[1]), y: Number(m[2]) });
+      break;
+    }
+    case '--pan': {
+      const v = next();
+      const [dir, nRaw] = v.split(',');
+      if (!ARROWS[dir]) fail(`Invalid --pan "${v}" (direction must be left, right, up, or down)`);
+      let n = 1;
+      if (nRaw !== undefined) {
+        if (!isPosInt(nRaw)) fail(`Invalid --pan "${v}" (count must be a positive integer)`);
+        n = Number(nRaw);
+      }
+      steps.push({ kind: 'pan', dir, n });
+      break;
+    }
+    default: fail(`Unknown option ${a}`);
   }
 }
 if (!steps.some((s) => s.kind === 'wait')) steps.unshift({ kind: 'wait', what: 'ready' });
@@ -59,14 +101,13 @@ try {
 }
 
 mkdirSync(out, { recursive: true });
-const browser = await chromium.launch({ channel: 'msedge', headless: true });
-const page = await browser.newPage({ viewport });
+
 const pageErrors = [];
-page.on('pageerror', (e) => pageErrors.push(String(e)));
+let browser = null;
+let page = null;
 
 const url = `${base}/?sandbox=${encodeURIComponent(preset)}${query ? `&${query}` : ''}`;
 const hook = () => page.evaluate(() => window.__cavernsSandbox ?? null);
-const ARROWS = { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown' };
 
 async function waitFor(pred, what, timeout = 30000) {
   const start = Date.now();
@@ -81,8 +122,25 @@ async function waitFor(pred, what, timeout = 30000) {
 const isReady = (h) => h.status === 'my_turn' || h.status === 'waiting';
 const cell = (x, y) => page.locator(`.room-grid > .room-row:nth-child(${y + 1}) > span:nth-child(${x + 1})`);
 
+/** Cells outside the camera's .arena-viewport are CSS-clipped (overflow: hidden) and unclickable. */
+async function assertCellVisible(x, y) {
+  const [viewportBox, cellBox] = await Promise.all([
+    page.locator('.arena-viewport').boundingBox(),
+    cell(x, y).boundingBox(),
+  ]);
+  const inside = viewportBox && cellBox
+    && cellBox.x >= viewportBox.x && cellBox.y >= viewportBox.y
+    && cellBox.x + cellBox.width <= viewportBox.x + viewportBox.width
+    && cellBox.y + cellBox.height <= viewportBox.y + viewportBox.height;
+  if (!inside) throw new Error(`Cell ${x},${y} is outside the visible arena window — pan first (--pan)`);
+}
+
 let exitCode = 0;
 try {
+  browser = await chromium.launch({ channel: 'msedge', headless: true });
+  page = await browser.newPage({ viewport });
+  page.on('pageerror', (e) => pageErrors.push(String(e)));
+
   await page.goto(url);
   for (const s of steps) {
     switch (s.kind) {
@@ -118,10 +176,12 @@ try {
         if (!target) throw new Error('No enemy adjacent to the player');
         await page.click('.arena-btn-attack');
         const pos = h.positions[target.id];
+        await assertCellVisible(pos.x, pos.y);
         await cell(pos.x, pos.y).click();
         break;
       }
       case 'click':
+        await assertCellVisible(s.x, s.y);
         await cell(s.x, s.y).click();
         break;
       case 'pan':
@@ -132,12 +192,14 @@ try {
 } catch (e) {
   exitCode = 1;
   console.error(String(e.message ?? e));
-  await page.screenshot({ path: join(out, 'error.png') }).catch(() => {});
-  console.error(`error screenshot: ${join(out, 'error.png')}`);
+  if (page) {
+    await page.screenshot({ path: join(out, 'error.png') }).catch(() => {});
+    console.error(`error screenshot: ${join(out, 'error.png')}`);
+  }
 } finally {
-  const h = await hook().catch(() => null);
+  const h = page ? await hook().catch(() => null) : null;
   writeFileSync(join(out, 'events.json'), JSON.stringify({ url, finalStatus: h?.status ?? null, pageErrors, events: h?.events ?? [] }, null, 2));
   if (pageErrors.length) console.error(`page errors:\n  ${pageErrors.join('\n  ')}`);
-  await browser.close();
+  await browser?.close();
 }
 process.exit(exitCode);
