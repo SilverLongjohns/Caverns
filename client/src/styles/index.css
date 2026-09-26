@@ -1247,6 +1247,7 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   position: absolute;
   inset: 0;
   background: url('/backgrounds/townbg.png') center/cover no-repeat;
+  image-rendering: pixelated; /* native-res pixel art: upscale crisp, not blurred */
   z-index: 0;
 }
 .town-view::after {
@@ -2906,6 +2907,38 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   color: #666;
   background: #080808;
 }
+
+/* --- Dev sandbox bar --- */
+.sandbox-bar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: #1a1410;
+  border: 1px solid #5a4a2a;
+  border-top: 0;
+  font-size: 12px;
+  color: #c8b89a;
+}
+.sandbox-bar-tag { color: #d4a857; letter-spacing: 0.1em; }
+.sandbox-bar-seed { color: #888; }
+.sandbox-bar select,
+.sandbox-bar button {
+  background: #110e0a;
+  color: #c8b89a;
+  border: 1px solid #3d3122;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 1px 6px;
+  cursor: pointer;
+}
+.sandbox-bar button:hover { border-color: #d4a857; }
+.sandbox-bar-error { color: #ff4444; }
 
 /* === Character Modal === */
 .char-modal {
