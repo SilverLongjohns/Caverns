@@ -1,5 +1,5 @@
 import type { ArenaSnapshot } from '../GameSession.js';
-import { getMovementRange, isAdjacent } from '../arenaMovement.js';
+import { getMovementRange, isAdjacent, findPath } from '../arenaMovement.js';
 
 export type BotAction =
   | { type: 'move'; x: number; y: number }
@@ -33,9 +33,12 @@ export function decideTurn(snap: ArenaSnapshot, selfId: string): BotAction[] {
   );
   const reachable = getMovementRange(snap.grid, selfPos, snap.movementRemaining, occupied);
   reachable.delete(keyOf(selfPos));
-  const tiles = [...reachable.entries()]
+  let tiles = [...reachable.entries()]
     .map(([k, mp]) => ({ pos: parseKey(k), mp, key: k }))
     .sort((a, b) => (a.key < b.key ? -1 : 1));
+
+  // Filter to only tiles reachable via path (not just traverse-through)
+  tiles = tiles.filter((t) => findPath(snap.grid, selfPos, t.pos, snap.movementRemaining, occupied) !== null);
 
   // Enemies are sorted weakest-first, so the first enemy with a reachable neighbour tile wins.
   for (const enemy of enemies) {

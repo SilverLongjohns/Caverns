@@ -91,4 +91,19 @@ describe('decideTurn', () => {
     expect(decideTurn(snap({ positions: { p1: { x: 1, y: 1 } }, participants: [P1] }), 'p1'))
       .toEqual([{ type: 'end_turn' }]);
   });
+
+  it('does not move through occupied allies to reach enemies', () => {
+    const corridor = grid([
+      '#######',
+      '#.....#',
+      '#######',
+    ]);
+    const actions = decideTurn(snap({
+      grid: corridor,
+      movementRemaining: 5,
+      positions: { p1: { x: 1, y: 1 }, p2: { x: 2, y: 1 }, m1: { x: 5, y: 1 } },
+      participants: [P1, { id: 'p2', type: 'player', hp: 30 }, { id: 'm1', type: 'mob', hp: 20 }],
+    }), 'p1');
+    expect(actions).toEqual([{ type: 'end_turn' }]);
+  });
 });
