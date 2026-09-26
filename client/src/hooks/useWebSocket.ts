@@ -35,8 +35,8 @@ export function useWebSocket() {
       try {
         const msg: ServerMessage = JSON.parse(event.data);
         console.log('[recv]', msg.type, 'via ws', (ws as unknown as { __id: number }).__id);
-        handleServerMessage(msg);
         recordSandboxEvent(msg);
+        handleServerMessage(msg);
       } catch (err) {
         console.error('[recv] parse error', err);
       }
