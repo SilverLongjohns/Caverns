@@ -19,5 +19,8 @@
     "host": "npm run build && node server/dist/index.js",
     "test": "npm run test --workspaces --if-present",
     "sim": "npm run sim --workspace=server --"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
   }
 }

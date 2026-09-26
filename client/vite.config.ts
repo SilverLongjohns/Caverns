@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/ws': {
-        target: 'ws://localhost:3001',
+        target: `ws://localhost:${process.env.CAVERNS_SERVER_PORT ?? '3001'}`,
         ws: true,
       },
     },
