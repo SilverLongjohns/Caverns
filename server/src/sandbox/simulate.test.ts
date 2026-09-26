@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { resolveSetup, SANDBOX_PRESETS } from '@caverns/shared';
 import { simulateFight } from './simulate.js';
+import { GameSession } from '../GameSession.js';
 
 function setupFor(id: string, seed: number) {
   const r = resolveSetup(id, { seed });
@@ -30,4 +31,19 @@ describe('simulateFight', () => {
     await simulateFight(setupFor('duel', 5));
     expect(Math.random).toBe(original);
   });
+
+  it('resolves with an error result (not a hang) when a bot action throws', async () => {
+    const original = Math.random;
+    const spy = vi.spyOn(GameSession.prototype, 'handleArenaEndTurn').mockImplementation(() => {
+      throw new Error('boom');
+    });
+    try {
+      const res = await simulateFight(setupFor('duel', 1));
+      expect(res.result).toBe('error');
+      expect(res.errors[0]).toContain('boom');
+      expect(Math.random).toBe(original);
+    } finally {
+      spy.mockRestore();
+    }
+  }, 5_000);
 });
