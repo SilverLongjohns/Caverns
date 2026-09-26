@@ -34,6 +34,10 @@ export class SandboxHost {
       return;
     }
     this.stop(connId);
+    // Another connection's sandbox session is still live: with a seeded setup, an
+    // overlapping seededRandom install means Math.random no longer follows a single
+    // seed's sequence for the duration of the overlap, so replay isn't guaranteed.
+    const overlapping = resolved.setup.seed !== null && this.sessions.size > 0;
     const sessionId = `sandbox-${this.nextId++}`;
     try {
       const sandbox = createSandboxSession(resolved.setup, {
@@ -46,6 +50,9 @@ export class SandboxHost {
       this.sessions.set(connId, { sandbox, sessionId });
       this.deps.register(sessionId, sandbox.session, connId);
       console.log(`[sandbox] ${sessionId} started for ${connId}: ${resolved.setup.presetId} seed=${resolved.setup.seed ?? 'random'}`);
+      if (overlapping) {
+        this.error(connId, 'Another sandbox session is running on this server; seeded replay is not guaranteed while sessions overlap.');
+      }
     } catch (err) {
       console.error('[sandbox] failed to start', err);
       this.error(connId, `Sandbox failed to start: ${err instanceof Error ? err.message : String(err)}`);
