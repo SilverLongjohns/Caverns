@@ -16,6 +16,7 @@
     "build": "npm run build --workspace=shared && npm run build --workspace=roomgrid && npm run build --workspace=itemgen && npm run build --workspace=server && npm run build --workspace=client",
     "start": "node server/dist/index.js",
     "host": "npm run build && node server/dist/index.js",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "sim": "npm run sim --workspace=server --"
   }
 }
