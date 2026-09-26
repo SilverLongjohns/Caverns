@@ -344,6 +344,8 @@ export interface CombatParticipant {
   maxHp: number;
   initiative: number;
   className?: string;
+  /** Mob template id (mobs only), used to pick the mob's glyph sprite. */
+  templateId?: string;
   buffs?: ActiveBuff[];
   energy?: number;
 }
