@@ -91,6 +91,10 @@ client/src/
 docs/superpowers/
   specs/2026-04-03-vertical-slice-design.md  — Full design spec
   plans/2026-04-03-vertical-slice.md         — 14-task implementation plan
+
+trailer/            — Standalone pure-JS cinematic trailer (Canvas + synthesized Web Audio score).
+                      Open trailer/index.html. See trailer/README.md. assets/score.m4a is a cached
+                      render of js/score.js — regenerate it after editing the score.
 ```
 
 ## Message Protocol

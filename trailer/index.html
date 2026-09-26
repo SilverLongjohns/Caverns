@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caverns — Trailer</title>
+<link rel="icon" href="../client/public/Icon.png">
+<style>
+  @font-face { font-family: 'VT323'; src: url(fonts/VT323.ttf); }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { display: grid; place-items: center; font-family: 'VT323', monospace; }
+  #screen { display: block; background: #000; cursor: pointer; }
+  #ui {
+    position: fixed; inset: 0; display: grid; place-items: center; cursor: pointer;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.35), rgba(0,0,0,0.85));
+    transition: opacity .4s ease;
+  }
+  #ui.hidden { opacity: 0; pointer-events: none; }
+  #status {
+    color: #d4a857; font-size: clamp(22px, 3vw, 44px); letter-spacing: .25em; text-align: center;
+    text-shadow: 0 0 12px rgba(212,168,87,.6);
+  }
+  #ui.ready #status { animation: pulse 1.6s ease-in-out infinite; }
+  #status small { display: block; margin-top: .9em; font-size: .45em; letter-spacing: .3em; color: #8a7a5e; text-shadow: none; }
+  @keyframes pulse { 50% { opacity: .55; } }
+  #progress { position: fixed; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(212,168,87,.08); }
+  #bar { height: 100%; width: 0; background: #d4a857; box-shadow: 0 0 8px #d4a857; opacity: .5; }
+</style>
+</head>
+<body>
+<canvas id="screen" width="1920" height="1080"></canvas>
+<div id="ui"><div id="status">…</div></div>
+<div id="progress"><div id="bar"></div></div>
+<script>window.__errors=[];addEventListener("error",e=>__errors.push(e.message+" @"+e.filename+":"+e.lineno));addEventListener("unhandledrejection",e=>__errors.push(String(e.reason)));</script>
+<script src="js/core.js"></script>
+<script src="js/score.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
