@@ -51,7 +51,7 @@ export class SandboxHost {
       this.deps.register(sessionId, sandbox.session, connId);
       console.log(`[sandbox] ${sessionId} started for ${connId}: ${resolved.setup.presetId} seed=${resolved.setup.seed ?? 'random'}`);
       if (overlapping) {
-        this.error(connId, 'Another sandbox session is running on this server; seeded replay is not guaranteed while sessions overlap.');
+        this.deps.sendTo(connId, { type: 'text_log', message: 'Another sandbox session is running on this server; seeded replay is not guaranteed while sessions overlap.', logType: 'combat' });
       }
     } catch (err) {
       console.error('[sandbox] failed to start', err);

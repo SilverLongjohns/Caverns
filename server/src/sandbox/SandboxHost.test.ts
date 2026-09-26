@@ -55,14 +55,16 @@ describe('SandboxHost', () => {
     expect(sent.length).toBe(before);
   });
 
-  it('sends an overlap notice when starting a seeded session while another connection has a live one', () => {
+  it('sends an overlap notice as a combat-log line when starting a seeded session while another connection has a live one', () => {
     const { host, sent } = makeHost(true);
     host.handleStart('c1', { type: 'sandbox_start', preset: 'duel', overrides: { seed: 3 } });
     host.handleStart('c2', { type: 'sandbox_start', preset: 'duel', overrides: { seed: 4 } });
 
     const c2Msgs = sent.filter((s) => s.to === 'c2');
-    const notice = c2Msgs.find((s) => s.msg.type === 'sandbox_error');
-    expect(notice?.msg).toMatchObject({ type: 'sandbox_error', message: expect.stringContaining('Another sandbox session') });
+    const notice = c2Msgs.find((s) => s.msg.type === 'text_log' && s.msg.message.includes('Another sandbox session'));
+    expect(notice?.msg).toMatchObject({ type: 'text_log', logType: 'combat', message: expect.stringContaining('Another sandbox session') });
+    // It must not be sent as a fatal sandbox_error.
+    expect(c2Msgs.find((s) => s.msg.type === 'sandbox_error')).toBeUndefined();
     // The session still starts despite the notice.
     expect(host.has('c2')).toBe(true);
 
@@ -73,7 +75,7 @@ describe('SandboxHost', () => {
   it('does not send an overlap notice when no other connection has a live session', () => {
     const { host, sent } = makeHost(true);
     host.handleStart('c1', { type: 'sandbox_start', preset: 'duel', overrides: { seed: 3 } });
-    const notice = sent.find((s) => s.to === 'c1' && s.msg.type === 'sandbox_error');
+    const notice = sent.find((s) => s.to === 'c1' && s.msg.type === 'text_log' && s.msg.message.includes('Another sandbox session'));
     expect(notice).toBeUndefined();
     host.stop('c1');
   });
@@ -83,7 +85,7 @@ describe('SandboxHost', () => {
     host.handleStart('c1', { type: 'sandbox_start', preset: 'duel', overrides: { seed: 3 } });
     // 'starter-pack' has no default seed, and no seed override here, so it resolves unseeded.
     host.handleStart('c2', { type: 'sandbox_start', preset: 'starter-pack' });
-    const notice = sent.find((s) => s.to === 'c2' && s.msg.type === 'sandbox_error');
+    const notice = sent.find((s) => s.to === 'c2' && s.msg.type === 'text_log' && s.msg.message.includes('Another sandbox session'));
     expect(notice).toBeUndefined();
     host.stop('c1');
     host.stop('c2');
