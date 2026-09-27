@@ -164,12 +164,16 @@ export function App() {
               />
             ) : (
               <>
-                <div className="room-area">
-                  <Compass exits={availableExits} />
-                  <RoomView />
-                </div>
-                <TextLog />
-                <ChatInput onSend={actions.chat} />
+                <RelicPanel className="room-screen">
+                  <div className="room-area">
+                    <Compass exits={availableExits} />
+                    <RoomView />
+                  </div>
+                </RelicPanel>
+                <RelicPanel className="log-screen" title="Log">
+                  <TextLog />
+                  <ChatInput onSend={actions.chat} />
+                </RelicPanel>
                 <ActionBar
                   onLootChoice={actions.lootChoice}
                   onRevive={actions.revive}

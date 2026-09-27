@@ -196,3 +196,22 @@
 .slot-actions { display: flex; gap: 6px; flex: none; }
 .player-hud .consumables > .slot-label,
 .player-hud .inventory > .slot-label { display: block; margin-top: 8px; font-size: 0.65rem; color: var(--relic-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* === Phase 1 screens: exploration === */
+.game-layout { gap: 4px; }
+.main-column { gap: 4px; }
+.room-screen { flex: none; }
+.log-screen { flex: 1; }
+.log-screen .text-log { background: transparent; }
+.log-screen .chat-input { background: transparent; border-top: 1px dashed var(--relic-divider); }
+
+/* Console strip: flat bronze rail under the screens */
+.action-bar {
+  background: linear-gradient(#2a1c10, #1a120a);
+  border-top: 2px solid #000;
+  box-shadow: inset 0 2px 0 var(--relic-bronze-hi), 0 -1px 0 var(--relic-bronze);
+}
+.action-bar .loot-item { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+.action-bar .loot-buttons { display: flex; gap: 8px; flex: none; }
+.action-bar .puzzle-options, .action-bar .interact-actions, .action-bar .revive-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.relic-btn--hot:disabled { opacity: 0.85; }
