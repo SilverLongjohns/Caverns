@@ -1,4 +1,5 @@
 import type { ActiveBuff } from './classTypes.js';
+import type { ItemArchetype } from './itemArchetypes.js';
 import { getClassDefinition } from './classData.js';
 import { PLAYER_CONFIG } from './data/player.js';
 import { ENERGY_CONFIG } from './data/energy.js';
@@ -31,6 +32,8 @@ export interface Item {
   effect?: string;
   effectParams?: Record<string, number>;
   skullRating?: 1 | 2 | 3;
+  /** Icon archetype. Optional: items saved before it existed resolve via archetypeFor(). */
+  archetype?: ItemArchetype;
 }
 
 // === Drop Specs ===

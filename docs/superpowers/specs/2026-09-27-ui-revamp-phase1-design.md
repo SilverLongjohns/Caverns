@@ -96,7 +96,7 @@ Kit code uses only these tokens. Existing `index.css` rules are left alone excep
 
 ### Item archetypes
 
-`shared/src/itemArchetypes.ts` exports an `ItemArchetype` union, a keyword table and `archetypeFor(item)`. There are 22 archetypes:
+`shared/src/itemArchetypes.ts` exports an `ItemArchetype` union, a keyword table and `archetypeFor(item)`. There are 23 archetypes (`ranged` was added during planning):
 
 | Slot | Archetype | Base types / names mapped to it |
 |---|---|---|
@@ -106,6 +106,7 @@ Kit code uses only these tokens. Existing `index.css` rules are left alone excep
 | weapon | `axe` | axe, war axe, cleaver, lattice axe, ossified axe, sea axe |
 | weapon | `polearm` | spear, lance, harpoon, trident, marrow spear, prism lance, facet spear, magma spear, brine lance, abyssal spear |
 | weapon | `staff` | staff, vertebrae staff, resonance staff |
+| weapon | `ranged` | crossbow, bow (Artificer's Repeating Crossbow) |
 | offhand | `shield` | shield, buckler, ward, round/kite/tower shield, shell shield, and so on; parrying dagger maps to `dagger` |
 | offhand | `focus` | orb, focus, lantern, prism focus, brine focus, forge-heart focus |
 | offhand | `tome` | tome, marrow tome, shard tome |
@@ -155,9 +156,9 @@ Per-ability icons are out of scope for phase 1.
 - **Prompt template:** `inventory item icon: <subject>, <materials>, strange retro-future relic, centered, dark outline`. Action icons use `game action icon: <subject>, bold simple silhouette, dark outline`.
 - **Selection:**
   - I build contact sheets and pick the best candidate for each icon.
-  - The user approves one final sheet of all 29 icons before anything is copied into `client/public/ui/icons/`.
+  - The user approves one final sheet of all 30 icons before anything is copied into `client/public/ui/icons/`.
 - **Record:** `art/ui-icons/chosen.json` stores each icon's prompt, style reference, job id and chosen index, so any icon can be regenerated. Raw candidates and contact sheets go in `art/ui-icons/raw/`.
-- **Budget:** about 600 generations (29 calls × 20) plus rerolls. 3,643 were available when this spec was written; the allowance resets 2026-10-23.
+- **Budget:** about 600 generations (30 calls × 20) plus rerolls. 3,643 were available when this spec was written; the allowance resets 2026-10-23.
 - **Reusing mockup picks:** the mockup picks in `art/mockups/ui-revamp/raw/` (`blade_2`, `tonic_1`, `armor_10`, `amulet_9`, `attack_7`, `defend_12`, `flee_14`) may be reused where they fit an archetype.
 
 ## 3. In-dungeon screens
@@ -252,5 +253,5 @@ A content test asserts that every hand-authored item in `content.ts` has a valid
 
 - **Direction A1** (relic chrome with a subtle green edge glow) was chosen over B (icons only) and C (full painted pixel UI).
 - **Kit approach:** CSS-drawn chrome around PixelLab art, rather than per-state sprite buttons. Generated buttons were weak, and CSS handles button states and reflow for free.
-- **Icons per archetype** (22), not per slot and not per biome tint.
+- **Icons per archetype** (23), not per slot and not per biome tint.
 - **Rollout:** kit plus in-dungeon screens first; town next; menus and the world map last.
