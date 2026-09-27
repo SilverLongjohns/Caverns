@@ -1,8 +1,9 @@
 // The intro's time base. Picture follows the audio clock when audio is running, so hits stay in
 // sync even when frames drop; otherwise it follows performance.now().
-import { DURATION } from './timeline.js';
+import { DURATION, RESOLVE_T0 } from './timeline.js';
 
-export const SKIP_FROM = 26;
+/** A skip jumps straight to the resolve (or keeps going from later), then plays at SKIP_RATE. */
+export const SKIP_FROM = RESOLVE_T0;
 export const SKIP_RATE = 3;
 export type TimeSource = () => number;
 

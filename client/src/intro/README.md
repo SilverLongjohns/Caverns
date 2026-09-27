@@ -1,10 +1,30 @@
 # The intro cold open
 
-A 30-second, wordless cinematic that plays before the login screen the first time a browser visits
-Caverns: a figure crosses a wasteland to a monolith, steps into a shaft, falls through four strata
-of the underworld, hits black silence, then resolves into the game's logo and the login cavern
-underneath it. It exists to set tone (Qud-style post-collapse relic-tech, not classic fantasy)
-before the player ever sees a text field.
+A 9-second, wordless CRT ident that plays before the login screen the first time a browser visits
+Caverns. It speaks only the game's own language — an amber-terminal dungeon crawler: an old set
+powers on into dead static that dies to black, a single drip lands in the silence, a heartbeat as
+eleven pairs of red eyes open, then the ASCII cavern scans in, the logo burns in, and the whole
+frame crossfades onto the live login screen underneath, pixel for pixel.
+
+| Time (s)  | Shot      | Beat |
+|-----------|-----------|------|
+| gate      | —         | dead-TV glass with a standby LED and `▌ PRESS ANY KEY` (needed for the audio unlock) |
+| 0–1.6     | `power`   | dot → line → tube snaps open (the only hit) → snow with one vertical roll, barrel relaxing; the snow cools from the edges into black (`BG`) — there is no picture under it |
+| 1.6–2.4   | `dark`    | black and hard silence |
+| 2.4       | `dark`    | `DRIP_T`: one drip and a ripple of light |
+| 2.8–4.8   | `dark`    | heartbeat; the 11 eye pairs open in `EYE_ORDER`, one every 0.2 s, each with a tick |
+| 5.0–7.2   | `resolve` | the ASCII cavern scans in (`GLYPH_T0`–`GLYPH_T1`), chord bloom + crackle at 5.0 |
+| 6.0–7.4   | `resolve` | the logo burns in (`LOGO_T0`–`LOGO_T1`); menu ambience starts fading in at `MUSIC_RELEASE_T` = 6.0 |
+| 7.4–8.4   | `resolve` | canvas eyes converge on the live DOM eyes' opacity |
+| 8.0–8.8   | `resolve` | whole-frame crossfade to the real login DOM (`UNDERLAY_T0`–`UNDERLAY_T1`); done at 9.0 |
+
+Any key or click during playback skips: the clock jumps to the start of the resolve (`SKIP_FROM`
+= 5.0, or carries on from later) and runs at 3×, with `SKIP_CUES` replacing the rest of the audio.
+
+An earlier 30-second cut (a wasteland, a monolith threshold and a fall through four strata, built
+from AI video plates and PixelLab layers) was rejected as not fitting the game. Its source art and
+the notes behind it are still in `art/intro/` (`NOTES.md`, `NOTES-descent.md`) and in git history,
+should any of it be wanted elsewhere; the shipped assets and shot code for it are gone.
 
 It plays in `client/src/App.tsx`, mounted as `{introActive && <IntroCutscene />}` alongside the
 normal screen router. While it's active, `App.tsx` forces the `connecting` view to render
@@ -28,22 +48,20 @@ goes straight to loading assets and playing.
 ```
 client/src/intro/
   math.ts            easing, noise, hash, clamp/lerp/inv (pure)
-  timeline.ts        shots, hits, strata, eye order, audio cues, key times — the single source
-                      of truth (see below)
+  timeline.ts        shots, key times, the hit, eye order, audio cues and MASTER_TRIM — the single
+                      source of truth (see below)
   introState.ts      should-play logic, seen flag, URL params
   introStore.ts      zustand store: active / musicHold / gateless
   clock.ts           IntroClock (skip-aware) + pickClockSource
   layout.ts          coverFit, glyphRevealTime (pure) + measureLayout (DOM)
-  plate.ts           atlas frame math + drawPlate (reads the baked sprite-sheet manifests)
-  assets.ts          asset manifest + loader (fetches everything under client/public/intro/)
+  assets.ts          asset manifest + loader (the logo, plus the audio under client/public/intro/)
   audio.ts           planCues/encodeWav (pure) + scheduleCues (Web Audio) + renderIntroMix
   renderer.ts        IntroRenderer: low-res (320x180) scene composited, upscaled, CRT-posted,
                       then native-resolution layers (glyphs, logo, eyes) drawn on top
-  shots/power.ts     power-on: dead glass, CRT warm-up pass, aperture
-  shots/plates.ts    waste + threshold: baked video plates with dust/signal-light overlays
-  shots/descent.ts   fall depth/stratum math + parallax fall through the four strata
-  shots/dark.ts      the drip + ripple (low-res) and the ten cave eyes (native res)
-  shots/resolve.ts   ASCII glyph cavern build-in, logo burn-in, underlay fade to the real DOM
+  shots/power.ts     power-on: dead glass (gate), raster glow + CRT warm-up pass (snow, roll,
+                      barrel, cooling into black), tube aperture
+  shots/dark.ts      the drip + ripple (low-res) and the eleven cave eyes (native res)
+  shots/resolve.ts   ASCII glyph cavern build-in, logo burn-in, whole-frame crossfade to the real DOM
   IntroCutscene.tsx  React shell: gate, input handling, render loop, lifecycle, still/export hooks
   README.md          this file
   *.test.ts          unit tests for every pure module
@@ -58,17 +76,19 @@ client/src/components/MusicPlayer.tsx   UI over audioEngine (mute/volume), hidde
 client/src/components/LoginScreen.tsx   the `↺ intro` replay button
 client/src/App.tsx                      mounts the intro; keeps LoginScreen mounted underneath
                                          while `connecting` and the intro is active
-scripts/intro-bake.sh                   ffmpeg pipeline: palette, plates -> atlases, layers, audio
+scripts/intro-bake.sh                   ffmpeg pipeline: audio conditioning, analysis, sizes (plus the
+                                         palette/plate/layer/strip tools the cut shots used)
 scripts/intro-render.mjs                Playwright tooling: stills, frames, wav, handoff, keys
-client/public/intro/                    shipped, baked assets (plates, layers, audio) — see sizes
-art/intro/                              palette.png + keyframes (tracked); raw/ generations
+client/public/intro/                    shipped, baked audio (cues + the menu ambience loop)
+art/intro/                              source art for the cut 30 s version, kept for reuse:
+                                         palette.png + keyframes (tracked); raw/ generations
                                          (gitignored); NOTES*.md (picks and rationale, tracked)
 ```
 
 ## `timeline.ts` is the single source of truth
 
-Every shot boundary, key moment (the step off the ledge, the hard cut to black, when each of the
-ten cave eyes opens, when the logo burns in) and every audio cue's timing and gain lives in
+Every shot boundary, key moment (the end of the power-on, the drip, when each of the eleven cave
+eyes opens, when the glyphs and logo build, the crossfade) and every audio cue's timing and gain lives in
 `timeline.ts` as plain data. `renderer.ts` and the `shots/*` modules read the same constants the
 audio scheduler reads (`audio.ts`'s `scheduleCues`/`renderIntroMix`), so picture and sound can never
 drift apart — moving a hit or a shot boundary is a one-line change in one file. `MASTER_TRIM` is
@@ -77,31 +97,25 @@ per-cue `gain` in the `CUES` array.
 
 ## Tuning a shot
 
-Use the `stills` tool to render exact frames without waiting through the whole 30 seconds. It needs
-the Vite dev server running (`npm run dev`):
+Use the `stills` tool to render exact frames without playing the piece. It needs the Vite dev
+server running (`npm run dev`):
 
 ```bash
-node scripts/intro-render.mjs stills 0.1,5,12.6,20,24,29.99 [--out .intro/stills] [--viewport 1920x1080]
+node scripts/intro-render.mjs stills 0.03,0.3,0.8,1.3,1.7,2.45,3.5,4.9,5.6,6.5,7.3,8.3 [--out .intro/stills] [--viewport 1920x1080]
 ```
 
 Each time renders through `window.__intro.render(t)`, the same code path the real playback loop
 uses, so what you see is exactly what ships. Edit the shot module or `timeline.ts`, re-run, look at
 the PNGs.
 
-## Re-baking plates, layers and audio
+## Re-baking audio
 
 All offline asset baking happens in WSL via ffmpeg (`scripts/intro-bake.sh`; not available on
-Windows). The picks (which raw take, in-point, fades, normalization mode) and the measurements
-behind them are recorded in three notes files under `art/intro/` — read all three before touching a
-bake command, since the shared palette and levels were chosen looking at all of them together:
-
-- `art/intro/NOTES.md` — palette generation, the waste/threshold video plate picks and their
-  measured in-points (`THRESHOLD_STEP_IN`, `WASTE_LIGHT`).
-- `art/intro/NOTES-descent.md` — the descent strata wall layers, the falling-figure sprite strip,
-  and `SCREEN_SPOTS` (glyph positions on `wall_screens.png`).
-- `art/intro/NOTES-audio.md` — every audio pick, the `audio` subcommand's normalization modes
-  (`loud` for sustained/atmospheric cues, `peak` for one-shots), and the post-bake loudness/peak
-  measurements.
+Windows). Every audio pick (raw take, in-point, fades, normalization mode) and the post-bake
+loudness/peak measurements are recorded in `art/intro/NOTES-audio.md` — read it before touching a
+bake command. (It also covers the cues the cut 30 s version used; only the ids in `AUDIO_IDS` ship.)
+`art/intro/NOTES.md` and `NOTES-descent.md` document the palette, plates and descent layers of the
+cut shots, for reference only.
 
 Subcommands (see the script header comments for full argument lists):
 
@@ -117,9 +131,7 @@ bash scripts/intro-bake.sh sizes                              # total bytes unde
 ```
 
 Raw generations (video takes, PixelLab raw PNGs, raw audio) live in `art/intro/raw/` and are
-gitignored — regenerate or re-fetch them if needed, they are not committed. The chosen takes and
-why are recorded in `art/intro/NOTES.md` (plates), `NOTES-descent.md` (descent layers/figure) and
-`NOTES-audio.md` (all audio).
+gitignored — regenerate or re-fetch them if needed, they are not committed.
 
 ### Tuning the mix
 
@@ -134,8 +146,10 @@ Set `MASTER_TRIM = 10 ** ((-16 - I) / 20)` (rounded to 2 decimals) from the prin
 loudness `I`, re-render and re-analyze until `I` is about -16 LUFS (+/-1) and Peak is <= -1 dBFS.
 If a single hit pushes the peak over even after the master trim is right, lower that cue's own
 `gain` in `CUES` rather than the master trim (it'll pull the whole mix down again). As shipped,
-`MASTER_TRIM = 0.66` gives I = -16.8 LUFS, Peak = -1.1 dBFS, with the expected hard silence at
-about 22.0-22.8s (the cut to black before the resolve).
+`MASTER_TRIM = 1.45` gives I = -16.7 LUFS, true peak = -1.3 dBFS over the 12 s render (9 s piece +
+3 s of ambience tail), with the expected hard silence at about 1.57-2.41 s (end of the power-on to
+the drip). The power-on cues are deliberately trimmed so the tube snap tops out only ~2 LU
+(momentary) above the chord bloom — the bloom is the payoff and must not sound smaller than the relay.
 
 Individual audio assets are pre-conditioned at bake time (20 Hz high-pass; loudnorm -18 LUFS for
 beds/score/ambience or a single-pass peak-to- -3 dBFS gain for one-shots; a limiter at 0.89) — see
@@ -150,22 +164,23 @@ node scripts/intro-render.mjs keys
 ```
 
 `handoff` runs two pixel-diff checks against the real login page it hands over to: a smoke check at
-t=29.99 (canvas should already be fully transparent — mean diff <=1.5, <=0.5% of pixels differing
-by >24), and a stricter alignment check at t=28.99 (canvas still fully opaque) that also verifies
+t=8.99 (canvas should already be fully transparent — mean diff <=1.5, <=0.5% of pixels differing
+by >24), and a stricter alignment check at t=7.99 (just before the crossfade; canvas still fully opaque) that also verifies
 the glyph cavern and logo are registered to within one CSS pixel against the live DOM. Both must
 print `PASS`. `keys` checks the intro doesn't leak keystrokes into the login name field during
-playback and doesn't replay once `caverns_intro_seen` is set; it must print `keys: OK`.
+playback and doesn't replay once `caverns_intro_seen` is set; it must print `keys: OK`. (It types
+three seconds after the gate, i.e. during the dark: the first key skips, the rest arrive mid-skip.)
+`ALIGN_T`/`SMOKE_T` in the script mirror `UNDERLAY_T0`/`DURATION` — update them if those move.
 
 Run `npx vitest run src/intro src/audio` for the unit tests, `npx tsc --noEmit && npm run build` for
 a clean typecheck/build, and `bash scripts/intro-bake.sh sizes` to confirm the shipped assets stay
-under the 6 MB budget (5.6 MB as of this writing).
+under the 6 MB budget (1.4 MB as of this writing).
 
 ## Exporting a review video
 
 ```bash
 node scripts/intro-render.mjs wav                                     # renders the mix
-node scripts/intro-render.mjs frames 30 --to 31                       # ~930 JPEG frames, run in
-                                                                        # the background if slow
+node scripts/intro-render.mjs frames 30 --to 9.5                      # 285 JPEG frames
 ffmpeg -framerate 30 -i .intro/frames/f%05d.jpg -i .intro/intro.wav \
   -c:v libx264 -crf 16 -preset slow -pix_fmt yuv420p -c:a aac -b:a 320k -shortest .intro/intro.mp4
 ```
@@ -173,4 +188,4 @@ ffmpeg -framerate 30 -i .intro/frames/f%05d.jpg -i .intro/intro.wav \
 `.intro/` is gitignored — these are review artifacts, not shipped output (the game itself renders
 the intro live in Canvas + Web Audio; nothing is ever a baked video in production). For a smaller
 copy to share (crf 22, target <=25 MB), re-encode with a lower bitrate, e.g.
-`-crf 23 -c:a aac -b:a 160k .intro/intro_share.mp4`.
+`-crf 22 -c:a aac -b:a 160k .intro/intro_share.mp4` (about 8 MB for the 9.5 s export).

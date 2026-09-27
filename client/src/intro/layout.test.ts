@@ -21,7 +21,9 @@ describe('coverFit', () => {
 });
 
 describe('glyphRevealTime', () => {
-  it('stays within the glyph window', () => {
+  it('stays within the glyph window, which sits inside the resolve', () => {
+    expect(GLYPH_T0).toBe(5);
+    expect(GLYPH_T1).toBe(7.2);
     for (let y = 0; y <= 1000; y += 50) for (const a of ['top', 'bottom'] as const) {
       const t = glyphRevealTime(a, y, 1000, y * 7);
       expect(t).toBeGreaterThanOrEqual(GLYPH_T0);

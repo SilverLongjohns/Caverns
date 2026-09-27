@@ -4,26 +4,26 @@ import { MASTER_TRIM, type Cue } from './timeline.js';
 
 const cues: Cue[] = [
   { id: 'sfx_relay', t: 0, gain: 1, dur: 1 },
-  { id: 'sfx_step', t: 5, gain: 0.5, dur: 2, fadeOut: 0.5 },
+  { id: 'sfx_static', t: 5, gain: 0.5, dur: 2, fadeOut: 0.5 },
   { id: 'sfx_drip', t: 8, gain: 0.8 },
   { id: 'sfx_heart', t: 9, gain: 1 },
 ];
-const durations = { sfx_relay: 1.5, sfx_step: 3, sfx_drip: 1.2 };
+const durations = { sfx_relay: 1.5, sfx_static: 3, sfx_drip: 1.2 };
 
 describe('planCues', () => {
   it('skips cues whose buffer is missing', () => {
-    expect(planCues(cues, durations, 0).map((p) => p.id)).toEqual(['sfx_relay', 'sfx_step', 'sfx_drip']);
+    expect(planCues(cues, durations, 0).map((p) => p.id)).toEqual(['sfx_relay', 'sfx_static', 'sfx_drip']);
   });
   it('trims to dur, never beyond the buffer, and applies MASTER_TRIM', () => {
-    const [relay, step, drip] = planCues(cues, durations, 0);
+    const [relay, stat, drip] = planCues(cues, durations, 0);
     expect(relay).toMatchObject({ delay: 0, offset: 0, dur: 1, fadeOutAt: null });
-    expect(step.gain).toBeCloseTo(0.5 * MASTER_TRIM);
-    expect(step.fadeOutAt).toBeCloseTo(5 + 1.5);
+    expect(stat.gain).toBeCloseTo(0.5 * MASTER_TRIM);
+    expect(stat.fadeOutAt).toBeCloseTo(5 + 1.5);
     expect(drip.dur).toBeCloseTo(1.2);
   });
   it('starts mid-cue with an offset when scheduled from a later time', () => {
     const plan = planCues(cues, durations, 5.5);
-    expect(plan.map((p) => p.id)).toEqual(['sfx_step', 'sfx_drip']);
+    expect(plan.map((p) => p.id)).toEqual(['sfx_static', 'sfx_drip']);
     expect(plan[0]).toMatchObject({ delay: 0, offset: 0.5 });
     expect(plan[0].dur).toBeCloseTo(1.5);
     expect(plan[0].fadeOutAt).toBeCloseTo(1.0);

@@ -1,4 +1,4 @@
-// THE DARK (22–26 s): silence, one drip, then the eyes open one pair at a time, at exactly
+// THE DARK (1.6–5 s): silence, one drip, then the eyes open one pair at a time, at exactly
 // the positions CaveBackground will show them.
 import { DRIP_T, EYES_SETTLE_T0, EYES_SETTLE_T1, eyeOpenTime } from '../timeline.js';
 import { clamp, inv, lerp, ease } from '../math.js';

@@ -1,13 +1,11 @@
 // Picture pipeline: shot → 320×180 scene → (CRT warm-up pass) → low-res bloom → sharp-bilinear
 // upscale with shake → chromatic split / flash → power-on aperture → native-res layers (eyes,
 // ASCII cavern, logo) aligned to the DOM → grain. The app's .crt-overlay adds scanlines on top.
-import { LR_W, LR_H, BG, shotAt, impact, type ShotId } from './timeline.js';
+import { LR_W, LR_H, BG, POWER_END_T, DARK_T0, RESOLVE_T0, shotAt, impact, type ShotId } from './timeline.js';
 import { coverFit, type Fit, type SceneLayout } from './layout.js';
 import { hash, vnoise, mulberry32 } from './math.js';
 import type { IntroAssets } from './assets.js';
 import { drawDeadGlass, drawPower, crtWarmPass, drawPowerAperture, powerState } from './shots/power.js';
-import { drawWaste, drawThreshold } from './shots/plates.js';
-import { drawDescent } from './shots/descent.js';
 import { drawDarkLowRes, drawEyes } from './shots/dark.js';
 import { drawResolve, underlayAlpha, buildGlyphPlan, type GlyphPlan } from './shots/resolve.js';
 
@@ -84,28 +82,25 @@ export class IntroRenderer {
   render(t: number, a: IntroAssets): void {
     t = Math.max(0, t);
     const shot = shotAt(t);
-    this.drawScene(shot.id, t, a);
+    this.drawScene(shot.id, t);
     this.compose(t, a);
   }
 
   /** Low-res scene for the current shot. */
-  protected drawScene(id: ShotId, t: number, a: IntroAssets): void {
+  protected drawScene(id: ShotId, t: number): void {
     const lx = this.lx;
     lx.setTransform(1, 0, 0, 1, 0, 0);
     lx.globalAlpha = 1;
     lx.globalCompositeOperation = 'source-over';
     lx.filter = 'none';
     lx.imageSmoothingEnabled = false;
-    lx.fillStyle = id === 'dark' || id === 'resolve' ? BG : '#000';
+    lx.fillStyle = BG; // the static dies into exactly the page background the rest plays on
     lx.fillRect(0, 0, LR_W, LR_H);
     lx.save();
-    if (id === 'power') drawPower(lx, t, a);
-    else if (id === 'waste') drawWaste(lx, t, a);
-    else if (id === 'threshold') drawThreshold(lx, t, a);
-    else if (id === 'descent') drawDescent(lx, t, a);
+    if (id === 'power') drawPower(lx, t);
     else if (id === 'dark') drawDarkLowRes(lx, t);
     lx.restore();
-    if (t < 1.6) crtWarmPass(lx, t);
+    if (t < POWER_END_T) crtWarmPass(lx, t);
   }
 
   /** Opacity of the whole finished frame: 1 until the real login screen is revealed underneath. */
@@ -116,16 +111,16 @@ export class IntroRenderer {
   /** Native-resolution layers drawn after the upscale (eyes, glyphs, logo, power aperture). */
   protected drawNative(t: number, a: IntroAssets): void {
     if (t < 0.6) drawPowerAperture(this.o, t, this.out.width, this.out.height, this.dpr);
-    if (this.layout && t >= 22) {
+    if (this.layout && t >= DARK_T0) {
       this.o.setTransform(1, 0, 0, 1, 0, 0);
       drawEyes(this.o, t, this.layout, this.dpr);
-      if (t >= 26 && this.plan) drawResolve(this.o, t, this.layout, this.plan, a.images.logo, this.dpr, this.filtersOK);
+      if (t >= RESOLVE_T0 && this.plan) drawResolve(this.o, t, this.layout, this.plan, a.images.logo, this.dpr, this.filtersOK);
     }
   }
 
   /** Extra horizontal jitter in low-res px (degauss wobble). */
   protected wobble(t: number): number {
-    return t < 1.6 ? powerState(t).wobble * 2 : 0;
+    return t < POWER_END_T ? powerState(t).wobble * 2 : 0;
   }
 
   private compose(t: number, a: IntroAssets): void {

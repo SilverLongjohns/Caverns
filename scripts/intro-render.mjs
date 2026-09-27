@@ -1,13 +1,13 @@
 // Headless review tooling for the intro cold open (Playwright, Edge channel).
 // Needs the Vite dev server (npm run dev:client); `handoff` and `keys` also need the game server (npm run dev).
 //
-//   node scripts/intro-render.mjs stills 0.1,5,12.6,20,24,29.99 [--out .intro/stills] [--viewport 1920x1080]
-//   node scripts/intro-render.mjs frames 30 [--out .intro/frames] [--from 0] [--to 30.5]
+//   node scripts/intro-render.mjs stills 0.3,1.3,2.45,4.9,6.5,8.99 [--out .intro/stills] [--viewport 1920x1080]
+//   node scripts/intro-render.mjs frames 30 [--out .intro/frames] [--from 0] [--to 9.5]
 //   node scripts/intro-render.mjs wav [--out .intro/intro.wav]
 //   node scripts/intro-render.mjs handoff [--viewport 1920x1080] [--out .intro/handoff]
 //       Two checks against the plain login page (animations frozen, .music-player hidden):
-//       1. smoke   t=29.99, canvas fully handed over: mean <= 1.5 and <= 0.5 % of pixels differ by > 24.
-//       2. align   t=ALIGN_T (28.99, canvas still fully opaque) vs the DOM, UI text hidden in both,
+//       1. smoke   t=SMOKE_T (8.99, just before the 9 s end), canvas fully handed over: mean <= 1.5 and <= 0.5 % of pixels differ by > 24.
+//       2. align   t=ALIGN_T (7.99, just before the crossfade starts; canvas still fully opaque) vs the DOM, UI text hidden in both,
 //                  grain off, eye rects (+ glow) masked out (the frozen DOM eyes sit at opacity 0).
 //                  Pass needs all of:
 //                  - mean <= 1.5 over the frame, and p99 <= 13 over "content" pixels (either image
@@ -25,7 +25,9 @@ const mode = argv[0];
 const opt = (name, def) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : def; };
 const base = opt('base', 'http://localhost:5173');
 const [vw, vh] = opt('viewport', '1920x1080').split('x').map(Number);
-const ALIGN_T = 28.99;
+// Mirrors client/src/intro/timeline.ts (UNDERLAY_T0 = 8, DURATION = 9); this script can't import TS.
+const ALIGN_T = 7.99;
+const SMOKE_T = 8.99;
 const HIDE_UI = '.lobby-subtitle,.dos-prompt-label,.dos-input,.lobby-start,.intro-replay,.auth-error{visibility:hidden!important}';
 const FREEZE = '*,*::before,*::after{animation:none!important;transition:none!important}.music-player{display:none!important}';
 
@@ -67,7 +69,7 @@ async function stills() {
 async function frames() {
   const fps = Number(argv[1] ?? 30);
   const out = opt('out', '.intro/frames');
-  const from = Number(opt('from', '0')), to = Number(opt('to', '30.5'));
+  const from = Number(opt('from', '0')), to = Number(opt('to', '9.5'));
   mkdirSync(out, { recursive: true });
   await withPage(async (page) => {
     await openStill(page, from);
@@ -183,14 +185,14 @@ async function handoff() {
   const tag = `${vw}x${vh}`;
 
   // 1. Smoke: the last frame is the login screen.
-  const a = await introShot(29.99, FREEZE);
+  const a = await introShot(SMOKE_T, FREEZE);
   const { png: b } = await domShot(FREEZE);
   writeFileSync(join(out, `intro_${tag}.png`), a);
   writeFileSync(join(out, `dom_${tag}.png`), b);
   const s1 = await compare(a, b);
   writeFileSync(join(out, `diff_${tag}.png`), Buffer.from(s1.heat, 'base64'));
   const pass1 = s1.mean <= 1.5 && s1.pctOver24 <= 0.5;
-  console.log(`handoff ${tag} smoke t=29.99: mean ${s1.mean.toFixed(3)}, >24: ${s1.pctOver24.toFixed(3)}% → ${pass1 ? 'PASS' : 'FAIL'}`);
+  console.log(`handoff ${tag} smoke t=${SMOKE_T}: mean ${s1.mean.toFixed(3)}, >24: ${s1.pctOver24.toFixed(3)}% → ${pass1 ? 'PASS' : 'FAIL'}`);
 
   // 2. Alignment: the opaque canvas frame against the DOM it hands over to.
   const ca = await introShot(ALIGN_T, FREEZE + HIDE_UI, true);

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { IntroClock, SKIP_FROM, SKIP_RATE, pickClockSource } from './clock.js';
+import { DURATION, RESOLVE_T0 } from './timeline.js';
 
 function fake(start = 100) {
   let now = start;
@@ -18,7 +19,8 @@ describe('IntroClock', () => {
 
   it('skip before the resolve jumps to SKIP_FROM and runs at SKIP_RATE', () => {
     const f = fake(); const c = new IntroClock(f.source);
-    c.start(); f.advance(5);
+    expect(SKIP_FROM).toBe(RESOLVE_T0);
+    c.start(); f.advance(3);
     c.skip();
     expect(c.skipping).toBe(true);
     expect(c.now()).toBeCloseTo(SKIP_FROM);
@@ -28,15 +30,15 @@ describe('IntroClock', () => {
 
   it('skip during the resolve continues from the current time, and is idempotent', () => {
     const f = fake(); const c = new IntroClock(f.source);
-    c.start(); f.advance(28);
+    c.start(); f.advance(7);
     c.skip(); f.advance(0.5); c.skip();
-    expect(c.now()).toBeCloseTo(28 + 0.5 * SKIP_RATE);
+    expect(c.now()).toBeCloseTo(7 + 0.5 * SKIP_RATE);
   });
 
   it('skip before start does nothing; done flips at DURATION', () => {
     const f = fake(); const c = new IntroClock(f.source);
     c.skip(); expect(c.skipping).toBe(false);
-    c.start(); f.advance(29.9); expect(c.done).toBe(false);
+    c.start(); f.advance(DURATION - 0.1); expect(c.done).toBe(false);
     f.advance(0.2); expect(c.done).toBe(true);
   });
 });

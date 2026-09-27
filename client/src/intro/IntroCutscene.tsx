@@ -6,7 +6,7 @@ import { measureLayout } from './layout.js';
 import { loadIntroAssets, isComplete, emptyAssets, type IntroAssets } from './assets.js';
 import { IntroClock, pickClockSource } from './clock.js';
 import { scheduleCues, renderIntroMix, encodeWav, type AudioHandle } from './audio.js';
-import { CUES, SKIP_CUES, DURATION, MUSIC_RELEASE_T, FADE_OUT_S, SCORE_STOP_T } from './timeline.js';
+import { CUES, SKIP_CUES, DURATION, MUSIC_RELEASE_T, FADE_OUT_S, DARK_T0 } from './timeline.js';
 import { markIntroSeen, parseStill, safeStorage } from './introState.js';
 
 const GATE_TIMEOUT_MS = 8000;
@@ -99,7 +99,7 @@ export function IntroCutscene() {
         const hooks: IntroHooks = {
           ready: () => true,
           render: (t) => {
-            if (t >= SCORE_STOP_T) measure();
+            if (t >= DARK_T0) measure();
             renderer.render(t, a);
             host.style.opacity = String(t < DURATION ? 1 : Math.max(0, 1 - (t - DURATION) / FADE_OUT_S));
           },
@@ -174,7 +174,7 @@ export function IntroCutscene() {
         if (!clock || !assets) return;
         const t = clock.now();
         if (t >= MUSIC_RELEASE_T || clock.skipping) release();
-        if (!measuredDark && t >= SCORE_STOP_T) { measuredDark = true; measure(); }
+        if (!measuredDark && t >= DARK_T0) { measuredDark = true; measure(); }
         renderer.render(t, assets);
         if (t >= DURATION) finish();
       } catch (err) {

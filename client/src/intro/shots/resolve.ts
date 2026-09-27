@@ -1,4 +1,4 @@
-// THE RESOLVE (26–30 s): the ASCII cavern scans in as phosphor glyphs at the DOM's exact
+// THE RESOLVE (5–9 s): the ASCII cavern scans in as phosphor glyphs at the DOM's exact
 // coordinates, the logo burns in with its CSS glow, then the backdrop fades to the live page.
 import { GLYPH_T0, GLYPH_T1, LOGO_T0, LOGO_T1, UNDERLAY_T0, UNDERLAY_T1 } from '../timeline.js';
 import { clamp, inv, ease, lerp } from '../math.js';
