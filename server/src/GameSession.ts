@@ -23,6 +23,8 @@ import {
   getClassDefinition,
   getPlayerEquippedEffects,
   computePlayerStats,
+  closeUpForParticipants,
+  type CombatActionResultMessage,
   type EquippedEffect,
   type EquipmentSlot,
 } from '@caverns/shared';
@@ -78,6 +80,8 @@ export interface SessionTiming {
   victoryDelayMs: number;
   postVictoryLootDelayMs: number;
   defendTimeoutMs: number;
+  /** Multiplier on combat close-up pauses (1 live, 0 in simulations). */
+  closeUpScale: number;
 }
 
 export interface ArenaSnapshot {
@@ -116,6 +120,8 @@ export class GameSession {
   private disconnectedConnections = new Set<string>();
   // Debounced gold snapshot timers.
   private goldWriteTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  /** Close-up-delayed turn prompts, by room; the turn is locked until its prompt is sent. */
+  private pendingPrompts = new Map<string, ReturnType<typeof setTimeout>>();
   // Whether lifecycle cleanup has already run so we don't double-snapshot.
   private lifecycleCleanedUp = false;
   private abilityResolver = new AbilityResolver();
@@ -142,6 +148,7 @@ export class GameSession {
     victoryDelayMs: TIMING_CONFIG.victoryDelayMs,
     postVictoryLootDelayMs: TIMING_CONFIG.postVictoryLootDelayMs,
     defendTimeoutMs: QTE_CONFIG.defendTimeoutMs,
+    closeUpScale: 1,
   };
   private disposed = false;
 
@@ -254,6 +261,8 @@ export class GameSession {
       this.pendingDefend = null;
     }
     for (const combat of this.combats.values()) combat.cancelAfkTimer();
+    for (const t of this.pendingPrompts.values()) clearTimeout(t);
+    this.pendingPrompts.clear();
     this.combats.clear();
   }
 
@@ -917,7 +926,7 @@ export class GameSession {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
 
     const result = combat.handleMove(playerId, { x: targetX, y: targetY });
     if (result.success) {
@@ -937,7 +946,7 @@ export class GameSession {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
     combat.cancelAfkTimer();
     combat.advanceTurn();
     this.afterCombatTurn(player.roomId, combat);
@@ -952,7 +961,7 @@ export class GameSession {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
     combat.cancelAfkTimer();
     // Validate adjacency for attack
     if (action === 'attack' && targetId) {
@@ -987,8 +996,10 @@ export class GameSession {
       action, targetId, itemDamage, itemHealing, fleeDirection,
       critMultiplier: clampedCrit,
     });
+    let closeUpMs = 0;
     if (result) {
       this.broadcastToRoom(combatRoomId, { type: 'combat_action_result', ...result } as any);
+      closeUpMs = this.closeUpDelay(combat, result);
       this.narrateCombatAction(combatRoomId, result);
     }
     combat.markActionTaken(playerId);
@@ -1060,7 +1071,7 @@ export class GameSession {
     this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
     combat.advanceTurn();
-    this.afterCombatTurn(combatRoomId, combat);
+    this.afterCombatTurn(combatRoomId, combat, closeUpMs);
   }
 
   handleDefendResult(playerId: string, damageReduction: number): void {
@@ -1076,8 +1087,10 @@ export class GameSession {
     const combat = this.combats.get(roomId);
     if (!combat) return;
     const damageResult = combat.applyDefendDamage(targetId, rawDamage, damageReduction);
+    let closeUpMs = 0;
     if (damageResult) {
       this.broadcastToRoom(roomId, { type: 'combat_action_result', ...damageResult, action: 'defend' } as any);
+      closeUpMs = this.closeUpDelay(combat, { ...damageResult, action: 'defend' });
       this.narrateDefendResult(roomId, damageResult, damageReduction);
       if (damageResult.targetId && damageResult.damage) {
         const targetPlayer = this.playerManager.getPlayer(damageResult.targetId);
@@ -1088,15 +1101,27 @@ export class GameSession {
       }
     }
     combat.advanceTurn();
-    this.afterCombatTurn(roomId, combat);
+    this.afterCombatTurn(roomId, combat, closeUpMs);
   }
 
-  private afterCombatTurn(roomId: string, combat: ArenaCombatManager): void {
+  /** Extra pause for a combat close-up after this result (0 when it doesn't qualify or in simulations). */
+  private closeUpDelay(combat: ArenaCombatManager, result: Partial<CombatActionResultMessage>): number {
+    if (!this.timing.closeUpScale) return 0;
+    const cu = closeUpForParticipants(result, combat.getState().participants);
+    return cu ? Math.round(cu.durationMs * this.timing.closeUpScale) : 0;
+  }
+
+  /** A player may act only on their turn, and only once its (possibly close-up-delayed) prompt has been sent. */
+  private canActNow(roomId: string, combat: ArenaCombatManager, playerId: string): boolean {
+    return combat.isPlayerTurn(playerId) && !this.pendingPrompts.has(roomId);
+  }
+
+  private afterCombatTurn(roomId: string, combat: ArenaCombatManager, extraDelayMs = 0): void {
     if (this.disposed) return;
     if (combat.isComplete()) {
       const result = combat.getResult();
       // Delay combat end on victory so the client disintegration animation plays
-      const delay = result === 'victory' ? this.timing.victoryDelayMs : 0;
+      const delay = (result === 'victory' ? this.timing.victoryDelayMs : 0) + extraDelayMs;
       setTimeout(() => this.finishCombat(roomId, result as 'victory' | 'flee' | 'wipe'), delay);
       return;
     }
@@ -1104,7 +1129,17 @@ export class GameSession {
     combat.startTurn(currentId);
     if (combat.isMobTurn(currentId)) {
       // Delay mob turns so attack animations play out before the next action
-      setTimeout(() => this.processMobTurn(roomId, combat), this.timing.mobTurnDelayMs);
+      setTimeout(() => this.processMobTurn(roomId, combat), this.timing.mobTurnDelayMs + extraDelayMs);
+    } else if (extraDelayMs > 0) {
+      // Hold the next player's prompt (and its AFK timer) until the close-up has played.
+      // The turn accepts no actions until the prompt is out (see canActNow).
+      clearTimeout(this.pendingPrompts.get(roomId));
+      this.pendingPrompts.set(roomId, setTimeout(() => {
+        this.pendingPrompts.delete(roomId);
+        if (this.disposed || this.combats.get(roomId) !== combat || combat.isComplete()) return;
+        if (combat.getCurrentTurnId() !== currentId) return;
+        this.broadcastTurnPrompt(combat);
+      }, extraDelayMs));
     } else {
       this.broadcastTurnPrompt(combat);
     }
@@ -1281,6 +1316,7 @@ export class GameSession {
     }
 
     this.broadcastToRoom(roomId, { type: 'combat_action_result', ...result } as any);
+    const closeUpMs = this.closeUpDelay(combat, result);
     this.narrateCombatAction(roomId, result);
     if (result.targetId && result.damage) {
       const targetPlayer = this.playerManager.getPlayer(result.targetId);
@@ -1290,7 +1326,7 @@ export class GameSession {
       }
     }
     combat.advanceTurn();
-    this.afterCombatTurn(roomId, combat);
+    this.afterCombatTurn(roomId, combat, closeUpMs);
   }
 
   private broadcastTurnPrompt(combat: ArenaCombatManager): void {
@@ -2132,7 +2168,7 @@ export class GameSession {
     if (!player || player.status !== 'in_combat') return;
 
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
 
     const classDef = getClassDefinition(player.className);
     if (!classDef) return;
@@ -2219,7 +2255,10 @@ export class GameSession {
         damage: totalDamage || undefined,
         healing: totalHealing || undefined,
         buffsApplied: allBuffs.length > 0 ? allBuffs : undefined,
+        targetIds: hitTargets.map((t: { id: string }) => t.id),
+        downedIds: downedTargets,
       } as any);
+      const closeUpMs = this.closeUpDelay(combat, { action: 'use_ability', actorId: playerId, abilityId: ability.id });
 
       // Narrate
       if (hitTargets.length > 0) {
@@ -2246,7 +2285,7 @@ export class GameSession {
       this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
       this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
       combat.advanceTurn();
-      this.afterCombatTurn(player.roomId, combat);
+      this.afterCombatTurn(player.roomId, combat, closeUpMs);
       return;
     }
 
@@ -2329,6 +2368,7 @@ export class GameSession {
       targetDowned: result.targetDowned,
       buffsApplied: result.buffsApplied,
     } as any);
+    const closeUpMs = this.closeUpDelay(combat, { action: 'use_ability', actorId: playerId, abilityId: ability.id, targetId, targetDowned: result.targetDowned });
 
     this.narrateAbility(player.roomId, player.name, ability.name, targetParticipant?.name, result);
 
@@ -2344,7 +2384,7 @@ export class GameSession {
     this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
     combat.advanceTurn();
-    this.afterCombatTurn(player.roomId, combat);
+    this.afterCombatTurn(player.roomId, combat, closeUpMs);
   }
 
   private narrateAbility(
@@ -2434,7 +2474,7 @@ export class GameSession {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
 
     const resolver = combat.getEffectResolver();
     const participants = combat.getParticipantsArray();

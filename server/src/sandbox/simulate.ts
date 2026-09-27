@@ -55,7 +55,7 @@ export function simulateFight(setup: SandboxSetup, opts: { maxRounds?: number } 
         sessionId: 'sim',
         humanId: null,
         botTurnDelayMs: 0,
-        timing: { mobTurnDelayMs: 0, victoryDelayMs: 0, postVictoryLootDelayMs: 0, defendTimeoutMs: 0 },
+        timing: { mobTurnDelayMs: 0, victoryDelayMs: 0, postVictoryLootDelayMs: 0, defendTimeoutMs: 0, closeUpScale: 0 },
         onMessage,
         onError: (err) => {
           res.errors.push(err instanceof Error ? err.stack ?? err.message : String(err));

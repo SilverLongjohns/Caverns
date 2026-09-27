@@ -140,15 +140,30 @@ export class ArenaCombatManager {
     this.startTurn(mobId);
     const turnState = this.turnStates.get(mobId)!;
 
-    const alivePlayers = this.combatManager.getAlivePlayers();
     const occupied = this.getOccupied(mobId);
+    const alive = this.combatManager.getAlivePlayers();
+    // A taunting player is the only valid target while it can be reached.
+    const taunter = alive.find((id) => this.combatManager.getParticipant(id)?.buffs.some((b) => b.type === 'taunt'));
+    const candidates = taunter ? [taunter] : alive;
+    let result = this.approachAndAttack(mobId, mobPos, candidates, occupied, turnState);
+    if (!result && taunter) result = this.approachAndAttack(mobId, mobPos, alive, occupied, turnState);
+    return result ?? { combat: null, path: [] };
+  }
 
+  /** Attack an adjacent candidate, or walk toward the nearest reachable one. Null if none is reachable. */
+  private approachAndAttack(
+    mobId: string,
+    mobPos: { x: number; y: number },
+    alivePlayers: string[],
+    occupied: Set<string>,
+    turnState: { movementRemaining: number },
+  ): { combat: Partial<CombatActionResultMessage> | null; path: { x: number; y: number }[] } | null {
     // Check if already adjacent to any player — attack immediately
     for (const playerId of alivePlayers) {
       const playerPos = this.positions.get(playerId);
       if (!playerPos) continue;
       if (isAdjacent(mobPos, playerPos)) {
-        return { combat: this.combatManager.resolveMobTurn(mobId), path: [] };
+        return { combat: this.combatManager.resolveMobTurn(mobId, playerId), path: [] };
       }
     }
 
@@ -183,7 +198,7 @@ export class ArenaCombatManager {
       }
     }
 
-    if (!bestTarget || !bestPath) return { combat: null, path: [] };
+    if (!bestTarget || !bestPath) return null;
 
     // Move along path as far as movement allows, track the walked path
     const walkedPath: { x: number; y: number }[] = [];
@@ -199,7 +214,7 @@ export class ArenaCombatManager {
     const finalMobPos = this.positions.get(mobId)!;
     const targetPos = this.positions.get(bestTarget);
     if (targetPos && isAdjacent(finalMobPos, targetPos)) {
-      return { combat: this.combatManager.resolveMobTurn(mobId), path: walkedPath };
+      return { combat: this.combatManager.resolveMobTurn(mobId, bestTarget), path: walkedPath };
     }
 
     return { combat: null, path: walkedPath };

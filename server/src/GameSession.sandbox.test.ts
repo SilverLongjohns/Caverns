@@ -88,7 +88,7 @@ describe('GameSession sandbox hooks', () => {
     try {
       let gameOverCalled = false;
       const { session, sent } = makeSession({ room: 'boss' }, () => { gameOverCalled = true; });
-      session.setTiming({ mobTurnDelayMs: 0, victoryDelayMs: 0, postVictoryLootDelayMs: 5000 });
+      session.setTiming({ mobTurnDelayMs: 0, victoryDelayMs: 0, postVictoryLootDelayMs: 5000, closeUpScale: 0 });
       session.startGame();
 
       // Give the mob 1 hp so a single player attack kills it and ends combat in 'victory'.

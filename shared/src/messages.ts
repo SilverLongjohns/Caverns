@@ -495,6 +495,9 @@ export interface CombatActionResultMessage {
   itemEffect?: string;
   itemEffectDamage?: number;
   itemEffectHealing?: number;
+  /** Area abilities: every participant hit, and every participant downed. */
+  targetIds?: string[];
+  downedIds?: string[];
 }
 
 export interface CombatEndMessage {

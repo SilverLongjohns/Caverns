@@ -307,7 +307,8 @@ export class CombatManager {
     }
   }
 
-  resolveMobTurn(mobId: string): Partial<CombatActionResultMessage> | null {
+  /** `targetId`: the player the caller (arena AI) chose; otherwise taunter, else random. */
+  resolveMobTurn(mobId: string, targetId?: string): Partial<CombatActionResultMessage> | null {
     const mob = this.participants.get(mobId);
     if (!mob || !mob.alive || mob.type !== 'mob') return null;
 
@@ -321,9 +322,12 @@ export class CombatManager {
     if (alivePlayers.length === 0) return null;
 
     // Check for taunting player
+    const chosen = targetId ? alivePlayers.find(p => p.id === targetId) : undefined;
     const taunter = alivePlayers.find(p => p.buffs.some(b => b.type === 'taunt'));
     let target: InternalParticipant;
-    if (taunter) {
+    if (chosen) {
+      target = chosen;
+    } else if (taunter) {
       target = taunter;
     } else {
       target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
