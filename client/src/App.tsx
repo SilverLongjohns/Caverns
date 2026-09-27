@@ -27,6 +27,7 @@ import { IntroCutscene } from './intro/IntroCutscene.js';
 import { useIntroStore } from './intro/introStore.js';
 import { MenuShell, ScreenTransition, MenuConsole, TypedText } from './components/menu/index.js';
 import { RelicButton } from './components/relic/index.js';
+import { CloseUpOverlay } from './components/CloseUpOverlay.js';
 
 export function App() {
   const wsRef = useWebSocket();
@@ -231,6 +232,7 @@ export function App() {
         />
       )}
       {arenaIntro && <CombatIntro enemyNames={arenaIntro.enemyNames} />}
+      <CloseUpOverlay />
       {introActive && <IntroCutscene />}
       <MusicPlayer />
       <div className="crt-overlay" />

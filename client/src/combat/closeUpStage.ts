@@ -83,7 +83,7 @@ export function stageFor(active: ActiveCloseUp): Stage {
   const damage = r.damage ?? r.pendingDamage;
   const number = damage ? { value: damage, kind: 'damage' as const } : r.healing ? { value: r.healing, kind: 'heal' as const } : null;
   const anyDowned = downed.size > 0;
-  const subtitle = anyDowned ? 'KILLED' : closeUp.kind === 'crit' ? 'CRITICAL' : (r.buffsApplied ?? []).join(' · ').toUpperCase();
+  const subtitle = anyDowned ? 'KILLED' : closeUp.kind === 'crit' ? 'CRITICAL' : (r.buffsApplied ?? []).map((b) => b.replace(/_/g, ' ')).join(' · ').toUpperCase();
   const derivedSound: Stage['sound'] = anyDowned ? 'boom' : (!damage && (r.healing || (r.buffsApplied ?? []).length)) ? 'shimmer' : 'crack';
   const sound = ability?.closeUp?.sound ?? derivedSound;
   const title = (r.abilityName ?? ability?.name ?? (closeUp.kind === 'kill' ? 'Killing Blow' : 'Critical Strike')).toUpperCase();

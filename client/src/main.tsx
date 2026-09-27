@@ -6,6 +6,7 @@ import { installSandboxHook } from './sandbox/sandboxHook.js';
 import './styles/index.css';
 import './styles/relic.css';
 import './styles/menu.css';
+import './styles/closeup.css';
 
 if (getSandboxRequest()) installSandboxHook();
 
