@@ -88,7 +88,7 @@ export type AudioId = (typeof AUDIO_IDS)[number];
 export interface Cue { id: AudioId; t: number; gain: number; dur?: number; fadeOut?: number }
 
 /** Global level trim, set in Task 14 so the mix measures about −16 LUFS. */
-export const MASTER_TRIM = 1;
+export const MASTER_TRIM = 0.66;
 
 const SCORE_T = 1.4;
 const AIR_T = 12.75;
