@@ -7,6 +7,7 @@ import { hash, vnoise, mulberry32 } from './math.js';
 import type { IntroAssets } from './assets.js';
 import { drawDeadGlass, drawPower, crtWarmPass, drawPowerAperture, powerState } from './shots/power.js';
 import { drawWaste, drawThreshold } from './shots/plates.js';
+import { drawDescent } from './shots/descent.js';
 
 function makeCanvas(w: number, h: number): HTMLCanvasElement {
   const c = document.createElement('canvas');
@@ -101,6 +102,7 @@ export class IntroRenderer {
     if (id === 'power') drawPower(lx, t, a);
     else if (id === 'waste') drawWaste(lx, t, a);
     else if (id === 'threshold') drawThreshold(lx, t, a);
+    else if (id === 'descent') drawDescent(lx, t, a);
     else if (!(id === 'dark' || id === 'resolve')) { lx.fillStyle = PLACEHOLDER[id]; lx.fillRect(0, 0, LR_W, LR_H); }
     lx.restore();
     if (t < 1.6) crtWarmPass(lx, t);
