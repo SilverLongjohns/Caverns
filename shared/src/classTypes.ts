@@ -15,6 +15,8 @@ export interface AbilityDefinition {
   range?: number;          // max Chebyshev distance. Omitted = melee/self.
   areaRadius?: number;     // Manhattan radius of AoE. 1 = 3x3 area.
   flankingMultiplier?: number; // if set, replace effect multiplier when caster + ally both adjacent to target
+  /** Optional close-up presentation; every field falls back to a derived default. */
+  closeUp?: { art?: string; sound?: 'crack' | 'boom' | 'shimmer' };
 }
 
 export interface ClassDefinition {
@@ -25,6 +27,8 @@ export interface ClassDefinition {
   starterWeaponId: string;
   starterOffhandId: string;
   abilities: AbilityDefinition[];
+  /** Optional class colour (#rrggbb), used to tint ability close-ups. */
+  color?: string;
 }
 
 export interface ActiveBuff {
