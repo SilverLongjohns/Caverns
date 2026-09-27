@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useGameStore, selectCurrentView } from './store/gameStore.js';
 import { useWebSocket } from './hooks/useWebSocket.js';
 import { useGameActions } from './hooks/useGameActions.js';
@@ -32,6 +33,7 @@ export function App() {
   const actions = useGameActions(wsRef);
   const sandboxRequest = getSandboxRequest();
   const currentView = useGameStore(selectCurrentView);
+  const [shownView, setShownView] = useState<string>(currentView);
   const connectionStatus = useGameStore((s) => s.connectionStatus);
   const gameOver = useGameStore((s) => s.gameOver);
   const activeCombat = useGameStore((s) => s.activeCombat);
@@ -202,9 +204,12 @@ export function App() {
   }
 
   if (currentView !== 'in_dungeon') {
+    // While the intro plays, 'connecting' already shows the login screen: same key, so no power cycle on connect.
+    const screenKey = currentView === 'connecting' && introActive ? 'login' : currentView;
+    // The backdrop follows the screen on display, so an outgoing console powers off on its own backdrop.
     content = (
-      <MenuShell backdrop={currentView === 'in_world' ? 'town' : 'cave'}>
-        <ScreenTransition screenKey={currentView}>{content}</ScreenTransition>
+      <MenuShell backdrop={shownView === 'in_world' ? 'town' : 'cave'}>
+        <ScreenTransition screenKey={screenKey} onDisplayKeyChange={setShownView}>{content}</ScreenTransition>
       </MenuShell>
     );
   }

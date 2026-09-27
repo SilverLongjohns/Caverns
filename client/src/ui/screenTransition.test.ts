@@ -46,4 +46,21 @@ describe('screen transition reducer', () => {
     const off = transition(idle, change('b'));
     expect(transition(off, { type: 'onDone' })).toBe(off);
   });
+
+  it('skips the power-off when the outgoing screen is empty (panel opening)', () => {
+    const s = transition(initialTransition('closed'), { type: 'change', key: 'stash', reduced: false, fromEmpty: true });
+    expect(s).toEqual({ phase: 'on', key: 'stash' });
+  });
+
+  it('ends at power-off when the incoming screen is empty (panel closing)', () => {
+    let s = transition(initialTransition('stash'), { type: 'change', key: 'closed', reduced: false, toEmpty: true });
+    expect(s).toEqual({ phase: 'off', from: 'stash', to: 'closed', toEmpty: true });
+    s = transition(s, { type: 'offDone' });
+    expect(s).toEqual({ phase: 'idle', key: 'closed' });
+  });
+
+  it('goes straight to idle when changed mid-transition to an empty screen', () => {
+    const on = { phase: 'on', key: 'stash' } as const;
+    expect(transition(on, { type: 'change', key: 'closed', reduced: false, toEmpty: true })).toEqual({ phase: 'idle', key: 'closed' });
+  });
 });

@@ -9,6 +9,8 @@ interface Props {
   className?: string;
   /** Called when the wrapper itself (not the console) is clicked, e.g. to close a panel. */
   onBackdropClick?: () => void;
+  /** Reports the key whose content is on screen (it lags `screenKey` while the old screen powers off). */
+  onDisplayKeyChange?: (key: string) => void;
 }
 
 /**
@@ -16,7 +18,7 @@ interface Props {
  * The outgoing content is the last committed render for its key (a ref written only in a layout
  * effect and read during the off phase), because its source state is usually gone by then.
  */
-export function ScreenTransition({ screenKey, children, className = '', onBackdropClick }: Props) {
+export function ScreenTransition({ screenKey, children, className = '', onBackdropClick, onDisplayKeyChange }: Props) {
   const [state, dispatch] = useReducer(transition, screenKey, initialTransition);
   const committed = useRef<{ key: string; node: ReactNode }>({ key: screenKey, node: children });
 
@@ -24,12 +26,18 @@ export function ScreenTransition({ screenKey, children, className = '', onBackdr
     if (screenKey === targetKey(state)) return;
     const reduced = prefersReducedMotion();
     if (!reduced) audioEngine.playUi('power');
-    dispatch({ type: 'change', key: screenKey, reduced });
+    const isEmpty = (n: ReactNode) => n == null || n === false;
+    dispatch({ type: 'change', key: screenKey, reduced, fromEmpty: isEmpty(committed.current.node), toEmpty: isEmpty(children) });
   }, [screenKey, state]);
 
   useLayoutEffect(() => {
     if (displayKey(state) === screenKey) committed.current = { key: screenKey, node: children };
   });
+
+  const shownKey = displayKey(state);
+  useLayoutEffect(() => {
+    onDisplayKeyChange?.(shownKey);
+  }, [shownKey, onDisplayKeyChange]);
 
   useEffect(() => {
     if (state.phase === 'idle') return;

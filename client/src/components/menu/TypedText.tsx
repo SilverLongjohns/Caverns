@@ -26,7 +26,8 @@ function Typing({ text, cps, cursor, className }: Required<Omit<Props, 'classNam
   }, [text, cps]);
   const done = shown.length === text.length;
   return (
-    <span className={`typed-text ${className ?? ''}`} aria-label={text}>
+    <span className={`typed-text ${className ?? ''}`}>
+      <span className="sr-only">{text}</span>
       <span aria-hidden="true">{shown}</span>
       {(cursor || !done) && <span className="typed-text__cursor" aria-hidden="true">█</span>}
     </span>

@@ -135,3 +135,28 @@
 .modal-layer[data-closing="true"] { pointer-events: none; background: transparent; }
 /* Old button classes reused on RelicButtons (e.g. .shop-close-btn is fixed 28x28) must not size them */
 .menu-console .relic-btn { width: auto; height: auto; line-height: normal; }
+
+/* In town mode the transition box must fill the screen: .town-hub is absolute and would otherwise
+   collapse against a 0-height transformed body while powering on/off. */
+.menu-shell--town > .menu-shell__content > .screen-transition,
+.menu-shell--town > .menu-shell__content > .screen-transition > .screen-transition__body { position: absolute; inset: 0; }
+
+/* Screen-reader copy of typed text (the typing span is aria-hidden) */
+.typed-text { position: relative; }
+.typed-text .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+/* The replay link lives in LoginScreen, inside the shell's content box; pin it to the screen corner */
+.menu-shell .intro-replay { position: fixed; left: 16px; bottom: 12px; }
+
+/* Legacy index.css button rules ((0,1,1) element+class, and (0,2,0)/(0,3,0) :hover) must not restyle relic buttons in consoles */
+.menu-console .relic-btn { margin: 0; }
+.menu-console .char-slot-actions .relic-btn,
+.menu-console .char-create-stat-row .relic-btn { background: var(--relic-bronze-face); border: 2px solid #000; color: var(--relic-amber); }
+.menu-console .char-slot-actions .relic-btn--md { padding: 4px 12px 5px; }
+.menu-console .char-slot-actions .relic-btn--sm,
+.menu-console .char-create-stat-row .relic-btn--sm { padding: 1px 7px 2px; }
+.menu-console .relic-btn:hover:not(:disabled) { background: var(--relic-bronze-face); border-color: #000; color: var(--relic-amber); }
+.menu-console .relic-btn.relic-btn--hot:not(:disabled),
+.menu-console .relic-btn.relic-btn--hot:hover:not(:disabled) { color: var(--relic-amber-hot); }
+.menu-console .relic-btn.relic-btn--danger,
+.menu-console .relic-btn.relic-btn--danger:hover:not(:disabled) { color: var(--relic-danger); }
