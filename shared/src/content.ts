@@ -6,6 +6,7 @@ export const STARTER_WEAPON = {
   description: 'A dull blade with flecks of rust. Better than bare fists.',
   rarity: 'common' as const,
   slot: 'weapon' as const,
+  archetype: 'blade' as const,
   stats: { damage: 5 },
 };
 
@@ -15,6 +16,7 @@ export const STARTER_POTION = {
   description: 'A small vial of red liquid. Restores a bit of health.',
   rarity: 'common' as const,
   slot: 'consumable' as const,
+  archetype: 'potion' as const,
   stats: { healAmount: 15 },
 };
 
@@ -23,48 +25,48 @@ export const CLASS_STARTER_ITEMS: Record<string, { weapon: Item; offhand: Item }
     weapon: {
       id: 'vanguard_iron_mace', name: 'Iron Mace',
       description: 'A heavy flanged mace. Reliable and brutal.',
-      rarity: 'common', slot: 'weapon', stats: { damage: 2 },
+      rarity: 'common', slot: 'weapon', archetype: 'blunt', stats: { damage: 2 },
     },
     offhand: {
       id: 'vanguard_tower_shield', name: 'Tower Shield',
       description: 'A tall shield of banded oak and iron.',
-      rarity: 'common', slot: 'offhand', stats: { defense: 3 },
+      rarity: 'common', slot: 'offhand', archetype: 'shield', stats: { defense: 3 },
     },
   },
   shadowblade: {
     weapon: {
       id: 'shadowblade_twin_daggers', name: 'Twin Daggers',
       description: 'A matched pair of razor-sharp blades.',
-      rarity: 'common', slot: 'weapon', stats: { damage: 3, initiative: 2 },
+      rarity: 'common', slot: 'weapon', archetype: 'dagger', stats: { damage: 3, initiative: 2 },
     },
     offhand: {
       id: 'shadowblade_smoke_cloak', name: 'Smoke Cloak',
       description: 'A dark cloak woven with alchemical fibers.',
-      rarity: 'common', slot: 'offhand', stats: { defense: 1 },
+      rarity: 'common', slot: 'offhand', archetype: 'focus', stats: { defense: 1 },
     },
   },
   cleric: {
     weapon: {
       id: 'cleric_blessed_staff', name: 'Blessed Staff',
       description: 'A staff inscribed with protective glyphs.',
-      rarity: 'common', slot: 'weapon', stats: { damage: 2, initiative: 1 },
+      rarity: 'common', slot: 'weapon', archetype: 'staff', stats: { damage: 2, initiative: 1 },
     },
     offhand: {
       id: 'cleric_holy_symbol', name: 'Holy Symbol',
       description: 'A silver pendant radiating faint warmth.',
-      rarity: 'common', slot: 'offhand', stats: { defense: 2 },
+      rarity: 'common', slot: 'offhand', archetype: 'focus', stats: { defense: 2 },
     },
   },
   artificer: {
     weapon: {
       id: 'artificer_repeating_crossbow', name: 'Repeating Crossbow',
       description: 'A compact crossbow with a mechanical reload mechanism.',
-      rarity: 'common', slot: 'weapon', stats: { damage: 3 },
+      rarity: 'common', slot: 'weapon', archetype: 'ranged', stats: { damage: 3 },
     },
     offhand: {
       id: 'artificer_toolkit', name: 'Toolkit',
       description: 'A leather case of springs, gears, and small explosives.',
-      rarity: 'common', slot: 'offhand', stats: { defense: 1, initiative: 2 },
+      rarity: 'common', slot: 'offhand', archetype: 'focus', stats: { defense: 1, initiative: 2 },
     },
   },
 };
@@ -215,10 +217,10 @@ export const DRIPPING_HALLS: DungeonContent = {
 
   items: [
     // === Consumables ===
-    { id: 'leather_scraps', name: 'Leather Scrap Bandage', description: 'Makeshift bandages from old leather. Not great, but better than bleeding.', rarity: 'common', slot: 'consumable', stats: { healAmount: 10 } },
-    { id: 'hp_potion', name: 'Health Potion', description: 'A standard healing draught. Tastes like mushroom soup.', rarity: 'uncommon', slot: 'consumable', stats: { healAmount: 25 } },
-    { id: 'hp_potion_large', name: 'Greater Health Potion', description: 'A large flask of potent healing liquid. Glows faintly.', rarity: 'rare', slot: 'consumable', stats: { healAmount: 40 } },
-    { id: 'elixir', name: 'Fungal Elixir', description: 'A shimmering elixir distilled from rare bioluminescent fungi.', rarity: 'rare', slot: 'consumable', stats: { healAmount: 50 } },
-    { id: 'throwing_spore', name: 'Volatile Spore Pod', description: 'A bulging spore pod that explodes on impact. Handle with care.', rarity: 'uncommon', slot: 'consumable', stats: { damage: 20 } },
+    { id: 'leather_scraps', name: 'Leather Scrap Bandage', description: 'Makeshift bandages from old leather. Not great, but better than bleeding.', rarity: 'common', slot: 'consumable', archetype: 'bandage', stats: { healAmount: 10 } },
+    { id: 'hp_potion', name: 'Health Potion', description: 'A standard healing draught. Tastes like mushroom soup.', rarity: 'uncommon', slot: 'consumable', archetype: 'potion', stats: { healAmount: 25 } },
+    { id: 'hp_potion_large', name: 'Greater Health Potion', description: 'A large flask of potent healing liquid. Glows faintly.', rarity: 'rare', slot: 'consumable', archetype: 'potion_greater', stats: { healAmount: 40 } },
+    { id: 'elixir', name: 'Fungal Elixir', description: 'A shimmering elixir distilled from rare bioluminescent fungi.', rarity: 'rare', slot: 'consumable', archetype: 'elixir', stats: { healAmount: 50 } },
+    { id: 'throwing_spore', name: 'Volatile Spore Pod', description: 'A bulging spore pod that explodes on impact. Handle with care.', rarity: 'uncommon', slot: 'consumable', archetype: 'bomb', stats: { damage: 20 } },
   ],
 };
