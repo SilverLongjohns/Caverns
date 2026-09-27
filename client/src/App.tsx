@@ -8,6 +8,7 @@ import { WorldView } from './components/WorldView.js';
 import { clearSessionToken } from './auth/sessionStorage.js';
 import { TextLog } from './components/TextLog.js';
 import { MiniMap } from './components/MiniMap.js';
+import { RelicPanel } from './components/relic/index.js';
 import { PlayerHUD } from './components/PlayerHUD.js';
 import { PartyPanel } from './components/PartyPanel.js';
 import { ActionBar } from './components/ActionBar.js';
@@ -179,7 +180,9 @@ export function App() {
             )}
           </div>
           <div className="side-column">
-            <MiniMap />
+            <RelicPanel className="map-screen" title="Map">
+              <MiniMap />
+            </RelicPanel>
             <PartyPanel />
             <PlayerHUD
               onEquipItem={actions.equipItem}

@@ -17,7 +17,7 @@
   --relic-hp-mid: #b8752a;
   --relic-hp-low: #e04040;
   --relic-xp: #c8a24a;
-  --relic-resource: #3fa7c9;
+  --relic-resource: #2c7d99;
   --screen-glow: rgba(70, 190, 110, 0.18);
   --screen-glow-rim: rgba(40, 140, 80, 0.08);
   --rarity-common: #c8b89a;
@@ -118,7 +118,7 @@
 }
 .relic-gauge--xp { background: #14110a; }
 .relic-gauge--resource { background: #0a1418; }
-.relic-gauge--sm { height: 12px; margin: 4px 2px; }
+.relic-gauge--sm { height: 16px; margin: 5px 2px; }
 .relic-gauge__fill {
   position: absolute;
   inset: 0 auto 0 0;
@@ -132,9 +132,9 @@
   font-size: 0.7rem;
   line-height: 14px;
   color: #f2d7a8;
-  text-shadow: 0 0 2px #000, 0 0 2px #000;
+  text-shadow: 1px 1px 0 #000, 0 0 2px #000, 0 0 3px #000;
 }
-.relic-gauge--sm .relic-gauge__text { font-size: 0.6rem; line-height: 8px; }
+.relic-gauge--sm .relic-gauge__text { font-size: 0.65rem; line-height: 12px; }
 
 /* --- Socket: recessed square with a bronze (or rarity) ring --- */
 .relic-socket {
@@ -163,3 +163,36 @@
   border: 2px solid #000;
   box-shadow: inset 0 2px 0 var(--relic-bronze-hi), 0 0 0 1px var(--relic-bronze);
 }
+
+/* === Phase 1 screens: side column === */
+.side-column { gap: 4px; background: transparent; }
+.side-column > .relic-panel { flex: none; }
+.side-column > .hud-screen { flex: 1; }
+.map-screen .minimap { background: transparent; border-bottom: none; }
+.party-screen .party-panel, .hud-screen .player-hud { background: transparent; border-bottom: none; }
+.hud-screen .player-hud { flex: 1; min-height: 0; overflow-y: auto; }
+
+.party-member { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.party-member-body { flex: 1; min-width: 0; }
+
+.hud-identity { display: flex; gap: 10px; margin-bottom: 4px; }
+.hud-portrait {
+  width: 56px; height: 84px; flex: none;
+  border: 2px solid #000; box-shadow: 0 0 0 1px var(--relic-bronze); background: #050403;
+  image-rendering: pixelated;
+}
+.hud-identity-text { min-width: 0; }
+
+.player-hud .equip-slot,
+.player-hud .consumable-slot,
+.player-hud .inventory-slot {
+  display: flex; align-items: center; gap: 8px; justify-content: flex-start;
+  padding: 3px 0; border-bottom: 1px dashed var(--relic-divider); font-size: 0.8rem;
+}
+.slot-body { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.slot-body .slot-label { font-size: 0.6rem; color: var(--relic-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+.slot-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot-body .item-stats { font-size: 0.65rem; color: var(--relic-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot-actions { display: flex; gap: 6px; flex: none; }
+.player-hud .consumables > .slot-label,
+.player-hud .inventory > .slot-label { display: block; margin-top: 8px; font-size: 0.65rem; color: var(--relic-dim); text-transform: uppercase; letter-spacing: 0.08em; }
