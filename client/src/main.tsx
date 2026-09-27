@@ -7,6 +7,7 @@ import './styles/index.css';
 import './styles/relic.css';
 import './styles/menu.css';
 import './styles/closeup.css';
+import './styles/boardfx.css';
 
 if (getSandboxRequest()) installSandboxHook();
 

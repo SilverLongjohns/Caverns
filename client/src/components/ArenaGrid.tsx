@@ -3,6 +3,9 @@ import { useGameStore } from '../store/gameStore.js';
 import { TileGridView, type EntityOverlay } from './TileGridView.js';
 import { getParticipantGlyph } from '../glyphs.js';
 import type { TileGrid, CombatParticipant } from '@caverns/shared';
+import type { CSSProperties, RefObject } from 'react';
+import { useBoardFxStore } from '../combat/boardFxStore.js';
+import type { BoardFx } from '../combat/boardFx.js';
 
 const MOVE_ANIM_STEP_MS = 100;
 
@@ -77,6 +80,20 @@ export function ArenaGrid({
     ? participants.find((p) => p.id === animatingId) ?? null
     : null;
 
+  const fx = useBoardFxStore((s) => s.fx);
+  const unitFx = useMemo(() => {
+    const m = new Map<string, { cls: string; style: Record<string, string> }>();
+    for (const f of fx) {
+      if (f.kind === 'number') continue;
+      const cur = m.get(f.unitId) ?? { cls: '', style: {} };
+      if (f.kind === 'lunge') { cur.cls += ` fx-lunge fx-lunge-${f.dir}`; cur.style['--fx-lunge-delay'] = `${f.delayMs}ms`; }
+      else { cur.cls += ' fx-tear'; cur.style['--fx-tear-delay'] = `${f.delayMs}ms`; }
+      m.set(f.unitId, cur);
+    }
+    return m;
+  }, [fx]);
+  const numbers = useMemo(() => fx.filter((f): f is Extract<BoardFx, { kind: 'number' }> => f.kind === 'number'), [fx]);
+
   // Entities for inline rendering — exclude the currently-animating entity
   const entities: EntityOverlay[] = useMemo(() => {
     const result: EntityOverlay[] = [];
@@ -84,12 +101,14 @@ export function ArenaGrid({
       if (animatingId && p.id === animatingId) continue; // hidden during animation
       const pos = positions[p.id];
       if (!pos) continue;
+      const uf = unitFx.get(p.id);
       result.push({
         x: pos.x,
         y: pos.y,
         char: getEntityChar(p),
-        className: getEntityClass(p, p.id === currentTurnId),
+        className: getEntityClass(p, p.id === currentTurnId) + (uf?.cls ?? ''),
         sprite: getParticipantGlyph(p),
+        style: uf ? (uf.style as CSSProperties) : undefined,
       });
     }
     if (ghostEntity) {
@@ -103,7 +122,7 @@ export function ArenaGrid({
       });
     }
     return result;
-  }, [participants, positions, currentTurnId, ghostEntity, animatingId, playerId]);
+  }, [participants, positions, currentTurnId, ghostEntity, animatingId, playerId, unitFx]);
 
   // --- Camera: fixed-size cells, the viewport shows as much of the arena as fits ---
   useLayoutEffect(() => {
@@ -270,6 +289,7 @@ export function ArenaGrid({
             className="arena-anim-entity"
             style={{ display: 'none', position: 'absolute', pointerEvents: 'none' }}
           />
+          <FxNumbers numbers={numbers} worldRef={worldRef} />
         </div>
         {view.x > 0 && <div className="arena-edge arena-edge-l" />}
         {view.x + cols < grid.width && <div className="arena-edge arena-edge-r" />}
@@ -285,5 +305,31 @@ export function ArenaGrid({
         />
       )}
     </div>
+  );
+}
+
+function FxNumbers({ numbers, worldRef }: { numbers: Extract<BoardFx, { kind: 'number' }>[]; worldRef: RefObject<HTMLDivElement | null> }) {
+  const [pos, setPos] = useState<Record<number, { left: number; top: number; width: number }>>({});
+  useLayoutEffect(() => {
+    const world = worldRef.current;
+    const gridEl = world?.querySelector('.room-grid') as HTMLElement | null;
+    if (!world || !gridEl) return;
+    const pr = world.getBoundingClientRect();
+    const next: Record<number, { left: number; top: number; width: number }> = {};
+    for (const n of numbers) {
+      const r = getCellRect(gridEl, n.tile.x, n.tile.y);
+      if (r) next[n.id] = { left: r.left - pr.left, top: r.top - pr.top, width: r.width };
+    }
+    setPos(next);
+  }, [numbers, worldRef]);
+  return (
+    <>
+      {numbers.map((n) => pos[n.id] && (
+        <span key={n.id} className={`fx-number fx-number--${n.tone}`}
+          style={{ left: pos[n.id].left, top: pos[n.id].top - 8 - n.offset * 14, width: pos[n.id].width, animationDelay: `${n.delayMs}ms` }}>
+          {n.value}
+        </span>
+      ))}
+    </>
   );
 }

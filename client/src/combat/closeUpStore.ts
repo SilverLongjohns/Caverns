@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { closeUpForParticipants, CLOSE_UP_CONFIG, type ServerMessage } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore.js';
+import { boardFxReceive } from './boardFxStore.js';
 import { initialGate, gateReceive, gateImpact, gateEnd, gateSkip, gateFlush, type ActiveCloseUp, type GateState } from './closeUpGate.js';
 
 interface CloseUpUi { current: ActiveCloseUp | null; skip: () => void }
@@ -8,7 +9,9 @@ export const useCloseUpStore = create<CloseUpUi>(() => ({ current: null, skip: (
 
 let gate: GateState = initialGate();
 let timers: number[] = [];
-const deliver = (msgs: ServerMessage[]) => { for (const m of msgs) useGameStore.getState().handleServerMessage(m); };
+const deliver = (msgs: ServerMessage[]) => {
+  for (const m of msgs) { useGameStore.getState().handleServerMessage(m); boardFxReceive(m); }
+};
 const clearTimers = () => { timers.forEach((t) => window.clearTimeout(t)); timers = []; };
 
 function publish(): void {

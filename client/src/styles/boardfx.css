@@ -1,0 +1,27 @@
+/* === Board juice for damaging hits (see combat/boardFx.ts). Inside .arena-world, under the CRT overlay. === */
+.glyph-grid .fx-lunge .entity-glyph { animation: fx-lunge-right 300ms cubic-bezier(.2,.8,.3,1) var(--fx-lunge-delay, 0ms) both; }
+.glyph-grid .fx-lunge-left .entity-glyph { animation-name: fx-lunge-left; }
+.glyph-grid .fx-lunge-up .entity-glyph { animation-name: fx-lunge-up; }
+.glyph-grid .fx-lunge-down .entity-glyph { animation-name: fx-lunge-down; }
+@keyframes fx-lunge-right { 35% { transform: translateX(11px) scale(1.08) } 100% { transform: none } }
+@keyframes fx-lunge-left { 35% { transform: translateX(-11px) scale(1.08) } 100% { transform: none } }
+@keyframes fx-lunge-up { 35% { transform: translateY(-11px) scale(1.08) } 100% { transform: none } }
+@keyframes fx-lunge-down { 35% { transform: translateY(11px) scale(1.08) } 100% { transform: none } }
+.glyph-grid .fx-tear .entity-glyph { animation: fx-tear 360ms steps(6) var(--fx-tear-delay, 0ms) both; }
+@keyframes fx-tear {
+  0% { filter: drop-shadow(3px 0 0 #f00) drop-shadow(-3px 0 0 #0ff) brightness(2); transform: translateX(2px) }
+  33% { filter: drop-shadow(-2px 0 0 #f00) drop-shadow(2px 0 0 #0ff); transform: translateX(-2px) skewX(8deg) }
+  66% { filter: drop-shadow(1px 0 0 #f00); transform: skewX(-4deg) }
+  100% { filter: none; transform: none }
+}
+.fx-number { position: absolute; z-index: 12; pointer-events: none; text-align: center; font: 700 16px 'Courier New', monospace;
+  -webkit-text-stroke: .6px #000; opacity: 0; animation: fx-number 950ms ease-out both; }
+.fx-number--mob { color: #ff5a3c; text-shadow: 0 0 4px #ff3a1c; }
+.fx-number--player { color: #ffb000; text-shadow: 0 0 4px #ff8a00; }
+.fx-number--chip { color: #8c7f6c; text-shadow: none; }
+@keyframes fx-number { 0% { opacity: 1; transform: translateY(0) scale(1.8) } 15% { transform: translateY(-6px) scale(1) } 75% { opacity: 1 } 100% { opacity: 0; transform: translateY(-20px) } }
+@keyframes fx-number-still { 0%, 75% { opacity: 1 } 100% { opacity: 0 } }
+@media (prefers-reduced-motion: reduce) {
+  .glyph-grid .fx-lunge .entity-glyph, .glyph-grid .fx-tear .entity-glyph { animation: none; }
+  .fx-number { animation-name: fx-number-still; }
+}
