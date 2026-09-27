@@ -1656,6 +1656,7 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   padding: 4px 8px;
   border-radius: 4px;
 }
+.music-player--hidden { opacity: 0; pointer-events: none; }
 .music-mute-btn {
   background: none;
   border: none;
