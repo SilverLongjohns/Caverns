@@ -18,19 +18,21 @@ describe('closeUpFor', () => {
   it('an ability that kills is still an ability close-up', () => {
     expect(closeUpFor({ action: 'use_ability', targetDowned: true }, player)?.kind).toBe('ability');
   });
-  it('player basic attacks: kill beats crit, plain hits get nothing', () => {
+  it('player basic attacks: kill beats crit beats strike', () => {
     expect(closeUpFor({ action: 'attack', targetDowned: true, critMultiplier: 2 }, player))
       .toEqual({ kind: 'kill', durationMs: CLOSE_UP_CONFIG.killMs });
     expect(closeUpFor({ action: 'attack', critMultiplier: 1.5 }, player))
       .toEqual({ kind: 'crit', durationMs: CLOSE_UP_CONFIG.critMs });
-    expect(closeUpFor({ action: 'attack', critMultiplier: 1 }, player)).toBeNull();
-    expect(closeUpFor({ action: 'attack' }, player)).toBeNull();
+    expect(closeUpFor({ action: 'attack', critMultiplier: 1 }, player))
+      .toEqual({ kind: 'strike', durationMs: CLOSE_UP_CONFIG.strikeMs });
+    expect(closeUpFor({ action: 'attack' }, player)?.kind).toBe('strike');
   });
-  it('mob hits on players: kill or crit only, including hits landed through the defend QTE', () => {
+  it('mob hits on players: kill, crit or strike, including hits landed through the defend prompt', () => {
     expect(closeUpFor({ action: 'attack', targetDowned: true }, mobHit)?.kind).toBe('kill');
     expect(closeUpFor({ action: 'attack', critMultiplier: 2 }, mobHit)?.kind).toBe('crit');
-    expect(closeUpFor({ action: 'attack' }, mobHit)).toBeNull();
+    expect(closeUpFor({ action: 'attack' }, mobHit)).toEqual({ kind: 'strike', durationMs: CLOSE_UP_CONFIG.strikeMs });
     expect(closeUpFor({ action: 'defend', targetDowned: true }, mobHit)?.kind).toBe('kill');
+    expect(closeUpFor({ action: 'defend' }, mobHit)?.kind).toBe('strike');
   });
   it('never fires for defend, items, flee, the defend-QTE preview, or mob-on-mob', () => {
     expect(closeUpFor({ action: 'defend' }, { ...player, targetType: undefined })).toBeNull();
@@ -61,6 +63,10 @@ describe('closeUpForParticipants', () => {
 });
 
 describe('data integrity', () => {
+  it('strikes are shorter than every other close-up', () => {
+    expect(CLOSE_UP_CONFIG.strikeMs).toBeGreaterThan(0);
+    expect(CLOSE_UP_CONFIG.strikeMs).toBeLessThan(Math.min(CLOSE_UP_CONFIG.critMs, CLOSE_UP_CONFIG.killMs, CLOSE_UP_CONFIG.abilityMs));
+  });
   it('every closeUp block in the data is valid', () => {
     for (const cls of CLASS_DEFINITIONS) {
       if (cls.color !== undefined) expect(cls.color, cls.id).toMatch(/^#[0-9a-fA-F]{6}$/);

@@ -4,9 +4,9 @@ import type { AbilityDefinition } from '../classTypes.js';
 import type { CombatActionResultMessage } from '../messages.js';
 import type { CombatParticipant } from '../types.js';
 
-export const CLOSE_UP_CONFIG: { abilityMs: number; critMs: number; killMs: number; impactAt: number; maxQueued: number } = closeUpConfig;
+export const CLOSE_UP_CONFIG: { abilityMs: number; critMs: number; killMs: number; strikeMs: number; impactAt: number; maxQueued: number } = closeUpConfig;
 
-export type CloseUpKind = 'ability' | 'crit' | 'kill';
+export type CloseUpKind = 'ability' | 'crit' | 'kill' | 'strike';
 export interface CloseUp { kind: CloseUpKind; durationMs: number }
 export type CloseUpSound = 'crack' | 'boom' | 'shimmer';
 export const CLOSE_UP_SOUNDS: readonly CloseUpSound[] = ['crack', 'boom', 'shimmer'];
@@ -14,12 +14,12 @@ export const CLOSE_UP_SOUNDS: readonly CloseUpSound[] = ['crack', 'boom', 'shimm
 type Side = 'player' | 'mob';
 interface Ctx { actorType: Side; targetType?: Side; isPassiveAbility: boolean }
 
-const make = (kind: CloseUpKind): CloseUp => ({
-  kind,
-  durationMs: kind === 'ability' ? CLOSE_UP_CONFIG.abilityMs : kind === 'crit' ? CLOSE_UP_CONFIG.critMs : CLOSE_UP_CONFIG.killMs,
-});
+const DURATION_KEY: Record<CloseUpKind, 'abilityMs' | 'critMs' | 'killMs' | 'strikeMs'> = {
+  ability: 'abilityMs', crit: 'critMs', kill: 'killMs', strike: 'strikeMs',
+};
+const make = (kind: CloseUpKind): CloseUp => ({ kind, durationMs: CLOSE_UP_CONFIG[DURATION_KEY[kind]] });
 
-/** Whether a combat result earns a close-up. Data-driven: never names an ability. */
+/** Whether a combat result earns a close-up, and which kind. Data-driven: never names an ability. Ordinary hits are strikes. */
 export function closeUpFor(r: Partial<CombatActionResultMessage>, ctx: Ctx): CloseUp | null {
   if (r.defendQte) return null; // preview of an incoming hit, not the hit itself
   if (ctx.actorType === 'player') {
@@ -27,6 +27,7 @@ export function closeUpFor(r: Partial<CombatActionResultMessage>, ctx: Ctx): Clo
     if (r.action === 'attack') {
       if (r.targetDowned) return make('kill');
       if ((r.critMultiplier ?? 1) > 1) return make('crit');
+      return make('strike');
     }
     return null;
   }
@@ -35,7 +36,7 @@ export function closeUpFor(r: Partial<CombatActionResultMessage>, ctx: Ctx): Clo
   if (r.action !== 'attack' && r.action !== 'defend') return null;
   if (r.targetDowned) return make('kill');
   if ((r.critMultiplier ?? 1) > 1) return make('crit');
-  return null;
+  return make('strike');
 }
 
 export function findAbility(abilityId: string | undefined, className?: string): AbilityDefinition | undefined {
