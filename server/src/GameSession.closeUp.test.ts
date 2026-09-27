@@ -22,6 +22,8 @@ function setup(overrides: SandboxOverrides = {}) {
 function toPlayerTurn(session: GameSession) {
   for (let i = 0; i < 200 && session.getArenaSnapshot(SANDBOX_ROOM_ID)!.currentTurnId !== 'p1'; i++) vi.advanceTimersByTime(50);
   expect(session.getArenaSnapshot(SANDBOX_ROOM_ID)!.currentTurnId).toBe('p1');
+  // p1's prompt may still be held behind a close-up (e.g. the mob's strike); actions are refused until it is sent
+  vi.advanceTimersByTime(Math.max(CLOSE_UP_CONFIG.abilityMs, CLOSE_UP_CONFIG.critMs, CLOSE_UP_CONFIG.killMs) + 100);
 }
 
 /** Data-driven: the first non-passive self-target ability of the duel player's class. */
@@ -42,6 +44,18 @@ function msUntilNextAction(sent: ServerMessage[], from: number, maxMs = 6000, st
     vi.advanceTimersByTime(step);
   }
   return -1;
+}
+
+/** End p1's turns until a mob stands next to p1 (the duel mob walks in), then stop on p1's turn. */
+function closeIn(session: GameSession) {
+  const near = () => {
+    const s = session.getArenaSnapshot(SANDBOX_ROOM_ID)!;
+    const m = s.participants.find((p) => p.type === 'mob')!;
+    const a = s.positions.p1, b = s.positions[m.id];
+    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y) <= 1;
+  };
+  for (let i = 0; i < 20 && !near(); i++) { toPlayerTurn(session); session.handleArenaEndTurn('p1'); }
+  toPlayerTurn(session);
 }
 
 describe('close-up pacing', () => {
@@ -147,15 +161,7 @@ describe('close-up pacing', () => {
       expect(cls, 'data needs an area_enemy ability for this test').toBeDefined();
       const ability = cls!.abilities.find((a) => !a.passive && a.targetType === 'area_enemy')!;
       const { session, sent } = setup({ party: [cls!.id] });
-      // let the mob close in so the cast is in range, then take p1's turn
-      const near = () => {
-        const s = session.getArenaSnapshot(SANDBOX_ROOM_ID)!;
-        const m = s.participants.find((p) => p.type === 'mob')!;
-        const a = s.positions.p1, b = s.positions[m.id];
-        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y) <= 1;
-      };
-      for (let i = 0; i < 20 && !near(); i++) { toPlayerTurn(session); session.handleArenaEndTurn('p1'); }
-      toPlayerTurn(session);
+      closeIn(session); // let the mob close in so the cast is in range
       const snap = session.getArenaSnapshot(SANDBOX_ROOM_ID)!;
       const mob = snap.participants.find((p) => p.type === 'mob')!;
       const before = sent.length;
@@ -189,6 +195,24 @@ describe('close-up pacing', () => {
       expect(ended()).toBe(false);
       vi.advanceTimersByTime(200);
       expect(ended()).toBe(true);
+      session.dispose();
+    } finally { restore(); vi.useRealTimers(); }
+  });
+  it('an ordinary attack delays the next turn by the strike close-up', () => {
+    vi.useFakeTimers();
+    const restore = installSeededRandom(4242);
+    try {
+      const { session, sent } = setup();
+      const mobId = session.getArenaSnapshot(SANDBOX_ROOM_ID)!.participants.find((p) => p.type === 'mob')!.id;
+      // test-only: the attack must not kill (a kill would be a longer kill close-up)
+      (session as unknown as { combats: Map<string, { getParticipant(id: string): { hp: number } }> })
+        .combats.get(SANDBOX_ROOM_ID)!.getParticipant(mobId).hp = 9999;
+      closeIn(session);
+      const before = sent.length;
+      session.handleCombatAction('p1', 'attack', mobId);
+      expect(sent.slice(before).some((m) => m.type === 'combat_action_result')).toBe(true);
+      const ms = msUntilNextAction(sent, before);
+      expect(ms).toBeGreaterThanOrEqual(CLOSE_UP_CONFIG.strikeMs + MOB_DELAY);
       session.dispose();
     } finally { restore(); vi.useRealTimers(); }
   });
