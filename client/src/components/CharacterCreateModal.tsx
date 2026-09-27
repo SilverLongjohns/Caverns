@@ -7,7 +7,8 @@ import {
   PROGRESSION_CONFIG,
 } from '@caverns/shared';
 import type { StatPoints } from '@caverns/shared';
-import { CaveBackground } from './CaveBackground.js';
+import { MenuConsole } from './menu/index.js';
+import { RelicButton, ItemIcon } from './relic/index.js';
 import { getClassPortrait } from '../classPortraits.js';
 
 interface Props {
@@ -51,43 +52,35 @@ export function CharacterCreateModal({ onCreate, onCancel }: Props) {
   const canCreate = name.trim().length > 0;
 
   return (
-    <div className="lobby">
-      <CaveBackground />
-      <img src="/Caverns_Logo.png" alt="Caverns" className="lobby-logo" />
-      <p className="lobby-subtitle">Create Character</p>
+    <MenuConsole
+      title="New Character"
+      width="860px"
+      footer={
+        <div className="char-create-footer">
+          <RelicButton className="char-create-submit" hot onClick={() => onCreate(name.trim(), className, points)} disabled={!canCreate}>
+            Create
+          </RelicButton>
+          <RelicButton onClick={onCancel}>Cancel</RelicButton>
+        </div>
+      }
+    >
       <div className="char-create-modal">
         <aside className="char-create-portrait-col">
-          <div className="town-portrait char-create-portrait">
+          <div className="char-create-portrait">
             {(() => {
               const src = getClassPortrait(className);
-              return src ? (
-                <img className="town-portrait-img" src={src} alt={classDef?.displayName ?? className} />
-              ) : (
-                <span className="town-portrait-placeholder">☉</span>
-              );
+              return src ? <img src={src} alt={classDef?.displayName ?? className} /> : <span className="relic-socket__glyph">☉</span>;
             })()}
           </div>
-          <input
-            autoFocus
-            className="char-create-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Name"
-            maxLength={20}
-          />
+          <input autoFocus className="char-create-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" maxLength={20} />
         </aside>
 
         <section className="char-create-class-col">
           <div className="char-create-class-tabs">
             {CLASS_DEFINITIONS.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                className={`char-create-class-tab ${className === c.id ? 'char-create-class-tab-selected' : ''}`}
-                onClick={() => setClassName(c.id)}
-              >
+              <RelicButton key={c.id} size="sm" hot={className === c.id} className="char-create-class-tab" onClick={() => setClassName(c.id)}>
                 {c.displayName}
-              </button>
+              </RelicButton>
             ))}
           </div>
           {classDef && (
@@ -95,24 +88,20 @@ export function CharacterCreateModal({ onCreate, onCancel }: Props) {
               <p className="char-create-class-desc">{classDef.description}</p>
               <div className="char-create-loadout">
                 <h4>Starting Gear</h4>
-                <ul>
-                  {starterItems ? (
-                    <>
-                      <li>{starterItems.weapon.name}</li>
-                      <li>{starterItems.offhand.name}</li>
-                    </>
-                  ) : (
-                    <li>—</li>
-                  )}
-                </ul>
+                {starterItems ? (
+                  <div className="char-create-gear">
+                    <div className="char-create-gear-row"><ItemIcon item={starterItems.weapon} /><span>{starterItems.weapon.name}</span></div>
+                    <div className="char-create-gear-row"><ItemIcon item={starterItems.offhand} /><span>{starterItems.offhand.name}</span></div>
+                  </div>
+                ) : (
+                  <p>—</p>
+                )}
               </div>
               <div className="char-create-abilities">
                 <h4>Abilities</h4>
                 <ul>
                   {classDef.abilities.map((a) => (
-                    <li key={a.id}>
-                      <strong>{a.name}</strong> — {a.description}
-                    </li>
+                    <li key={a.id}><strong>{a.name}</strong> — {a.description}</li>
                   ))}
                 </ul>
               </div>
@@ -121,37 +110,19 @@ export function CharacterCreateModal({ onCreate, onCancel }: Props) {
         </section>
 
         <aside className="char-create-stats-col">
-          <div className="char-create-points-header">
-            Points: {remaining} / {CHARACTER_CREATION_CONFIG.pointBudget}
-          </div>
+          <div className="char-create-points-header">Points: {remaining} / {CHARACTER_CREATION_CONFIG.pointBudget}</div>
           <div className="char-create-stats">
             {statDefs.map((def) => (
               <div key={def.id} className="char-create-stat-row">
                 <span className="char-create-stat-name">{def.displayName}</span>
-                <button type="button" onClick={() => adjust(def.id, -1)}>
-                  −
-                </button>
+                <RelicButton size="sm" onClick={() => adjust(def.id, -1)}>−</RelicButton>
                 <span className="char-create-stat-value">{points[def.id] ?? 0}</span>
-                <button type="button" onClick={() => adjust(def.id, +1)}>
-                  +
-                </button>
+                <RelicButton size="sm" onClick={() => adjust(def.id, +1)}>+</RelicButton>
               </div>
             ))}
           </div>
         </aside>
       </div>
-      <div className="lobby-choose">
-        <button
-          className="lobby-start"
-          onClick={() => onCreate(name.trim(), className, points)}
-          disabled={!canCreate}
-        >
-          Create
-        </button>
-        <button className="lobby-start" onClick={onCancel}>
-          Cancel
-        </button>
-      </div>
-    </div>
+    </MenuConsole>
   );
 }

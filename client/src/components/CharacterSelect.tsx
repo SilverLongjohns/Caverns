@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import { CharacterSlotCard } from './CharacterSlotCard.js';
 import { CharacterCreateModal } from './CharacterCreateModal.js';
-import { CaveBackground } from './CaveBackground.js';
+import { MenuConsole, TypedText, ScreenTransition } from './menu/index.js';
+import { RelicButton } from './relic/index.js';
 import type { StatPoints } from '@caverns/shared';
 
 interface Props {
@@ -42,24 +43,48 @@ export function CharacterSelect({ onSelect, onCreate, onDelete, onLogout, onJoin
     setJoinCode('');
   };
 
-  if (creatingSlot !== null) {
-    return (
-      <CharacterCreateModal
-        onCreate={(name, cls, pts) => {
-          onCreate(name, cls, pts);
-          setCreatingSlot(null);
-        }}
-        onCancel={() => setCreatingSlot(null)}
-      />
-    );
-  }
+  const create = (
+    <CharacterCreateModal
+      onCreate={(name, cls, pts) => {
+        onCreate(name, cls, pts);
+        setCreatingSlot(null);
+      }}
+      onCancel={() => setCreatingSlot(null)}
+    />
+  );
 
-  return (
-    <div className="lobby">
-      <CaveBackground />
-      <img src="/Caverns_Logo.png" alt="Caverns" className="lobby-logo" />
-      <p className="lobby-subtitle">Choose your character</p>
-      {account && <p className="char-select-greeting">Welcome, {account.displayName}</p>}
+  const select = (
+    <MenuConsole
+      title="Characters"
+      width="640px"
+      footer={
+        <div className="world-code-bar">
+          {inviteCode && (
+            <div className="world-code-block">
+              <span className="world-code-label">World</span>
+              <code className="world-code-value">{inviteCode}</code>
+              <RelicButton size="sm" className="world-code-copy" onClick={copyCode}>{copied ? 'Copied' : 'Copy'}</RelicButton>
+            </div>
+          )}
+          <div className="world-code-join">
+            <input
+              className="world-code-input"
+              placeholder="Join code"
+              maxLength={6}
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => { if (e.key === 'Enter') submitJoin(); }}
+            />
+            <RelicButton size="sm" className="world-code-join-btn" onClick={submitJoin} disabled={joinCode.trim().length === 0}>
+              Join
+            </RelicButton>
+          </div>
+          <RelicButton size="sm" className="char-select-logout" onClick={onLogout}>Logout</RelicButton>
+          {worldError && <div className="world-code-error">{worldError}</div>}
+        </div>
+      }
+    >
+      {account && <p className="char-select-greeting"><TypedText text={`Welcome, ${account.displayName}`} /></p>}
       <div className="char-slot-grid">
         {Array.from({ length: SLOT_CAP }).map((_, i) => (
           <CharacterSlotCard
@@ -72,34 +97,12 @@ export function CharacterSelect({ onSelect, onCreate, onDelete, onLogout, onJoin
           />
         ))}
       </div>
-      <div className="world-code-bar">
-        {inviteCode && (
-          <div className="world-code-block">
-            <span className="world-code-label">Your world code:</span>
-            <code className="world-code-value">{inviteCode}</code>
-            <button className="world-code-copy" onClick={copyCode}>
-              {copied ? 'Copied' : 'Copy'}
-            </button>
-          </div>
-        )}
-        <div className="world-code-join">
-          <input
-            className="world-code-input"
-            placeholder="Join code"
-            maxLength={6}
-            value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-            onKeyDown={(e) => { if (e.key === 'Enter') submitJoin(); }}
-          />
-          <button className="world-code-join-btn" onClick={submitJoin} disabled={joinCode.trim().length === 0}>
-            Join
-          </button>
-        </div>
-        {worldError && <div className="world-code-error">{worldError}</div>}
-      </div>
-      <button className="char-select-logout" onClick={onLogout}>
-        Logout
-      </button>
-    </div>
+    </MenuConsole>
+  );
+
+  return (
+    <ScreenTransition screenKey={creatingSlot !== null ? 'create' : 'select'}>
+      {creatingSlot !== null ? create : select}
+    </ScreenTransition>
   );
 }
