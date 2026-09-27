@@ -37,6 +37,11 @@ export function artChainFor(
   return chain;
 }
 
+/** Close-up art (players face right, mobs face left) is never mirrored; right-side stand-ins (portrait/glyph) are. */
+export function mirrorArt(side: 'left' | 'right', src: string | undefined): boolean {
+  return side === 'right' && !!src && !src.startsWith('/closeups/');
+}
+
 const shade = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);
   const f = (v: number) => Math.round(v * 0.35).toString(16).padStart(2, '0');

@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { CLOSE_UP_CONFIG } from '@caverns/shared';
 import { useCloseUpStore } from '../combat/closeUpStore.js';
-import { stageFor, type StageActor } from '../combat/closeUpStage.js';
+import { stageFor, mirrorArt, type StageActor } from '../combat/closeUpStage.js';
 import { closeUpKeyAction, keyInfo } from '../combat/closeUpKeys.js';
 import { audioEngine } from '../audio/audioEngine.js';
 import { prefersReducedMotion } from '../ui/motion.js';
@@ -10,7 +10,7 @@ function Figure({ a, i }: { a: StageActor; i: number }) {
   const [idx, setIdx] = useState(0);
   const src = a.art[Math.min(idx, a.art.length - 1)];
   return (
-    <div className={`closeup-fig closeup-fig--${a.side}${a.isActor ? ' closeup-fig--actor' : ''}${a.downed ? ' closeup-fig--downed' : ''}`} style={{ '--i': i } as CSSProperties}>
+    <div className={`closeup-fig closeup-fig--${a.side}${a.isActor ? ' closeup-fig--actor' : ''}${a.downed ? ' closeup-fig--downed' : ''}${mirrorArt(a.side, src) ? ' closeup-fig--mirror' : ''}`} style={{ '--i': i } as CSSProperties}>
       {src && <img src={src} alt="" draggable={false} onError={() => setIdx((n) => n + 1)} />}
     </div>
   );

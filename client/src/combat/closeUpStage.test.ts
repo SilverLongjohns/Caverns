@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CLASS_DEFINITIONS, CLOSE_UP_CONFIG, type CombatParticipant } from '@caverns/shared';
-import { stageFor, artChainFor } from './closeUpStage.js';
+import { stageFor, artChainFor, mirrorArt } from './closeUpStage.js';
 import { MOB_CLOSE_UPS } from './mobCloseUpManifest.js';
 
 const cls = CLASS_DEFINITIONS[0];
@@ -101,5 +101,15 @@ describe('strikes', () => {
     const s = stageFor(active({ actorId: 'p1', action: 'attack', targetId: 'm1', damage: 9, critMultiplier: 2 }, 'crit'));
     expect(s.variant).toBe('full');
     expect(s.sound).not.toBeNull();
+  });
+});
+
+describe('mirrorArt', () => {
+  it('only mirrors stand-in art on the right; close-up art is authored facing the right way', () => {
+    expect(mirrorArt('right', '/sprites/glyphs/mobs/x.png')).toBe(true);
+    expect(mirrorArt('right', '/closeups/mobs/x.png')).toBe(false);
+    expect(mirrorArt('left', '/sprites/glyphs/classes/x.png')).toBe(false);
+    expect(mirrorArt('left', '/closeups/classes/x-attack.png')).toBe(false);
+    expect(mirrorArt('right', undefined)).toBe(false);
   });
 });

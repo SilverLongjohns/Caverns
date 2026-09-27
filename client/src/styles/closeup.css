@@ -16,7 +16,8 @@
 .closeup-fig:not(.closeup-fig--actor) { height: 72%; opacity: .95; }
 .closeup-fig--left { animation-name: cu-in-left; }
 .closeup-fig--right { animation-name: cu-in-right; }
-.closeup-fig--right img { transform: scaleX(-1); }
+/* Mirror stand-ins only, via `scale` so it composes with the transform-based recoil/tear animations */
+.closeup-fig--mirror img { scale: -1 1; }
 @keyframes cu-in-left { 0%, 10% { transform: translateX(-120%) } 25% { transform: translateX(0) scale(1.03) } 80%, 100% { transform: translateX(6%) scale(1.12) } }
 @keyframes cu-in-right { 0%, 10% { transform: translateX(120%) } 25% { transform: translateX(0) } 80%, 100% { transform: translateX(-4%) scale(1.08) } }
 .closeup-fig--actor.closeup-fig--left { animation-name: cu-lunge-left; }
