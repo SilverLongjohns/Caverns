@@ -41,8 +41,10 @@ export function MenuConsole({ title, footer, ambient = true, className = '', wid
           <>
             <span className="menu-console__lamp menu-console__lamp--l" aria-hidden="true" />
             <span className="menu-console__lamp menu-console__lamp--r" aria-hidden="true" />
-            <span className="menu-console__scanroll" aria-hidden="true" />
-            {glitch && <span className="menu-console__glitch" aria-hidden="true" />}
+            <span className="menu-console__fx" aria-hidden="true">
+              <span className="menu-console__scanroll" />
+              {glitch && <span className="menu-console__glitch" />}
+            </span>
           </>
         )}
       </RelicPanel>

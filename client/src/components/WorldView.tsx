@@ -3,7 +3,9 @@ import { TownView } from './TownView.js';
 import { StashModal } from './StashModal.js';
 import { ShopModal } from './ShopModal.js';
 import { CharacterModal } from './CharacterModal.js';
-import { getClassPortrait } from '../classPortraits.js';
+import { MenuConsole, TypedText } from './menu/index.js';
+import { RelicButton, IconSocket } from './relic/index.js';
+import { getParticipantGlyph } from '../glyphs.js';
 
 interface Props {
   onLeaveWorld: () => void;
@@ -50,65 +52,41 @@ export function WorldView({
   if (!currentWorld) return null;
 
   return (
-    <div className="world-layout">
-      <header className="world-header">
-        <h2 className="world-title">{currentWorld.name}</h2>
-        <button className="world-leave-btn" onClick={onLeaveWorld}>
-          Leave World
-        </button>
-      </header>
-      <div className="world-body">
-        <main className="world-main">
-          <TownView
-            onPortalReady={onPortalReady}
-            onPortalUnready={onPortalUnready}
-            onPortalEnter={onPortalEnter}
-            onInteract={onInteract}
-            onOpenCharacterPanel={onOpenCharacterPanel}
-          />
-        </main>
-        <aside className="world-side">
-          <h3 className="world-side-title">Party</h3>
-          <ul className="world-member-list">
-            {members.map((m) => {
-              const portrait = getClassPortrait(m.className);
-              return (
-                <li key={m.connectionId} className="world-member">
-                  <div className="town-portrait world-member-portrait">
-                    {portrait ? (
-                      <img className="town-portrait-img" src={portrait} alt={m.className} />
-                    ) : (
-                      <span className="town-portrait-placeholder">☉</span>
-                    )}
-                  </div>
-                  <div className="world-member-info">
-                    <span className={`world-member-name class-${m.className}`}>{m.characterName}</span>
-                    <span className="world-member-meta">Lv {m.level} {m.className}</span>
-                    <span className="world-member-meta">{m.displayName}</span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </aside>
-      </div>
-      <StashModal
-        onDeposit={onStashDeposit}
-        onWithdraw={onStashWithdraw}
-        onClose={onStashClose}
+    <div className="town-hub">
+      <h2 className="town-hub__title"><TypedText text={currentWorld.name} /></h2>
+      <TownView
+        onPortalReady={onPortalReady}
+        onPortalUnready={onPortalUnready}
+        onPortalEnter={onPortalEnter}
+        onInteract={onInteract}
+        onOpenCharacterPanel={onOpenCharacterPanel}
       />
-      <ShopModal
-        onBuy={onShopBuy}
-        onSell={onShopSell}
-        onReroll={onShopReroll}
-        onClose={onShopClose}
-      />
-      <CharacterModal
-        onEquipItem={onCharacterEquip}
-        onDropItem={onCharacterDrop}
-        onAllocateStat={onCharacterAllocateStat}
-        onClose={onCharacterClose}
-      />
+      <MenuConsole
+        className="town-party"
+        title="Party"
+        width="220px"
+        footer={<RelicButton size="sm" className="world-leave-btn" onClick={onLeaveWorld}>Leave World</RelicButton>}
+      >
+        <ul className="world-member-list">
+          {members.map((m) => {
+            const glyph = getParticipantGlyph({ type: 'player', className: m.className });
+            return (
+              <li key={m.connectionId} className="world-member">
+                <IconSocket size={24} title={m.className}>
+                  {glyph ? <img className="relic-socket__img" src={glyph} alt="" /> : <span className="relic-socket__glyph">{m.characterName.charAt(0)}</span>}
+                </IconSocket>
+                <div className="world-member-info">
+                  <span className={`world-member-name class-${m.className}`}>{m.characterName}</span>
+                  <span className="world-member-meta">Lv {m.level} · {m.className}</span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </MenuConsole>
+      <StashModal onDeposit={onStashDeposit} onWithdraw={onStashWithdraw} onClose={onStashClose} />
+      <ShopModal onBuy={onShopBuy} onSell={onShopSell} onReroll={onShopReroll} onClose={onShopClose} />
+      <CharacterModal onEquipItem={onCharacterEquip} onDropItem={onCharacterDrop} onAllocateStat={onCharacterAllocateStat} onClose={onCharacterClose} />
     </div>
   );
 }
