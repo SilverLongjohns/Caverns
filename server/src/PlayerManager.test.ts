@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PlayerManager } from './PlayerManager.js';
-import { STARTER_POTION, PROGRESSION_CONFIG } from '@caverns/shared';
+import { STARTER_POTION, PROGRESSION_CONFIG, getClassDefinition } from '@caverns/shared';
 
 describe('PlayerManager', () => {
   function createManager() {
@@ -107,8 +107,10 @@ describe('PlayerManager', () => {
     const pm = new PlayerManager();
     const player = pm.addPlayer('p1', 'Alice', 'room1', 'shadowblade');
     expect(player.className).toBe('shadowblade');
-    expect(player.maxHp).toBe(35);
-    expect(player.hp).toBe(35);
+    // Base stats come from the class definition (all classes share 50 HP since f5ddc54).
+    const { maxHp } = getClassDefinition('shadowblade')!.baseStats;
+    expect(player.maxHp).toBe(maxHp);
+    expect(player.hp).toBe(maxHp);
     expect(player.equipment.weapon?.id).toBe('shadowblade_twin_daggers');
     expect(player.equipment.offhand?.id).toBe('shadowblade_smoke_cloak');
   });

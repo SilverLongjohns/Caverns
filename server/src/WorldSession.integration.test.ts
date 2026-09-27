@@ -198,17 +198,14 @@ describe('WorldSession dungeon entry / return integration', () => {
     expect(session.memberCount()).toBe(4);
   });
 
-  it('beginDungeonEntry rejects requesters who are not on a portal or not ready', async () => {
-    // c1 not on portal
+  it('beginDungeonEntry requires the requester to be ready, wherever they stand', async () => {
+    // Since the town revamp (de348c7) entry is not gated on standing on the portal tile:
+    // requesters off the portal fall back to the town's portal.
     await session.addConnection(makeArgs('c1', { savedPos: { x: 6, y: 14 } }));
-    expect(session.beginDungeonEntry('c1').status).toBe('not_on_portal');
+    expect(session.beginDungeonEntry('c1').status).toBe('not_ready');
 
-    // c2 on portal but not ready
-    await session.addConnection(makeArgs('c2'));
-    expect(session.beginDungeonEntry('c2').status).toBe('not_ready');
-
-    // After ready, succeeds.
-    session.setReadyAtPortal('c2');
-    expect(session.beginDungeonEntry('c2').status).toBe('ok');
+    // After ready, succeeds from off the portal.
+    expect(session.setReadyAtPortal('c1')).toBe('ok');
+    expect(session.beginDungeonEntry('c1').status).toBe('ok');
   });
 });
