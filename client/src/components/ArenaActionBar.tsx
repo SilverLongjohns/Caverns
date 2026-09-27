@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import { getClassDefinition } from '@caverns/shared';
 import type { AbilityDefinition, ItemStats } from '@caverns/shared';
+import { RelicButton } from './relic/index.js';
+import { actionIconSrc } from '../ui/iconPaths.js';
 
 type ArenaActionMode =
   | { mode: 'idle' }
@@ -120,33 +122,33 @@ export function ArenaActionBar({
 
       {effectiveMode.mode === 'main' && (
         <>
-          <button className="arena-btn arena-btn-move" onClick={handleMoveClick}
+          <RelicButton className="arena-btn arena-btn-move" icon={actionIconSrc('move')} onClick={handleMoveClick}
             disabled={movementRemaining <= 0}>
             Move
-          </button>
-          <button className="arena-btn arena-btn-attack" onClick={handleAttackClick}
+          </RelicButton>
+          <RelicButton className="arena-btn arena-btn-attack" icon={actionIconSrc('attack')} onClick={handleAttackClick}
             disabled={actionTaken}>
             Attack
-          </button>
-          <button className="arena-btn arena-btn-defend" onClick={handleDefend}
+          </RelicButton>
+          <RelicButton className="arena-btn arena-btn-defend" icon={actionIconSrc('defend')} onClick={handleDefend}
             disabled={actionTaken}>
             Defend
-          </button>
-          <button className="arena-btn" onClick={() => setMode({ mode: 'abilities' })}
+          </RelicButton>
+          <RelicButton className="arena-btn" icon={actionIconSrc('abilities')} onClick={() => setMode({ mode: 'abilities' })}
             disabled={actionTaken || activeAbilities.length === 0}>
             Abilities
-          </button>
-          <button className="arena-btn" onClick={() => setMode({ mode: 'items' })}
+          </RelicButton>
+          <RelicButton className="arena-btn" icon={actionIconSrc('items')} onClick={() => setMode({ mode: 'items' })}
             disabled={actionTaken}>
             Items
-          </button>
-          <button className="arena-btn" onClick={handleFlee}
+          </RelicButton>
+          <RelicButton className="arena-btn" icon={actionIconSrc('flee')} onClick={handleFlee}
             disabled={!canFlee || actionTaken}>
             Flee
-          </button>
-          <button className="arena-btn arena-btn-end" onClick={handleEndTurn}>
+          </RelicButton>
+          <RelicButton className="arena-btn arena-btn-end" icon={actionIconSrc('end_turn')} hot={actionTaken && movementRemaining <= 0} onClick={handleEndTurn}>
             End Turn
-          </button>
+          </RelicButton>
           <span className="arena-mp-counter">Move: {movementRemaining}</span>
         </>
       )}
@@ -154,7 +156,7 @@ export function ArenaActionBar({
       {effectiveMode.mode === 'move' && (
         <>
           <span className="waiting-text">Click a highlighted tile to move...</span>
-          <button className="arena-btn" onClick={handleBackToMain}>Back</button>
+          <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
           <span className="arena-mp-counter">Move: {movementRemaining}</span>
         </>
       )}
@@ -162,7 +164,7 @@ export function ArenaActionBar({
       {effectiveMode.mode === 'target_attack' && (
         <>
           <span className="waiting-text">Click an adjacent enemy to attack...</span>
-          <button className="arena-btn" onClick={handleBackToMain}>Back</button>
+          <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
         </>
       )}
 
@@ -184,7 +186,7 @@ export function ArenaActionBar({
               );
             })}
           </div>
-          <button className="arena-btn" onClick={handleBackToMain}>Back</button>
+          <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
         </>
       )}
 
@@ -196,7 +198,7 @@ export function ArenaActionBar({
               : `Click a target for ${effectiveMode.ability.name}...`
             }
           </span>
-          <button className="arena-btn" onClick={handleBackToMain}>Back</button>
+          <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
         </>
       )}
 
@@ -212,14 +214,14 @@ export function ArenaActionBar({
               ) : null
             )}
           </div>
-          <button className="arena-btn" onClick={handleBackToMain}>Back</button>
+          <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
         </>
       )}
 
       {effectiveMode.mode === 'target_item' && (
         <>
           <span className="waiting-text">Click an adjacent enemy to use item...</span>
-          <button className="arena-btn" onClick={handleBackToMain}>Back</button>
+          <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
         </>
       )}
     </div>

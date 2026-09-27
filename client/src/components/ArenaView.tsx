@@ -3,6 +3,7 @@ import { useGameStore } from '../store/gameStore.js';
 import { ArenaGrid } from './ArenaGrid.js';
 import { TurnOrderBar } from './TurnOrderBar.js';
 import { ArenaUnitPanel } from './ArenaUnitPanel.js';
+import { RelicPanel } from './relic/index.js';
 import { ArenaActionBar } from './ArenaActionBar.js';
 import type { AbilityDefinition } from '@caverns/shared';
 
@@ -384,24 +385,26 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
         currentTurnId={activeCombat.currentTurnId}
         roundNumber={activeCombat.roundNumber}
       />
-      <div className="arena-main">
-        <ArenaGrid
-          grid={arenaGrid}
-          positions={arenaPositions}
-          participants={activeCombat.participants}
-          playerId={playerId}
-          movementRange={interactionMode === 'move' ? movementRange : null}
-          isTargeting={interactionMode === 'attack' || interactionMode === 'target_ability_single' || interactionMode === 'target_ability_area'}
-          onTileClick={handleTileClick}
-          onTileHover={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHover : undefined}
-          onTileHoverEnd={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHoverEnd : undefined}
-          tileHighlights={tileHighlights}
-          ghostEntity={interactionMode === 'move' ? ghostPos : null}
-          animatingId={animatingId}
-          animPath={animPath}
-        />
-        <ArenaUnitPanel participants={activeCombat.participants} />
-      </div>
+      <RelicPanel className="arena-screen">
+        <div className="arena-main">
+          <ArenaGrid
+            grid={arenaGrid}
+            positions={arenaPositions}
+            participants={activeCombat.participants}
+            playerId={playerId}
+            movementRange={interactionMode === 'move' ? movementRange : null}
+            isTargeting={interactionMode === 'attack' || interactionMode === 'target_ability_single' || interactionMode === 'target_ability_area'}
+            onTileClick={handleTileClick}
+            onTileHover={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHover : undefined}
+            onTileHoverEnd={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHoverEnd : undefined}
+            tileHighlights={tileHighlights}
+            ghostEntity={interactionMode === 'move' ? ghostPos : null}
+            animatingId={animatingId}
+            animPath={animPath}
+          />
+          <ArenaUnitPanel participants={activeCombat.participants} />
+        </div>
+      </RelicPanel>
       <ArenaActionBar
         isMyTurn={isMyTurn}
         actionTaken={arenaActionTaken}

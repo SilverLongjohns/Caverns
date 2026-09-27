@@ -215,3 +215,19 @@
 .action-bar .loot-buttons { display: flex; gap: 8px; flex: none; }
 .action-bar .puzzle-options, .action-bar .interact-actions, .action-bar .revive-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .relic-btn--hot:disabled { opacity: 0.85; }
+
+/* === Phase 1 screens: arena === */
+.arena-view { gap: 4px; background: transparent; }
+.arena-turn-order { font-family: inherit; flex-wrap: wrap; gap: 10px; padding: 4px 10px; border-bottom: none; }
+.turn-unit { display: inline-flex; align-items: center; gap: 4px; }
+.turn-unit .turn-name { font-size: 11px; }
+.turn-unit.turn-active .turn-name { color: var(--relic-amber-hot); }
+.arena-screen { flex: 1; }
+.arena-screen .arena-main { flex: 1; min-height: 0; }
+/* The bezel costs the grid 48px of width; the unit panel gives it back (200px -> 152px). */
+.arena-screen .arena-unit-panel { width: 152px; border-left: 1px dashed var(--relic-divider); padding: 6px 8px; }
+.arena-action-bar {
+  font-family: inherit; flex-wrap: wrap; border-top: none;
+  background: linear-gradient(#2a1c10, #1a120a);
+  box-shadow: inset 0 2px 0 var(--relic-bronze-hi), 0 0 0 1px var(--relic-bronze);
+}

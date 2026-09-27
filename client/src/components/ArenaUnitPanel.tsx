@@ -1,21 +1,12 @@
 import type { CombatParticipant } from '@caverns/shared';
+import { Gauge } from './relic/index.js';
 
 interface ArenaUnitPanelProps {
   participants: CombatParticipant[];
 }
 
 function UnitHpBar({ hp, maxHp }: { hp: number; maxHp: number }) {
-  const blocks = 10;
-  const filled = Math.round((hp / maxHp) * blocks);
-  const percent = hp / maxHp;
-  const colorClass = percent > 0.5 ? 'hp-green' : percent > 0.25 ? 'hp-yellow' : 'hp-red';
-  return (
-    <span className="arena-hp-bar">
-      <span className={`arena-hp-filled ${colorClass}`}>{'\u2588'.repeat(filled)}</span>
-      <span className="arena-hp-empty">{'\u2591'.repeat(blocks - filled)}</span>
-      {' '}<span className="arena-hp-text">{hp}/{maxHp}</span>
-    </span>
-  );
+  return <Gauge kind="hp" size="sm" value={hp} max={maxHp} text={`${hp}/${maxHp}`} />;
 }
 
 export function ArenaUnitPanel({ participants }: ArenaUnitPanelProps) {
