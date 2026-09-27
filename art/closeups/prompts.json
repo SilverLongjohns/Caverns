@@ -1,0 +1,82 @@
+[
+ [
+  "vanguard-attack",
+  "templar",
+  "full-body action pose, side view facing right: Templar (A plated bulwark who pulls fire and holds the line) lunging into a strike, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "vanguard-hurt",
+  "templar",
+  "full-body pose, side view facing right: Templar (A plated bulwark who pulls fire and holds the line) staggering back from a hit, bracing, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "ability-shield_wall",
+  "templar",
+  "full-body action pose, side view facing right: Templar using \"Null Ward\" \u2014 Taunt all enemies for 2 turns. Gain +50% defense, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "ability-rally",
+  "templar",
+  "full-body action pose, side view facing right: Templar using \"Banner Pulse\" \u2014 All allies gain +3 defense for 2 turns, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "shadowblade-attack",
+  "phaseknife",
+  "full-body action pose, side view facing right: Phaseknife (A blink-footed killer who slips in, opens a throat, and is gone) lunging into a strike, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "shadowblade-hurt",
+  "phaseknife",
+  "full-body pose, side view facing right: Phaseknife (A blink-footed killer who slips in, opens a throat, and is gone) staggering back from a hit, bracing, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "ability-backstab",
+  "phaseknife",
+  "full-body action pose, side view facing right: Phaseknife using \"Phase Strike\" \u2014 Deal 1.5x damage, bypass defense. Deals 2.5x when flanking with an ally, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "cleric-attack",
+  "suturist",
+  "full-body action pose, side view facing right: Suturist (A field surgeon who knits flesh and keeps the dying upright) lunging into a strike, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "cleric-hurt",
+  "suturist",
+  "full-body pose, side view facing right: Suturist (A field surgeon who knits flesh and keeps the dying upright) staggering back from a hit, bracing, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "ability-heal",
+  "suturist",
+  "full-body action pose, side view facing right: Suturist using \"Suture\" \u2014 Restore 30% of target ally's max HP, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "ability-blessed_ward",
+  "suturist",
+  "full-body action pose, side view facing right: Suturist using \"Crash Graft\" \u2014 Target ally cannot be downed for 1 turn, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "ability-bone_spike",
+  "suturist",
+  "full-body action pose, side view facing right: Suturist using \"Bone Spike\" \u2014 Hurl a shard of sharpened bone at a distant enemy, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "artificer-attack",
+  "junk_prophet",
+  "full-body action pose, side view facing right: Junk Prophet (A ragged tinkerer whose scrap tools break enemy nerve) lunging into a strike, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "artificer-hurt",
+  "junk_prophet",
+  "full-body pose, side view facing right: Junk Prophet (A ragged tinkerer whose scrap tools break enemy nerve) staggering back from a hit, bracing, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "ability-smoke_bomb",
+  "junk_prophet",
+  "full-body action pose, side view facing right: Junk Prophet using \"Static Hymn\" \u2014 Disrupt all enemies in an area, skipping their next turn, dynamic, strange post-collapse retro-future relic tech"
+ ],
+ [
+  "ability-scrap_volley",
+  "junk_prophet",
+  "full-body action pose, side view facing right: Junk Prophet using \"Scrap Volley\" \u2014 Lob a cluster of jagged scrap into an area, dynamic, strange post-collapse retro-future relic tech"
+ ]
+]

@@ -14,6 +14,7 @@
         "energyCost": 15,
         "targetType": "none",
         "passive": false,
+        "closeUp": { "art": "/closeups/abilities/shield_wall.png" },
         "effects": [
           { "type": "taunt", "duration": 2 },
           { "type": "apply_buff", "buffType": "defense_multiply", "duration": 2, "value": 1.5, "target": "self" }
@@ -26,6 +27,7 @@
         "energyCost": 20,
         "targetType": "none",
         "passive": false,
+        "closeUp": { "art": "/closeups/abilities/rally.png" },
         "effects": [
           { "type": "apply_buff", "buffType": "defense_flat", "duration": 2, "value": 3, "target": "all_allies" }
         ]
@@ -48,6 +50,7 @@
         "targetType": "enemy",
         "flankingMultiplier": 2.5,
         "passive": false,
+        "closeUp": { "art": "/closeups/abilities/backstab.png" },
         "effects": [
           { "type": "deal_damage", "multiplier": 1.5, "ignoreDefense": true }
         ]
@@ -81,6 +84,7 @@
         "energyCost": 10,
         "targetType": "ally",
         "passive": false,
+        "closeUp": { "art": "/closeups/abilities/heal.png" },
         "effects": [
           { "type": "heal", "percentMaxHp": 0.3 }
         ]
@@ -92,6 +96,7 @@
         "energyCost": 20,
         "targetType": "ally",
         "passive": false,
+        "closeUp": { "art": "/closeups/abilities/blessed_ward.png" },
         "effects": [
           { "type": "prevent_down", "duration": 1 }
         ]
@@ -104,6 +109,7 @@
         "targetType": "enemy",
         "range": 6,
         "passive": false,
+        "closeUp": { "art": "/closeups/abilities/bone_spike.png" },
         "effects": [
           { "type": "deal_damage", "multiplier": 1.0, "ignoreDefense": false }
         ]
@@ -127,6 +133,7 @@
         "range": 5,
         "areaRadius": 1,
         "passive": false,
+        "closeUp": { "art": "/closeups/abilities/smoke_bomb.png" },
         "effects": [
           { "type": "skip_turn", "duration": 1 }
         ]
@@ -140,6 +147,7 @@
         "range": 5,
         "areaRadius": 1,
         "passive": false,
+        "closeUp": { "art": "/closeups/abilities/scrap_volley.png" },
         "effects": [
           { "type": "deal_damage", "multiplier": 0.5, "ignoreDefense": false }
         ]

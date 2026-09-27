@@ -1,0 +1,141 @@
+{
+ "vanguard-attack": {
+  "index": 2,
+  "ref": "templar",
+  "prompt": "the SAME character as the reference image \u2014 identical helmet, armour, cowl, cloak and shield and colours \u2014 full-body, side view facing right, lunging forward into a heavy strike, weight on the front foot, dynamic, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-vanguard-attack_2.png"
+ },
+ "vanguard-hurt": {
+  "index": 3,
+  "ref": "templar",
+  "prompt": "the SAME character as the reference image \u2014 identical helmet, armour, cowl, cloak and shield and colours \u2014 full-body, side view facing right, HURT: knocked backwards off-balance by a blow, torso bent, head snapped back, one arm flung out, clearly in pain, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-vanguard-hurt_3.png"
+ },
+ "ability-shield_wall": {
+  "job_id": "d389e2bc-59f6-4786-9004-006b0f4a5f77",
+  "index": 0,
+  "ref": "templar",
+  "prompt": "the SAME character as the reference image \u2014 identical helmet, armour, cowl, cloak and shield and colours \u2014 full-body, side view facing right, performing \"Null Ward\": bracing defiantly, drawing enemy attention, raising a glowing protective aura around themselves, dynamic action pose, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-ability-shield_wall_0.png"
+ },
+ "ability-rally": {
+  "job_id": "3951de11-8297-4687-96c0-601a524058fd",
+  "index": 3,
+  "ref": "templar",
+  "prompt": "the SAME character as the reference image \u2014 identical helmet, armour, cowl, cloak and shield and colours \u2014 full-body, side view facing right, performing \"Banner Pulse\": raising a glowing protective aura around themselves, dynamic action pose, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-ability-rally_3.png"
+ },
+ "shadowblade-attack": {
+  "job_id": "62d1f7af-9652-4776-8d7f-832840afd214",
+  "index": 0,
+  "ref": "phaseknife",
+  "prompt": "the SAME character as the reference image \u2014 identical hood, visor, cloak and armour and colours \u2014 full-body, side view facing right, lunging forward into a heavy strike, weight on the front foot, dynamic, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-shadowblade-attack_0.png"
+ },
+ "shadowblade-hurt": {
+  "job_id": "abb5a013-99c0-402a-961a-b0a4d293b8f4",
+  "index": 0,
+  "ref": "phaseknife",
+  "prompt": "full-body pose, side view facing right: Phaseknife (A blink-footed killer who slips in, opens a throat, and is gone) staggering back from a hit, bracing, strange post-collapse retro-future relic tech",
+  "file": "raw/shadowblade-hurt_0.png",
+  "version": 1
+ },
+ "ability-backstab": {
+  "job_id": "4ecc181b-2f06-4ff3-9957-dff08299eaec",
+  "index": 0,
+  "ref": "phaseknife",
+  "prompt": "full-body action pose, side view facing right: Phaseknife using \"Phase Strike\" \u2014 Deal 1.5x damage, bypass defense. Deals 2.5x when flanking with an ally, dynamic, strange post-collapse retro-future relic tech",
+  "file": "raw/ability-backstab_0.png",
+  "version": 1
+ },
+ "cleric-attack": {
+  "job_id": "fefd1d00-c48f-4242-8c88-8031681a706e",
+  "index": 0,
+  "ref": "suturist",
+  "prompt": "the SAME character as the reference image \u2014 identical hood, smooth visor face-mask, flowing orange cape and teal robes and colours \u2014 full-body head to boots, small in frame with space around, side view facing right, leaping forward mid-air swinging a large jagged bone saw overhead in a big downward arc, motion smear on the blade, cape flaring out behind, fierce dynamic attack, no text, no letters, no symbols written",
+  "file": "raw/v3-cleric-attack_0.png",
+  "version": 3,
+  "identity_ref": true
+ },
+ "cleric-hurt": {
+  "job_id": "8e7cc5c2-aa51-46d2-adc7-c75a982155b2",
+  "index": 2,
+  "ref": "suturist",
+  "prompt": "full-body pose, side view facing right: Suturist (A field surgeon who knits flesh and keeps the dying upright) staggering back from a hit, bracing, strange post-collapse retro-future relic tech",
+  "file": "raw/cleric-hurt_2.png",
+  "version": 1
+ },
+ "ability-heal": {
+  "job_id": "c350c21a-9e4f-43f8-8302-430de0ed11b3",
+  "index": 0,
+  "ref": "suturist",
+  "prompt": "the SAME character as the reference image \u2014 identical hood, mask, flowing cape and robes and colours \u2014 full-body, side view facing right, performing \"Suture\": channelling a soft healing light toward an unseen ally, dynamic action pose, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-ability-heal_0.png"
+ },
+ "ability-blessed_ward": {
+  "job_id": "c943e18d-562b-4cbe-937c-b4b0b1fb0493",
+  "index": 2,
+  "ref": "suturist",
+  "prompt": "full-body action pose, side view facing right: Suturist using \"Crash Graft\" \u2014 Target ally cannot be downed for 1 turn, dynamic, strange post-collapse retro-future relic tech",
+  "file": "raw/v2-ability-blessed_ward_2.png",
+  "version": 2,
+  "identity_ref": true
+ },
+ "ability-bone_spike": {
+  "job_id": "4607626c-0c2f-4d54-86ca-1bb208faba59",
+  "index": 1,
+  "ref": "suturist",
+  "prompt": "full-body action pose, side view facing right: Suturist using \"Bone Spike\" \u2014 Hurl a shard of sharpened bone at a distant enemy, dynamic, strange post-collapse retro-future relic tech",
+  "file": "raw/v2-ability-bone_spike_1.png",
+  "version": 2,
+  "identity_ref": true
+ },
+ "artificer-attack": {
+  "job_id": "89799c8f-04ac-4f06-a5ae-9961cc14574a",
+  "index": 2,
+  "ref": "junk_prophet",
+  "prompt": "the SAME character as the reference image \u2014 identical hood, mask, ragged robes and scrap tools and colours \u2014 full-body, side view facing right, lunging forward into a heavy strike, weight on the front foot, dynamic, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-artificer-attack_2.png"
+ },
+ "artificer-hurt": {
+  "job_id": "dcec7e17-8455-4e5d-b2a7-c5c74eb62f42",
+  "index": 3,
+  "ref": "junk_prophet",
+  "prompt": "the SAME character as the reference image \u2014 identical hood, mask, ragged robes and scrap tools and colours \u2014 full-body, side view facing right, HURT: knocked backwards off-balance by a blow, torso bent, head snapped back, one arm flung out, clearly in pain, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-artificer-hurt_3.png"
+ },
+ "ability-smoke_bomb": {
+  "job_id": "b9b313ad-1296-43af-955d-94986290f15b",
+  "index": 2,
+  "ref": "junk_prophet",
+  "prompt": "the SAME character as the reference image \u2014 identical hood, mask, ragged robes and scrap tools and colours \u2014 full-body, side view facing right, performing \"Static Hymn\": unleashing a disorienting crackling burst of energy at a group of foes to the right, area effect, dynamic action pose, no text, no letters, no symbols written",
+  "version": 3,
+  "identity_ref": true,
+  "file": "raw/v3-ability-smoke_bomb_2.png"
+ },
+ "ability-scrap_volley": {
+  "job_id": "e9d7ea99-f6aa-45f6-98c4-9eb4e51d1a30",
+  "index": 3,
+  "ref": "junk_prophet",
+  "prompt": "the SAME character as the reference image \u2014 identical hood, mask, ragged robes and scrap tools and colours \u2014 full-body, side view facing right, performing \"Scrap Volley\": attacking with their weapon at a group of foes to the right, area effect, dynamic action pose, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/v2-ability-scrap_volley_3.png"
+ }
+}
