@@ -137,5 +137,105 @@
   "version": 2,
   "identity_ref": true,
   "file": "raw/v2-ability-scrap_volley_3.png"
+ },
+ "mob-tunnel_rat": {
+  "job_id": "06d58caf-ddb1-4ad1-825c-3a0b5d791356",
+  "index": 0,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/tunnel_rat.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "probe B (Qud-weird), see mob-jobs-probe.txt",
+  "file": "raw/mob-Q-tunnel_rat_0L.png"
+ },
+ "mob-cave_bat_swarm": {
+  "job_id": "cfa9cefb-6d46-44df-b653-ae25abc7229f",
+  "index": 0,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/cave_bat_swarm.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Cave Bat Swarm: A screeching cloud of leathery wings and tiny teeth. They swirl around you, biting from every angle. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse retro-future world: grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-cave_bat_swarm_0L.png"
+ },
+ "mob-warren_spider": {
+  "job_id": "deea06f9-0abe-4efb-987b-c705d0578db1",
+  "index": 2,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/warren_spider.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Warren Spider: A pale spider as big as a dinner plate. Its web lines the ceiling, and it drops without warning. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse retro-future world: grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-warren_spider_2L.png"
+ },
+ "mob-goblin_scrapper": {
+  "job_id": "024b608e-2747-42e4-8719-dbefd37fec52",
+  "index": 2,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/goblin_scrapper.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "probe B (Qud-weird), see mob-jobs-probe.txt",
+  "file": "raw/mob-Q-goblin_scrapper_2L.png"
+ },
+ "mob-rubble_slime": {
+  "job_id": "7ddea5af-2dc8-43d2-b1f5-c883c3e6fed6",
+  "index": 3,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/rubble_slime.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Rubble Slime: A quivering blob of grey ooze studded with pebbles and bone fragments. It oozes toward you with mindless hunger. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse retro-future world: grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-rubble_slime_3L.png"
+ },
+ "mob-feral_miner": {
+  "job_id": "1e582fd0-fdfc-408f-9434-9c91f8fa5a2e",
+  "index": 0,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/feral_miner.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Feral Miner: A wild-eyed man in tattered overalls, swinging a pickaxe. Whatever happened down here broke his mind long ago. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse retro-future world: grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-feral_miner_0L.png"
+ },
+ "mob-alpha_wolf": {
+  "job_id": "b63e3efe-ba4d-4cbf-adc4-03fa1640c60d",
+  "index": 1,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/alpha_wolf.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Alpha Wolf: A massive grey wolf with scars across its muzzle. Its pack watches from the shadows, but it attacks alone. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse retro-future world: grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-alpha_wolf_1L.png"
+ },
+ "mob-bandit_captain": {
+  "job_id": "144a9705-c596-49b5-8b47-adfcbf41d5ce",
+  "index": 2,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/bandit_captain.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "probe B (Qud-weird), see mob-jobs-probe.txt",
+  "file": "raw/mob-Q-bandit_captain_2L.png"
+ },
+ "mob-cave_troll": {
+  "job_id": "0f2b1a82-95d8-461c-85d3-1b61bc0631cf",
+  "index": 3,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/cave_troll.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Cave Troll: A hunched brute with skin like wet stone. It drags a boulder behind it like a toy, grunting with each labored step. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse retro-future world: grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-cave_troll_3L.png"
+ },
+ "mob-the_rat_king": {
+  "job_id": "88fcd028-b543-482e-9a26-879f5eba8568",
+  "index": 0,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/the_rat_king.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "The Rat King: A monstrous tangle of dozens of rats fused at the tail, grown to obscene size. Hundreds of eyes glare with unified malice, and the mass moves with horrifying coordination. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse retro-future world: grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-the_rat_king_0L.png"
  }
 }
