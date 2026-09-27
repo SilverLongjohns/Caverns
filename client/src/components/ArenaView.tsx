@@ -309,6 +309,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
     if (interactionMode === 'move') {
       if (ghostPos) {
         onArenaMove(ghostPos.x, ghostPos.y);
+        setInteractionMode('none');
       }
       return;
     }
@@ -407,6 +408,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
         actionTaken={arenaActionTaken}
         movementRemaining={arenaMovementRemaining}
         canFlee={canFlee}
+        mapTargeting={interactionMode !== 'none'}
         onMoveMode={() => setInteractionMode('move')}
         onCancelMove={() => setInteractionMode('none')}
         onAttackMode={() => setInteractionMode('attack')}

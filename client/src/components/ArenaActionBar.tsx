@@ -4,22 +4,15 @@ import { getClassDefinition } from '@caverns/shared';
 import type { AbilityDefinition, ItemStats } from '@caverns/shared';
 import { RelicButton } from './relic/index.js';
 import { actionIconSrc } from '../ui/iconPaths.js';
-
-type ArenaActionMode =
-  | { mode: 'idle' }
-  | { mode: 'main' }
-  | { mode: 'move' }
-  | { mode: 'target_attack' }
-  | { mode: 'items' }
-  | { mode: 'target_item'; itemIndex: number }
-  | { mode: 'abilities' }
-  | { mode: 'target_ability'; ability: AbilityDefinition };
+import { effectiveArenaBarMode, type ArenaActionMode } from '../ui/arenaBarMode.js';
 
 interface ArenaActionBarProps {
   isMyTurn: boolean;
   actionTaken: boolean;
   movementRemaining: number;
   canFlee: boolean;
+  /** True while ArenaView is waiting on a map click (move/attack/ability targeting). */
+  mapTargeting: boolean;
   onMoveMode: () => void;
   onCancelMove: () => void;
   onAttackMode: () => void;
@@ -40,7 +33,7 @@ function formatItemStat(stats: ItemStats): string {
 }
 
 export function ArenaActionBar({
-  isMyTurn, actionTaken, movementRemaining, canFlee,
+  isMyTurn, actionTaken, movementRemaining, canFlee, mapTargeting,
   onMoveMode, onCancelMove, onAttackMode, onCancelAttack,
   onDefend, onFlee, onEndTurn, onUseItem,
   onAbilityMode, onCancelAbility, onUseAbility,
@@ -48,10 +41,7 @@ export function ArenaActionBar({
   const player = useGameStore((s) => s.players[s.playerId]);
   const [mode, setMode] = useState<ArenaActionMode>({ mode: 'idle' });
 
-  const effectiveMode: ArenaActionMode =
-    !isMyTurn ? { mode: 'idle' } :
-    mode.mode === 'idle' ? { mode: 'main' } :
-    mode;
+  const effectiveMode = effectiveArenaBarMode(mode, isMyTurn, mapTargeting);
 
   const classDef = player ? getClassDefinition(player.className) : null;
   const activeAbilities = classDef?.abilities.filter(a => !a.passive) ?? [];
