@@ -377,5 +377,75 @@
   "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
   "prompt": "The Prismatic Colossus: A creature of living crystal that towers to the ceiling. Light from every source converges on it, creating a blinding aura of refracted color. A towering humanoid giant of faceted crystal, broad and monolithic, with a crown of prismatic shards and a blinding aura of refracted colour, not spider-like. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable \u2014 no gears, no machinery, no brass or metal \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
   "file": "raw/mob-C2-prismatic_colossus_3L.png"
+ },
+ "mob-drowned_shambler": {
+  "job_id": "87781821-7ff2-42cc-a378-a8bb2db41592",
+  "index": 1,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/drowned_shambler.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Drowned Shambler: A waterlogged corpse that still moves. Water pours from its mouth as it lurches forward. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-drowned_shambler_1L.png"
+ },
+ "mob-cave_eel": {
+  "job_id": "1e98eb82-5977-4d6d-bc05-04f1c431ed5d",
+  "index": 2,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/cave_eel.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Cave Eel: A blind eel as long as a man, with rows of needle teeth. It senses vibrations in the water with terrifying accuracy. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-cave_eel_2L.png"
+ },
+ "mob-tide_crawler": {
+  "job_id": "bf20de54-ebbb-4092-aef2-5f0072783b05",
+  "index": 2,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/tide_crawler.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Tide Crawler: A massive crustacean with barnacle-encrusted claws. It sidesteps through the flooded tunnels with surprising speed. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-tide_crawler_2L.png"
+ },
+ "mob-salt_wraith": {
+  "job_id": "a505f192-668c-424c-842d-76fe0d72c6a3",
+  "index": 3,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/salt_wraith.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Salt Wraith: A translucent figure made of salt-crusted water. It flows through cracks and reforms to strike. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-salt_wraith_3L.png"
+ },
+ "mob-abyssal_angler": {
+  "job_id": "4da75d65-d9bf-49fa-9ef2-ba00506ff8b7",
+  "index": 1,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/abyssal_angler.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Abyssal Angler: A hulking fish-like creature with a bioluminescent lure. Its jaw unhinges to swallow prey whole. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-abyssal_angler_1L.png"
+ },
+ "mob-kraken_spawn": {
+  "job_id": "0f4eede3-05ec-4525-b4f8-5d208da475cc",
+  "index": 0,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/kraken_spawn.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Kraken Spawn: A writhing mass of tentacles emerging from the dark water. Only a fragment of something much larger. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-kraken_spawn_0L.png"
+ },
+ "mob-the_drowned_leviathan": {
+  "job_id": "f2b47b90-a1b6-46b0-930e-a26bb627ec6e",
+  "index": 0,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/the_drowned_leviathan.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "The Drowned Leviathan: An ancient sea creature entombed in the flooded depths. It fills the chamber, tentacles reaching from wall to wall, a single enormous eye fixing on you with cold intelligence. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-the_drowned_leviathan_0L.png"
  }
 }
