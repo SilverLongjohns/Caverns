@@ -28,7 +28,7 @@ const [vw, vh] = opt('viewport', '1920x1080').split('x').map(Number);
 // Mirrors client/src/intro/timeline.ts (UNDERLAY_T0 = 8, DURATION = 9); this script can't import TS.
 const ALIGN_T = 7.99;
 const SMOKE_T = 8.99;
-const HIDE_UI = '.lobby-subtitle,.dos-prompt-label,.dos-input,.lobby-start,.intro-replay,.auth-error{visibility:hidden!important}';
+const HIDE_UI = '.menu-console,.lobby-subtitle,.dos-prompt-label,.dos-input,.lobby-start,.intro-replay,.auth-error{visibility:hidden!important}';
 const FREEZE = '*,*::before,*::after{animation:none!important;transition:none!important}.music-player{display:none!important}';
 
 async function withPage(fn) {

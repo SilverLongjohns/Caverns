@@ -24,6 +24,8 @@ import { SandboxBar } from './components/SandboxBar.js';
 import { getSandboxRequest } from './sandbox/sandboxMode.js';
 import { IntroCutscene } from './intro/IntroCutscene.js';
 import { useIntroStore } from './intro/introStore.js';
+import { MenuShell, ScreenTransition, MenuConsole, TypedText } from './components/menu/index.js';
+import { RelicButton } from './components/relic/index.js';
 
 export function App() {
   const wsRef = useWebSocket();
@@ -72,19 +74,16 @@ export function App() {
       content = introActive ? (
         <LoginScreen onLogin={actions.login} />
       ) : (
-        <div className="screen-center">
-          <h1>Caverns</h1>
-          <p>Connecting to server...</p>
-        </div>
+        <MenuConsole className="status-console" width="380px">
+          <TypedText text="Connecting to server..." cursor />
+        </MenuConsole>
       );
       break;
     case 'generating':
       content = (
-        <div className="screen-center">
-          <h1>Caverns</h1>
-          <p className="generation-text">The caverns shift and groan...</p>
-          <div className="generation-spinner" />
-        </div>
+        <MenuConsole className="status-console" width="420px">
+          <TypedText text="The caverns shift and groan..." cursor />
+        </MenuConsole>
       );
       break;
     case 'login':
@@ -126,20 +125,22 @@ export function App() {
       break;
     case 'game_over':
       content = (
-        <div className="screen-center">
-          <h1>{gameOver?.result === 'victory' ? 'Victory!' : 'Wiped...'}</h1>
+        <MenuConsole
+          className="status-console game-over-console"
+          width="440px"
+          footer={
+            <RelicButton className="lobby-return-btn" hot onClick={() => useGameStore.setState({ gameOver: null })}>
+              Return to Overworld
+            </RelicButton>
+          }
+        >
+          <h2 className="game-over-title"><TypedText text={gameOver?.result === 'victory' ? 'Victory!' : 'Wiped...'} /></h2>
           <p>
             {gameOver?.result === 'victory'
               ? 'The dungeon has been conquered!'
               : 'Your party has fallen in the darkness...'}
           </p>
-          <button
-            className="lobby-return-btn"
-            onClick={() => useGameStore.setState({ gameOver: null })}
-          >
-            Return to Overworld
-          </button>
-        </div>
+        </MenuConsole>
       );
       break;
     case 'in_dungeon':
@@ -198,6 +199,14 @@ export function App() {
         </div>
       );
       break;
+  }
+
+  if (currentView !== 'in_dungeon') {
+    content = (
+      <MenuShell backdrop={currentView === 'in_world' ? 'town' : 'cave'}>
+        <ScreenTransition screenKey={currentView}>{content}</ScreenTransition>
+      </MenuShell>
+    );
   }
 
   return (

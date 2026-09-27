@@ -58,3 +58,11 @@
   .menu-console__lamp, .menu-console__scanroll, .menu-console__glitch, .typed-text__cursor { animation: none; }
   .menu-console__scanroll, .menu-console__glitch { display: none; }
 }
+
+/* Login + status consoles */
+.menu-shell--cave .lobby-logo { margin-bottom: 14px; }
+.login-console .menu-console__body { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.login-actions { margin-top: 6px; }
+.status-console .menu-console__body { text-align: center; padding: 18px 16px; color: var(--relic-amber); }
+.game-over-title { color: var(--relic-amber); font-weight: normal; margin-bottom: 6px; }
+.game-over-console .menu-console__footer { justify-content: center; }
