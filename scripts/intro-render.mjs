@@ -109,9 +109,13 @@ async function introShot(t, css, noGrain = false) {
 /** Plain login page screenshot, plus the eye rects (padded for their glow) in page px. */
 async function domShot(css) {
   return withPage(async (page) => {
-    await page.addInitScript(() => localStorage.setItem('caverns_intro_seen', '1'));
     await page.goto(`${base}/`);
     await page.waitForSelector('.lobby-logo');
+    // The intro plays on every load: Escape at its gate finishes it outright.
+    for (let i = 0; i < 40 && (await page.locator('.intro-root').count()) > 0; i++) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+    }
     await page.addStyleTag({ content: css });
     await page.waitForTimeout(800);
     const rects = (sel, pad) => page.$$eval(sel, (els, pad) => els.map((e) => {
