@@ -21,6 +21,8 @@ import { CombatIntro } from './components/CombatIntro.js';
 import { MusicPlayer } from './components/MusicPlayer.js';
 import { SandboxBar } from './components/SandboxBar.js';
 import { getSandboxRequest } from './sandbox/sandboxMode.js';
+import { IntroCutscene } from './intro/IntroCutscene.js';
+import { useIntroStore } from './intro/introStore.js';
 
 export function App() {
   const wsRef = useWebSocket();
@@ -35,6 +37,7 @@ export function App() {
   const currentRoomId = useGameStore((s) => s.currentRoomId);
   const levelUpGlow = useGameStore((s) => s.levelUpGlow);
   const arenaIntro = useGameStore((s) => s.arenaIntro);
+  const introActive = useIntroStore((s) => s.active);
 
   const inExploration = connectionStatus === 'in_game' && !gameOver && !activeCombat;
   const currentRoom = rooms[currentRoomId];
@@ -64,7 +67,10 @@ export function App() {
   let content;
   switch (currentView) {
     case 'connecting':
-      content = (
+      // During the intro the cavern must already exist underneath for the handoff.
+      content = introActive ? (
+        <LoginScreen onLogin={actions.login} />
+      ) : (
         <div className="screen-center">
           <h1>Caverns</h1>
           <p>Connecting to server...</p>
@@ -204,6 +210,7 @@ export function App() {
         />
       )}
       {arenaIntro && <CombatIntro enemyNames={arenaIntro.enemyNames} />}
+      {introActive && <IntroCutscene />}
       <MusicPlayer />
       <div className="crt-overlay" />
       {levelUpGlow && <div className="level-up-glow" />}

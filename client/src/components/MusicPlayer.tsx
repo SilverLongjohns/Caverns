@@ -1,7 +1,10 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { audioEngine } from '../audio/audioEngine.js';
+import { pickTrack } from '../audio/musicTrack.js';
+import { useGameStore, selectCurrentView } from '../store/gameStore.js';
+import { useIntroStore } from '../intro/introStore.js';
 
 const STORAGE_KEY = 'caverns_music_volume';
-const TRACK_URL = '/audio/gasket_maples.mp3';
 
 function loadVolume(): number {
   try {
@@ -12,50 +15,38 @@ function loadVolume(): number {
 }
 
 export function MusicPlayer() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [volume, setVolume] = useState(loadVolume);
   const [muted, setMuted] = useState(false);
-  const [started, setStarted] = useState(false);
+  const view = useGameStore(selectCurrentView);
+  const hold = useIntroStore((s) => s.musicHold);
+  const introActive = useIntroStore((s) => s.active);
+  const unlocked = useSyncExternalStore(audioEngine.subscribe, audioEngine.getUnlocked);
 
-  // Create audio element once
   useEffect(() => {
-    const audio = new Audio(TRACK_URL);
-    audio.loop = true;
-    audio.volume = loadVolume();
-    audioRef.current = audio;
-    return () => {
-      audio.pause();
-      audio.src = '';
-    };
-  }, []);
-
-  // Sync volume
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = muted ? 0 : volume;
-    }
+    audioEngine.setVolume(volume, muted);
     try { localStorage.setItem(STORAGE_KEY, String(volume)); } catch { /* ignore */ }
   }, [volume, muted]);
 
-  // Start playback on first user interaction (browsers block autoplay)
-  const ensureStarted = useCallback(() => {
-    if (!started && audioRef.current) {
-      audioRef.current.play().catch(() => {});
-      setStarted(true);
-    }
-  }, [started]);
+  // Browsers block audio until a gesture. The intro unlocks on its own gate; otherwise click/key
+  // gestures retry until the context is really running (a non-activation key like Escape can't
+  // resume it), and the listeners go away once it is.
+  useEffect(() => {
+    if (unlocked) return;
+    const unlock = () => { void audioEngine.unlock(); };
+    document.addEventListener('click', unlock);
+    document.addEventListener('keydown', unlock);
+    return () => {
+      document.removeEventListener('click', unlock);
+      document.removeEventListener('keydown', unlock);
+    };
+  }, [unlocked]);
 
   useEffect(() => {
-    document.addEventListener('click', ensureStarted, { once: true });
-    document.addEventListener('keydown', ensureStarted, { once: true });
-    return () => {
-      document.removeEventListener('click', ensureStarted);
-      document.removeEventListener('keydown', ensureStarted);
-    };
-  }, [ensureStarted]);
+    if (unlocked) audioEngine.setTrack(pickTrack(view, hold));
+  }, [unlocked, view, hold]);
 
   return (
-    <div className="music-player">
+    <div className={`music-player${introActive ? ' music-player--hidden' : ''}`}>
       <button
         className="music-mute-btn"
         onClick={() => setMuted((m) => !m)}

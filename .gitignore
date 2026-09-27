@@ -29,3 +29,7 @@ Thumbs.db
 
 # Sandbox driver output
 .sandbox/
+
+# Intro cold open: raw generations and review renders
+art/intro/raw/
+.intro/

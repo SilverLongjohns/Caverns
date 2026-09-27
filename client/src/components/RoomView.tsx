@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import { getInteractableDefinition } from '@caverns/shared';
 import type { InteractableInstance } from '@caverns/shared';
@@ -78,11 +78,16 @@ export function RoomView() {
       }
     }
 
-    // Update explored tiles in the store (side effect, but needs to happen on position change)
+    return set;
+  }, [tileGrid, playerPositions, playerId, torchFuel, activeCombat, currentRoomId]);
+
+  // Merge newly seen tiles into the explored set. A store write, so it runs after render, not in the memo.
+  useEffect(() => {
+    if (!visibleTiles) return;
     const store = useGameStore.getState();
     const newExplored = new Set(store.exploredTiles);
     let changed = false;
-    for (const key of set) {
+    for (const key of visibleTiles) {
       if (!newExplored.has(key)) {
         newExplored.add(key);
         changed = true;
@@ -91,9 +96,7 @@ export function RoomView() {
     if (changed) {
       useGameStore.setState({ exploredTiles: newExplored });
     }
-
-    return set;
-  }, [tileGrid, playerPositions, playerId, torchFuel, activeCombat, currentRoomId]);
+  }, [visibleTiles]);
 
   const entities = useMemo<EntityOverlay[]>(() => {
     if (!room || !tileGrid) return [];
