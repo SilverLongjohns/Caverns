@@ -8,6 +8,8 @@ import type { IntroAssets } from './assets.js';
 import { drawDeadGlass, drawPower, crtWarmPass, drawPowerAperture, powerState } from './shots/power.js';
 import { drawWaste, drawThreshold } from './shots/plates.js';
 import { drawDescent } from './shots/descent.js';
+import { drawDarkLowRes, drawEyes } from './shots/dark.js';
+import { drawResolve, underlayAlpha, buildGlyphPlan, type GlyphPlan } from './shots/resolve.js';
 
 function makeCanvas(w: number, h: number): HTMLCanvasElement {
   const c = document.createElement('canvas');
@@ -21,11 +23,6 @@ function ctx2d(c: HTMLCanvasElement): CanvasRenderingContext2D {
   if (!x) throw new Error('2D canvas unavailable');
   return x;
 }
-
-// Placeholder look per shot, replaced shot by shot in Tasks 11–13.
-const PLACEHOLDER: Record<ShotId, string> = {
-  power: '#223', waste: '#8a5a3c', threshold: '#5a3c2a', descent: '#1c2430', dark: BG, resolve: BG,
-};
 
 export class IntroRenderer {
   private readonly o: CanvasRenderingContext2D;
@@ -42,6 +39,7 @@ export class IntroRenderer {
   protected fit: Fit = coverFit(LR_W, LR_H);
   protected dpr = 1;
   protected layout: SceneLayout | null = null;
+  private plan: GlyphPlan | null = null;
 
   constructor(private readonly out: HTMLCanvasElement) {
     this.o = ctx2d(out);
@@ -71,10 +69,12 @@ export class IntroRenderer {
     }
     this.ca = makeCanvas(w, h);
     this.cax = ctx2d(this.ca);
+    if (this.layout) this.plan = buildGlyphPlan(this.o, this.layout, this.dpr);
   }
 
   setLayout(layout: SceneLayout | null): void {
     this.layout = layout;
+    this.plan = layout ? buildGlyphPlan(this.o, layout, this.dpr) : null;
   }
 
   renderGate(time: number): void {
@@ -103,21 +103,24 @@ export class IntroRenderer {
     else if (id === 'waste') drawWaste(lx, t, a);
     else if (id === 'threshold') drawThreshold(lx, t, a);
     else if (id === 'descent') drawDescent(lx, t, a);
-    else if (!(id === 'dark' || id === 'resolve')) { lx.fillStyle = PLACEHOLDER[id]; lx.fillRect(0, 0, LR_W, LR_H); }
+    else if (id === 'dark') drawDarkLowRes(lx, t);
     lx.restore();
     if (t < 1.6) crtWarmPass(lx, t);
   }
 
-  /** Backdrop opacity: 1 until the real login screen is revealed underneath. */
+  /** Opacity of the whole finished frame: 1 until the real login screen is revealed underneath. */
   protected backdrop(t: number): number {
-    void t;
-    return 1;
+    return underlayAlpha(t);
   }
 
   /** Native-resolution layers drawn after the upscale (eyes, glyphs, logo, power aperture). */
   protected drawNative(t: number, a: IntroAssets): void {
     if (t < 0.6) drawPowerAperture(this.o, t, this.out.width, this.out.height, this.dpr);
-    void a;
+    if (this.layout && t >= 22) {
+      this.o.setTransform(1, 0, 0, 1, 0, 0);
+      drawEyes(this.o, t, this.layout, this.dpr);
+      if (t >= 26 && this.plan) drawResolve(this.o, t, this.layout, this.plan, a.images.logo, this.dpr, this.filtersOK);
+    }
   }
 
   /** Extra horizontal jitter in low-res px (degauss wobble). */
@@ -129,6 +132,11 @@ export class IntroRenderer {
     const o = this.o, W = this.out.width, H = this.out.height;
     const { k, ps, dx, dy } = this.fit;
     const back = this.backdrop(t);
+    if (back <= 0) {
+      o.setTransform(1, 0, 0, 1, 0, 0);
+      o.clearRect(0, 0, W, H);
+      return;
+    }
 
     // Low-res bloom source.
     if (this.filtersOK) {
@@ -153,14 +161,13 @@ export class IntroRenderer {
     o.filter = 'none';
     o.globalAlpha = 1;
     o.clearRect(0, 0, W, H);
-    o.globalAlpha = back;
     o.setTransform(zs, 0, 0, zs, (W / 2) * (1 - zs) + sx, (H / 2) * (1 - zs) + sy);
     o.imageSmoothingEnabled = true;
     o.imageSmoothingQuality = 'high';
     o.drawImage(this.px, dx, dy, LR_W * k, LR_H * k);
     if (this.filtersOK) {
       o.globalCompositeOperation = 'screen';
-      o.globalAlpha = 0.35 * back;
+      o.globalAlpha = 0.35;
       o.drawImage(this.bloom, dx, dy, LR_W * k, LR_H * k);
     }
     o.setTransform(1, 0, 0, 1, 0, 0);
@@ -196,19 +203,29 @@ export class IntroRenderer {
 
     this.drawNative(t, a);
 
-    // Film grain, fading out with the backdrop.
+    // Film grain.
     const fi = Math.floor(t * 24);
     const pat = o.createPattern(this.grains[fi % 4], 'repeat');
     if (pat) {
       const gx = (hash(fi) * 256) | 0, gy = (hash(fi + 0.5) * 256) | 0;
       o.globalCompositeOperation = 'overlay';
-      o.globalAlpha = 0.1 * back;
+      o.globalAlpha = 0.1;
       o.translate(-gx, -gy);
       o.fillStyle = pat;
       o.fillRect(gx, gy, W, H);
       o.setTransform(1, 0, 0, 1, 0, 0);
       o.globalCompositeOperation = 'source-over';
       o.globalAlpha = 1;
+    }
+
+    // Handoff: fade the finished frame as a whole — a true crossfade onto the identical DOM
+    // underneath. (Fading only the backdrop would stack the canvas glyphs, logo and eyes on the
+    // DOM's own during the fade, and they'd flare brighter for a moment.)
+    if (back < 1) {
+      o.globalCompositeOperation = 'destination-out';
+      o.fillStyle = `rgba(0,0,0,${1 - back})`;
+      o.fillRect(0, 0, W, H);
+      o.globalCompositeOperation = 'source-over';
     }
   }
 
