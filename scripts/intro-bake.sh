@@ -26,6 +26,8 @@ case "$cmd" in
     ff -i "$1" -i "$PAL" -filter_complex "[0:v][1:v]paletteuse=$opt:alpha_threshold=128" "$OUT/$2.png"
     echo "$OUT/$2.png" ;;
 
+  # The plate/preview/strip/layer/palette material (the score_main, braam, plates and descent of the
+  # cut 30 s version) was cut from the shipped intro (the 9 s ident); these are kept only as source tools.
   plate)     # plate <id> <src.mp4> <inSec> <durSec> [fps]: re-pixelate a video take into atlases + manifest
     id="$1"; src="$2"; ss="$3"; dur="$4"; fps="${5:-24}"
     tmp="$(mktemp -d)"

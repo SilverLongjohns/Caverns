@@ -1,9 +1,11 @@
 # Intro audio: raw takes and picks (Task 10 phase A + bake, phase B)
 
+> **Cut material:** the score_main, sfx_braam, plate and descent material recorded here was cut from the shipped intro (the 9 s ident) and is kept only as source. Only the ids in `AUDIO_IDS` (`client/src/intro/timeline.ts`) ship.
+
 ElevenLabs flow: "Caverns intro audio", https://elevenlabs.io/app/flows/T8kdxRgXdDtT0mMtSrF7
 Raw files: `art/intro/raw/<id>_<n>.mp3` (gitignored). Analysis PNGs: `art/intro/raw/<name>_{wave,spec}.png`.
 SFX: eleven_text_to_sound_v2, prompt_influence 0.5 (relay retakes 0.6). Score: eleven_music_v2, instrumental.
-Nobody has listened to these yet. The picks come from measurements only, so they are provisional until the user listens.
+The picks were first chosen from measurements alone; the user has since listened to and approved them (see "Bake" below).
 
 ## Picks (bake arguments)
 
