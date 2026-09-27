@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import { CaveBackground } from './CaveBackground.js';
+import { useIntroStore } from '../intro/introStore.js';
 
 interface Props {
   onLogin: (name: string) => void;
@@ -9,6 +10,7 @@ interface Props {
 export function LoginScreen({ onLogin }: Props) {
   const [name, setName] = useState('');
   const error = useGameStore((s) => s.authError);
+  const replayIntro = useIntroStore((s) => s.replay);
 
   const submit = useCallback(() => {
     if (name.trim()) onLogin(name.trim());
@@ -42,6 +44,13 @@ export function LoginScreen({ onLogin }: Props) {
         Continue
       </button>
       {error && <p className="auth-error">{error}</p>}
+      <button
+        className="intro-replay"
+        onClick={(e) => { e.currentTarget.blur(); replayIntro(); }}
+        title="Replay intro"
+      >
+        ↺ intro
+      </button>
     </div>
   );
 }
