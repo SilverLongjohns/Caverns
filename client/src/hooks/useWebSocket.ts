@@ -4,10 +4,10 @@ import { useGameStore } from '../store/gameStore.js';
 import { loadSessionToken } from '../auth/sessionStorage.js';
 import { getSandboxRequest } from '../sandbox/sandboxMode.js';
 import { recordSandboxEvent } from '../sandbox/sandboxHook.js';
+import { routeServerMessage, flushCloseUps } from '../combat/closeUpStore.js';
 
 export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null);
-  const handleServerMessage = useGameStore((s) => s.handleServerMessage);
   const setConnectionStatus = useGameStore((s) => s.setConnectionStatus);
 
   useEffect(() => {
@@ -36,12 +36,13 @@ export function useWebSocket() {
         const msg: ServerMessage = JSON.parse(event.data);
         console.log('[recv]', msg.type, 'via ws', (ws as unknown as { __id: number }).__id);
         recordSandboxEvent(msg);
-        handleServerMessage(msg);
+        routeServerMessage(msg);
       } catch (err) {
         console.error('[recv] parse error', err);
       }
     };
     ws.onclose = () => {
+      flushCloseUps();
       console.log('[useWebSocket] CLOSE ws', (ws as unknown as { __id: number }).__id, 'wsRef still us?', wsRef.current === ws);
       setConnectionStatus('disconnected');
     };
@@ -50,7 +51,7 @@ export function useWebSocket() {
       console.log('[useWebSocket] CLEANUP (effect unmount) ws', (ws as unknown as { __id: number }).__id);
       ws.close();
     };
-  }, [handleServerMessage, setConnectionStatus]);
+  }, [setConnectionStatus]);
 
   return wsRef;
 }
