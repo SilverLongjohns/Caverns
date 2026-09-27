@@ -7,7 +7,7 @@ import { loadIntroAssets, isComplete, emptyAssets, type IntroAssets } from './as
 import { IntroClock, pickClockSource, perfSource, createStallWatch } from './clock.js';
 import { scheduleCues, renderIntroMix, encodeWav, type AudioHandle } from './audio.js';
 import { CUES, SKIP_CUES, DURATION, MUSIC_RELEASE_T, FADE_OUT_S, DARK_T0 } from './timeline.js';
-import { markIntroSeen, stillTime, safeStorage } from './introState.js';
+import { stillTime } from './introState.js';
 
 const GATE_TIMEOUT_MS = 8000;
 const LEAD_S = 0.05;
@@ -79,7 +79,6 @@ export function IntroCutscene() {
     const finish = () => {
       if (finished) return;
       finished = true;
-      markIntroSeen(safeStorage());
       release();
       setPhase('fading');
       window.setTimeout(() => { if (!disposed) useIntroStore.getState().finish(); }, FADE_OUT_S * 1000 + 50);
