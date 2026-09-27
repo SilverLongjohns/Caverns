@@ -67,7 +67,9 @@ describe('fxReceive', () => {
     const walking = fxReceive(initialBoardFx(), walk('m1', 3), ctx());
     const wait = 3 * FX_TIMING.walkStepMs + FX_TIMING.walkTailMs;
     const s = fxReceive(walking, hit({ actorId: 'm1', targetId: 'p1', damage: 3 }), ctx({ now: 1100 }));
-    expect(s.fx.find((f) => f.kind === 'lunge')).toMatchObject({ delayMs: wait - 100 });
+    // The mover's cell only mounts when its walk ends, so its lunge needs no CSS delay of its own —
+    // but it must stay alive until the walk has ended plus the lunge itself.
+    expect(s.fx.find((f) => f.kind === 'lunge')).toMatchObject({ delayMs: 0, until: 1000 + wait + FX_TIMING.lungeMs });
     expect(s.fx.find((f) => f.kind === 'number')).toMatchObject({ delayMs: wait - 100 + FX_TIMING.hitDelayMs });
     const later = fxReceive(walking, hit({ actorId: 'm1', targetId: 'p1', damage: 3 }), ctx({ now: 1000 + wait + 50 }));
     expect(later.fx.find((f) => f.kind === 'lunge')).toMatchObject({ delayMs: 0 });

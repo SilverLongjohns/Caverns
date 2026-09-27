@@ -72,3 +72,5 @@
 .closeup--still .closeup__band { transform: none; }
 .closeup--still .closeup__flash { display: none; }
 @media (prefers-reduced-motion: reduce) { .closeup, .closeup * { animation: none !important; } .closeup__flash { display: none; } }
+/* Reduced-motion strike: only the number over a light dim (the generic still card dims to .9) */
+.closeup--still.closeup--strike .closeup__dim { opacity: .2; }

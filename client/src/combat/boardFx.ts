@@ -43,7 +43,9 @@ export function fxReceive(s: BoardFxState, msg: ServerMessage, ctx: FxCtx): Boar
   const from = ctx.positions[r.actorId];
   const firstTile = ctx.positions[targets[0]] ?? s.lastTile[targets[0]];
   const dir = from && firstTile ? lungeDir(from, firstTile) : null;
-  if (dir) fx.push({ id: id++, kind: 'lunge', unitId: r.actorId, dir, delayMs: wait, until: ctx.now + wait + FX_TIMING.lungeMs });
+  // A walking mover's cell only mounts when its walk animation ends, so the CSS animation already starts then:
+  // no extra delay, but keep the class alive until the walk has finished plus the lunge.
+  if (dir) fx.push({ id: id++, kind: 'lunge', unitId: r.actorId, dir, delayMs: 0, until: ctx.now + wait + FX_TIMING.lungeMs });
   for (const t of targets) {
     if (ctx.positions[t]) fx.push({ id: id++, kind: 'tear', unitId: t, delayMs: hitAt, until: ctx.now + hitAt + FX_TIMING.tearMs });
   }
