@@ -168,7 +168,9 @@
 .side-column { gap: 4px; background: transparent; }
 .side-column > .relic-panel { flex: none; }
 .side-column > .hud-screen { flex: 1; }
-.map-screen .minimap { background: transparent; border-bottom: none; }
+.map-screen .minimap:not(.minimap-fullscreen) { background: transparent; border-bottom: none; }
+/* Expanded map leaves the bezel and covers the viewport, so it needs a solid backdrop */
+.minimap-fullscreen { background: var(--relic-screen); }
 .party-screen .party-panel, .hud-screen .player-hud { background: transparent; border-bottom: none; }
 .hud-screen .player-hud { flex: 1; min-height: 0; overflow-y: auto; }
 
@@ -212,7 +214,8 @@
 .action-bar .loot-item { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
 .action-bar .loot-buttons { display: flex; gap: 8px; flex: none; }
 .action-bar .puzzle-options, .action-bar .interact-actions, .action-bar .revive-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.relic-btn--hot:disabled { opacity: 0.85; }
+/* Keep the chosen option bright; beats index.css `.loot-buttons button:disabled` (0,2,1) */
+.relic-btn.relic-btn--hot:disabled { opacity: 0.85; }
 
 /* === Phase 1 screens: arena === */
 .main-screen .arena-view { background: transparent; flex: 1; min-height: 0; }
