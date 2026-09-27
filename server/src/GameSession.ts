@@ -120,6 +120,8 @@ export class GameSession {
   private disconnectedConnections = new Set<string>();
   // Debounced gold snapshot timers.
   private goldWriteTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  /** Close-up-delayed turn prompts, by room; the turn is locked until its prompt is sent. */
+  private pendingPrompts = new Map<string, ReturnType<typeof setTimeout>>();
   // Whether lifecycle cleanup has already run so we don't double-snapshot.
   private lifecycleCleanedUp = false;
   private abilityResolver = new AbilityResolver();
@@ -259,6 +261,8 @@ export class GameSession {
       this.pendingDefend = null;
     }
     for (const combat of this.combats.values()) combat.cancelAfkTimer();
+    for (const t of this.pendingPrompts.values()) clearTimeout(t);
+    this.pendingPrompts.clear();
     this.combats.clear();
   }
 
@@ -922,7 +926,7 @@ export class GameSession {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
 
     const result = combat.handleMove(playerId, { x: targetX, y: targetY });
     if (result.success) {
@@ -942,7 +946,7 @@ export class GameSession {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
     combat.cancelAfkTimer();
     combat.advanceTurn();
     this.afterCombatTurn(player.roomId, combat);
@@ -957,7 +961,7 @@ export class GameSession {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
     combat.cancelAfkTimer();
     // Validate adjacency for attack
     if (action === 'attack' && targetId) {
@@ -1107,6 +1111,11 @@ export class GameSession {
     return cu ? Math.round(cu.durationMs * this.timing.closeUpScale) : 0;
   }
 
+  /** A player may act only on their turn, and only once its (possibly close-up-delayed) prompt has been sent. */
+  private canActNow(roomId: string, combat: ArenaCombatManager, playerId: string): boolean {
+    return combat.isPlayerTurn(playerId) && !this.pendingPrompts.has(roomId);
+  }
+
   private afterCombatTurn(roomId: string, combat: ArenaCombatManager, extraDelayMs = 0): void {
     if (this.disposed) return;
     if (combat.isComplete()) {
@@ -1122,8 +1131,15 @@ export class GameSession {
       // Delay mob turns so attack animations play out before the next action
       setTimeout(() => this.processMobTurn(roomId, combat), this.timing.mobTurnDelayMs + extraDelayMs);
     } else if (extraDelayMs > 0) {
-      // Hold the next player's prompt (and its AFK timer) until the close-up has played
-      setTimeout(() => { if (!this.disposed && this.combats.get(roomId) === combat) this.broadcastTurnPrompt(combat); }, extraDelayMs);
+      // Hold the next player's prompt (and its AFK timer) until the close-up has played.
+      // The turn accepts no actions until the prompt is out (see canActNow).
+      clearTimeout(this.pendingPrompts.get(roomId));
+      this.pendingPrompts.set(roomId, setTimeout(() => {
+        this.pendingPrompts.delete(roomId);
+        if (this.disposed || this.combats.get(roomId) !== combat || combat.isComplete()) return;
+        if (combat.getCurrentTurnId() !== currentId) return;
+        this.broadcastTurnPrompt(combat);
+      }, extraDelayMs));
     } else {
       this.broadcastTurnPrompt(combat);
     }
@@ -2152,7 +2168,7 @@ export class GameSession {
     if (!player || player.status !== 'in_combat') return;
 
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
 
     const classDef = getClassDefinition(player.className);
     if (!classDef) return;
@@ -2458,7 +2474,7 @@ export class GameSession {
     const player = this.playerManager.getPlayer(playerId);
     if (!player || player.status !== 'in_combat') return;
     const combat = this.combats.get(player.roomId);
-    if (!combat || !combat.isPlayerTurn(playerId)) return;
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
 
     const resolver = combat.getEffectResolver();
     const participants = combat.getParticipantsArray();
