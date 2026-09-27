@@ -47,8 +47,10 @@ export function ScreenTransition({ screenKey, children, className = '', onBackdr
 
   const showing = displayKey(state) === screenKey ? children : committed.current.node;
   const empty = showing == null || showing === false;
+  // Powering off towards nothing (a panel closing): let clicks fall through to what's underneath.
+  const closing = state.phase === 'off' && (children == null || children === false);
   return (
-    <div className={`screen-transition ${className}`} data-empty={empty} onClick={onClick}>
+    <div className={`screen-transition ${className}`} data-empty={empty} data-closing={closing} onClick={onClick}>
       {!empty && (
         <div className={`screen-transition__body screen-transition__body--${state.phase}`} onAnimationEnd={onAnimationEnd}>
           {showing}

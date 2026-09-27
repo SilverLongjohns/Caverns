@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Item } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore.js';
+import { ScreenTransition, MenuConsole } from './menu/index.js';
+import { RelicButton, ItemIcon } from './relic/index.js';
 
 function pickLine(): string {
   return SHOPKEEP_LINES[Math.floor(Math.random() * SHOPKEEP_LINES.length)];
@@ -34,18 +36,11 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
   useEffect(() => {
     if (isOpen) setGreeting(pickLine());
   }, [isOpen]);
-  if (!shop) return null;
-
-  const stop = (e: React.MouseEvent) => e.stopPropagation();
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="shop-modal" onClick={stop}>
-        <header className="shop-modal-header">
-          <h2>{shop.name}</h2>
-          <div className="shop-gold">{shop.gold}g</div>
-          <button className="shop-close-btn" onClick={onClose}>×</button>
-        </header>
+    <ScreenTransition screenKey={shop ? 'shop' : 'closed'} className="modal-layer" onBackdropClick={onClose}>
+      {shop && (
+      <MenuConsole title={shop.name} width="880px" className="shop-modal"
+        footer={<><div className="shop-gold">{shop.gold}g</div><RelicButton className="shop-close-btn" onClick={onClose}>Close</RelicButton></>}>
 
         <div className="shop-body">
           <aside className="shop-keeper-col">
@@ -74,6 +69,7 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
                 disabled={shop.gold < slot.price}
                 title={slot.item.description}
               >
+                <ItemIcon item={slot.item} />
                 <div className="shop-slot-name">{slot.item.name}</div>
                 <div className="shop-price">{slot.price}g</div>
               </button>
@@ -84,13 +80,14 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
         <section className="shop-section">
           <div className="shop-section-header">
             <h3>Wares</h3>
-            <button
+            <RelicButton
+              size="sm"
               className="shop-reroll-btn"
               onClick={() => { new Audio('/audio/reroll.mp3').play(); onReroll(shop.shopId); }}
               disabled={shop.gold < shop.rerollCost}
             >
               Reroll ({shop.rerollCost}g)
-            </button>
+            </RelicButton>
           </div>
           <div className="shop-row">
             {shop.rotating.map((slot, i) => (
@@ -103,6 +100,7 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
               >
                 {slot.item ? (
                   <>
+                    <ItemIcon item={slot.item} />
                     <div className={`shop-slot-name rarity-${slot.item.rarity}`}>{slot.item.name}</div>
                     <div className="shop-price">{slot.price}g</div>
                   </>
@@ -129,15 +127,16 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
         </section>
           </div>
         </div>
-      </div>
-    </div>
+      </MenuConsole>
+      )}
+    </ScreenTransition>
   );
 }
 
 function SellSlot({ item, onClick }: { item: Item | null; onClick: () => void }) {
   return (
     <button className="shop-slot" onClick={onClick} disabled={!item} title={item?.description ?? ''}>
-      {item ? <div className={`shop-slot-name rarity-${item.rarity}`}>{item.name}</div> : <div className="shop-slot-empty">—</div>}
+      {item ? <><ItemIcon item={item} /><div className={`shop-slot-name rarity-${item.rarity}`}>{item.name}</div></> : <div className="shop-slot-empty">—</div>}
     </button>
   );
 }

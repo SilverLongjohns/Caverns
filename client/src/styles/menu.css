@@ -118,3 +118,20 @@
 .town-party .world-member { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .town-party .world-member-info { display: flex; flex-direction: column; }
 .town-party .world-member-meta { color: var(--relic-dim); font-size: 0.7rem; }
+
+/* Town panels as consoles */
+.modal-layer .menu-console .relic-panel { max-height: calc(100vh - 48px); }
+.stash-slot, .shop-slot { display: flex; align-items: center; gap: 8px; text-align: left; }
+.stash-slot__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop-modal .menu-console__footer { justify-content: space-between; }
+.shop-gold { color: var(--relic-amber); }
+.char-modal .char-item-row, .char-modal .char-equip-slot { display: flex; align-items: center; gap: 8px; }
+
+/* Old modal wrapper classes are kept for their inner rules; strip their frame so only the bezel shows */
+.menu-console.stash-modal, .menu-console.shop-modal, .menu-console.char-modal {
+  background: none; border: none; box-shadow: none; padding: 0; min-width: 0; max-width: 92vw; max-height: none; overflow: visible;
+}
+/* A panel powering off to nothing must not eat clicks meant for the town (or the next panel) */
+.modal-layer[data-closing="true"] { pointer-events: none; background: transparent; }
+/* Old button classes reused on RelicButtons (e.g. .shop-close-btn is fixed 28x28) must not size them */
+.menu-console .relic-btn { width: auto; height: auto; line-height: normal; }
