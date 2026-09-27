@@ -13,7 +13,7 @@ export function TurnOrderBar({ participants, turnOrder, currentTurnId, roundNumb
   const participantMap = new Map(participants.map(p => [p.id, p]));
 
   return (
-    <div className="arena-turn-order relic-rail">
+    <div className="arena-turn-order">
       <span className="turn-round">Round {roundNumber}</span>
       {turnOrder.map((id) => {
         const p = participantMap.get(id);

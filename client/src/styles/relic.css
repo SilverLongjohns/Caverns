@@ -11,7 +11,7 @@
   --relic-amber-rim: #c08a3a;
   --relic-text: #c8b89a;
   --relic-dim: #6d5f4a;
-  --relic-divider: #2e241a;
+  --relic-divider: #3a2e20;
   --relic-danger: #e06a5a;
   --relic-hp-high: #b8322a;
   --relic-hp-mid: #b8752a;
@@ -200,34 +200,27 @@
 /* === Phase 1 screens: exploration === */
 .game-layout { gap: 4px; }
 .main-column { gap: 4px; }
-.room-screen { flex: none; }
-.log-screen { flex: 1; }
-.log-screen .text-log { background: transparent; }
-.log-screen .chat-input { background: transparent; border-top: 1px dashed var(--relic-divider); }
+.main-column > .main-screen { flex: 1; }
+.main-screen .room-area { flex: none; }
+.main-screen .room-view { background: transparent; }
+.main-screen .log-area { flex: 1; min-height: 0; display: flex; flex-direction: column; border-top: 1px dashed var(--relic-divider); }
+.main-screen .text-log { background: transparent; }
+.main-screen .chat-input { background: transparent; border-top: 1px dashed var(--relic-divider); }
 
-/* Console strip: flat bronze rail under the screens */
-.action-bar {
-  background: linear-gradient(#2a1c10, #1a120a);
-  border-top: 2px solid #000;
-  box-shadow: inset 0 2px 0 var(--relic-bronze-hi), 0 -1px 0 var(--relic-bronze);
-}
+/* Action prompts: a strip along the bottom of the screen, divided off */
+.main-screen .action-bar { background: transparent; border-top: 1px dashed var(--relic-divider); }
 .action-bar .loot-item { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
 .action-bar .loot-buttons { display: flex; gap: 8px; flex: none; }
 .action-bar .puzzle-options, .action-bar .interact-actions, .action-bar .revive-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .relic-btn--hot:disabled { opacity: 0.85; }
 
 /* === Phase 1 screens: arena === */
-.arena-view { gap: 4px; background: transparent; }
-.arena-turn-order { font-family: inherit; flex-wrap: wrap; gap: 10px; padding: 4px 10px; border-bottom: none; }
+.main-screen .arena-view { background: transparent; flex: 1; min-height: 0; }
+.arena-turn-order { font-family: inherit; flex-wrap: wrap; gap: 10px; padding: 4px 10px; background: transparent; border-bottom: 1px dashed var(--relic-divider); }
 .turn-unit { display: inline-flex; align-items: center; gap: 4px; }
 .turn-unit .turn-name { font-size: 11px; }
 .turn-unit.turn-active .turn-name { color: var(--relic-amber-hot); }
-.arena-screen { flex: 1; }
-.arena-screen .arena-main { flex: 1; min-height: 0; }
+.main-screen .arena-main { flex: 1; min-height: 0; }
 /* The bezel costs the grid 48px of width; the unit panel gives it back (200px -> 152px). */
-.arena-screen .arena-unit-panel { width: 152px; border-left: 1px dashed var(--relic-divider); padding: 6px 8px; }
-.arena-action-bar {
-  font-family: inherit; flex-wrap: wrap; border-top: none;
-  background: linear-gradient(#2a1c10, #1a120a);
-  box-shadow: inset 0 2px 0 var(--relic-bronze-hi), 0 0 0 1px var(--relic-bronze);
-}
+.main-screen .arena-unit-panel { width: 152px; border-left: 1px dashed var(--relic-divider); padding: 6px 8px; }
+.arena-action-bar { font-family: inherit; flex-wrap: wrap; background: transparent; border-top: 1px dashed var(--relic-divider); }

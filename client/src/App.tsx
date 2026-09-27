@@ -147,41 +147,41 @@ export function App() {
       content = (
         <div className="game-layout">
           <div className="main-column">
-            {activeCombat && arenaGrid ? (
-              <ArenaView
-                onCombatAction={actions.combatAction}
-                onArenaMove={actions.arenaMove}
-                onArenaEndTurn={actions.arenaEndTurn}
-                onUseAbility={(abilityId, targetId, targetX, targetY) => actions.useAbility(abilityId, targetId, targetX, targetY)}
-              />
-            ) : activeCombat ? (
-              <CombatView
-                onCombatAction={actions.combatAction}
-                onRevive={actions.revive}
-                onDefendResult={actions.defendResult}
-                onUseAbility={actions.useAbility}
-                onUseItemEffect={actions.useItemEffect}
-              />
-            ) : (
-              <>
-                <RelicPanel className="room-screen">
+            <RelicPanel className="main-screen">
+              {activeCombat && arenaGrid ? (
+                <ArenaView
+                  onCombatAction={actions.combatAction}
+                  onArenaMove={actions.arenaMove}
+                  onArenaEndTurn={actions.arenaEndTurn}
+                  onUseAbility={(abilityId, targetId, targetX, targetY) => actions.useAbility(abilityId, targetId, targetX, targetY)}
+                />
+              ) : activeCombat ? (
+                <CombatView
+                  onCombatAction={actions.combatAction}
+                  onRevive={actions.revive}
+                  onDefendResult={actions.defendResult}
+                  onUseAbility={actions.useAbility}
+                  onUseItemEffect={actions.useItemEffect}
+                />
+              ) : (
+                <>
                   <div className="room-area">
                     <Compass exits={availableExits} />
                     <RoomView />
                   </div>
-                </RelicPanel>
-                <RelicPanel className="log-screen" title="Log">
-                  <TextLog />
-                  <ChatInput onSend={actions.chat} />
-                </RelicPanel>
-                <ActionBar
-                  onLootChoice={actions.lootChoice}
-                  onRevive={actions.revive}
-                  onPuzzleAnswer={actions.puzzleAnswer}
-                  onInteractAction={actions.interactAction}
-                />
-              </>
-            )}
+                  <div className="log-area">
+                    <TextLog />
+                    <ChatInput onSend={actions.chat} />
+                  </div>
+                  <ActionBar
+                    onLootChoice={actions.lootChoice}
+                    onRevive={actions.revive}
+                    onPuzzleAnswer={actions.puzzleAnswer}
+                    onInteractAction={actions.interactAction}
+                  />
+                </>
+              )}
+            </RelicPanel>
           </div>
           <div className="side-column">
             <RelicPanel className="map-screen" title="Map">

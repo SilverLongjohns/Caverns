@@ -167,6 +167,8 @@ Scope: everything under the `in_dungeon` layout in `App.tsx`.
 
 ### Main column
 
+> **Amended 2026-09-27 (user request):** the whole main column is **one full-height `RelicPanel`** (`.main-screen`) in both modes. The turn order, arena, unit panel, action bar, room view, log and chat all sit inside it, separated by dashed in-screen dividers instead of bronze rails or separate bezels. Where this section mentions separate panels or bronze console strips for the main column, this note overrides it.
+
 **Exploration**
 - `Compass` and `RoomView` go in one `RelicPanel` with the glow.
 - `TextLog` and `ChatInput` go in a second `RelicPanel`.
