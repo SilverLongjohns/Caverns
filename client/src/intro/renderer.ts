@@ -5,6 +5,8 @@ import { LR_W, LR_H, BG, shotAt, impact, type ShotId } from './timeline.js';
 import { coverFit, type Fit, type SceneLayout } from './layout.js';
 import { hash, vnoise, mulberry32 } from './math.js';
 import type { IntroAssets } from './assets.js';
+import { drawDeadGlass, drawPower, crtWarmPass, drawPowerAperture, powerState } from './shots/power.js';
+import { drawWaste, drawThreshold } from './shots/plates.js';
 
 function makeCanvas(w: number, h: number): HTMLCanvasElement {
   const c = document.createElement('canvas');
@@ -75,13 +77,7 @@ export class IntroRenderer {
   }
 
   renderGate(time: number): void {
-    const o = this.o;
-    o.setTransform(1, 0, 0, 1, 0, 0);
-    o.globalAlpha = 1;
-    o.globalCompositeOperation = 'source-over';
-    o.fillStyle = '#050505';
-    o.fillRect(0, 0, this.out.width, this.out.height);
-    void time;
+    drawDeadGlass(this.o, this.out.width, this.out.height, time, this.dpr);
   }
 
   render(t: number, a: IntroAssets): void {
@@ -99,9 +95,15 @@ export class IntroRenderer {
     lx.globalCompositeOperation = 'source-over';
     lx.filter = 'none';
     lx.imageSmoothingEnabled = false;
-    lx.fillStyle = PLACEHOLDER[id];
+    lx.fillStyle = id === 'dark' || id === 'resolve' ? BG : '#000';
     lx.fillRect(0, 0, LR_W, LR_H);
-    void t; void a;
+    lx.save();
+    if (id === 'power') drawPower(lx, t, a);
+    else if (id === 'waste') drawWaste(lx, t, a);
+    else if (id === 'threshold') drawThreshold(lx, t, a);
+    else if (!(id === 'dark' || id === 'resolve')) { lx.fillStyle = PLACEHOLDER[id]; lx.fillRect(0, 0, LR_W, LR_H); }
+    lx.restore();
+    if (t < 1.6) crtWarmPass(lx, t);
   }
 
   /** Backdrop opacity: 1 until the real login screen is revealed underneath. */
@@ -112,13 +114,13 @@ export class IntroRenderer {
 
   /** Native-resolution layers drawn after the upscale (eyes, glyphs, logo, power aperture). */
   protected drawNative(t: number, a: IntroAssets): void {
-    void t; void a;
+    if (t < 0.6) drawPowerAperture(this.o, t, this.out.width, this.out.height, this.dpr);
+    void a;
   }
 
   /** Extra horizontal jitter in low-res px (degauss wobble). */
   protected wobble(t: number): number {
-    void t;
-    return 0;
+    return t < 1.6 ? powerState(t).wobble * 2 : 0;
   }
 
   private compose(t: number, a: IntroAssets): void {
