@@ -12,7 +12,7 @@ const STYLE_REF = `${RAW}portraits/junk_prophet.png`;
 const BIOME_STYLE = {
   starter: 'grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted',
   fungal: 'overgrown with bioluminescent fungus, bracket mushrooms, dripping mycelium threads and spore sacs, rot and damp decay, organic and uncanny — no crystals, little or no machinery',
-  crystal: 'grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted',
+  crystal: 'living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable — no gears, no machinery, no brass or metal',
   flooded: 'slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror',
   bone: 'bleached bone, grave-wax and ossified growths, cracked reliquary metal, cold pale fire, necrotic and ancient',
   volcanic: 'cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer',

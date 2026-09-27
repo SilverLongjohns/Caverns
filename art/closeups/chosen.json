@@ -307,5 +307,75 @@
   "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
   "prompt": "The Mycelium King: A towering mass of interwoven fungal tendrils shaped vaguely like a man. Spore clouds billow with each movement. Eldritch and regal: a tall crowned sovereign of fungus, a crown of pale gills and antler-like fruiting bodies, flowing mantle of mycelium like royal robes, too many faint eyes in the dark of its face, ancient and unknowable. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: overgrown with bioluminescent fungus, bracket mushrooms, dripping mycelium threads and spore sacs, rot and damp decay, organic and uncanny \u2014 no crystals, little or no machinery \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
   "file": "raw/mob-F2-mycelium_king_3L.png"
+ },
+ "mob-shard_beetle": {
+  "job_id": "34f022e8-4029-41d1-893f-516b4aa479e0",
+  "index": 3,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/shard_beetle.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Shard Beetle: An insect with a carapace of razor-sharp crystal fragments. It scuttles through narrow crevices. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable \u2014 no gears, no machinery, no brass or metal \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-C2-shard_beetle_3L.png"
+ },
+ "mob-prism_wisp": {
+  "job_id": "babfed71-53dd-4382-a51b-12e832ca00bb",
+  "index": 2,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/prism_wisp.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Prism Wisp: A floating orb of light that refracts into blinding patterns. Its touch burns like concentrated sunlight. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable \u2014 no gears, no machinery, no brass or metal \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-C2-prism_wisp_2L.png"
+ },
+ "mob-crystal_spider": {
+  "job_id": "51e5fa46-6ad0-4e4d-9ca7-ae6425ebcf71",
+  "index": 1,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/crystal_spider.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Crystal Spider: A spider the size of a large dog, its legs and fangs made of translucent crystal. Webs of fine glass threads glitter in the light. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable \u2014 no gears, no machinery, no brass or metal \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-C2-crystal_spider_1L.png"
+ },
+ "mob-resonance_stalker": {
+  "job_id": "dfff300c-f485-4949-9c3b-dceeb0f53382",
+  "index": 1,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/resonance_stalker.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Resonance Stalker: A lean predator made of living crystal that vibrates at frequencies that shatter stone. Nearly invisible against the cavern walls. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable \u2014 no gears, no machinery, no brass or metal \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-C2-resonance_stalker_1L.png"
+ },
+ "mob-geode_golem": {
+  "job_id": "7cd5f05e-c63e-4110-bd35-5cab52dca722",
+  "index": 0,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/geode_golem.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Geode Golem: A lumbering construct of hollow crystal, its interior filled with glittering formations. Each step shakes the ground. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable \u2014 no gears, no machinery, no brass or metal \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-C2-geode_golem_0L.png"
+ },
+ "mob-facet_matriarch": {
+  "job_id": "2ef4be4b-6a8f-4e7b-996e-b05883be2817",
+  "index": 0,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/facet_matriarch.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Facet Matriarch: A massive crystalline entity with dozens of faceted eyes. Light bends around her in disorienting patterns. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable \u2014 no gears, no machinery, no brass or metal \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-C2-facet_matriarch_0L.png"
+ },
+ "mob-prismatic_colossus": {
+  "job_id": "a7608452-321b-4730-863b-f40aef65e6c9",
+  "index": 3,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": null,
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "The Prismatic Colossus: A creature of living crystal that towers to the ceiling. Light from every source converges on it, creating a blinding aura of refracted color. A towering humanoid giant of faceted crystal, broad and monolithic, with a crown of prismatic shards and a blinding aura of refracted colour, not spider-like. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable \u2014 no gears, no machinery, no brass or metal \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-C2-prismatic_colossus_3L.png"
  }
 }
