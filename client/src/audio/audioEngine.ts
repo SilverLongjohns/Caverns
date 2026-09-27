@@ -17,7 +17,7 @@ export function busGains(volume: number, muted: boolean): { master: number; intr
 
 type Listener = () => void;
 
-class AudioEngine {
+export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master!: GainNode;
   private intro!: GainNode;
@@ -31,6 +31,7 @@ class AudioEngine {
   private gains = busGains(0.3, false);
   private readonly listeners = new Set<Listener>();
   private unlocked = false;
+  private watchingState = false;
 
   context(): AudioContext {
     if (!this.ctx) {
@@ -51,16 +52,26 @@ class AudioEngine {
     return this.ctx;
   }
 
-  /** Call from inside a user gesture. */
+  /**
+   * Call from inside a user gesture. Only counts as unlocked once the context is actually
+   * running (a resume outside a real activation, e.g. on Escape, fails or stays pending), so
+   * callers can keep retrying on later gestures until it is.
+   */
   unlock(): Promise<void> {
     const ctx = this.context();
-    const resumed = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
-    if (!this.unlocked) {
-      this.unlocked = true;
-      this.listeners.forEach((l) => l());
+    if (!this.watchingState) {
+      this.watchingState = true;
+      ctx.addEventListener('statechange', this.checkRunning);
     }
-    return resumed.catch(() => {});
+    const resumed = ctx.state === 'running' ? Promise.resolve() : ctx.resume();
+    return resumed.then(this.checkRunning, () => {});
   }
+
+  private checkRunning = (): void => {
+    if (this.unlocked || this.ctx?.state !== 'running') return;
+    this.unlocked = true;
+    this.listeners.forEach((l) => l());
+  };
 
   subscribe = (l: Listener): (() => void) => {
     this.listeners.add(l);

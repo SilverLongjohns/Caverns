@@ -27,16 +27,19 @@ export function MusicPlayer() {
     try { localStorage.setItem(STORAGE_KEY, String(volume)); } catch { /* ignore */ }
   }, [volume, muted]);
 
-  // Browsers block audio until a gesture. The intro unlocks on its own gate; otherwise the first click/key does.
+  // Browsers block audio until a gesture. The intro unlocks on its own gate; otherwise click/key
+  // gestures retry until the context is really running (a non-activation key like Escape can't
+  // resume it), and the listeners go away once it is.
   useEffect(() => {
+    if (unlocked) return;
     const unlock = () => { void audioEngine.unlock(); };
-    document.addEventListener('click', unlock, { once: true });
-    document.addEventListener('keydown', unlock, { once: true });
+    document.addEventListener('click', unlock);
+    document.addEventListener('keydown', unlock);
     return () => {
       document.removeEventListener('click', unlock);
       document.removeEventListener('keydown', unlock);
     };
-  }, []);
+  }, [unlocked]);
 
   useEffect(() => {
     if (unlocked) audioEngine.setTrack(pickTrack(view, hold));
