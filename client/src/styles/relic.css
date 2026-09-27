@@ -98,6 +98,7 @@
   transform: translate(1px, 1px);
   box-shadow: inset 2px 2px 0 var(--relic-bronze-lo), inset -2px -2px 0 var(--relic-bronze-hi), 0 0 0 2px var(--relic-bronze);
 }
+.relic-btn:active:not(:disabled) { filter: brightness(1.35); transition: filter 60ms; }
 .relic-btn:focus-visible { outline: 1px dashed var(--relic-amber); outline-offset: 4px; }
 .relic-btn:disabled { opacity: 0.4; cursor: not-allowed; text-shadow: none; }
 .relic-btn--hot {

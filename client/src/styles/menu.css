@@ -1,0 +1,60 @@
+/* === Menu screens (main menu polish): shell, consoles, CRT power transitions, ambient life === */
+.menu-shell { position: relative; }
+.menu-shell--town { background: #0a0806; }
+.menu-shell__town { position: absolute; inset: 0; background: url('/backgrounds/townbg.png') center/cover no-repeat; image-rendering: pixelated; z-index: 0; }
+.menu-shell__content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 100%; }
+.menu-shell--town .menu-shell__content { position: absolute; inset: 0; display: block; }
+
+/* Consoles: centred, content-sized, scroll inside when too tall */
+.menu-console { position: relative; max-width: 92vw; }
+.menu-console .relic-panel { max-height: calc(100vh - 220px); }
+.menu-shell--town .menu-console .relic-panel { max-height: calc(100vh - 48px); }
+.menu-console__body { padding: 12px 16px; overflow-y: auto; min-height: 0; }
+.menu-console__footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 16px 10px; border-top: 1px dashed var(--relic-divider); }
+
+/* Screen transition: animate the body, never the wrapper (fixed layers stay fixed) */
+.screen-transition__body { transform-origin: center; }
+.screen-transition__body--off { animation: crt-power-off 220ms ease-in forwards; }
+.screen-transition__body--on { animation: crt-power-on 280ms ease-out; }
+@keyframes crt-power-off {
+  0% { transform: scale(1, 1); filter: brightness(1); opacity: 1; }
+  60% { transform: scale(1, 0.02); filter: brightness(3); opacity: 1; }
+  100% { transform: scale(0, 0.02); filter: brightness(3); opacity: 0; }
+}
+@keyframes crt-power-on {
+  0% { transform: scale(0, 0.02); filter: brightness(3); opacity: 0; }
+  35% { transform: scale(1, 0.02); filter: brightness(3); opacity: 1; }
+  80% { transform: scale(1, 1.02); filter: brightness(1.4); }
+  100% { transform: scale(1, 1); filter: brightness(1); }
+}
+
+/* Modal layer for town panels */
+.modal-layer { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.modal-layer[data-empty="false"] { background: rgba(0, 0, 0, 0.6); pointer-events: auto; }
+
+/* Typed text */
+.typed-text__cursor { animation: typed-blink 1s steps(1) infinite; margin-left: 1px; }
+@keyframes typed-blink { 50% { opacity: 0; } }
+
+/* Ambient life */
+.menu-console__lamp { position: absolute; top: -11px; width: 4px; height: 4px; background: #ffb347; box-shadow: 0 0 6px 2px rgba(255, 170, 60, 0.6); z-index: 4; pointer-events: none; animation: lamp-blink 3.7s ease-in-out infinite; }
+.menu-console__lamp--l { left: 28px; }
+.menu-console__lamp--r { right: 28px; animation-duration: 5.3s; animation-delay: -1.9s; }
+@keyframes lamp-blink { 0%, 100% { opacity: 1; } 45% { opacity: 0.25; } 50% { opacity: 0.9; } }
+.menu-console__scanroll { position: absolute; left: 0; right: 0; top: 0; height: 60px; pointer-events: none; z-index: 3;
+  background: linear-gradient(transparent, rgba(120, 220, 150, 0.035), transparent); animation: scan-roll 7s linear infinite; }
+@keyframes scan-roll { from { transform: translateY(-60px); } to { transform: translateY(900px); } }
+.menu-console .relic-panel { overflow: hidden; }
+.menu-console__glitch { position: absolute; left: 0; right: 0; height: 2px; top: 30%; pointer-events: none; z-index: 3;
+  background: rgba(200, 255, 220, 0.25); box-shadow: 0 0 6px rgba(160, 255, 200, 0.4); animation: glitch-sweep 400ms linear forwards; }
+@keyframes glitch-sweep { from { top: 10%; opacity: 0.9; } to { top: 85%; opacity: 0; } }
+
+/* Hover rims on interactive rows/cards */
+.menu-hoverable { transition: box-shadow 80ms; }
+.menu-hoverable:hover { box-shadow: 0 0 0 1px var(--relic-amber-rim), 0 0 8px rgba(240, 170, 60, 0.25); }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-transition__body--off, .screen-transition__body--on { animation: none; }
+  .menu-console__lamp, .menu-console__scanroll, .menu-console__glitch, .typed-text__cursor { animation: none; }
+  .menu-console__scanroll, .menu-console__glitch { display: none; }
+}
