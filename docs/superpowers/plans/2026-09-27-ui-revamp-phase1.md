@@ -1911,7 +1911,7 @@ Expected: every workspace passes, with no type errors.
 
 - [ ] **Step 2: Arena size matches the baseline**
 
-Baseline from Task 5 Step 1: `{cols: ___, rows: ___}` (fill this in during Task 5).
+Baseline from Task 5 Step 1: `{cols: 28, rows: 8}` (recorded 2026-09-27 at 1600×1000, preset `duel`).
 
 Run: `cmd.exe /c "node .sandbox/arena-size.mjs http://localhost:<port>"`
 Expected: identical to the baseline.
