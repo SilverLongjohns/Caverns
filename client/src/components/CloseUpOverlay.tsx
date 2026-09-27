@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { CLOSE_UP_CONFIG } from '@caverns/shared';
 import { useCloseUpStore } from '../combat/closeUpStore.js';
 import { stageFor, type StageActor } from '../combat/closeUpStage.js';
+import { closeUpKeyAction, keyInfo } from '../combat/closeUpKeys.js';
 import { audioEngine } from '../audio/audioEngine.js';
 import { prefersReducedMotion } from '../ui/motion.js';
 
@@ -23,7 +24,12 @@ export function CloseUpOverlay() {
     if (!current) return;
     const stage = stageFor(current);
     const t = window.setTimeout(() => audioEngine.playUi(stage.sound), current.closeUp.durationMs * CLOSE_UP_CONFIG.impactAt);
-    const onKey = (e: KeyboardEvent) => { e.preventDefault(); e.stopPropagation(); skip(); };
+    const onKey = (e: KeyboardEvent) => {
+      const action = closeUpKeyAction(keyInfo(e));
+      if (action === 'pass') return;
+      e.preventDefault(); e.stopPropagation();
+      if (action === 'skip') skip();
+    };
     window.addEventListener('keydown', onKey, { capture: true });
     return () => { window.clearTimeout(t); window.removeEventListener('keydown', onKey, { capture: true }); };
   }, [current, skip]);
