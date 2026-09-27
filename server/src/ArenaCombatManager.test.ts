@@ -210,6 +210,19 @@ describe('ArenaCombatManager', () => {
       if (combat) expect(combat.targetId).toBe('p1');
     });
 
+    it('falls back to normal targeting when the taunter is walled off', () => {
+      const grid = makeGrid();
+      // seal the taunter into the (1,1) corner
+      grid.tiles[1][2] = 'wall';
+      grid.tiles[2][1] = 'wall';
+      const positions = { p1: { x: 1, y: 1 }, p2: { x: 5, y: 3 }, mob1: { x: 5, y: 2 } };
+      const arena = new ArenaCombatManager('room1', grid, [makePlayer('p1'), makePlayer('p2')], [makeMob()], positions);
+      arena.getParticipant('p1')!.buffs.push({ type: 'taunt', turnsRemaining: 2, sourcePlayerId: 'p1' });
+      const { combat } = arena.resolveMobTurn('mob1');
+      expect(combat?.targetId).toBe('p2');
+      expect(arena.getCombatManager().getPlayerHp('p1')).toBe(50);
+    });
+
     it('damages the player it is adjacent to, never a distant one', () => {
       for (let i = 0; i < 30; i++) {
         const grid = makeGrid();
