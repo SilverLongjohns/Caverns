@@ -14,7 +14,7 @@ const BIOME_STYLE = {
   fungal: 'overgrown with bioluminescent fungus, bracket mushrooms, dripping mycelium threads and spore sacs, rot and damp decay, organic and uncanny — no crystals, little or no machinery',
   crystal: 'living faceted crystal, eldritch and alien: impossible angular geometry, prismatic refractions and iridescent sheen, clusters of faceted eyes, light bending around it, ancient and unknowable — no gears, no machinery, no brass or metal',
   flooded: 'slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror',
-  bone: 'bleached bone, grave-wax and ossified growths, cracked reliquary metal, cold pale fire, necrotic and ancient',
+  bone: 'bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient',
   volcanic: 'cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer',
 };
 const out = pool.map((m) => {

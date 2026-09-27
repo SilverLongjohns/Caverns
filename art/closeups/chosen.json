@@ -447,5 +447,75 @@
   "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
   "prompt": "The Drowned Leviathan: An ancient sea creature entombed in the flooded depths. It fills the chamber, tentacles reaching from wall to wall, a single enormous eye fixing on you with cold intelligence. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: slick drowned flesh, barnacles, kelp and brine-corroded relic salvage, bioluminescent lures, pale deep-sea horror \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
   "file": "raw/mob-Q-the_drowned_leviathan_0L.png"
+ },
+ "mob-bone_rattler": {
+  "job_id": "ba431bc0-7fd5-4d62-82e4-f2a1199065d2",
+  "index": 3,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/bone_rattler.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Bone Rattler: A skeleton reassembled wrong -- too many arms, joints bending the wrong way. It moves with a horrible clicking sound. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-B2-bone_rattler_3L.png"
+ },
+ "mob-marrow_leech": {
+  "job_id": "82b9cbf8-6221-4bf7-93e8-06698ac7ebe6",
+  "index": 2,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/marrow_leech.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Marrow Leech: A pale worm that burrows through bone. It surfaces to feed, draining the marrow from living creatures. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-B2-marrow_leech_2L.png"
+ },
+ "mob-skull_sentinel": {
+  "job_id": "22f65218-b0cc-4166-89c5-df47876fc152",
+  "index": 3,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/skull_sentinel.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Skull Sentinel: A floating skull wreathed in pale flame. It guards the ossuary corridors, shrieking when intruders are detected. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-B2-skull_sentinel_3L.png"
+ },
+ "mob-grave_warden": {
+  "job_id": "c8d5e124-ce05-411e-a02a-787cf4c77b01",
+  "index": 2,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/grave_warden.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Grave Warden: An armored skeleton wielding ancient weapons. Unlike the mindless rattlers, this one fights with discipline and purpose. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-B2-grave_warden_2L.png"
+ },
+ "mob-bone_colossus": {
+  "job_id": "712c9b90-6fd9-4869-9bda-4bdcd1492019",
+  "index": 2,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/bone_colossus.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Bone Colossus: A giant assembled from hundreds of skeletons fused together. It towers over the ossuary halls, each step grinding bone to dust. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-B2-bone_colossus_2L.png"
+ },
+ "mob-lich_remnant": {
+  "job_id": "56abf79f-62b6-4a45-a3c7-21ed7a2535b3",
+  "index": 0,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/lich_remnant.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Lich Remnant: The decayed remains of an ancient sorcerer. Pale fire dances in its eye sockets and its bony fingers crackle with necrotic energy. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-B2-lich_remnant_0L.png"
+ },
+ "mob-the_charnel_king": {
+  "job_id": "06d8d959-d68e-4e2f-990a-86cafffaa7a9",
+  "index": 1,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/the_charnel_king.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "The Charnel King: A massive figure assembled from thousands of bones, seated on a throne of ribcages. Eye sockets burn with pale fire. When it rises, the walls themselves shed bones to rebuild it. An eldritch skeleton butcher: a hulking skeletal butcher in a blood-stained leather apron, wielding great cleavers and meat hooks, chains and extra mechanical arms, a crown of ribs, grisly and terrible. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-B2-the_charnel_king_1L.png"
  }
 }
