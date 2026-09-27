@@ -517,5 +517,75 @@
   "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
   "prompt": "The Charnel King: A massive figure assembled from thousands of bones, seated on a throne of ribcages. Eye sockets burn with pale fire. When it rises, the walls themselves shed bones to rebuild it. An eldritch skeleton butcher: a hulking skeletal butcher in a blood-stained leather apron, wielding great cleavers and meat hooks, chains and extra mechanical arms, a crown of ribs, grisly and terrible. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: bleached bones puppeteered by eldritch machinery, as if moved by a mechanical god: tarnished brass armatures, taut wires and rods driving the limbs like a marionette, clockwork joints and cogs, cold light glowing from within, uncanny and ancient \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
   "file": "raw/mob-B2-the_charnel_king_1L.png"
+ },
+ "mob-cinder_imp": {
+  "job_id": "c26a52cd-4700-4d03-96c8-9ecad2576e8d",
+  "index": 1,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/cinder_imp.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Cinder Imp: A small creature of hardened ash and glowing embers. It cackles as it hurls balls of molten slag. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-cinder_imp_1L.png"
+ },
+ "mob-magma_beetle": {
+  "job_id": "59ad46c6-080b-4917-8fc2-65b639039bb5",
+  "index": 1,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/magma_beetle.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Magma Beetle: An armored beetle the size of a cart, its carapace glowing with volcanic heat. Lava drips from between its plates. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-magma_beetle_1L.png"
+ },
+ "mob-ash_stalker": {
+  "job_id": "31d9cad9-cc5d-4197-b98a-beb1bb167993",
+  "index": 2,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/ash_stalker.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Ash Stalker: A lean predator coated in volcanic ash. It blends perfectly with the scorched terrain and strikes from concealment. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-ash_stalker_2L.png"
+ },
+ "mob-lava_slime": {
+  "job_id": "ffae7b26-78ca-4c21-bf32-3bcec6703dd4",
+  "index": 2,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/lava_slime.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Lava Slime: A blob of semi-molten rock that oozes across the floor. It absorbs blows and retaliates with searing heat. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-lava_slime_2L.png"
+ },
+ "mob-obsidian_sentinel": {
+  "job_id": "25aeac2a-580b-4ce4-8b88-65f326d03738",
+  "index": 2,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/obsidian_sentinel.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Obsidian Sentinel: A humanoid figure of volcanic glass, moving with mechanical precision. Cracks in its surface glow with inner fire. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-obsidian_sentinel_2L.png"
+ },
+ "mob-pyroclast_wyrm": {
+  "job_id": "bd514a43-f7c2-4550-ade9-d7965bc4b833",
+  "index": 2,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/pyroclast_wyrm.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Pyroclast Wyrm: A serpentine creature that swims through molten rock. It surfaces to attack, spraying lava in wide arcs. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-pyroclast_wyrm_2L.png"
+ },
+ "mob-the_forge_titan": {
+  "job_id": "9764d4a5-1507-47f4-bbc0-4a62c29ce67f",
+  "index": 2,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/the_forge_titan.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "The Forge Titan: A creature of slag and flame that rises from the magma itself. Its body is a furnace, its fists are anvils, and its rage is volcanic. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: cooling slag and obsidian, glowing magma seams, soot and scorched forge-relic metal, heat shimmer \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-Q-the_forge_titan_2L.png"
  }
 }
