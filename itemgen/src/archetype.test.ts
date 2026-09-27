@@ -37,4 +37,10 @@ describe('itemgen archetypes', () => {
     }
   });
 
+  it('generated items carry an archetype valid for their slot', () => {
+    for (const item of sample()) {
+      expect(item.archetype, item.name).toBeDefined();
+      expect(ARCHETYPE_SLOTS[item.archetype!]).toContain(item.slot);
+    }
+  });
 });
