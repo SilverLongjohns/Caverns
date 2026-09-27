@@ -237,5 +237,75 @@
   "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
   "prompt": "The Rat King: A monstrous tangle of dozens of rats fused at the tail, grown to obscene size. Hundreds of eyes glare with unified malice, and the mass moves with horrifying coordination. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse retro-future world: grafted relic machine parts, crystalline growths, glowing teal veins or lenses, rust and salt-crusted \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
   "file": "raw/mob-Q-the_rat_king_0L.png"
+ },
+ "mob-fungal_crawler": {
+  "job_id": "9b58380c-059d-421a-8329-6f01e15faded",
+  "index": 1,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/fungal_crawler.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Fungal Crawler: A dog-sized insect coated in phosphorescent spores. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: overgrown with bioluminescent fungus, bracket mushrooms, dripping mycelium threads and spore sacs, rot and damp decay, organic and uncanny \u2014 no crystals, little or no machinery \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-F2-fungal_crawler_1L.png"
+ },
+ "mob-cave_lurker": {
+  "job_id": "9d27a5d5-5d43-46cc-80c1-edc2d4690892",
+  "index": 1,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/cave_lurker.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Cave Lurker: A pale, eyeless humanoid that clings to the ceiling and drops on prey. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: overgrown with bioluminescent fungus, bracket mushrooms, dripping mycelium threads and spore sacs, rot and damp decay, organic and uncanny \u2014 no crystals, little or no machinery \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-F2-cave_lurker_1L.png"
+ },
+ "mob-spore_shambler": {
+  "job_id": "0debba13-a9b6-4623-b3f2-390a0498be82",
+  "index": 0,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/spore_shambler.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Spore Shambler: A shambling mass of fungal growth in a vaguely humanoid shape. It moves slowly but hits with surprising weight. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: overgrown with bioluminescent fungus, bracket mushrooms, dripping mycelium threads and spore sacs, rot and damp decay, organic and uncanny \u2014 no crystals, little or no machinery \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-F2-spore_shambler_0L.png"
+ },
+ "mob-glowcap_swarm": {
+  "job_id": "db5fdf23-6ecf-4024-8477-600ba4ad48f4",
+  "index": 2,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/glowcap_swarm.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "Glowcap Swarm: A cloud of tiny luminescent mushroom creatures that attack as one, swarming over victims. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: overgrown with bioluminescent fungus, bracket mushrooms, dripping mycelium threads and spore sacs, rot and damp decay, organic and uncanny \u2014 no crystals, little or no machinery \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-F2-glowcap_swarm_2L.png"
+ },
+ "mob-sporecap_brute": {
+  "job_id": "54c36730-2ca0-48b3-804e-689347c62732",
+  "index": 3,
+  "facing": "left",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/sporecap_brute.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "round-1 fungal (generic Qud style, user-saved)",
+  "file": "raw/mob-Q-sporecap_brute_3L.png"
+ },
+ "mob-mycelium_guardian": {
+  "job_id": "8deab942-b0e1-4d32-b8b9-07358d56ec56",
+  "index": 3,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/mycelium_guardian.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "round-1 fungal (generic Qud style, user-saved)",
+  "file": "raw/mob-Q-mycelium_guardian_3L.png"
+ },
+ "mob-mycelium_king": {
+  "job_id": "2bbc6044-c26c-4cf8-b630-ed12b4ced039",
+  "index": 3,
+  "facing": "right",
+  "normalised": "faces left",
+  "ref": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/sprites/glyphs/mobs/mycelium_king.png",
+  "styleRef": "https://raw.githubusercontent.com/SilverLongjohns/Caverns/main/client/public/portraits/junk_prophet.png",
+  "prompt": "The Mycelium King: A towering mass of interwoven fungal tendrils shaped vaguely like a man. Spore clouds billow with each movement. Eldritch and regal: a tall crowned sovereign of fungus, a crown of pale gills and antler-like fruiting bodies, flowing mantle of mycelium like royal robes, too many faint eyes in the dark of its face, ancient and unknowable. Same body plan as the reference creature, but a strange Caves-of-Qud-style mutant of a post-collapse world: overgrown with bioluminescent fungus, bracket mushrooms, dripping mycelium threads and spore sacs, rot and damp decay, organic and uncanny \u2014 no crystals, little or no machinery \u2014 full-body, small in frame, side view facing left, menacing ready stance, isolated with no ground or floor, no text, no letters, no symbols written",
+  "file": "raw/mob-F2-mycelium_king_3L.png"
  }
 }
