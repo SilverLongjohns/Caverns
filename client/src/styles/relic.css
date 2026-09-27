@@ -28,17 +28,18 @@
 }
 
 /* --- Panel: PixelLab bezel as a 9-slice, dark screen, subtle green phosphor edge --- */
+/* The frame's metal is 17-18px; an 18px slot keeps it flush with the glass (glass painted under the frame). */
 .relic-panel {
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  border: 24px solid transparent;
-  border-image: url('/ui/relic_frame.png') 24 / 24px round;
+  border: 18px solid transparent;
+  border-image: url('/ui/relic_frame.png') 18 / 18px round;
   image-rendering: pixelated;
   background: var(--relic-screen);
-  background-clip: padding-box;
+  background-clip: border-box;
 }
 .relic-panel--fallback { border: 6px double var(--relic-bronze-hi); border-image: none; }
 .relic-panel__screen {
@@ -59,7 +60,7 @@
 }
 .relic-panel__title {
   position: absolute;
-  top: -20px;
+  top: -17px;
   left: 12px;
   z-index: 3;
   padding: 0 6px;
@@ -224,6 +225,6 @@
 .turn-unit .turn-name { font-size: 11px; }
 .turn-unit.turn-active .turn-name { color: var(--relic-amber-hot); }
 .main-screen .arena-main { flex: 1; min-height: 0; }
-/* The bezel costs the grid 48px of width; the unit panel gives it back (200px -> 152px). */
+/* The bezel costs the grid 36px of width; the narrower unit panel (152px) keeps the duel at >= 28 columns. */
 .main-screen .arena-unit-panel { width: 152px; border-left: 1px dashed var(--relic-divider); padding: 6px 8px; }
 .arena-action-bar { font-family: inherit; flex-wrap: wrap; background: transparent; border-top: 1px dashed var(--relic-divider); }
