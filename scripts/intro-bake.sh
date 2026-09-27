@@ -65,8 +65,8 @@ case "$cmd" in
     ff -ss "$ss" "${topt[@]}" -i "$src" -af "$af" -ac 2 -c:a aac -b:a 192k -movflags +faststart "$OUT/$id.m4a"
     echo "$OUT/$id.m4a" ;;
 
-  analyze)   # analyze <audio> <outPrefix>: loudness, silences, waveform + spectrogram PNGs
-    ffmpeg -hide_banner -i "$1" -af ebur128=framelog=quiet -f null - 2>&1 | grep -E "^\s+(I|LRA|Peak):" || true
+  analyze)   # analyze <audio> <outPrefix>: loudness, true peak, silences, waveform + spectrogram PNGs
+    ffmpeg -hide_banner -i "$1" -af ebur128=peak=true:framelog=quiet -f null - 2>&1 | grep -E "^\s+(I|LRA|Peak):" || true
     ffmpeg -hide_banner -i "$1" -af silencedetect=n=-45dB:d=0.25 -f null - 2>&1 | grep -o "silence_\(start\|end\): [0-9.]*" || true
     ff -i "$1" -lavfi "showspectrumpic=s=1200x400:legend=1" "$2_spec.png"
     ff -i "$1" -filter_complex "showwavespic=s=1200x200" -frames:v 1 "$2_wave.png"
