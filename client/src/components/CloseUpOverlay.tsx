@@ -23,7 +23,7 @@ export function CloseUpOverlay() {
   useEffect(() => {
     if (!current) return;
     const stage = stageFor(current);
-    const t = window.setTimeout(() => audioEngine.playUi(stage.sound), current.closeUp.durationMs * CLOSE_UP_CONFIG.impactAt);
+    const t = stage.sound ? window.setTimeout(() => audioEngine.playUi(stage.sound!), current.closeUp.durationMs * CLOSE_UP_CONFIG.impactAt) : 0;
     const onKey = (e: KeyboardEvent) => {
       const action = closeUpKeyAction(keyInfo(e));
       if (action === 'pass') return;
@@ -40,7 +40,7 @@ export function CloseUpOverlay() {
   const style = { '--closeup-dur': `${current.closeUp.durationMs}ms`, '--closeup-band': stage.band } as CSSProperties;
 
   return (
-    <div key={current.id} className={`closeup closeup--${stage.layout} closeup--${stage.tone}${reduced ? ' closeup--still' : ''}`}
+    <div key={current.id} className={`closeup closeup--${stage.layout} closeup--${stage.tone} closeup--${stage.variant}${reduced ? ' closeup--still' : ''}`}
       style={style} onPointerDown={(e) => { e.preventDefault(); skip(); }} role="presentation">
       <div className="closeup__dim" />
       <div className="closeup__band">
@@ -51,7 +51,7 @@ export function CloseUpOverlay() {
         </div>
       </div>
       <div className="closeup__flash" />
-      <div className="closeup__title">{stage.title}</div>
+      {stage.title && <div className="closeup__title">{stage.title}</div>}
       {(stage.number || stage.subtitle) && (
         <div className={`closeup__number${stage.number?.kind === 'heal' ? ' closeup__number--heal' : ''}`}>
           {stage.number && <span>{stage.number.kind === 'heal' ? '+' : ''}{stage.number.value}</span>}

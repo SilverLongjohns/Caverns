@@ -9,7 +9,7 @@ export interface Stage {
   left: StageActor[]; right: StageActor[]; extra: number;
   title: string; subtitle: string;
   number: { value: number; kind: 'damage' | 'heal' } | null;
-  band: string; tone: 'player' | 'enemy'; sound: 'crack' | 'boom' | 'shimmer';
+  band: string; tone: 'player' | 'enemy'; sound: 'crack' | 'boom' | 'shimmer' | null; variant: 'full' | 'strike';
 }
 
 const MAX_TARGETS = 3;
@@ -42,6 +42,7 @@ const shade = (hex: string) => {
 
 export function stageFor(active: ActiveCloseUp): Stage {
   const { result: r, participants, closeUp } = active;
+  const strike = closeUp.kind === 'strike';
   const byId = new Map(participants.map((p) => [p.id, p]));
   const actor = byId.get(r.actorId);
   const actorIsMob = actor?.type === 'mob';
@@ -83,13 +84,13 @@ export function stageFor(active: ActiveCloseUp): Stage {
   const damage = r.damage ?? r.pendingDamage;
   const number = damage ? { value: damage, kind: 'damage' as const } : r.healing ? { value: r.healing, kind: 'heal' as const } : null;
   const anyDowned = downed.size > 0;
-  const subtitle = anyDowned ? 'KILLED' : closeUp.kind === 'crit' ? 'CRITICAL' : (r.buffsApplied ?? []).map((b) => b.replace(/_/g, ' ')).join(' · ').toUpperCase();
-  const derivedSound: Stage['sound'] = anyDowned ? 'boom' : (!damage && (r.healing || (r.buffsApplied ?? []).length)) ? 'shimmer' : 'crack';
-  const sound = ability?.closeUp?.sound ?? derivedSound;
-  const title = (r.abilityName ?? ability?.name ?? (closeUp.kind === 'kill' ? 'Killing Blow' : 'Critical Strike')).toUpperCase();
+  const subtitle = strike ? '' : anyDowned ? 'KILLED' : closeUp.kind === 'crit' ? 'CRITICAL' : (r.buffsApplied ?? []).map((b) => b.replace(/_/g, ' ')).join(' · ').toUpperCase();
+  const derivedSound: 'crack' | 'boom' | 'shimmer' = anyDowned ? 'boom' : (!damage && (r.healing || (r.buffsApplied ?? []).length)) ? 'shimmer' : 'crack';
+  const sound = strike ? null : ability?.closeUp?.sound ?? derivedSound;
+  const title = strike ? '' : (r.abilityName ?? ability?.name ?? (closeUp.kind === 'kill' ? 'Killing Blow' : 'Critical Strike')).toUpperCase();
 
   const classColor = actor?.className ? getClassDefinition(actor.className)?.color : undefined;
   const band = actorIsMob ? BAND.enemy : closeUp.kind === 'kill' ? BAND.kill : closeUp.kind === 'crit' ? BAND.crit : classColor ? shade(classColor) : BAND.fallback;
 
-  return { layout, left, right, extra, title, subtitle, number, band, tone: actorIsMob ? 'enemy' : 'player', sound };
+  return { layout, left, right, extra, title, subtitle, number, band, tone: actorIsMob ? 'enemy' : 'player', sound, variant: strike ? 'strike' : 'full' };
 }

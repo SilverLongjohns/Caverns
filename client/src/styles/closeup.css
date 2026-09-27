@@ -46,6 +46,25 @@
 .closeup { animation: cu-shake var(--closeup-dur) both; }
 @keyframes cu-shake { 0%, 35% { transform: none } 36% { transform: translate(-6px, 3px) } 38% { transform: translate(5px, -2px) } 40% { transform: translate(-3px, 1px) } 42%, 100% { transform: none } }
 
+/* === Strike: the quick, see-through close-up for ordinary attacks === */
+.closeup--strike .closeup__dim { animation-name: cu-dim-strike; }
+@keyframes cu-dim-strike { 0% { opacity: 0 } 10%, 82% { opacity: .2 } 100% { opacity: 0 } }
+.closeup--strike .closeup__band { top: 27.5%; height: 45%;
+  background: linear-gradient(90deg, rgba(13,8,6,.3), color-mix(in srgb, var(--closeup-band) 42%, transparent) 50%, rgba(13,8,6,.3));
+  border-color: color-mix(in srgb, var(--closeup-band) 50%, transparent); }
+.closeup--strike .closeup__flash { display: none; }
+.closeup--strike .closeup-fig:not(.closeup-fig--actor) img,
+.closeup--strike .closeup-fig--left:not(.closeup-fig--actor) img { animation-name: cu-tear; }
+@keyframes cu-tear {
+  0%, 34% { transform: none; filter: none }
+  35% { transform: translateX(3%); filter: drop-shadow(6px 0 0 #f00) drop-shadow(-6px 0 0 #0ff) brightness(2) }
+  40% { transform: translateX(-3%) skewX(8deg); filter: drop-shadow(-4px 0 0 #f00) drop-shadow(4px 0 0 #0ff) }
+  45% { transform: skewX(-4deg); filter: drop-shadow(2px 0 0 #f00) }
+  50%, 100% { transform: none; filter: none }
+}
+.closeup--strike .closeup__number { top: 30%; }
+.closeup--still.closeup--strike .closeup__band, .closeup--still.closeup--strike .closeup-fig { visibility: hidden; }
+
 /* Reduced motion: a still title card for the same duration */
 .closeup--still, .closeup--still * { animation: none !important; }
 .closeup--still .closeup__dim { opacity: .9; }

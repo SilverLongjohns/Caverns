@@ -7,8 +7,8 @@ const hero: CombatParticipant = { id: 'p1', type: 'player', name: 'Hero', hp: 30
 const ally: CombatParticipant = { id: 'p2', type: 'player', name: 'Ally', hp: 20, maxHp: 50, initiative: 5, className: CLASS_DEFINITIONS[1].id };
 const mob = (i: number): CombatParticipant => ({ id: `m${i}`, type: 'mob', name: `Rat ${i}`, hp: 10, maxHp: 15, initiative: 3, templateId: 'tunnel_rat' });
 const parts = [hero, ally, mob(1), mob(2), mob(3), mob(4), mob(5)];
-const active = (result: object, kind: 'ability' | 'crit' | 'kill' = 'ability') => ({
-  id: 1, closeUp: { kind, durationMs: CLOSE_UP_CONFIG.abilityMs }, participants: parts,
+const active = (result: object, kind: 'ability' | 'crit' | 'kill' | 'strike' = 'ability') => ({
+  id: 1, closeUp: { kind, durationMs: kind === 'strike' ? CLOSE_UP_CONFIG.strikeMs : CLOSE_UP_CONFIG.abilityMs }, participants: parts,
   result: { type: 'combat_action_result', actorName: 'x', ...result } as never,
 });
 
@@ -70,5 +70,30 @@ describe('stageFor (data-driven over every ability)', () => {
     const s = stageFor(active({ action: 'use_ability', actorId: 'p1', abilityId: '__heal__', abilityName: 'Mend', targetId: 'p2', healing: 9 }));
     expect(s.number).toEqual({ value: 9, kind: 'heal' });
     expect(s.sound).toBe('shimmer');
+  });
+});
+
+describe('strikes', () => {
+  it('a player strike: strike variant, no title or subtitle, silent, damage number, player left', () => {
+    const s = stageFor(active({ actorId: 'p1', action: 'attack', targetId: 'm1', damage: 4 }, 'strike'));
+    expect(s.variant).toBe('strike');
+    expect(s.title).toBe('');
+    expect(s.subtitle).toBe('');
+    expect(s.sound).toBeNull();
+    expect(s.number).toEqual({ value: 4, kind: 'damage' });
+    expect(s.left.map((a) => a.id)).toEqual(['p1']);
+    expect(s.right.map((a) => a.id)).toEqual(['m1']);
+  });
+  it('mob strike on a player: player left (hurt), mob right (actor), enemy tone', () => {
+    const s = stageFor(active({ actorId: 'm1', action: 'attack', targetId: 'p1', damage: 3 }, 'strike'));
+    expect(s.variant).toBe('strike');
+    expect(s.left.map((a) => [a.id, a.isActor])).toEqual([['p1', false]]);
+    expect(s.right.map((a) => [a.id, a.isActor])).toEqual([['m1', true]]);
+    expect(s.tone).toBe('enemy');
+  });
+  it('non-strike close-ups keep the full variant and a sound', () => {
+    const s = stageFor(active({ actorId: 'p1', action: 'attack', targetId: 'm1', damage: 9, critMultiplier: 2 }, 'crit'));
+    expect(s.variant).toBe('full');
+    expect(s.sound).not.toBeNull();
   });
 });
