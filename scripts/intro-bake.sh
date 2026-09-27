@@ -11,13 +11,14 @@ sec() { awk "BEGIN{print $1/1000}"; }
 
 cmd="${1:-}"; shift || true
 case "$cmd" in
-  palette)   # 32-colour palette from the class portraits (style anchor), the logo, and any extra images
+  palette)   # 40-colour (override with MAX_COLORS env, up to 48) palette from the class portraits (style anchor), the logo, and any extra images
+    mc="${MAX_COLORS:-40}"
     inputs=(); filters=""; n=0
     for f in "$ROOT"/client/public/portraits/*.png "$ROOT/client/public/Caverns_Logo.png" "$@"; do
       inputs+=(-i "$f"); filters+="[$n:v]scale=256:256:flags=neighbor,format=rgb24[s$n];"; n=$((n+1))
     done
     stack=""; for ((i=0; i<n; i++)); do stack+="[s$i]"; done
-    ff "${inputs[@]}" -filter_complex "${filters}${stack}hstack=inputs=$n,palettegen=max_colors=32:stats_mode=full" -update 1 "$PAL"
+    ff "${inputs[@]}" -filter_complex "${filters}${stack}hstack=inputs=$n,palettegen=max_colors=$mc:stats_mode=full" -update 1 "$PAL"
     echo "$PAL" ;;
 
   layer)     # layer <src.png> <name> [dither=none|bayer]: palette-snap a still, keep alpha
@@ -56,13 +57,25 @@ case "$cmd" in
     ff "${inputs[@]}" -i "$PAL" -filter_complex "${stack}hstack=inputs=$n[s];[s][$n:v]paletteuse=dither=none:alpha_threshold=128" "$OUT/$name.png"
     echo "$OUT/$name.png ($n frames)" ;;
 
-  audio)     # audio <id> <src> [ss=0] [dur] [fadeInMs=5] [fadeOutMs=30]: trim, edge-fade, encode AAC 48 kHz
-    id="$1"; src="$2"; ss="${3:-0}"; dur="${4:-}"; fi="${5:-5}"; fo="${6:-30}"
+  audio)     # audio <id> <src> [ss=0] [dur] [fadeInMs=5] [fadeOutMs=30] [norm=none|loud|peak]: trim, edge-fade, optionally normalize, encode AAC 48 kHz
+    id="$1"; src="$2"; ss="${3:-0}"; dur="${4:-}"; fi="${5:-5}"; fo="${6:-30}"; norm="${7:-none}"
+    br="${BITRATE:-192k}"
     topt=(); [ -n "$dur" ] && topt=(-t "$dur")
-    af="aresample=48000"
+    pre="highpass=f=20"
+    case "$norm" in
+      loud) pre+=",loudnorm=I=-18:TP=-1.5:LRA=11" ;;
+      peak)
+        maxvol=$(ffmpeg -hide_banner -ss "$ss" "${topt[@]}" -i "$src" -af "highpass=f=20,volumedetect" -f null - 2>&1 | grep -o "max_volume: [-0-9.]* dB" | grep -o "\-\?[0-9.]*")
+        gain=$(awk "BEGIN{print -3 - ($maxvol)}")
+        pre+=",volume=${gain}dB"
+        ;;
+      none|*) : ;;
+    esac
+    af="$pre,aresample=48000"
     [ "$fi" != 0 ] && af+=",afade=t=in:d=$(sec "$fi")"
     [ "$fo" != 0 ] && af+=",areverse,afade=t=in:d=$(sec "$fo"),areverse"
-    ff -ss "$ss" "${topt[@]}" -i "$src" -af "$af" -ac 2 -c:a aac -b:a 192k -movflags +faststart "$OUT/$id.m4a"
+    af+=",alimiter=limit=0.89:level=false"
+    ff -ss "$ss" "${topt[@]}" -i "$src" -af "$af" -ac 2 -c:a aac -b:a "$br" -movflags +faststart "$OUT/$id.m4a"
     echo "$OUT/$id.m4a" ;;
 
   analyze)   # analyze <audio> <outPrefix>: loudness, true peak, silences, waveform + spectrogram PNGs
