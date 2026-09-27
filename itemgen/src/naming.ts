@@ -17,6 +17,37 @@ const QUALITY_WORDS: Record<Quality, string | null> = {
   masterwork: 'Masterwork',
 };
 
+/** Name plus the (lowercase) base type it was built from; the base type drives the item's icon archetype. */
+export function generateNameParts(
+  slot: EquipmentSlot,
+  rarity: Rarity,
+  quality: Quality,
+  materialName: string,
+  fragments: NameFragments,
+  rng: () => number,
+): { name: string; baseType: string } {
+  const rawBaseType = pick(fragments.baseTypes[slot], rng);
+  const baseType = capitalize(rawBaseType);
+
+  if (rarity === 'legendary') {
+    const prefix = pick(fragments.prefixes, rng);
+    const suffix = pick(fragments.suffixes, rng);
+    return { name: `${prefix}${suffix}`, baseType: rawBaseType };
+  }
+
+  if (rarity === 'rare') {
+    const adjective = capitalize(pick(fragments.adjectives, rng));
+    return { name: `${adjective} ${materialName} ${baseType}`, baseType: rawBaseType };
+  }
+
+  // Common / Uncommon
+  const qualityWord = QUALITY_WORDS[quality];
+  if (qualityWord) {
+    return { name: `${qualityWord} ${materialName} ${baseType}`, baseType: rawBaseType };
+  }
+  return { name: `${materialName} ${baseType}`, baseType: rawBaseType };
+}
+
 export function generateName(
   slot: EquipmentSlot,
   rarity: Rarity,
@@ -25,23 +56,5 @@ export function generateName(
   fragments: NameFragments,
   rng: () => number,
 ): string {
-  const baseType = capitalize(pick(fragments.baseTypes[slot], rng));
-
-  if (rarity === 'legendary') {
-    const prefix = pick(fragments.prefixes, rng);
-    const suffix = pick(fragments.suffixes, rng);
-    return `${prefix}${suffix}`;
-  }
-
-  if (rarity === 'rare') {
-    const adjective = capitalize(pick(fragments.adjectives, rng));
-    return `${adjective} ${materialName} ${baseType}`;
-  }
-
-  // Common / Uncommon
-  const qualityWord = QUALITY_WORDS[quality];
-  if (qualityWord) {
-    return `${qualityWord} ${materialName} ${baseType}`;
-  }
-  return `${materialName} ${baseType}`;
+  return generateNameParts(slot, rarity, quality, materialName, fragments, rng).name;
 }

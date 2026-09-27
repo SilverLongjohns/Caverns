@@ -1,4 +1,5 @@
 export * from './types.js';
+export * from './itemArchetypes.js';
 export * from './dropSpecs.js';
 export * from './messages.js';
 export * from './content.js';

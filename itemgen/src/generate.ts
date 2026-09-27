@@ -1,10 +1,11 @@
 import type { Item, Rarity } from '@caverns/shared';
+import { matchArchetype, SLOT_DEFAULT_ARCHETYPE } from '@caverns/shared';
 import type { ItemGenerationRequest } from './types.js';
 import { createRng } from './rng.js';
 import { getPalette, rollMaterial } from './materials.js';
 import { rollQuality } from './quality.js';
 import { generateStats } from './stats.js';
-import { generateName } from './naming.js';
+import { generateNameParts } from './naming.js';
 
 const RARITY_WEIGHTS: { rarity: Rarity; weight: number }[] = [
   { rarity: 'common',    weight: 40 },
@@ -62,14 +63,16 @@ export function generateItem(request: ItemGenerationRequest): Item {
   const stats = generateStats(slot, skullRating, material, quality, rng);
 
   // Generate name
-  const name = generateName(slot, rarity, quality, material.name, palette.nameFragments, rng);
+  const { name, baseType: nameBaseType } = generateNameParts(slot, rarity, quality, material.name, palette.nameFragments, rng);
 
-  // Build description
+  // Build description. Legendary names carry no base type, so their icon follows the description's base type.
   let description: string;
+  let iconBaseType = nameBaseType;
   if (rarity === 'legendary') {
     const qualityWord = quality === 'standard' ? 'a' : `a ${quality}`;
     const baseTypes = palette.nameFragments.baseTypes[slot];
     const baseType = baseTypes[Math.floor(rng() * baseTypes.length)];
+    iconBaseType = baseType;
     description = `${name} — ${qualityWord} ${material.name.toLowerCase()} ${baseType}.`;
   } else {
     description = `A ${quality === 'standard' ? '' : quality + ' '}${material.name.toLowerCase()} ${slot}.`;
@@ -78,6 +81,7 @@ export function generateItem(request: ItemGenerationRequest): Item {
   // Generate unique ID using RNG for determinism
   const idSuffix = Math.floor(rng() * 0xFFFFFF).toString(16).padStart(6, '0');
   const id = `gen_${slot}_${idSuffix}`;
+  const archetype = matchArchetype(slot, iconBaseType) ?? SLOT_DEFAULT_ARCHETYPE[slot];
 
-  return { id, name, description, rarity, slot, stats, skullRating };
+  return { id, name, description, rarity, slot, stats, skullRating, archetype };
 }

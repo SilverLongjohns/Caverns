@@ -4,6 +4,7 @@ import { App } from './App.js';
 import { getSandboxRequest } from './sandbox/sandboxMode.js';
 import { installSandboxHook } from './sandbox/sandboxHook.js';
 import './styles/index.css';
+import './styles/relic.css';
 
 if (getSandboxRequest()) installSandboxHook();
 

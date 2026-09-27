@@ -1,4 +1,6 @@
 import type { CombatParticipant } from '@caverns/shared';
+import { IconSocket } from './relic/index.js';
+import { getParticipantGlyph } from '../glyphs.js';
 
 interface TurnOrderBarProps {
   participants: CombatParticipant[];
@@ -13,18 +15,19 @@ export function TurnOrderBar({ participants, turnOrder, currentTurnId, roundNumb
   return (
     <div className="arena-turn-order">
       <span className="turn-round">Round {roundNumber}</span>
-      <span className="turn-label">Turn:</span>
-      {turnOrder.map((id, i) => {
+      {turnOrder.map((id) => {
         const p = participantMap.get(id);
         if (!p) return null;
         const isCurrent = id === currentTurnId;
-        const colorClass = p.type === 'player' ? 'turn-player' : 'turn-mob';
+        const glyph = getParticipantGlyph(p);
         return (
-          <span key={id}>
-            <span className={`turn-name ${colorClass} ${isCurrent ? 'turn-active' : ''}`}>
-              {isCurrent && '\u25BA '}{p.name}
-            </span>
-            {i < turnOrder.length - 1 && <span className="turn-separator">{'\u2192'}</span>}
+          <span key={id} className={`turn-unit ${p.type === 'player' ? 'turn-player' : 'turn-mob'}${isCurrent ? ' turn-active' : ''}`}>
+            <IconSocket size={24} hot={isCurrent} title={p.name}>
+              {glyph
+                ? <img className="relic-socket__img" src={glyph} alt="" />
+                : <span className="relic-socket__glyph">{p.name.charAt(0)}</span>}
+            </IconSocket>
+            <span className="turn-name">{p.name}</span>
           </span>
         );
       })}

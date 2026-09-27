@@ -1,5 +1,6 @@
 import { useGameStore } from '../store/gameStore.js';
 import type { ItemStats } from '@caverns/shared';
+import { RelicButton, ItemIcon } from './relic/index.js';
 
 function formatStats(stats: ItemStats): string {
   const parts: string[] = [];
@@ -43,13 +44,9 @@ export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAc
         <div className="puzzle-description">{activePuzzle.description}</div>
         <div className="puzzle-options">
           {activePuzzle.options.map((option, i) => (
-            <button
-              key={i}
-              className="puzzle-btn"
-              onClick={() => onPuzzleAnswer(activePuzzle.roomId, i)}
-            >
+            <RelicButton key={i} className="puzzle-btn" onClick={() => onPuzzleAnswer(activePuzzle.roomId, i)}>
               {option}
-            </button>
+            </RelicButton>
           ))}
         </div>
       </div>
@@ -63,22 +60,23 @@ export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAc
         <h3>Loot Dropped!</h3>
         {pendingLoot.items.map((item) => (
           <div key={item.id} className="loot-item">
-            <span className={`item-name rarity-${item.rarity}`}>{item.name}</span>
-            <span className="item-slot">[{item.slot}]</span>
-            <span className="item-stats">{formatStats(item.stats)}</span>
+            <ItemIcon item={item} />
+            <div className="slot-body">
+              <span className={`slot-name item-name rarity-${item.rarity}`}>{item.name}</span>
+              <span className="item-stats">[{item.slot}] {formatStats(item.stats)}</span>
+            </div>
             <div className="loot-buttons">
               {(['need', 'greed', 'pass'] as const).map((choice) => {
                 const chosen = lootChoices[item.id];
-                const isSelected = chosen === choice;
                 return (
-                  <button
+                  <RelicButton
                     key={choice}
-                    className={isSelected ? `loot-btn-selected loot-${choice}` : ''}
+                    hot={chosen === choice}
                     disabled={!!chosen}
                     onClick={() => { setLootChoice(item.id, choice); onLootChoice(item.id, choice); }}
                   >
                     {choice.charAt(0).toUpperCase() + choice.slice(1)}
-                  </button>
+                  </RelicButton>
                 );
               })}
             </div>
@@ -106,7 +104,7 @@ export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAc
           {pendingInteractActions.actions.map((action) => {
             const lockedClass = action.lockReason?.replace('Requires ', '') ?? '';
             return (
-              <button
+              <RelicButton
                 key={action.id}
                 className={`interact-btn${action.locked ? ' interact-locked' : ''}${action.used ? ' interact-used' : ''}`}
                 disabled={action.locked || action.used}
@@ -118,10 +116,10 @@ export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAc
                   <span className={`lock-reason class-color-${lockedClass}`}> {lockedClass}</span>
                 )}
                 {action.used && <span className="used-label"> (used)</span>}
-              </button>
+              </RelicButton>
             );
           })}
-          <button
+          <RelicButton
             className="interact-btn interact-cancel"
             onClick={() => {
               selectInteractable(null);
@@ -129,7 +127,7 @@ export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAc
             }}
           >
             Cancel
-          </button>
+          </RelicButton>
         </div>
       </div>
     );
@@ -146,9 +144,9 @@ export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAc
     <div className="action-bar explore-bar">
       <div className="revive-actions">
         {downedInRoom.map((ally) => (
-          <button key={ally.id} onClick={() => onRevive(ally.id)}>
+          <RelicButton key={ally.id} onClick={() => onRevive(ally.id)}>
             Revive {ally.name}
-          </button>
+          </RelicButton>
         ))}
       </div>
     </div>

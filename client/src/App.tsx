@@ -8,6 +8,7 @@ import { WorldView } from './components/WorldView.js';
 import { clearSessionToken } from './auth/sessionStorage.js';
 import { TextLog } from './components/TextLog.js';
 import { MiniMap } from './components/MiniMap.js';
+import { RelicPanel } from './components/relic/index.js';
 import { PlayerHUD } from './components/PlayerHUD.js';
 import { PartyPanel } from './components/PartyPanel.js';
 import { ActionBar } from './components/ActionBar.js';
@@ -146,40 +147,46 @@ export function App() {
       content = (
         <div className="game-layout">
           <div className="main-column">
-            {activeCombat && arenaGrid ? (
-              <ArenaView
-                onCombatAction={actions.combatAction}
-                onArenaMove={actions.arenaMove}
-                onArenaEndTurn={actions.arenaEndTurn}
-                onUseAbility={(abilityId, targetId, targetX, targetY) => actions.useAbility(abilityId, targetId, targetX, targetY)}
-              />
-            ) : activeCombat ? (
-              <CombatView
-                onCombatAction={actions.combatAction}
-                onRevive={actions.revive}
-                onDefendResult={actions.defendResult}
-                onUseAbility={actions.useAbility}
-                onUseItemEffect={actions.useItemEffect}
-              />
-            ) : (
-              <>
-                <div className="room-area">
-                  <Compass exits={availableExits} />
-                  <RoomView />
-                </div>
-                <TextLog />
-                <ChatInput onSend={actions.chat} />
-                <ActionBar
-                  onLootChoice={actions.lootChoice}
-                  onRevive={actions.revive}
-                  onPuzzleAnswer={actions.puzzleAnswer}
-                  onInteractAction={actions.interactAction}
+            <RelicPanel className="main-screen">
+              {activeCombat && arenaGrid ? (
+                <ArenaView
+                  onCombatAction={actions.combatAction}
+                  onArenaMove={actions.arenaMove}
+                  onArenaEndTurn={actions.arenaEndTurn}
+                  onUseAbility={(abilityId, targetId, targetX, targetY) => actions.useAbility(abilityId, targetId, targetX, targetY)}
                 />
-              </>
-            )}
+              ) : activeCombat ? (
+                <CombatView
+                  onCombatAction={actions.combatAction}
+                  onRevive={actions.revive}
+                  onDefendResult={actions.defendResult}
+                  onUseAbility={actions.useAbility}
+                  onUseItemEffect={actions.useItemEffect}
+                />
+              ) : (
+                <>
+                  <div className="room-area">
+                    <Compass exits={availableExits} />
+                    <RoomView />
+                  </div>
+                  <div className="log-area">
+                    <TextLog />
+                    <ChatInput onSend={actions.chat} />
+                  </div>
+                  <ActionBar
+                    onLootChoice={actions.lootChoice}
+                    onRevive={actions.revive}
+                    onPuzzleAnswer={actions.puzzleAnswer}
+                    onInteractAction={actions.interactAction}
+                  />
+                </>
+              )}
+            </RelicPanel>
           </div>
           <div className="side-column">
-            <MiniMap />
+            <RelicPanel className="map-screen" title="Map">
+              <MiniMap />
+            </RelicPanel>
             <PartyPanel />
             <PlayerHUD
               onEquipItem={actions.equipItem}

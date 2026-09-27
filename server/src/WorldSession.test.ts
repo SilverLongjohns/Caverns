@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { ServerMessage } from '@caverns/shared';
-import { OVERWORLD_MAPS } from '@caverns/shared';
+import { OVERWORLD_MAPS, findOverworldPath } from '@caverns/shared';
 import { WorldSession, type AddConnectionArgs } from './WorldSession.js';
 import type { WorldRepository } from './WorldRepository.js';
 import type { CharacterRepository } from './CharacterRepository.js';
@@ -170,20 +170,31 @@ describe('WorldSession', () => {
 
     it('advances the member one tile per tick and marks arrived on the final step', async () => {
       await session.addConnection(makeArgs('c1'));
-      const target = { x: spawn.x, y: spawn.y - 2 };
-      session.requestMove('c1', target);
+      // Any target exactly two steps away on the current map (layout changed in de348c7).
+      const map = OVERWORLD_MAPS.starter;
+      let target: { x: number; y: number } | null = null;
+      let firstStep: { x: number; y: number } | null = null;
+      for (let dy = -2; dy <= 2 && !target; dy++) {
+        for (let dx = -2; dx <= 2 && !target; dx++) {
+          const cand = { x: spawn.x + dx, y: spawn.y + dy };
+          const path = findOverworldPath(map, spawn, cand);
+          if (path?.length === 2) { target = cand; firstStep = path[0]; }
+        }
+      }
+      expect(target).not.toBeNull();
+      expect(session.requestMove('c1', target!)).toBe('ok');
       broadcast.mockClear();
 
       await session.runTickForTest();
       expect(broadcast).toHaveBeenCalledWith(expect.objectContaining({
         type: 'overworld_tick',
-        steps: [expect.objectContaining({ connectionId: 'c1', x: spawn.x, y: spawn.y - 1, arrived: false })],
+        steps: [expect.objectContaining({ connectionId: 'c1', x: firstStep!.x, y: firstStep!.y, arrived: false })],
       }));
 
       await session.runTickForTest();
       expect(broadcast).toHaveBeenLastCalledWith(expect.objectContaining({
         type: 'overworld_tick',
-        steps: [expect.objectContaining({ connectionId: 'c1', x: target.x, y: target.y, arrived: true })],
+        steps: [expect.objectContaining({ connectionId: 'c1', x: target!.x, y: target!.y, arrived: true })],
       }));
       expect(session.getMembers()[0].pos).toEqual(target);
     });

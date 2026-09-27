@@ -1,4 +1,6 @@
 import { useGameStore } from '../store/gameStore.js';
+import { RelicPanel, Gauge, IconSocket } from './relic/index.js';
+import { getParticipantGlyph } from '../glyphs.js';
 
 const STATUS_ICONS: Record<string, string> = {
   exploring: '\uD83E\uDDED',
@@ -15,25 +17,29 @@ export function PartyPanel() {
   if (otherPlayers.length === 0) return null;
 
   return (
-    <div className="party-panel">
-      <h3>Party</h3>
-      {otherPlayers.map((player) => {
-        const hpPercent = (player.hp / player.maxHp) * 100;
-        const hpColor = hpPercent > 50 ? '#8b2020' : hpPercent > 25 ? '#8b5a20' : '#cc3333';
-        const room = rooms[player.roomId];
-        return (
-          <div key={player.id} className="party-member">
-            <div className="party-member-header">
-              <span>{STATUS_ICONS[player.status] ?? ''} {player.name}</span>
-              <span className="party-room">{room?.name ?? '???'}</span>
+    <RelicPanel className="party-screen" title="Party">
+      <div className="party-panel">
+        {otherPlayers.map((player) => {
+          const room = rooms[player.roomId];
+          const glyph = getParticipantGlyph({ type: 'player', className: player.className });
+          return (
+            <div key={player.id} className="party-member">
+              <IconSocket size={24} title={player.className}>
+                {glyph
+                  ? <img className="relic-socket__img" src={glyph} alt="" />
+                  : <span className="relic-socket__glyph">{player.name.charAt(0)}</span>}
+              </IconSocket>
+              <div className="party-member-body">
+                <div className="party-member-header">
+                  <span>{STATUS_ICONS[player.status] ?? ''} {player.name}</span>
+                  <span className="party-room">{room?.name ?? '???'}</span>
+                </div>
+                <Gauge kind="hp" size="sm" value={player.hp} max={player.maxHp} text={`${player.hp}/${player.maxHp}`} />
+              </div>
             </div>
-            <div className="hp-bar-container small">
-              <div className="hp-bar" style={{ width: `${hpPercent}%`, backgroundColor: hpColor }} />
-              <span className="hp-text">{player.hp}/{player.maxHp}</span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </RelicPanel>
   );
 }
