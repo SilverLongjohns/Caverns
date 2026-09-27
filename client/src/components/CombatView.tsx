@@ -6,6 +6,8 @@ import { COMBAT_UI_CONFIG } from '../uiconfig/combatUI.js';
 import { AttackQTE } from './AttackQTE.js';
 import { DefenseQTE } from './DefenseQTE.js';
 import { Disintegrate } from './Disintegrate.js';
+import { RelicButton } from './relic/index.js';
+import { actionIconSrc } from '../ui/iconPaths.js';
 
 type ActionState =
   | { mode: 'idle' }
@@ -285,16 +287,16 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
 
         {effectiveState.mode === 'main' && (
           <>
-            <button onClick={() => setActionState({ mode: 'target', afterSelect: 'attack' })}>
+            <RelicButton icon={actionIconSrc('attack')} onClick={() => setActionState({ mode: 'target', afterSelect: 'attack' })}>
               Attack
-            </button>
-            <button onClick={handleDefend}>Defend</button>
-            <button onClick={() => setActionState({ mode: 'items' })}>Items</button>
-            <button onClick={() => setActionState({ mode: 'flee' })}>Flee</button>
+            </RelicButton>
+            <RelicButton icon={actionIconSrc('defend')} onClick={handleDefend}>Defend</RelicButton>
+            <RelicButton icon={actionIconSrc('items')} onClick={() => setActionState({ mode: 'items' })}>Items</RelicButton>
+            <RelicButton icon={actionIconSrc('flee')} onClick={() => setActionState({ mode: 'flee' })}>Flee</RelicButton>
             {downedAllies.map((ally) => (
-              <button key={ally.id} className="revive-btn" onClick={() => onRevive(ally.id)}>
+              <RelicButton key={ally.id} className="revive-btn" onClick={() => onRevive(ally.id)}>
                 Revive {ally.name}
-              </button>
+              </RelicButton>
             ))}
             <div className="energy-display">Energy: {player.energy ?? 0}/{ENERGY_CONFIG.maxEnergy}</div>
             {playerAbilities.map((ability) => {
@@ -343,9 +345,9 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
         {effectiveState.mode === 'target' && (
           <>
             <span className="waiting-text">Select a target...</span>
-            <button className="back-btn" onClick={() => setActionState({ mode: 'main' })}>
+            <RelicButton className="back-btn" onClick={() => setActionState({ mode: 'main' })}>
               Back
-            </button>
+            </RelicButton>
           </>
         )}
 
@@ -361,9 +363,9 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
                 ) : null
               )}
             </div>
-            <button className="back-btn" onClick={() => setActionState({ mode: 'main' })}>
+            <RelicButton className="back-btn" onClick={() => setActionState({ mode: 'main' })}>
               Back
-            </button>
+            </RelicButton>
           </>
         )}
 
@@ -371,14 +373,14 @@ export function CombatView({ onCombatAction, onRevive, onDefendResult, onUseAbil
           <>
             <div className="combat-flee-directions">
               {(Object.keys(currentRoom.exits) as Direction[]).map((dir) => (
-                <button key={dir} onClick={() => handleFlee(dir)}>
+                <RelicButton key={dir} onClick={() => handleFlee(dir)}>
                   {dir.charAt(0).toUpperCase() + dir.slice(1)}
-                </button>
+                </RelicButton>
               ))}
             </div>
-            <button className="back-btn" onClick={() => setActionState({ mode: 'main' })}>
+            <RelicButton className="back-btn" onClick={() => setActionState({ mode: 'main' })}>
               Back
-            </button>
+            </RelicButton>
           </>
         )}
       </div>
