@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CLASS_DEFINITIONS, CLOSE_UP_CONFIG, type CombatParticipant } from '@caverns/shared';
 import { stageFor, artChainFor } from './closeUpStage.js';
+import { MOB_CLOSE_UPS } from './mobCloseUpManifest.js';
 
 const cls = CLASS_DEFINITIONS[0];
 const hero: CombatParticipant = { id: 'p1', type: 'player', name: 'Hero', hp: 30, maxHp: 50, initiative: 5, className: cls.id };
@@ -19,7 +20,12 @@ describe('artChainFor', () => {
       expect(chain.length, `${c.id}/${role}`).toBeGreaterThan(1);
       expect(chain[0]).toMatch(/^\/closeups\/classes\//);
     }
-    expect(artChainFor({ type: 'mob', templateId: 'tunnel_rat' }, 'attack')).toEqual(['/closeups/mobs/tunnel_rat.png', '/sprites/glyphs/mobs/tunnel_rat.png']);
+    const withArt = new Set(MOB_CLOSE_UPS);
+    for (const id of ['__no_art_mob__', ...MOB_CLOSE_UPS]) {
+      const chain = artChainFor({ type: 'mob', templateId: id }, 'attack');
+      if (withArt.has(id)) expect(chain[0]).toBe(`/closeups/mobs/${id}.png`);
+      else expect(chain.some((c) => c.startsWith('/closeups/mobs/'))).toBe(false);
+    }
   });
   it('an ability art path from data goes first', () => {
     expect(artChainFor({ type: 'player', className: cls.id }, 'cast', '/closeups/abilities/x.png')[0]).toBe('/closeups/abilities/x.png');

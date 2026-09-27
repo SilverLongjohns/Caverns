@@ -2,6 +2,9 @@ import { findAbility, getClassDefinition, type CombatParticipant } from '@cavern
 import type { ActiveCloseUp } from './closeUpGate.js';
 import { getClassPortrait } from '../classPortraits.js';
 import { getParticipantGlyph } from '../glyphs.js';
+import { MOB_CLOSE_UPS } from './mobCloseUpManifest.js';
+
+const mobCloseUps = new Set<string>(MOB_CLOSE_UPS);
 
 export interface StageActor { id: string; name: string; side: 'left' | 'right'; art: string[]; downed: boolean; isActor: boolean }
 export interface Stage {
@@ -22,7 +25,7 @@ export function artChainFor(
 ): string[] {
   const chain: string[] = [];
   if (p.type === 'mob') {
-    if (p.templateId) chain.push(`/closeups/mobs/${p.templateId}.png`);
+    if (p.templateId && mobCloseUps.has(p.templateId)) chain.push(`/closeups/mobs/${p.templateId}.png`);
   } else {
     if (role === 'cast' && abilityArt) chain.push(abilityArt);
     if (p.className) chain.push(`/closeups/classes/${p.className}-${role === 'hurt' ? 'hurt' : 'attack'}.png`);
