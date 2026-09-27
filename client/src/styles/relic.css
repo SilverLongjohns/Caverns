@@ -1,0 +1,165 @@
+/* === Relic kit (UI revamp phase 1): salvaged-hardware chrome around the amber CRT text.
+   Loaded after index.css. Does not touch .crt-overlay. === */
+:root {
+  --relic-bronze: #4a3522;
+  --relic-bronze-hi: #7a5530;
+  --relic-bronze-lo: #140c06;
+  --relic-bronze-face: #2a1c10;
+  --relic-screen: #0b0907;
+  --relic-amber: #f0c878;
+  --relic-amber-hot: #ffd98a;
+  --relic-amber-rim: #c08a3a;
+  --relic-text: #c8b89a;
+  --relic-dim: #6d5f4a;
+  --relic-divider: #2e241a;
+  --relic-danger: #e06a5a;
+  --relic-hp-high: #b8322a;
+  --relic-hp-mid: #b8752a;
+  --relic-hp-low: #e04040;
+  --relic-xp: #c8a24a;
+  --relic-resource: #3fa7c9;
+  --screen-glow: rgba(70, 190, 110, 0.18);
+  --screen-glow-rim: rgba(40, 140, 80, 0.08);
+  --rarity-common: #c8b89a;
+  --rarity-uncommon: #8888ff;
+  --rarity-rare: #ffee77;
+  --rarity-legendary: #af6025;
+  --rarity-unique: #ff44ff;
+}
+
+/* --- Panel: PixelLab bezel as a 9-slice, dark screen, subtle green phosphor edge --- */
+.relic-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 24px solid transparent;
+  border-image: url('/ui/relic_frame.png') 24 / 24px round;
+  image-rendering: pixelated;
+  background: var(--relic-screen);
+  background-clip: padding-box;
+}
+.relic-panel--fallback { border: 6px double var(--relic-bronze-hi); border-image: none; }
+.relic-panel__screen {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.relic-panel__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: inset 0 0 18px 2px var(--screen-glow);
+  background: radial-gradient(ellipse at center, transparent 62%, var(--screen-glow-rim) 100%);
+}
+.relic-panel__title {
+  position: absolute;
+  top: -20px;
+  left: 12px;
+  z-index: 3;
+  padding: 0 6px;
+  line-height: 16px;
+  background: var(--relic-bronze-lo);
+  color: var(--relic-amber);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* --- Button: CSS-bevelled bronze --- */
+.relic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 5px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--relic-amber);
+  background: var(--relic-bronze-face);
+  border: 2px solid #000;
+  border-radius: 0;
+  cursor: pointer;
+  box-shadow: inset 2px 2px 0 var(--relic-bronze-hi), inset -2px -2px 0 var(--relic-bronze-lo), 0 0 0 2px var(--relic-bronze);
+  text-shadow: 0 0 3px rgba(240, 200, 120, 0.3);
+  image-rendering: pixelated;
+}
+.relic-btn--sm { padding: 1px 7px 2px; font-size: 0.65rem; gap: 4px; }
+.relic-btn--danger { color: var(--relic-danger); }
+.relic-btn:hover:not(:disabled) {
+  box-shadow: inset 2px 2px 0 #9a6d3c, inset -2px -2px 0 var(--relic-bronze-lo), 0 0 0 2px var(--relic-amber-rim);
+}
+.relic-btn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: inset 2px 2px 0 var(--relic-bronze-lo), inset -2px -2px 0 var(--relic-bronze-hi), 0 0 0 2px var(--relic-bronze);
+}
+.relic-btn:focus-visible { outline: 1px dashed var(--relic-amber); outline-offset: 4px; }
+.relic-btn:disabled { opacity: 0.4; cursor: not-allowed; text-shadow: none; }
+.relic-btn--hot {
+  color: var(--relic-amber-hot);
+  box-shadow: inset 2px 2px 0 #a8773c, inset -2px -2px 0 var(--relic-bronze-lo), 0 0 0 2px var(--relic-amber-rim), 0 0 8px rgba(240, 170, 60, 0.35);
+}
+.relic-btn__icon { width: 24px; height: 24px; flex: none; }
+.relic-btn--sm .relic-btn__icon { display: none; }
+
+/* --- Gauge: segmented bar --- */
+.relic-gauge {
+  position: relative;
+  height: 18px;
+  margin: 6px 2px;
+  overflow: hidden;
+  background: #1a0c0a;
+  border: 2px solid #000;
+  box-shadow: 0 0 0 2px var(--relic-bronze);
+}
+.relic-gauge--xp { background: #14110a; }
+.relic-gauge--resource { background: #0a1418; }
+.relic-gauge--sm { height: 12px; margin: 4px 2px; }
+.relic-gauge__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: repeating-linear-gradient(90deg, var(--gauge-color) 0 6px, transparent 6px 8px);
+  transition: width 0.25s steps(8);
+}
+.relic-gauge__text {
+  position: relative;
+  display: block;
+  text-align: center;
+  font-size: 0.7rem;
+  line-height: 14px;
+  color: #f2d7a8;
+  text-shadow: 0 0 2px #000, 0 0 2px #000;
+}
+.relic-gauge--sm .relic-gauge__text { font-size: 0.6rem; line-height: 8px; }
+
+/* --- Socket: recessed square with a bronze (or rarity) ring --- */
+.relic-socket {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  background: #0f0b08;
+  border: 2px solid #000;
+  box-shadow: 0 0 0 1px var(--socket-ring, var(--relic-bronze));
+}
+.relic-socket--32 { width: 36px; height: 36px; }
+.relic-socket--24 { width: 28px; height: 28px; }
+.relic-socket--uncommon { --socket-ring: var(--rarity-uncommon); }
+.relic-socket--rare { --socket-ring: var(--rarity-rare); }
+.relic-socket--legendary { --socket-ring: var(--rarity-legendary); }
+.relic-socket--unique { --socket-ring: var(--rarity-unique); }
+.relic-socket--hot { box-shadow: 0 0 0 2px var(--relic-amber-rim), 0 0 6px rgba(240, 170, 60, 0.4); }
+.relic-socket__img { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.relic-socket__glyph { font-size: 0.9rem; color: var(--relic-dim); line-height: 1; }
+
+/* --- Bronze rail (turn order, console strips) --- */
+.relic-rail {
+  background: linear-gradient(#2a1c10, #1a120a);
+  border: 2px solid #000;
+  box-shadow: inset 0 2px 0 var(--relic-bronze-hi), 0 0 0 1px var(--relic-bronze);
+}
