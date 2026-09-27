@@ -23,6 +23,15 @@ export function parseStill(search: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/**
+ * The `?still=<t>` tooling mode (renders one frame, exposes window.__intro). Enabled only in dev
+ * builds or alongside `?intro`, which scripts/intro-render.mjs always passes.
+ */
+export function stillTime(search: string, dev: boolean): number | null {
+  if (!dev && !new URLSearchParams(search).has('intro')) return null;
+  return parseStill(search);
+}
+
 export function shouldPlayIntro(env: IntroEnv): boolean {
   const params = new URLSearchParams(env.search);
   if (params.has('sandbox')) return false;

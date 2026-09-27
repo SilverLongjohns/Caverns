@@ -41,7 +41,9 @@ export function drawEyes(o: CanvasRenderingContext2D, t: number, layout: SceneLa
     const open = clamp(ease.outBack(clamp((t - to) / 0.14)), 0, 1.15);
     let alpha = 0.9 * (0.88 + 0.12 * Math.sin(t * 2.3 + i));
     if (t >= EYES_SETTLE_T0) {
-      const live = parseFloat(getComputedStyle(e.el).opacity) || 0;
+      // A detached element (the view changed under the intro) reads as NaN: converge on 0.
+      const raw = e.el.isConnected ? parseFloat(getComputedStyle(e.el).opacity) : NaN;
+      const live = Number.isFinite(raw) ? raw : 0;
       alpha = lerp(alpha, live, ease.inOut(inv(EYES_SETTLE_T0, EYES_SETTLE_T1, t)));
     }
     if (alpha <= 0.005) return;

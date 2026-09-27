@@ -18,6 +18,11 @@ frame crossfades onto the live login screen underneath, pixel for pixel.
 | 7.4–8.4   | `resolve` | canvas eyes converge on the live DOM eyes' opacity |
 | 8.0–8.8   | `resolve` | whole-frame crossfade to the real login DOM (`UNDERLAY_T0`–`UNDERLAY_T1`); done at 9.0 |
 
+Picture follows the audio clock (`ctx.currentTime` minus `outputLatency`, so a frame is shown when
+its sound is heard). If that clock stops advancing for 750 ms (Safari "interrupted", iOS
+backgrounding), or the tab comes back with the context not running, playback continues from the
+same t on `performance.now()`, picture only, so the intro and skip always reach the end.
+
 Any key or click during playback skips: the clock jumps to the start of the resolve (`SKIP_FROM`
 = 5.0, or carries on from later) and runs at 3×, with `SKIP_CUES` replacing the rest of the audio.
 
@@ -52,9 +57,11 @@ client/src/intro/
                       source of truth (see below)
   introState.ts      should-play logic, seen flag, URL params
   introStore.ts      zustand store: active / musicHold / gateless
-  clock.ts           IntroClock (skip-aware) + pickClockSource
+  clock.ts           IntroClock (skip-aware, output-latency-compensated, never runs backwards,
+                      switchable to performance time mid-run) + pickClockSource + stall watch
   layout.ts          coverFit, glyphRevealTime (pure) + measureLayout (DOM)
-  assets.ts          asset manifest + loader (the logo, plus the audio under client/public/intro/)
+  assets.ts          asset manifest + loader (the logo, plus the audio under client/public/intro/),
+                      cached per AudioContext; ASSET_VERSION cache-busts /intro/ URLs
   audio.ts           planCues/encodeWav (pure) + scheduleCues (Web Audio) + renderIntroMix
   renderer.ts        IntroRenderer: low-res (320x180) scene composited, upscaled, CRT-posted,
                       then native-resolution layers (glyphs, logo, eyes) drawn on top
@@ -104,11 +111,17 @@ server running (`npm run dev`):
 node scripts/intro-render.mjs stills 0.03,0.3,0.8,1.3,1.7,2.45,3.5,4.9,5.6,6.5,7.3,8.3 [--out .intro/stills] [--viewport 1920x1080]
 ```
 
-Each time renders through `window.__intro.render(t)`, the same code path the real playback loop
+`?still=` (and `window.__intro`) only works in dev builds or alongside `?intro`, which the script
+always passes. Each time renders through `window.__intro.render(t)`, the same code path the real playback loop
 uses, so what you see is exactly what ships. Edit the shot module or `timeline.ts`, re-run, look at
 the PNGs.
 
 ## Re-baking audio
+
+**Bump `ASSET_VERSION` in `assets.ts` whenever anything under `client/public/intro/` is re-baked.**
+The server sends `Cache-Control: immutable` (one year) for every non-HTML file and these URLs aren't
+content-hashed, so every `/intro/` fetch (including `AMBIENCE_URL`) carries `?v=ASSET_VERSION`;
+without a bump, returning players keep the old audio.
 
 All offline asset baking happens in WSL via ffmpeg (`scripts/intro-bake.sh`; not available on
 Windows). Every audio pick (raw take, in-point, fades, normalization mode) and the post-bake

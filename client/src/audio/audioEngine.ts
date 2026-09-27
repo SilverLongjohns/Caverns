@@ -2,8 +2,9 @@
 // The ambience is a decoded buffer looped sample-accurately (HTMLAudio loops of AAC have gaps).
 import { clamp } from '../intro/math.js';
 import type { MusicTrack } from './musicTrack.js';
+import { introAssetUrl } from '../intro/assets.js';
 
-export const AMBIENCE_URL = '/intro/ambience.m4a';
+export const AMBIENCE_URL = introAssetUrl('ambience.m4a');
 export const WORLD_URL = '/audio/gasket_maples.mp3';
 /** The intro plays this much louder than music at the same slider position (capped at unity). */
 export const INTRO_BOOST = 2.5;

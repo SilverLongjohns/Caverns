@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { coverFit, glyphRevealTime } from './layout.js';
+import { coverFit, glyphRevealTime, MAX_PRESCALE_W } from './layout.js';
 import { GLYPH_T0, GLYPH_T1, LR_W, LR_H } from './timeline.js';
 
 describe('coverFit', () => {
@@ -14,6 +14,12 @@ describe('coverFit', () => {
     expect(Number.isInteger(f.ps)).toBe(true);
     expect(f.ps).toBeGreaterThanOrEqual(Math.max(1, f.k - 1e-6));
     expect(f.ps).toBeLessThan(f.k + 1);
+  });
+  it.each([[5120, 2880], [7680, 4320], [15360, 8640]])('caps the pre-scale at %ix%i so the intermediate stays ≤ MAX_PRESCALE_W', (vw, vh) => {
+    const f = coverFit(vw, vh);
+    expect(LR_W * f.ps).toBeLessThanOrEqual(MAX_PRESCALE_W);
+    expect(f.ps).toBe(Math.floor(MAX_PRESCALE_W / LR_W));
+    expect(LR_W * f.k).toBeGreaterThanOrEqual(vw - 1e-6);
   });
   it('is exactly 6× at 1920×1080', () => {
     expect(coverFit(1920, 1080)).toEqual({ k: 6, ps: 6, dx: 0, dy: 0 });

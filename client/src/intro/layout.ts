@@ -5,13 +5,19 @@ import { clamp, hash } from './math.js';
 
 export interface Fit { k: number; ps: number; dx: number; dy: number }
 
+/** The intermediate pre-scaled canvas never gets wider than this (device px). */
+export const MAX_PRESCALE_W = 4096;
+const MAX_PS = Math.floor(MAX_PRESCALE_W / LR_W);
+
 /**
  * Cover-fit the low-res frame into vw×vh device px. `k` is the exact scale; `ps` is the integer
  * pre-scale for "sharp bilinear" upscaling (nearest ×ps, then smooth to ×k): crisp and even.
+ * `ps` is capped so the intermediate canvas stays ≤ MAX_PRESCALE_W wide; above that (5K+ device
+ * px) the final smooth step scales up from the capped size instead.
  */
 export function coverFit(vw: number, vh: number): Fit {
   const k = Math.max(vw / LR_W, vh / LR_H);
-  const ps = Math.max(1, Math.ceil(k - 1e-9));
+  const ps = Math.min(MAX_PS, Math.max(1, Math.ceil(k - 1e-9)));
   return { k, ps, dx: (vw - LR_W * k) / 2, dy: (vh - LR_H * k) / 2 };
 }
 

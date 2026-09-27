@@ -16,8 +16,8 @@ function makeCanvas(w: number, h: number): HTMLCanvasElement {
   return c;
 }
 
-function ctx2d(c: HTMLCanvasElement): CanvasRenderingContext2D {
-  const x = c.getContext('2d');
+function ctx2d(c: HTMLCanvasElement, opts?: CanvasRenderingContext2DSettings): CanvasRenderingContext2D {
+  const x = c.getContext('2d', opts);
   if (!x) throw new Error('2D canvas unavailable');
   return x;
 }
@@ -25,7 +25,7 @@ function ctx2d(c: HTMLCanvasElement): CanvasRenderingContext2D {
 export class IntroRenderer {
   private readonly o: CanvasRenderingContext2D;
   private readonly lr = makeCanvas(LR_W, LR_H);
-  private readonly lx = ctx2d(this.lr);
+  private readonly lx = ctx2d(this.lr, { willReadFrequently: true }); // crtWarmPass reads it back
   private px = makeCanvas(LR_W, LR_H);
   private pxx = ctx2d(this.px);
   private readonly bloom = makeCanvas(LR_W / 2, LR_H / 2);

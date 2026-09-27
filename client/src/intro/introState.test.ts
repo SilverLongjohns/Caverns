@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SEEN_KEY, hasSeenIntro, markIntroSeen, parseStill, shouldPlayIntro, type StorageLike } from './introState.js';
+import { SEEN_KEY, hasSeenIntro, markIntroSeen, parseStill, shouldPlayIntro, stillTime, type StorageLike } from './introState.js';
 
 function mem(): StorageLike & { data: Record<string, string> } {
   const data: Record<string, string> = {};
@@ -45,5 +45,12 @@ describe('introState', () => {
     expect(parseStill('?still=abc')).toBeNull();
     expect(parseStill('?intro')).toBeNull();
     expect(parseStill('?still=0')).toBe(0);
+  });
+
+  it('enables still mode only in dev or alongside ?intro', () => {
+    expect(stillTime('?still=3', false)).toBeNull();
+    expect(stillTime('?intro&still=3', false)).toBe(3);
+    expect(stillTime('?still=3', true)).toBe(3);
+    expect(stillTime('?intro', false)).toBeNull();
   });
 });
