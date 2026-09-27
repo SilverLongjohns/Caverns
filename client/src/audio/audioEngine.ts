@@ -3,6 +3,7 @@
 import { clamp } from '../intro/math.js';
 import type { MusicTrack } from './musicTrack.js';
 import { introAssetUrl } from '../intro/assets.js';
+import { createUiThrottle, synthUiSound, type UiSound } from './uiSounds.js';
 
 export const AMBIENCE_URL = introAssetUrl('ambience.m4a');
 export const WORLD_URL = '/audio/gasket_maples.mp3';
@@ -65,6 +66,20 @@ export class AudioEngine {
     }
     const resumed = ctx.state === 'running' ? Promise.resolve() : ctx.resume();
     return resumed.then(this.checkRunning, () => {});
+  }
+
+  private uiThrottle = createUiThrottle(80);
+
+  /** Short synthesised UI sound through the master bus. Silent until audio is running; never throws. */
+  playUi(sound: UiSound): void {
+    try {
+      const ctx = this.ctx;
+      if (!ctx || ctx.state !== 'running') return;
+      if (!this.uiThrottle(sound, performance.now())) return;
+      synthUiSound(ctx, this.master, sound);
+    } catch {
+      /* UI sounds are best-effort */
+    }
   }
 
   private checkRunning = (): void => {

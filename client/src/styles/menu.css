@@ -1,0 +1,162 @@
+/* === Menu screens (main menu polish): shell, consoles, CRT power transitions, ambient life === */
+.menu-shell { position: relative; }
+.menu-shell--town { background: #0a0806; }
+.menu-shell > .menu-shell__town { position: absolute !important; inset: 0; background: url('/backgrounds/townbg.png') center/cover no-repeat; image-rendering: pixelated; z-index: 0; }
+.menu-shell__content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 100%; }
+/* index.css `.lobby > *:not(...)` forces children relative; the town layers must stay absolute */
+.menu-shell--town > .menu-shell__content { position: absolute !important; inset: 0; display: block; }
+
+/* Consoles: centred, content-sized, scroll inside when too tall */
+.menu-console { position: relative; max-width: 92vw; }
+.menu-console .relic-panel { max-height: calc(100vh - 220px); }
+.menu-shell--town .menu-console .relic-panel { max-height: calc(100vh - 48px); }
+.menu-console__body { padding: 12px 16px; overflow-y: auto; min-height: 0; }
+.menu-console__footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 16px 10px; border-top: 1px dashed var(--relic-divider); }
+
+/* Screen transition: animate the body, never the wrapper (fixed layers stay fixed) */
+.screen-transition__body { transform-origin: center; }
+.screen-transition__body--off { animation: crt-power-off 220ms ease-in forwards; }
+.screen-transition__body--on { animation: crt-power-on 280ms ease-out; }
+@keyframes crt-power-off {
+  0% { transform: scale(1, 1); filter: brightness(1); opacity: 1; }
+  60% { transform: scale(1, 0.02); filter: brightness(3); opacity: 1; }
+  100% { transform: scale(0, 0.02); filter: brightness(3); opacity: 0; }
+}
+@keyframes crt-power-on {
+  0% { transform: scale(0, 0.02); filter: brightness(3); opacity: 0; }
+  35% { transform: scale(1, 0.02); filter: brightness(3); opacity: 1; }
+  80% { transform: scale(1, 1.02); filter: brightness(1.4); }
+  100% { transform: scale(1, 1); filter: brightness(1); }
+}
+
+/* Modal layer for town panels */
+.modal-layer { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.modal-layer[data-empty="false"] { background: rgba(0, 0, 0, 0.6); pointer-events: auto; }
+
+/* Typed text */
+.typed-text__cursor { animation: typed-blink 1s steps(1) infinite; margin-left: 1px; }
+@keyframes typed-blink { 50% { opacity: 0; } }
+
+/* Ambient life */
+.menu-console__lamp { position: absolute; top: -11px; width: 4px; height: 4px; background: #ffb347; box-shadow: 0 0 6px 2px rgba(255, 170, 60, 0.6); z-index: 4; pointer-events: none; animation: lamp-blink 3.7s ease-in-out infinite; }
+.menu-console__lamp--l { left: 28px; }
+.menu-console__lamp--r { right: 28px; animation-duration: 5.3s; animation-delay: -1.9s; }
+@keyframes lamp-blink { 0%, 100% { opacity: 1; } 45% { opacity: 0.25; } 50% { opacity: 0.9; } }
+.menu-console__scanroll { position: absolute; left: 0; right: 0; top: 0; height: 60px; pointer-events: none; z-index: 3;
+  background: linear-gradient(transparent, rgba(120, 220, 150, 0.035), transparent); animation: scan-roll 7s linear infinite; }
+@keyframes scan-roll { from { transform: translateY(-60px); } to { transform: translateY(900px); } }
+.menu-console__fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 3; }
+.menu-console__glitch { position: absolute; left: 0; right: 0; height: 2px; top: 30%; pointer-events: none; z-index: 3;
+  background: rgba(200, 255, 220, 0.25); box-shadow: 0 0 6px rgba(160, 255, 200, 0.4); animation: glitch-sweep 400ms linear forwards; }
+@keyframes glitch-sweep { from { top: 10%; opacity: 0.9; } to { top: 85%; opacity: 0; } }
+
+/* Hover rims on interactive rows/cards */
+.menu-hoverable { transition: box-shadow 80ms; }
+.menu-hoverable:hover { box-shadow: 0 0 0 1px var(--relic-amber-rim), 0 0 8px rgba(240, 170, 60, 0.25); }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-transition__body--off, .screen-transition__body--on { animation: none; }
+  .menu-console__lamp, .menu-console__scanroll, .menu-console__glitch, .typed-text__cursor { animation: none; }
+  .menu-console__scanroll, .menu-console__glitch { display: none; }
+}
+
+/* Login + status consoles */
+.menu-shell--cave .lobby-logo { margin-bottom: 14px; }
+.login-console .menu-console__body { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.login-actions { margin-top: 6px; }
+.status-console .menu-console__body { text-align: center; padding: 18px 16px; color: var(--relic-amber); }
+.game-over-title { color: var(--relic-amber); font-weight: normal; margin-bottom: 6px; }
+.game-over-console .menu-console__footer { justify-content: center; }
+
+/* Character select */
+.char-select-greeting { text-align: center; color: var(--relic-dim); margin-bottom: 10px; }
+.menu-console .char-slot-grid { display: flex; gap: 14px; justify-content: center; flex-wrap: nowrap; margin-top: 0; }
+.menu-console .char-slot { min-width: 0; color: inherit; width: 170px; min-height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px; background: rgba(11, 9, 7, 0.85); cursor: default; }
+.menu-console .char-slot-empty { border: 1px dashed var(--relic-divider); cursor: pointer; }
+.menu-console .char-slot-filled { border: 1px solid #6d5230; }
+.char-slot-portrait { width: 56px; height: 84px; border: 2px solid #000; box-shadow: 0 0 0 1px var(--relic-bronze); background: #050403; display: flex; align-items: center; justify-content: center; }
+.char-slot-portrait img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.menu-console .char-slot-name { color: var(--relic-amber); }
+.menu-console .char-slot-meta, .menu-console .char-slot-number { color: var(--relic-dim); font-size: 0.7rem; letter-spacing: 0.06em; }
+.menu-console .char-slot-actions { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+.menu-console .world-code-bar { margin-top: 0; flex-direction: row; color: inherit; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; width: 100%; justify-content: space-between; }
+.menu-console .world-code-block, .menu-console .world-code-join { display: flex; align-items: center; gap: 8px; }
+.menu-console .world-code-value { color: #5fe0d0; letter-spacing: 0.2em; border: 1px dashed var(--relic-divider); padding: 1px 6px; }
+.menu-console .world-code-input { width: 90px; background: #0f0b08; color: var(--relic-text); border: 1px dashed var(--relic-divider); padding: 2px 6px; font-family: inherit; letter-spacing: 0.15em; }
+.menu-console .world-code-error { width: 100%; color: #e06a5a; font-size: 0.75rem; }
+
+/* Character creation */
+.menu-console .char-create-modal { display: flex; gap: 16px; border: none; background: transparent; padding: 0; width: auto; max-width: none; }
+.menu-console .char-create-class-col { flex: 1; min-width: 0; }
+.menu-console .char-create-stats-col { flex: none; width: 230px; }
+.menu-console .char-create-portrait { width: 112px !important; height: 168px !important; border: 2px solid #000; box-shadow: 0 0 0 1px var(--relic-bronze); background: #050403; margin-bottom: 8px; }
+.char-create-portrait img { width: 100%; height: 100%; image-rendering: pixelated; }
+.menu-console .char-create-name { width: 112px; background: #0f0b08; color: var(--relic-amber); border: 1px dashed var(--relic-divider); padding: 3px 6px; font-family: inherit; }
+.menu-console .char-create-class-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.char-create-gear { display: flex; flex-direction: column; gap: 6px; }
+.char-create-gear-row { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+.menu-console .char-create-stat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.menu-console .char-create-stat-name { width: 80px; }
+.char-create-footer { display: flex; gap: 10px; justify-content: center; width: 100%; }
+
+/* Town hub (T2): content-sized consoles on the bazaar */
+.town-hub { position: absolute; inset: 0; }
+.town-hub__title { position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-weight: normal; font-size: 1rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--relic-amber); text-shadow: 0 0 4px #000, 0 0 8px #000; z-index: 2; }
+.town-services { position: absolute; left: 16px; top: 52px; }
+.town-party { position: absolute; right: 16px; top: 52px; }
+.town-panel-portal { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); }
+.town-service { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 4px; background: none; border: none; border-bottom: 1px dashed var(--relic-divider); color: inherit; font-family: inherit; text-align: left; cursor: pointer; }
+.town-service--disabled { opacity: 0.5; cursor: default; }
+.town-service__text { display: flex; flex-direction: column; }
+.town-service__name { color: var(--relic-amber); }
+.town-service__desc { color: var(--relic-dim); font-size: 0.7rem; }
+.town-service__portrait { object-fit: cover; object-position: top; }
+.town-portal__name { color: #7fe08a; }
+.town-panel-portal .town-muster-count { color: var(--relic-dim); font-size: 0.75rem; margin: 4px 0 10px; }
+.town-panel-portal .town-muster-actions { display: flex; gap: 10px; }
+.town-party .world-member-list { list-style: none; }
+.town-party .world-member { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.town-party .world-member-info { display: flex; flex-direction: column; }
+.town-party .world-member-meta { color: var(--relic-dim); font-size: 0.7rem; }
+
+/* Town panels as consoles */
+.modal-layer .menu-console .relic-panel { max-height: calc(100vh - 48px); }
+.stash-slot, .shop-slot { display: flex; align-items: center; gap: 8px; text-align: left; }
+.stash-slot__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop-modal .menu-console__footer { justify-content: space-between; }
+.shop-gold { color: var(--relic-amber); }
+.char-modal .char-item-row, .char-modal .char-equip-slot { display: flex; align-items: center; gap: 8px; }
+
+/* Old modal wrapper classes are kept for their inner rules; strip their frame so only the bezel shows */
+.menu-console.stash-modal, .menu-console.shop-modal, .menu-console.char-modal {
+  background: none; border: none; box-shadow: none; padding: 0; min-width: 0; max-width: 92vw; max-height: none; overflow: visible;
+}
+/* A panel powering off to nothing must not eat clicks meant for the town (or the next panel) */
+.modal-layer[data-closing="true"] { pointer-events: none; background: transparent; }
+/* Old button classes reused on RelicButtons (e.g. .shop-close-btn is fixed 28x28) must not size them */
+.menu-console .relic-btn { width: auto; height: auto; line-height: normal; }
+
+/* In town mode the transition box must fill the screen: .town-hub is absolute and would otherwise
+   collapse against a 0-height transformed body while powering on/off. */
+.menu-shell--town > .menu-shell__content > .screen-transition,
+.menu-shell--town > .menu-shell__content > .screen-transition > .screen-transition__body { position: absolute; inset: 0; }
+
+/* Screen-reader copy of typed text (the typing span is aria-hidden) */
+.typed-text { position: relative; }
+.typed-text .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+/* The replay link lives in LoginScreen, inside the shell's content box; pin it to the screen corner */
+.menu-shell .intro-replay { position: fixed; left: 16px; bottom: 12px; }
+
+/* Legacy index.css button rules ((0,1,1) element+class, and (0,2,0)/(0,3,0) :hover) must not restyle relic buttons in consoles */
+.menu-console .relic-btn { margin: 0; }
+.menu-console .char-slot-actions .relic-btn,
+.menu-console .char-create-stat-row .relic-btn { background: var(--relic-bronze-face); border: 2px solid #000; color: var(--relic-amber); }
+.menu-console .char-slot-actions .relic-btn--md { padding: 4px 12px 5px; }
+.menu-console .char-slot-actions .relic-btn--sm,
+.menu-console .char-create-stat-row .relic-btn--sm { padding: 1px 7px 2px; }
+.menu-console .relic-btn:hover:not(:disabled) { background: var(--relic-bronze-face); border-color: #000; color: var(--relic-amber); }
+.menu-console .relic-btn.relic-btn--hot:not(:disabled),
+.menu-console .relic-btn.relic-btn--hot:hover:not(:disabled) { color: var(--relic-amber-hot); }
+.menu-console .relic-btn.relic-btn--danger,
+.menu-console .relic-btn.relic-btn--danger:hover:not(:disabled) { color: var(--relic-danger); }

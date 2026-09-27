@@ -1,5 +1,7 @@
 import { useGameStore } from '../store/gameStore.js';
 import { getClassPortrait } from '../classPortraits.js';
+import { ScreenTransition, MenuConsole } from './menu/index.js';
+import { RelicButton, ItemIcon } from './relic/index.js';
 import { PROGRESSION_CONFIG } from '@caverns/shared';
 import type { Item, ItemStats, CharacterPanelView } from '@caverns/shared';
 
@@ -28,9 +30,19 @@ interface Props {
 export function CharacterModal({ onEquipItem, onDropItem, onAllocateStat, onClose }: Props) {
   const panel = useGameStore((s) => s.openCharacterPanel);
   const error = useGameStore((s) => s.characterPanelError);
+  return (
+    <ScreenTransition screenKey={panel ? 'character' : 'closed'} className="modal-layer" onBackdropClick={onClose}>
+      {panel && (
+        <MenuConsole title="Character" width="720px" className="char-modal" footer={<RelicButton onClick={onClose}>Close</RelicButton>}>
+          {error && <div className="char-modal-error">{error}</div>}
+          <CharacterPanelBody panel={panel} onEquipItem={onEquipItem} onDropItem={onDropItem} onAllocateStat={onAllocateStat} />
+        </MenuConsole>
+      )}
+    </ScreenTransition>
+  );
+}
 
-  if (!panel) return null;
-
+function CharacterPanelBody({ panel, onEquipItem, onDropItem, onAllocateStat }: { panel: CharacterPanelView } & Omit<Props, 'onClose'>) {
   const portrait = getClassPortrait(panel.className);
 
   const thresholds = PROGRESSION_CONFIG.levelThresholds;
@@ -43,15 +55,6 @@ export function CharacterModal({ onEquipItem, onDropItem, onAllocateStat, onClos
   const xpPercent = isMaxLevel ? 100 : (xpNeeded > 0 ? (xpIntoLevel / xpNeeded) * 100 : 0);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="char-modal" onClick={(e) => e.stopPropagation()}>
-        <header className="char-modal-header">
-          <h2>Character</h2>
-          <button className="char-modal-close" onClick={onClose}>x</button>
-        </header>
-
-        {error && <div className="char-modal-error">{error}</div>}
-
         <div className="char-modal-body">
           <div className="char-modal-identity">
             <div className="town-portrait char-modal-portrait">
@@ -95,7 +98,7 @@ export function CharacterModal({ onEquipItem, onDropItem, onAllocateStat, onClos
                 <div key={def.id} className="stat-alloc-row">
                   <span className="stat-alloc-name">{def.displayName}</span>
                   <span className="stat-alloc-value">{panel.statAllocations[def.id] ?? 0}</span>
-                  <button className="stat-alloc-btn" onClick={() => onAllocateStat(def.id)}>+</button>
+                  <RelicButton size="sm" className="stat-alloc-btn" onClick={() => onAllocateStat(def.id)}>+</RelicButton>
                 </div>
               ))}
             </div>
@@ -118,6 +121,7 @@ export function CharacterModal({ onEquipItem, onDropItem, onAllocateStat, onClos
                 <div key={i} className="char-consumable-slot">
                   {item ? (
                     <div className="char-item-row">
+                      <ItemIcon item={item} />
                       <span className={`rarity-${item.rarity}`} title={item.description}>
                         {item.name} <span className="item-stats">{formatStats(item.stats)}</span>
                       </span>
@@ -137,14 +141,15 @@ export function CharacterModal({ onEquipItem, onDropItem, onAllocateStat, onClos
                 <div key={i} className="char-inventory-slot">
                   {item ? (
                     <div className="char-item-row">
+                      <ItemIcon item={item} />
                       <span className={`rarity-${item.rarity}`} title={item.description}>
                         {item.name}
                       </span>
                       <span className="item-stats">{formatStats(item.stats)}</span>
-                      <button className="equip-btn" onClick={() => onEquipItem(i)}>
+                      <RelicButton size="sm" className="equip-btn" onClick={() => onEquipItem(i)}>
                         {item.slot === 'consumable' ? 'Stow' : 'Equip'}
-                      </button>
-                      <button className="drop-btn" onClick={() => onDropItem(i)}>Drop</button>
+                      </RelicButton>
+                      <RelicButton size="sm" tone="danger" className="drop-btn" onClick={() => onDropItem(i)}>Drop</RelicButton>
                     </div>
                   ) : (
                     <span className="empty">-</span>
@@ -154,8 +159,6 @@ export function CharacterModal({ onEquipItem, onDropItem, onAllocateStat, onClos
             </div>
           </section>
         </div>
-      </div>
-    </div>
   );
 }
 
@@ -163,6 +166,7 @@ function EquipSlot({ item, label }: { item: Item | null; label: string }) {
   return (
     <div className="char-equip-slot">
       <span className="slot-label">{label}</span>
+      {item && <ItemIcon item={item} />}
       {item ? (
         <span className={`rarity-${item.rarity}`} title={item.description}>
           {item.name} <span className="item-stats">{formatStats(item.stats)}</span>

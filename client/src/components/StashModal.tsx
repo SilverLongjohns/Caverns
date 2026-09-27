@@ -1,5 +1,7 @@
 import type { Item } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore.js';
+import { ScreenTransition, MenuConsole } from './menu/index.js';
+import { RelicButton, ItemIcon } from './relic/index.js';
 
 interface Props {
   onDeposit: (from: 'inventory' | 'consumables', fromIndex: number) => void;
@@ -19,14 +21,12 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
   const openStash = useGameStore((s) => s.openStash);
   const stashError = useGameStore((s) => s.stashError);
 
-  if (!openStash) return null;
-
-  const filled = openStash.items.filter((i) => i !== null).length;
+  const filled = openStash ? openStash.items.filter((i) => i !== null).length : 0;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="stash-modal" onClick={(e) => e.stopPropagation()}>
-        <h2 className="stash-title">Adventurer's Stash</h2>
+    <ScreenTransition screenKey={openStash ? 'stash' : 'closed'} className="modal-layer" onBackdropClick={onClose}>
+      {openStash && (
+      <MenuConsole title="Adventurer's Stash" width="760px" className="stash-modal" footer={<RelicButton className="stash-close-btn" onClick={onClose}>Close</RelicButton>}>
         {stashError && <p className="stash-error">{stashError}</p>}
         <div className="stash-panels">
           <section className="stash-panel">
@@ -41,7 +41,7 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                   disabled={!item}
                   title={item?.description ?? ''}
                 >
-                  {item ? slotLabel(item) : '—'}
+                  {item ? <><ItemIcon item={item} /><span className="stash-slot__name">{slotLabel(item)}</span></> : '—'}
                 </button>
               ))}
             </div>
@@ -55,7 +55,7 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                   disabled={!item}
                   title={item?.description ?? ''}
                 >
-                  {item ? slotLabel(item) : '—'}
+                  {item ? <><ItemIcon item={item} /><span className="stash-slot__name">{slotLabel(item)}</span></> : '—'}
                 </button>
               ))}
             </div>
@@ -73,18 +73,14 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                   disabled={!item}
                   title={item?.description ?? ''}
                 >
-                  {item ? slotLabel(item) : '—'}
+                  {item ? <><ItemIcon item={item} /><span className="stash-slot__name">{slotLabel(item)}</span></> : '—'}
                 </button>
               ))}
             </div>
           </section>
         </div>
-        <div className="stash-actions">
-          <button className="stash-close-btn" onClick={onClose}>
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+      </MenuConsole>
+      )}
+    </ScreenTransition>
   );
 }

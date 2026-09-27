@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGameStore } from '../store/gameStore.js';
-import { CaveBackground } from './CaveBackground.js';
+import { MenuConsole, TypedText } from './menu/index.js';
+import { RelicButton } from './relic/index.js';
 import { useIntroStore } from '../intro/introStore.js';
 
 interface Props {
@@ -31,19 +32,21 @@ export function LoginScreen({ onLogin }: Props) {
   }, [submit]);
 
   return (
-    <div className="lobby">
-      <CaveBackground />
-      <img src="/Caverns_Logo.png" alt="Caverns" className="lobby-logo" />
-      <p className="lobby-subtitle">A cooperative dungeon crawler</p>
-      <p className="dos-prompt-label">&gt; ENTER YOUR USERNAME TO LOG IN_</p>
-      <div className="dos-input">
-        <span className="dos-input-text">{name}</span>
-        <span className="dos-cursor" />
-      </div>
-      <button className="lobby-start" onClick={submit} disabled={!name.trim()}>
-        Continue
-      </button>
-      {error && <p className="auth-error">{error}</p>}
+    <>
+      <MenuConsole className="login-console" width="420px">
+        <p className="lobby-subtitle">A cooperative dungeon crawler</p>
+        <p className="dos-prompt-label"><TypedText text="> ENTER YOUR USERNAME TO LOG IN_" /></p>
+        <div className="dos-input">
+          <span className="dos-input-text">{name}</span>
+          <span className="dos-cursor" />
+        </div>
+        {error && <p className="auth-error">{error}</p>}
+        <div className="login-actions">
+          <RelicButton className="lobby-start" hot onClick={submit} disabled={!name.trim()}>
+            Continue
+          </RelicButton>
+        </div>
+      </MenuConsole>
       <button
         className="intro-replay"
         onClick={(e) => { e.currentTarget.blur(); replayIntro(); }}
@@ -51,6 +54,6 @@ export function LoginScreen({ onLogin }: Props) {
       >
         ↺ intro
       </button>
-    </div>
+    </>
   );
 }

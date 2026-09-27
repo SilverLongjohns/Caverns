@@ -77,3 +77,11 @@ describe('AudioEngine.unlock', () => {
     expect(heard).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('AudioEngine.playUi', () => {
+  it('is a silent no-op before any audio context exists', () => {
+    const engine = new AudioEngine();
+    expect(() => engine.playUi('click')).not.toThrow();
+    expect(() => engine.playUi('power')).not.toThrow();
+  });
+});
