@@ -74,38 +74,83 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
-async function loadTerrainSet(biomeId: string): Promise<TerrainSet | null> {
-  try {
-    const res = await fetch(`/tiles/${biomeId}/terrain.json`);
-    if (!res.ok) throw new Error(`${res.status}`);
-    const manifest = parseTerrainManifest(await res.json());
-    if (!manifest) throw new Error('invalid manifest');
-    const sheet = await loadImage(`/tiles/${biomeId}/terrain.png`);
-    return { biomeId, manifest, sheet };
-  } catch {
-    if (biomeId === 'default') return null;
-    return loadTerrainSet('default');
-  }
+/** Fetches ONE biome's terrain set, no fallback and no caching of its own — throws on any failure
+ * (bad status, invalid manifest, image load error). Fallback-to-'default' and caching live in
+ * `createTerrainSetCache`, which wraps this. */
+async function fetchTerrainSet(biomeId: string): Promise<TerrainSet | null> {
+  const res = await fetch(`/tiles/${biomeId}/terrain.json`);
+  if (!res.ok) throw new Error(`${res.status}`);
+  const manifest = parseTerrainManifest(await res.json());
+  if (!manifest) throw new Error('invalid manifest');
+  const sheet = await loadImage(`/tiles/${biomeId}/terrain.png`);
+  return { biomeId, manifest, sheet };
 }
 
-const cache = new Map<string, Promise<TerrainSet | null>>();
-
-function getTerrainSet(biomeId: string): Promise<TerrainSet | null> {
-  let p = cache.get(biomeId);
-  if (!p) {
-    p = loadTerrainSet(biomeId);
-    cache.set(biomeId, p);
-  }
-  return p;
+export interface TerrainSetCache {
+  /** Biomes that have SETTLED to a non-null TerrainSet, read synchronously (no await) so a caller
+   * (useTerrainSet) can seed/update its state without a one-frame ASCII flash for a biome that's
+   * already resolved. A biome absent from this map may be unresolved, in flight, or have most
+   * recently failed (see `get` below) — `has`/`get` on this map never itself trigger a load. */
+  resolved: Map<string, TerrainSet | null>;
+  /** Resolves `biomeId`, using `resolved` as a cache and sharing one in-flight load per biome.
+   * On failure (loader throws) falls back to `get('default')` — routed through this SAME cache,
+   * so N biomes failing at once share one 'default' load instead of each re-fetching it. A biome
+   * whose load AND whose 'default' fallback both fail resolves to null but is deliberately NOT
+   * cached as a final answer (M6): a later `get` for that biome retries from scratch instead of
+   * being stuck with a transient failure (e.g. a dropped network request) forever. */
+  get(biomeId: string): Promise<TerrainSet | null>;
 }
+
+/** Builds a terrain-set cache around `loader` (given a biomeId, resolves its TerrainSet or throws
+ * — no fallback/caching logic of its own). Exported for testing with an injected fake loader; the
+ * app uses the single shared instance below, built from the real `fetchTerrainSet`. */
+export function createTerrainSetCache(loader: (biomeId: string) => Promise<TerrainSet | null>): TerrainSetCache {
+  const resolved = new Map<string, TerrainSet | null>();
+  const pending = new Map<string, Promise<TerrainSet | null>>();
+
+  async function resolveOne(biomeId: string): Promise<TerrainSet | null> {
+    try {
+      return await loader(biomeId);
+    } catch (err) {
+      console.warn(`[terrain] failed to load terrain set for biome "${biomeId}"`, err);
+      if (biomeId === 'default') return null;
+      return cache.get('default');
+    }
+  }
+
+  const cache: TerrainSetCache = {
+    resolved,
+    get(biomeId: string): Promise<TerrainSet | null> {
+      if (resolved.has(biomeId)) return Promise.resolve(resolved.get(biomeId) ?? null);
+      let p = pending.get(biomeId);
+      if (!p) {
+        p = resolveOne(biomeId).then((set) => {
+          pending.delete(biomeId);
+          if (set !== null) resolved.set(biomeId, set); // never cache a final null -- allow retry
+          return set;
+        });
+        pending.set(biomeId, p);
+      }
+      return p;
+    },
+  };
+
+  return cache;
+}
+
+const sharedTerrainSetCache = createTerrainSetCache(fetchTerrainSet);
 
 /**
  * Loads /tiles/<biome>/terrain.{json,png}; on failure tries 'default'; resolves null ⇒ ASCII
- * fallback. Cached per biome. Returns null while loading — callers render ASCII until the set
- * is ready, which is acceptable and brief.
+ * fallback. Cached per biome (see `createTerrainSetCache`) — a biome that's already resolved is
+ * returned synchronously (seeded into state, and set again from the effect without first
+ * resetting to null) so remounting the same biome (room entry, combat start/end) doesn't flash
+ * ASCII for one frame while a cache hit is still in flight.
  */
 export function useTerrainSet(biomeId: string | undefined): TerrainSet | null {
-  const [set, setSet] = useState<TerrainSet | null>(null);
+  const [set, setSet] = useState<TerrainSet | null>(() =>
+    biomeId ? sharedTerrainSetCache.resolved.get(biomeId) ?? null : null
+  );
 
   useEffect(() => {
     if (!biomeId) {
@@ -113,10 +158,16 @@ export function useTerrainSet(biomeId: string | undefined): TerrainSet | null {
       return;
     }
     let cancelled = false;
-    setSet(null);
-    getTerrainSet(biomeId).then((loaded) => {
-      if (!cancelled) setSet(loaded);
-    });
+    const cached = sharedTerrainSetCache.resolved.get(biomeId);
+    if (cached !== undefined) {
+      // Already resolved -- set synchronously-ish (still a state update, but from an already-
+      // settled value) without first resetting to null, so no ASCII flash.
+      setSet(cached);
+    } else {
+      sharedTerrainSetCache.get(biomeId).then((loaded) => {
+        if (!cancelled) setSet(loaded);
+      });
+    }
     return () => {
       cancelled = true;
     };

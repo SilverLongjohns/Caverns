@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
-import { parseTerrainManifest } from './terrainManifest.js';
+import { parseTerrainManifest, createTerrainSetCache, type TerrainSet } from './terrainManifest.js';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const pub = resolve(here, '../../public/tiles');
@@ -20,6 +20,68 @@ describe('parseTerrainManifest', () => {
   });
   it('accepts a minimal manifest', () => {
     expect(parseTerrainManifest({ tileSize: 24, sets: { rock: { '0': [0, 0] } }, floorVariants: [], stamps: {} })).not.toBeNull();
+  });
+});
+
+function fakeSet(biomeId: string): TerrainSet {
+  return { biomeId, manifest: { tileSize: 24, sets: {}, floorVariants: [], stamps: {} }, sheet: {} as HTMLImageElement };
+}
+
+describe('createTerrainSetCache', () => {
+  it('resolves a biome and makes it available synchronously via `resolved` afterward', async () => {
+    const loader = vi.fn(async (id: string) => fakeSet(id));
+    const cache = createTerrainSetCache(loader);
+    expect(cache.resolved.has('a')).toBe(false);
+    const set = await cache.get('a');
+    expect(set).toEqual(fakeSet('a'));
+    expect(cache.resolved.get('a')).toEqual(fakeSet('a'));
+  });
+
+  it('caches per biome: a second get for the same biome does not call the loader again', async () => {
+    const loader = vi.fn(async (id: string) => fakeSet(id));
+    const cache = createTerrainSetCache(loader);
+    await cache.get('a');
+    await cache.get('a');
+    expect(loader).toHaveBeenCalledTimes(1);
+  });
+
+  it("routes a failing biome's fallback through the SAME cache entry as 'default', so two failing biomes share one 'default' load", async () => {
+    const loader = vi.fn(async (id: string) => {
+      if (id === 'default') return fakeSet('default');
+      throw new Error(`no such biome: ${id}`);
+    });
+    const cache = createTerrainSetCache(loader);
+    const [a, b] = await Promise.all([cache.get('volcanic'), cache.get('fungal')]);
+    expect(a).toEqual(fakeSet('default'));
+    expect(b).toEqual(fakeSet('default'));
+    expect(loader).toHaveBeenCalledTimes(3); // volcanic, fungal, default (once, shared)
+    expect(loader).toHaveBeenCalledWith('default');
+  });
+
+  it('does not cache a final null (both the biome and default fail) -- a later get retries the loader', async () => {
+    const loader = vi.fn(async () => {
+      throw new Error('always fails');
+    });
+    const cache = createTerrainSetCache(loader);
+    const first = await cache.get('a');
+    expect(first).toBeNull();
+    expect(cache.resolved.has('a')).toBe(false);
+    expect(loader).toHaveBeenCalledTimes(2); // a, then default fallback
+
+    const second = await cache.get('a');
+    expect(second).toBeNull();
+    expect(loader).toHaveBeenCalledTimes(4); // retried: a, default again
+  });
+
+  it('warns via console.warn when a biome fails to load', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const loader = vi.fn(async () => {
+      throw new Error('boom');
+    });
+    const cache = createTerrainSetCache(loader);
+    await cache.get('default'); // biomeId === 'default' -- no further fallback, just warns and returns null
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 });
 
