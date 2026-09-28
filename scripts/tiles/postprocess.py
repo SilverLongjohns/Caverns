@@ -9,6 +9,7 @@ Usage:
   python3 scripts/tiles/postprocess.py cutout <in.png> [--tolerance 12] [--border 1] [--feather 0] <out.png>
   python3 scripts/tiles/postprocess.py cleanalpha <in.png> [--threshold 128] [--min-speck 3] [--min-hole 3] <out.png>
   python3 scripts/tiles/postprocess.py grade <in.png> --sample <sample.png> --ref <ref.png> <out.png>
+  python3 scripts/tiles/postprocess.py fill <in.png> [--amplitude 6] [--inset 8] [--seed 0] [--repair] <out.png>
   python3 scripts/tiles/postprocess.py sheet <dir> <out.png>
   python3 scripts/tiles/postprocess.py preview <in.png> [--reps 4] [--scale 8] <out.png>
   python3 scripts/tiles/postprocess.py selftest
@@ -17,6 +18,7 @@ Usage:
 import argparse
 import math
 import os
+import random
 import sys
 from collections import deque
 
@@ -39,6 +41,9 @@ DEFAULT_CLEAN_MIN_HOLE = 3  # transparent connected components smaller than this
                              # enclosed (don't touch the image border) are filled in as pinholes
 DEFAULT_GRADE_CHROMA_CLAMP = (0.3, 1.5)  # sanity clamp on the derived chroma_scale
 DEFAULT_GRADE_L_OFFSET_CLAMP = 40.0  # sanity clamp (abs) on the derived L offset
+DEFAULT_FILL_AMPLITUDE = 6.0  # +/- per-pixel luma jitter (deterministic) layered over the flat base
+DEFAULT_FILL_INSET = 8  # px inset defining the centre sample box used as the flat base colour
+DEFAULT_FILL_SEED = 0  # seed for the deterministic per-pixel noise (same seed -> same output)
 
 
 def _smoothstep(t: float) -> float:
@@ -312,6 +317,54 @@ def repair_seam(img: Image.Image, band: int = DEFAULT_BAND,
     if grad["col_ratio"] > ratio_threshold or grad["row_ratio"] > ratio_threshold:
         return _eased_edge_blend(flattened, band=band)
     return flattened
+
+
+# ---------------------------------------------------------------------------
+# Solid-fill rebuild (mask-15 "fully surrounded" tile -- see fill_tile)
+# ---------------------------------------------------------------------------
+
+def fill_tile(img: Image.Image, amplitude: float = DEFAULT_FILL_AMPLITUDE, inset: int = DEFAULT_FILL_INSET,
+              seed: int = DEFAULT_FILL_SEED) -> Image.Image:
+    """Rebuilds a seamless solid-fill tile from `img`'s OWN interior colour, for a set's mask-15
+    tile (the vertex where all four corners are the same upper terrain, e.g. the middle of a wide
+    chasm band or a big pool) -- these are the only corner-set tiles that get placed edge-to-edge
+    against COPIES OF THEMSELVES many times in a row/column, so any baked decal (a lighter rim
+    around a darker "pit", as the raw generated chasm/water mask-15 tiles have) repeats at the tile
+    period and reads as an obvious grate/lattice lawn once tiled -- see the review evidence
+    (.sandbox/terrain-art/shot-3.png: a 3-wide chasm band shows a clear grid of pit+rim squares).
+
+    The fix is NOT a new generation (zero PixelLab spend): it samples `img`'s own deep-interior
+    colour (a small inset box at the tile centre, away from any rim near the edges) as a flat base,
+    then lays deterministic low-amplitude per-pixel luma jitter over the WHOLE tile (same jitter
+    added to all three channels, so hue is preserved exactly -- this is what keeps chasm reading as
+    near-black void and water as its own dark teal, "a subtle teal texture", rather than introducing
+    a new colour). Alpha is copied from the same interior sample (these tiles have no transparency).
+
+    No blob, no decal, no directional gradient -- every pixel is independently jittered from the
+    same base, so there is nothing FOR the tile period to expose as a repeating shape; `repair_seam`
+    (called separately, same as any other tile) additionally guards against any residual low-
+    frequency drift the noise might have introduced by chance.
+    """
+    rgba = img.convert("RGBA")
+    w, h = rgba.size
+    px = rgba.load()
+
+    cx0, cy0 = min(inset, w // 2 - 1), min(inset, h // 2 - 1)
+    cx1, cy1 = max(w - inset, cx0 + 2), max(h - inset, cy0 + 2)
+    samples = [px[x, y] for y in range(cy0, cy1) for x in range(cx0, cx1)]
+    base = tuple(sum(s[i] for s in samples) / len(samples) for i in range(3))
+    base_alpha = round(sum(s[3] for s in samples) / len(samples))
+
+    rng = random.Random(seed)
+    out = Image.new("RGBA", (w, h))
+    out_px = out.load()
+    for y in range(h):
+        for x in range(w):
+            jitter = rng.uniform(-amplitude, amplitude)
+            out_px[x, y] = tuple(
+                int(round(min(255.0, max(0.0, base[c] + jitter)))) for c in range(3)
+            ) + (base_alpha,)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -1389,6 +1442,80 @@ def selftest() -> bool:
     else:
         print("  OK: main subject left unchanged")
 
+    # --- fill_tile: rebuilding a mask-15 "pit + rim" grate into a flat, seamless fill -----------
+    # Fixture mirrors the real bug: a dark near-black interior "pit" with a lighter rim near the
+    # edges (see .sandbox/terrain-art/shot-3.png) -- this is exactly what reads as a repeating
+    # grate/lattice once the tile is placed edge-to-edge many times.
+    gsize = 24
+    grate = Image.new("RGBA", (gsize, gsize), (0, 0, 0, 255))
+    grate_px = grate.load()
+    rim_color = (14, 14, 14)
+    for y in range(gsize):
+        for x in range(gsize):
+            near_edge = x < 4 or x >= gsize - 4 or y < 4 or y >= gsize - 4
+            grate_px[x, y] = rim_color + (255,) if near_edge else (0, 0, 0, 255)
+
+    grate_corner_before = grate_px[0, 0]
+    grate_center_before = grate_px[gsize // 2, gsize // 2]
+    print(f"[selftest] fill fixture (grate): corner {grate_corner_before} vs centre {grate_center_before}")
+
+    filled = fill_tile(grate, amplitude=3.0, inset=8, seed=1)
+    filled_px = filled.load()
+    filled_corner = filled_px[0, 0]
+    filled_center = filled_px[gsize // 2, gsize // 2]
+    corner_center_diff = sum(abs(a - b) for a, b in zip(filled_corner[:3], filled_center[:3])) / 3.0
+    print(f"[selftest] fill result: corner {filled_corner} centre {filled_center} "
+          f"(mean abs diff {corner_center_diff:.2f})")
+    if corner_center_diff > 6.0:
+        print("  FAIL: corner still clearly differs from centre -- the rim/pit pattern survived")
+        ok = False
+    else:
+        print("  OK: corner and centre are close -- no rim/pit pattern left to form a lattice")
+
+    fill_band = band_score(filled)
+    print(f"[selftest] fill band_score (pre-repair): col={fill_band[0]:.3f} row={fill_band[1]:.3f}")
+    if max(fill_band) > DEFAULT_BAND_THRESHOLD:
+        print(f"  FAIL: fill band_score above threshold {DEFAULT_BAND_THRESHOLD} before repair")
+        ok = False
+    else:
+        print("  OK: fill band_score within threshold even before repair_seam")
+
+    fill_alphas = {p[3] for p in filled.getdata()}
+    print(f"[selftest] fill alpha values: {fill_alphas}")
+    if fill_alphas != {255}:
+        print("  FAIL: fill_tile did not preserve full opacity from the sampled interior")
+        ok = False
+    else:
+        print("  OK: fill stays fully opaque, matching its opaque source")
+
+    filled_again = fill_tile(grate, amplitude=3.0, inset=8, seed=1)
+    print(f"[selftest] fill determinism: identical output for the same seed: {list(filled.getdata()) == list(filled_again.getdata())}")
+    if list(filled.getdata()) != list(filled_again.getdata()):
+        print("  FAIL: fill_tile is not deterministic for a fixed seed")
+        ok = False
+    else:
+        print("  OK: fill_tile is deterministic for a fixed seed")
+
+    # Hue preservation: a coloured (teal-ish) fixture should stay teal-ish, not drift grey/other hue,
+    # since the same jitter is added to all three channels (only luma moves, not hue).
+    teal_fixture = Image.new("RGBA", (gsize, gsize), (16, 25, 25, 255))
+    tfpx = teal_fixture.load()
+    for y in range(4, gsize - 4):
+        for x in range(4, gsize - 4):
+            tfpx[x, y] = (11, 20, 20, 255)
+    teal_filled = fill_tile(teal_fixture, amplitude=3.0, inset=8, seed=2)
+    teal_hue_diffs = []
+    for p in teal_filled.getdata():
+        r, g, b, _a = p
+        teal_hue_diffs.append(abs((g - r) - (20 - 11)) + abs((b - r) - (20 - 11)))
+    max_hue_drift = max(teal_hue_diffs)
+    print(f"[selftest] fill hue preservation: max per-pixel (g-r)/(b-r) drift from source ratio: {max_hue_drift}")
+    if max_hue_drift > 1:
+        print("  FAIL: fill_tile's per-pixel jitter drifted hue instead of only luma")
+        ok = False
+    else:
+        print("  OK: fill_tile preserves hue exactly (equal jitter on all three channels)")
+
     print()
     print("SELFTEST " + ("PASSED" if ok else "FAILED"))
     return ok
@@ -1441,6 +1568,17 @@ def main(argv=None):
     p_grade.add_argument("output")
     p_grade.add_argument("--sample", required=True, help="representative tile (e.g. the plain floor) to derive the transform from")
     p_grade.add_argument("--ref", required=True, help="reference image/crop to grade toward")
+
+    p_fill = sub.add_parser("fill")
+    p_fill.add_argument("input")
+    p_fill.add_argument("output")
+    p_fill.add_argument("--amplitude", type=float, default=DEFAULT_FILL_AMPLITUDE)
+    p_fill.add_argument("--inset", type=int, default=DEFAULT_FILL_INSET)
+    p_fill.add_argument("--seed", type=int, default=DEFAULT_FILL_SEED)
+    p_fill.add_argument("--repair", action="store_true", help="run repair_seam on the result")
+    p_fill.add_argument("--band", type=int, default=DEFAULT_BAND)
+    p_fill.add_argument("--ratio-threshold", type=float, default=DEFAULT_EDGE_RATIO_THRESHOLD)
+    p_fill.add_argument("--threshold", type=float, default=DEFAULT_BAND_THRESHOLD)
 
     p_sheet = sub.add_parser("sheet")
     p_sheet.add_argument("input_dir")
@@ -1553,6 +1691,19 @@ def main(argv=None):
         print(f"ref:    L={g['l_ref']:.2f} chroma={g['c_ref']:.2f}")
         print(f"transform: l_offset={g['l_offset']:+.2f}  chroma_scale={g['chroma_scale']:.3f} "
               f"(raw {g['raw_chroma_scale']:.3f})")
+
+    elif args.cmd == "fill":
+        img = Image.open(args.input)
+        out_img = fill_tile(img, amplitude=args.amplitude, inset=args.inset, seed=args.seed)
+        if args.repair:
+            out_img = repair_seam(out_img, band=args.band, ratio_threshold=args.ratio_threshold)
+        band = band_score(out_img)
+        grad = edge_interior_gradient(out_img)
+        out_img.save(args.output)
+        print(f"band_score: col={band[0]:.3f} row={band[1]:.3f}")
+        print(f"edge/interior ratio: col={grad['col_ratio']:.2f} row={grad['row_ratio']:.2f}")
+        status = "OK" if max(band) <= args.threshold else "WARN"
+        print(f"{status}: band_score (max axis) {max(band):.3f} vs threshold {args.threshold}")
 
     elif args.cmd == "sheet":
         sheet = build_contact_sheet(args.input_dir)

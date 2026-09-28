@@ -75,6 +75,18 @@
     "appliedTo": "all 16 rock + 16 water + 16 chasm corner-set tiles, and all 5 floor variants (53 tiles) -- NOT applied to stamps (they keep their own accent colours)",
     "knownGap": "the grade reference was scoped to the spike's FLOOR only; rock's own all-rock tile (mask 15) inherited the floor's delta, not a separately-measured rock-vs-rock-border delta, so the rock/wall border reads slightly warmer/lighter than mock-A2's near-black border. Would need its own reference sample if pushed further."
   },
+  "fill": {
+    "reason": "final-review fix I2: chasm and water mask-15 (fully-surrounded vertex, e.g. the middle of a wide chasm band or a big pool) baked a lighter rim around a darker centre \"pit\" -- fine as one isolated tile, but mask-15 is the ONE corner-set tile placed edge-to-edge against copies of itself many times in a row/column, so the rim/pit repeated at the tile period and read as an obvious grate/lattice once tiled (see .sandbox/terrain-art/shot-3.png: a 3-wide chasm band under a bridge). Zero PixelLab spend -- no regeneration, pipeline-only.",
+    "tool": "postprocess.py fill / fill_tile -- samples the tile's OWN deep-interior colour (an 8px inset centre box, away from the rim) as a flat base, then lays deterministic low-amplitude (+/-6) per-pixel luma jitter over the whole tile (same jitter on all 3 channels, so hue is exactly preserved: chasm stays near-black, water keeps its own dark teal -- \"a subtle teal texture\", no blob/decal), then repair_seam (--repair) as a final band-drift guard.",
+    "command": "python3 scripts/tiles/postprocess.py fill <mask15.png> --amplitude 6 --inset 8 --seed 0 --repair <out.png>",
+    "appliedTo": {
+      "chasm": { "file": "art/tiles/starter/work/graded/chasm/tile_0.png (mask 15, maskBit=lower so fileIndex 0)", "band_score_after": { "col": 0.293, "row": 0.312 }, "edge_interior_ratio_after": { "col": 1.04, "row": 0.87 } },
+      "water": { "file": "art/tiles/starter/work/graded/water/tile_0.png (mask 15, fileIndex 0)", "band_score_after": { "col": 0.127, "row": 0.150 }, "edge_interior_ratio_after": { "col": 0.95, "row": 0.77 } }
+    },
+    "threshold": 1.0,
+    "verification": "4x4 tiled preview of each new fill tile (postprocess.py preview --reps 4 --scale 10) plus a real room mockup (client/scripts/terrain-mockup.mts, real autotile.ts/terrainDrawOps.ts, unmodified) with a 3-wide chasm band and a 3x3 water pool, composited against the repacked starter sheet and read visually -- no lattice on either tile or in the room render.",
+    "repackedAfter": "starter (art/tiles/starter/pack-spec.json -> art/tiles/starter/pack, copied to client/public/tiles/starter) and default (art/tiles/default.json -> client/public/tiles/default) -- both share the SAME graded/chasm and graded/water sources, so both needed repacking."
+  },
   "stamps": {
     "hazard": {
       "jobId": "6d5ba948-c5fd-4b14-a24e-fced10afa61f (batch stamps job)",
