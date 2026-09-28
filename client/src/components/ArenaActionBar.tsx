@@ -16,6 +16,8 @@ interface ArenaActionBarProps {
   /** Rounds left in the local player's gun; null means no gun equipped. */
   ammo: number | null;
   magazine: number;
+  /** Effective (Marksmanship-adjusted) range of the local player's gun; null means no gun equipped. */
+  gunRange: number | null;
   onMoveMode: () => void;
   onCancelMove: () => void;
   onAttackMode: () => void;
@@ -39,7 +41,7 @@ function formatItemStat(stats: ItemStats): string {
 }
 
 export function ArenaActionBar({
-  isMyTurn, actionTaken, movementRemaining, canFlee, mapTargeting, ammo, magazine,
+  isMyTurn, actionTaken, movementRemaining, canFlee, mapTargeting, ammo, magazine, gunRange,
   onMoveMode, onCancelMove, onAttackMode, onCancelAttack,
   onDefend, onFlee, onEndTurn, onUseItem,
   onAbilityMode, onCancelAbility, onUseAbility,
@@ -181,7 +183,7 @@ export function ArenaActionBar({
 
       {effectiveMode.mode === 'target_shoot' && (
         <>
-          <span className="waiting-text">Choose a target to shoot...</span>
+          <span className="waiting-text">Choose a target to shoot{gunRange != null ? ` (range ${gunRange})` : ''}...</span>
           <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
         </>
       )}

@@ -420,6 +420,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
         mapTargeting={interactionMode !== 'none'}
         ammo={myPart?.ammo ?? (gun ? gun.magazine : null)}
         magazine={gun?.magazine ?? 0}
+        gunRange={gun?.range ?? null}
         onMoveMode={() => setInteractionMode('move')}
         onCancelMove={() => setInteractionMode('none')}
         onAttackMode={() => setInteractionMode('attack')}
