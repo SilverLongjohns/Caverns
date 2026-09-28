@@ -33,7 +33,7 @@ export function ExplorationGrid({ roomId, grid, props, units, localPlayerId, vis
         {units.map((u) => <FloatingUnit key={u.id} unit={u} reduced={reduced} />)}
       </div>
       {alert && (
-        <span className="mob-alert explore-alert"
+        <span className="mob-alert explore-alert" key={`${alert.x},${alert.y}`}
           style={{ left: cellOrigin(alert.x, alert.y).left, top: cellOrigin(alert.x, alert.y).top, width: CELL_W }}>!</span>
       )}
     </GlyphViewport>
