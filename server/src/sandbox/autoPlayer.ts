@@ -63,6 +63,21 @@ export function decideTurn(snap: ArenaSnapshot, selfId: string): BotAction[] {
     }
   }
 
+  // No melee-reachable tile this turn. If we're carrying a loaded gun, check whether
+  // closing some of the distance would put us in shooting range too — otherwise we'd
+  // spend the whole turn just moving and never fire a shot we could already reach.
+  if (gun && gun.ammo > 0) {
+    for (const enemy of enemies) {
+      const ePos = snap.positions[enemy.id];
+      const spots = tiles
+        .filter((t) => hasLineOfSight(snap.grid, t.pos, ePos, gun.range))
+        .sort((a, b) => b.mp - a.mp);
+      if (spots.length > 0) {
+        return [{ type: 'move', ...spots[0].pos }, { type: 'shoot', targetId: enemy.id }, END];
+      }
+    }
+  }
+
   const distTo = (p: Pos) => Math.min(...enemies.map((e) => manhattan(p, snap.positions[e.id])));
   const current = distTo(selfPos);
   let best: { pos: Pos; d: number; mp: number } | null = null;

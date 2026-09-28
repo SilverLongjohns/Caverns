@@ -127,4 +127,17 @@ describe('bot ranged', () => {
   it('mobs (no ranged) keep the old behaviour', () => {
     expect(decideTurn(snapOf(undefined, 4), 'p1').some((a) => a.type === 'shoot' || a.type === 'reload')).toBe(false);
   });
+  it('moves into shooting range and shoots, when reachable, instead of just closing in', () => {
+    const snap = {
+      grid: rangedGrid, currentTurnId: 'p1', roundNumber: 1, movementRemaining: 5,
+      positions: { p1: { x: 1, y: 2 }, m1: { x: 8, y: 2 } },
+      participants: [
+        { id: 'p1', type: 'player' as const, hp: 50, ranged: { ammo: 2, magazine: 2, range: 3, marksmanship: 2 } },
+        { id: 'm1', type: 'mob' as const, hp: 10 },
+      ],
+    };
+    const actions = decideTurn(snap, 'p1');
+    expect(actions[0]).toEqual({ type: 'move', x: 5, y: 2 });
+    expect(actions[1]).toEqual({ type: 'shoot', targetId: 'm1' });
+  });
 });
