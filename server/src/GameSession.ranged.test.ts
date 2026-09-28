@@ -23,7 +23,7 @@ function toPlayerTurn(session: GameSession) {
   for (let i = 0; i < 200 && session.getArenaSnapshot(SANDBOX_ROOM_ID)!.currentTurnId !== 'p1'; i++) vi.advanceTimersByTime(50);
   expect(session.getArenaSnapshot(SANDBOX_ROOM_ID)!.currentTurnId).toBe('p1');
   // p1's prompt may still be held behind a close-up (e.g. the mob's strike); actions are refused until it is sent
-  vi.advanceTimersByTime(Math.max(CLOSE_UP_CONFIG.abilityMs, CLOSE_UP_CONFIG.critMs, CLOSE_UP_CONFIG.killMs) + 100);
+  vi.advanceTimersByTime(Math.max(CLOSE_UP_CONFIG.abilityMs, CLOSE_UP_CONFIG.critMs, CLOSE_UP_CONFIG.killMs, CLOSE_UP_CONFIG.shotMs) + 100);
 }
 
 /** End p1's turns until a mob stands next to p1 (the duel mob walks in), then stop on p1's turn. */

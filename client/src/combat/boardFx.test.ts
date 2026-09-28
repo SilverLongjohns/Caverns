@@ -98,6 +98,10 @@ const shotCtx = (now = 1000) => ({
 const shot = (over: Record<string, unknown>) => ({ type: 'combat_action_result', action: 'shoot', actorId: 'p1', actorName: 'P', targetId: 'm1', ...over }) as never;
 
 describe('boardFx: shots', () => {
+  it('bolt travel is slow enough to read: at least 100ms/tile, capped at 500ms+', () => {
+    expect(FX_TIMING.projectileMsPerTile).toBeGreaterThanOrEqual(100);
+    expect(FX_TIMING.projectileMaxMs).toBeGreaterThanOrEqual(500);
+  });
   it('hit: recoil away from target, projectile, then tear + number when it lands', () => {
     const s = fxReceive(initialBoardFx(), shot({ hit: true, damage: 6 }), shotCtx());
     const travel = Math.min(3 * FX_TIMING.projectileMsPerTile, FX_TIMING.projectileMaxMs);

@@ -23,7 +23,7 @@ function toPlayerTurn(session: GameSession) {
   for (let i = 0; i < 200 && session.getArenaSnapshot(SANDBOX_ROOM_ID)!.currentTurnId !== 'p1'; i++) vi.advanceTimersByTime(50);
   expect(session.getArenaSnapshot(SANDBOX_ROOM_ID)!.currentTurnId).toBe('p1');
   // p1's prompt may still be held behind a close-up (e.g. the mob's strike); actions are refused until it is sent
-  vi.advanceTimersByTime(Math.max(CLOSE_UP_CONFIG.abilityMs, CLOSE_UP_CONFIG.critMs, CLOSE_UP_CONFIG.killMs) + 100);
+  vi.advanceTimersByTime(Math.max(CLOSE_UP_CONFIG.abilityMs, CLOSE_UP_CONFIG.critMs, CLOSE_UP_CONFIG.killMs, CLOSE_UP_CONFIG.shotMs) + 100);
 }
 
 /** Data-driven: the first non-passive self-target ability of the duel player's class. */
@@ -217,7 +217,7 @@ describe('close-up pacing', () => {
     } finally { restore(); vi.useRealTimers(); }
   });
 
-  it('a shot holds the next turn for the strike close-up', () => {
+  it('a shot holds the next turn for the shot-length strike close-up (or the kill close-up if it downs the target)', () => {
     vi.useFakeTimers();
     const restore = installSeededRandom(4242);
     try {
@@ -227,7 +227,7 @@ describe('close-up pacing', () => {
       const before = sent.length;
       session.handleRangedAction('p1', 'shoot', mob.id);
       const res = sent.slice(before).find((m) => m.type === 'combat_action_result') as { targetDowned?: boolean };
-      const expected = res?.targetDowned ? CLOSE_UP_CONFIG.killMs : CLOSE_UP_CONFIG.strikeMs;
+      const expected = res?.targetDowned ? CLOSE_UP_CONFIG.killMs : CLOSE_UP_CONFIG.shotMs;
       expect(msUntilNextAction(sent, before)).toBeGreaterThanOrEqual(expected);
       session.dispose();
     } finally { restore(); vi.useRealTimers(); }

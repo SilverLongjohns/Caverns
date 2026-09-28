@@ -3,7 +3,7 @@ import type { ServerMessage } from '@caverns/shared';
 /** On-board juice for damaging hits: attacker lunge, target RGB tear, slam-in number. Pure; see boardFxStore. */
 export const FX_TIMING = {
   lungeMs: 300, hitDelayMs: 100, tearMs: 360, numberMs: 950, walkStepMs: 100, walkTailMs: 50,
-  projectileMsPerTile: 70, projectileMaxMs: 350, recoilMs: 180, tagMs: 900,
+  projectileMsPerTile: 120, projectileMaxMs: 700, recoilMs: 180, tagMs: 900,
 } as const;
 
 export type FxDir = 'up' | 'down' | 'left' | 'right';

@@ -4,7 +4,7 @@ import type { AbilityDefinition } from '../classTypes.js';
 import type { CombatActionResultMessage } from '../messages.js';
 import type { CombatParticipant } from '../types.js';
 
-export const CLOSE_UP_CONFIG: { abilityMs: number; critMs: number; killMs: number; strikeMs: number; impactAt: number; maxQueued: number } = closeUpConfig;
+export const CLOSE_UP_CONFIG: { abilityMs: number; critMs: number; killMs: number; strikeMs: number; shotMs: number; impactAt: number; maxQueued: number } = closeUpConfig;
 
 export type CloseUpKind = 'ability' | 'crit' | 'kill' | 'strike';
 export interface CloseUp { kind: CloseUpKind; durationMs: number }
@@ -29,7 +29,7 @@ export function closeUpFor(r: Partial<CombatActionResultMessage>, ctx: Ctx): Clo
       if ((r.critMultiplier ?? 1) > 1) return make('crit');
       return make('strike');
     }
-    if (r.action === 'shoot') return make(r.targetDowned ? 'kill' : 'strike');
+    if (r.action === 'shoot') return r.targetDowned ? make('kill') : { kind: 'strike', durationMs: CLOSE_UP_CONFIG.shotMs };
     return null;
   }
   // Mob actor: only hits that land on a player. A mob hit resolved through the defend QTE arrives as 'defend'.
