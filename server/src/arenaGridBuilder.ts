@@ -141,7 +141,7 @@ export function buildArenaGrid(roomType: string, biomeId: string): TileGrid {
     );
   }
 
-  return { width, height, tiles, themes };
+  return { width, height, tiles, themes, biomeId };
 }
 
 /**

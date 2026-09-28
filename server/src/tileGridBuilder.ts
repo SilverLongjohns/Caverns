@@ -166,5 +166,6 @@ export function buildTileGrid(room: Room, biomeId: string): TileGrid {
     tiles: config.tiles as string[][],
     themes: finalThemes,
     furnishings: furnishings.length > 0 ? furnishings : undefined,
+    biomeId,
   };
 }

@@ -173,6 +173,8 @@ export interface TileGrid {
   tiles: string[][];
   themes?: (string | null)[][];
   furnishings?: Furnishing[];
+  /** Biome this grid was built for; selects its terrain tileset on the client. */
+  biomeId?: string;
 }
 
 export interface Room {

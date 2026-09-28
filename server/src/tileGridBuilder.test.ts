@@ -100,4 +100,14 @@ describe('buildTileGrid', () => {
     expect(grid.width).toBe(30);
     expect(grid.height).toBe(15);
   });
+
+  it('the built grid records its biome', () => {
+    const grid = buildTileGrid(makeRoom('chamber'), 'starter');
+    expect(grid.biomeId).toBe('starter');
+  });
+
+  it('records the biome even if it falls back to starter config for unknown biome', () => {
+    const grid = buildTileGrid(makeRoom('chamber'), 'nonexistent_biome');
+    expect(grid.biomeId).toBe('nonexistent_biome');
+  });
 });
