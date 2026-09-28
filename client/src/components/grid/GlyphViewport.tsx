@@ -55,7 +55,10 @@ export function GlyphViewport({
     [grid.width, grid.height, cols, rows]);
   const view = clampCam(cam);
 
-  useEffect(() => {
+  // Layout effect: the camera recentres in the same commit/frame as the unit's own step (which
+  // renders synchronously via a ref, not a state update — see ExplorationGrid's FloatingUnit),
+  // instead of one frame later, so the camera glide starts exactly with the sprite's slide.
+  useLayoutEffect(() => {
     if (!focus) return;
     setCam(clampCam(centreOn(focus, cols, rows)));
     if (avail.w > 0 && !settled) requestAnimationFrame(() => setSettled(true));
