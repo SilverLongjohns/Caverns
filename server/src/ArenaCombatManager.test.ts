@@ -4,6 +4,7 @@ import { ArenaCombatManager } from './ArenaCombatManager.js';
 import type { TileGrid } from '@caverns/shared';
 import type { MobInstance } from '@caverns/shared';
 import type { CombatPlayerInfo } from './CombatManager.js';
+import { hitChance, type RangedProfile } from '@caverns/shared';
 
 function makeGrid(): TileGrid {
   // 8x6 open arena — walls on border, floor inside
@@ -233,5 +234,59 @@ describe('ArenaCombatManager', () => {
         expect(arena.getCombatManager().getPlayerHp('p1')).toBe(50);
       }
     });
+  });
+});
+
+const prof: RangedProfile = { shotDamage: 9, range: 3, magazine: 2, marksmanship: 2 };
+const gunner = (): CombatPlayerInfo => ({ ...makePlayer(), ranged: prof });
+
+describe('ArenaCombatManager ranged', () => {
+  it('in range with LoS: ok, with the shared hit chance', () => {
+    const a = new ArenaCombatManager('r', makeGrid(), [gunner()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 4, y: 2 } });
+    expect(a.checkShot('p1', 'mob1')).toEqual({ ok: true, distance: 3, hitChance: hitChance(3, prof.marksmanship) });
+  });
+  it('out of range is refused', () => {
+    const a = new ArenaCombatManager('r', makeGrid(), [gunner()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 5, y: 2 } });
+    expect(a.checkShot('p1', 'mob1')).toMatchObject({ ok: false });
+  });
+  it('a wall in between blocks the shot', () => {
+    const g = makeGrid(); g.tiles[2][3] = 'wall';
+    const a = new ArenaCombatManager('r', g, [gunner()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 4, y: 2 } });
+    expect(a.checkShot('p1', 'mob1')).toMatchObject({ ok: false });
+  });
+  it('adjacent targets can be shot', () => {
+    const a = new ArenaCombatManager('r', makeGrid(), [gunner()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 2, y: 2 } });
+    expect(a.checkShot('p1', 'mob1').ok).toBe(true);
+  });
+  it('refuses: no gun, empty, own side, dead or unknown target', () => {
+    const noGun = new ArenaCombatManager('r', makeGrid(), [makePlayer()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 2, y: 2 } });
+    expect(noGun.checkShot('p1', 'mob1')).toMatchObject({ ok: false });
+    const a = new ArenaCombatManager('r', makeGrid(), [gunner(), { ...makePlayer('p2') }], [makeMob()], { p1: { x: 1, y: 2 }, p2: { x: 1, y: 3 }, mob1: { x: 2, y: 2 } });
+    expect(a.checkShot('p1', 'p2')).toMatchObject({ ok: false });
+    expect(a.checkShot('p1', 'ghost')).toMatchObject({ ok: false });
+    a.getCombatManager().applyDamage('mob1', 999);
+    expect(a.checkShot('p1', 'mob1')).toMatchObject({ ok: false });
+  });
+  it('shoot rolls against hitChance with the injected rng', () => {
+    const pos = { p1: { x: 1, y: 2 }, mob1: { x: 4, y: 2 } };
+    const hc = hitChance(3, prof.marksmanship);
+    const hitA = new ArenaCombatManager('r', makeGrid(), [gunner()], [makeMob()], pos);
+    const hit = hitA.shoot('p1', 'mob1', () => hc - 0.01);
+    expect(hit.ok && hit.result.hit).toBe(true);
+    const missA = new ArenaCombatManager('r', makeGrid(), [gunner()], [makeMob()], pos);
+    const miss = missA.shoot('p1', 'mob1', () => hc);
+    expect(miss.ok && miss.result.hit).toBe(false);
+    expect(miss.ok && miss.result.damage).toBe(0);
+  });
+  it('a refused shot spends no ammo', () => {
+    const a = new ArenaCombatManager('r', makeGrid(), [gunner()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 6, y: 2 } });
+    expect(a.shoot('p1', 'mob1').ok).toBe(false);
+    expect(a.getCombatManager().getRanged('p1')!.ammo).toBe(prof.magazine);
+  });
+  it('reload wraps CombatManager.reload with a reason when refused', () => {
+    const a = new ArenaCombatManager('r', makeGrid(), [gunner()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 2, y: 2 } });
+    expect(a.reload('p1')).toMatchObject({ ok: false });
+    a.shoot('p1', 'mob1', () => 0);
+    expect(a.reload('p1')).toMatchObject({ ok: true, result: { action: 'reload', ammo: prof.magazine } });
   });
 });

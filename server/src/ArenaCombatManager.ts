@@ -2,6 +2,7 @@
 import type { TileGrid, MobInstance, CombatState, CombatActionResultMessage } from '@caverns/shared';
 import { CombatManager, type CombatPlayerInfo } from './CombatManager.js';
 import type { EquippedEffect } from '@caverns/shared';
+import { chebyshev, hitChance, hasLineOfSight } from '@caverns/shared';
 import {
   findPath,
   pathCost,
@@ -14,6 +15,9 @@ interface TurnState {
   movementRemaining: number;
   actionTaken: boolean;
 }
+
+export type ShotCheck = { ok: true; distance: number; hitChance: number } | { ok: false; reason: string };
+type ArenaActionOutcome = { ok: true; result: Partial<CombatActionResultMessage> } | { ok: false; reason: string };
 
 export class ArenaCombatManager {
   private grid: TileGrid;
@@ -291,5 +295,34 @@ export class ArenaCombatManager {
   }
   getParticipantsArray() {
     return this.combatManager.getParticipantsArray();
+  }
+
+  checkShot(attackerId: string, targetId: string): ShotCheck {
+    const gun = this.combatManager.getRanged(attackerId);
+    if (!gun) return { ok: false, reason: 'You have no gun equipped.' };
+    if (gun.ammo <= 0) return { ok: false, reason: 'Out of ammo — reload first.' };
+    const attacker = this.combatManager.getParticipant(attackerId);
+    const target = this.combatManager.getParticipant(targetId);
+    if (!target?.alive || target.type === attacker?.type) return { ok: false, reason: 'Not a valid target.' };
+    const from = this.positions.get(attackerId);
+    const to = this.positions.get(targetId);
+    if (!from || !to) return { ok: false, reason: 'Not a valid target.' };
+    if (!hasLineOfSight(this.grid, from, to, gun.profile.range)) return { ok: false, reason: 'Target is out of range or line of sight.' };
+    const distance = chebyshev(from, to);
+    return { ok: true, distance, hitChance: hitChance(distance, gun.profile.marksmanship) };
+  }
+
+  shoot(attackerId: string, targetId: string, rng: () => number = Math.random): ArenaActionOutcome {
+    const check = this.checkShot(attackerId, targetId);
+    if (!check.ok) return check;
+    const result = this.combatManager.resolveShot(attackerId, targetId, rng() < check.hitChance, check.hitChance);
+    return result ? { ok: true, result } : { ok: false, reason: 'Cannot shoot now.' };
+  }
+
+  reload(id: string): ArenaActionOutcome {
+    const gun = this.combatManager.getRanged(id);
+    if (!gun) return { ok: false, reason: 'You have no gun equipped.' };
+    const result = this.combatManager.reload(id);
+    return result ? { ok: true, result } : { ok: false, reason: 'Already fully loaded.' };
   }
 }
