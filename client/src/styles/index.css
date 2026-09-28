@@ -2798,6 +2798,11 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 .room-view { flex: 1; min-height: 0; justify-content: flex-start; }
 .room-view > .arena-grid-container { width: 100%; }
 
+/* Unseen tiles are blank — no cell border. Beats `.arena-grid-container .room-row span`
+   (0,0,2,1) with a 3-class selector (0,0,3,0); the arena never has fog, so this never applies
+   there. Explored-but-not-visible tiles keep their dim border (tile-explored, not tile-unseen). */
+.glyph-grid .room-row .tile-unseen { border-color: transparent; }
+
 /* Players and mobs float above the terrain and slide between cells */
 .explore-units { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
 .explore-unit {
