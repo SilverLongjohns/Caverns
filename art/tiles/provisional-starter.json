@@ -1,0 +1,19 @@
+{
+  "tileSize": 24,
+  "sets": {
+    "rock": {
+      "dir": "art/mockups/tileset-spike/A2",
+      "pattern": "tile_{i}.png",
+      "maskBit": "lower"
+    }
+  },
+  "floorVariants": [
+    "art/mockups/tileset-spike/A2/floor_variant_cracked.png",
+    "art/mockups/tileset-spike/A2/floor_variant_gravel.png",
+    "art/mockups/tileset-spike/A2/floor_variant_damp.png",
+    "art/mockups/tileset-spike/A2/floor_variant_cable.png",
+    "art/mockups/tileset-spike/A2/floor_variant_amberlight.png"
+  ],
+  "stamps": {},
+  "desaturate": 0.0
+}
