@@ -107,3 +107,24 @@ describe('decideTurn', () => {
     expect(actions).toEqual([{ type: 'end_turn' }]);
   });
 });
+
+const rangedGrid = { width: 10, height: 5, tiles: Array.from({ length: 5 }, () => Array(10).fill('floor')) };
+const snapOf = (ranged: { ammo: number; magazine: number; range: number; marksmanship: number } | undefined, mobX: number) => ({
+  grid: rangedGrid, currentTurnId: 'p1', roundNumber: 1, movementRemaining: 0,
+  positions: { p1: { x: 1, y: 2 }, m1: { x: mobX, y: 2 } },
+  participants: [{ id: 'p1', type: 'player' as const, hp: 50, ranged }, { id: 'm1', type: 'mob' as const, hp: 10 }],
+});
+describe('bot ranged', () => {
+  it('shoots a non-adjacent enemy in range when loaded', () => {
+    expect(decideTurn(snapOf({ ammo: 2, magazine: 2, range: 5, marksmanship: 2 }, 4), 'p1')[0]).toEqual({ type: 'shoot', targetId: 'm1' });
+  });
+  it('still melees an adjacent enemy', () => {
+    expect(decideTurn(snapOf({ ammo: 2, magazine: 2, range: 5, marksmanship: 2 }, 2), 'p1')[0]).toEqual({ type: 'attack', targetId: 'm1' });
+  });
+  it('reloads when empty and nothing is adjacent', () => {
+    expect(decideTurn(snapOf({ ammo: 0, magazine: 2, range: 5, marksmanship: 2 }, 4), 'p1')[0]).toEqual({ type: 'reload' });
+  });
+  it('mobs (no ranged) keep the old behaviour', () => {
+    expect(decideTurn(snapOf(undefined, 4), 'p1').some((a) => a.type === 'shoot' || a.type === 'reload')).toBe(false);
+  });
+});

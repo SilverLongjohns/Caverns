@@ -71,6 +71,8 @@ export function createSandboxSession(setup: SandboxSetup, opts: SandboxSessionOp
   function apply(botId: string, action: BotAction): void {
     if (action.type === 'move') session.handleArenaMove(botId, action.x, action.y);
     else if (action.type === 'attack') session.handleCombatAction(botId, 'attack', action.targetId);
+    else if (action.type === 'shoot') session.handleRangedAction(botId, 'shoot', action.targetId);
+    else if (action.type === 'reload') session.handleRangedAction(botId, 'reload');
     else session.handleArenaEndTurn(botId);
   }
 
@@ -95,7 +97,7 @@ export function createSandboxSession(setup: SandboxSetup, opts: SandboxSessionOp
         opts.onError?.(err);
         return;
       }
-      if (action.type === 'attack') attacked = true;
+      if (action.type === 'attack' || action.type === 'shoot' || action.type === 'reload') attacked = true;
       if (i + 1 < actions.length) later(() => step(i + 1), opts.botTurnDelayMs);
     };
     step(0);

@@ -88,7 +88,7 @@ export interface SessionTiming {
 export interface ArenaSnapshot {
   grid: TileGrid;
   positions: Record<string, { x: number; y: number }>;
-  participants: { id: string; type: 'player' | 'mob'; hp: number }[];
+  participants: { id: string; type: 'player' | 'mob'; hp: number; ranged?: { ammo: number; magazine: number; range: number; marksmanship: number } }[];
   currentTurnId: string;
   roundNumber: number;
   movementRemaining: number;
@@ -243,7 +243,11 @@ export class GameSession {
       positions: combat.getAllPositions(),
       participants: combat.getParticipantsArray()
         .filter((p) => p.alive)
-        .map((p) => ({ id: p.id, type: p.type, hp: p.hp })),
+        .map((p) => {
+          const gun = combat.getCombatManager().getRanged(p.id);
+          return { id: p.id, type: p.type, hp: p.hp,
+            ...(gun ? { ranged: { ammo: gun.ammo, magazine: gun.profile.magazine, range: gun.profile.range, marksmanship: gun.profile.marksmanship } } : {}) };
+        }),
       currentTurnId: state.currentTurnId,
       roundNumber: state.roundNumber,
       movementRemaining: combat.getTurnState(state.currentTurnId)?.movementRemaining ?? 0,

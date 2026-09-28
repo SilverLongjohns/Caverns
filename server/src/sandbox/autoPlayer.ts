@@ -1,9 +1,12 @@
 import type { ArenaSnapshot } from '../GameSession.js';
-import { getMovementRange, isAdjacent, findPath } from '../arenaMovement.js';
+import { getMovementRange, isAdjacent, findPath, hasLineOfSight } from '../arenaMovement.js';
+import { hitChance, chebyshev } from '@caverns/shared';
 
 export type BotAction =
   | { type: 'move'; x: number; y: number }
   | { type: 'attack'; targetId: string }
+  | { type: 'shoot'; targetId: string }
+  | { type: 'reload' }
   | { type: 'end_turn' };
 
 type Pos = { x: number; y: number };
@@ -11,7 +14,7 @@ const keyOf = (p: Pos) => `${p.x},${p.y}`;
 const parseKey = (k: string): Pos => { const [x, y] = k.split(',').map(Number); return { x, y }; };
 const manhattan = (a: Pos, b: Pos) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
-/** Simple, deterministic turn: attack if adjacent, else close in (and attack if that reaches), else end. */
+/** Simple, deterministic turn: melee if adjacent, else shoot the likeliest hit, else reload, else close in. */
 export function decideTurn(snap: ArenaSnapshot, selfId: string): BotAction[] {
   const END: BotAction = { type: 'end_turn' };
   const self = snap.participants.find((p) => p.id === selfId);
@@ -25,6 +28,17 @@ export function decideTurn(snap: ArenaSnapshot, selfId: string): BotAction[] {
 
   const adjacent = enemies.find((e) => isAdjacent(selfPos, snap.positions[e.id]));
   if (adjacent) return [{ type: 'attack', targetId: adjacent.id }, END];
+
+  const gun = self.ranged;
+  if (gun && gun.ammo > 0) {
+    const shots = enemies
+      .map((e) => ({ e, pos: snap.positions[e.id] }))
+      .filter(({ pos }) => hasLineOfSight(snap.grid, selfPos, pos, gun.range))
+      .map(({ e, pos }) => ({ id: e.id, chance: hitChance(chebyshev(selfPos, pos), gun.marksmanship) }))
+      .sort((a, b) => b.chance - a.chance || (a.id < b.id ? -1 : 1));
+    if (shots.length > 0) return [{ type: 'shoot', targetId: shots[0].id }, END];
+  }
+  if (gun && gun.ammo < gun.magazine) return [{ type: 'reload' }, END];
 
   const occupied = new Set(
     snap.participants
