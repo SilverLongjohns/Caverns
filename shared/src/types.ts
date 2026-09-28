@@ -11,7 +11,7 @@ export type GridDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 // === Items ===
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary' | 'unique';
-export type EquipmentSlot = 'weapon' | 'offhand' | 'armor' | 'accessory';
+export type EquipmentSlot = 'weapon' | 'offhand' | 'armor' | 'accessory' | 'ranged';
 export type ItemSlot = EquipmentSlot | 'consumable';
 
 export interface ItemStats {
@@ -20,6 +20,10 @@ export interface ItemStats {
   maxHp?: number;
   initiative?: number;
   healAmount?: number;
+  /** Guns only: base range in tiles (Marksmanship adds to it). */
+  range?: number;
+  /** Guns only: shots per reload. */
+  magazine?: number;
 }
 
 export interface Item {
@@ -218,6 +222,7 @@ export interface Equipment {
   offhand: Item | null;
   armor: Item | null;
   accessory: Item | null;
+  ranged: Item | null;
 }
 
 export const CONSUMABLE_SLOTS = PLAYER_CONFIG.consumableSlots;
@@ -252,12 +257,15 @@ export interface ComputedStats {
   defense: number;
   initiative: number;
   maxEnergy: number;
+  marksmanship: number;
 }
 
 export function computePlayerStats(player: Player): ComputedStats {
   const classDef = getClassDefinition(player.className);
   const base = classDef?.baseStats ?? BASE_STATS;
   const stats: ComputedStats = { ...base, maxEnergy: ENERGY_CONFIG.maxEnergy };
+  stats.marksmanship ??= 0;
+  // The ranged slot is deliberately excluded: gun damage only applies to shots (see rangedProfile).
   const slots: (Item | null)[] = [
     player.equipment.weapon,
     player.equipment.offhand,
@@ -324,7 +332,7 @@ export function createPlayer(id: string, name: string, roomId: string, className
     maxHp,
     hp: maxHp,
     roomId,
-    equipment: { weapon: null, offhand: null, armor: null, accessory: null },
+    equipment: { weapon: null, offhand: null, armor: null, accessory: null, ranged: null },
     consumables: Array(CONSUMABLE_SLOTS).fill(null),
     inventory: Array(INVENTORY_SLOTS).fill(null),
     status: 'exploring',
@@ -351,6 +359,9 @@ export interface CombatParticipant {
   templateId?: string;
   buffs?: ActiveBuff[];
   energy?: number;
+  /** Players with a gun: rounds left and magazine size. */
+  ammo?: number;
+  magazine?: number;
 }
 
 export interface CombatState {

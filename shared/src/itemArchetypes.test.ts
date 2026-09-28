@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   ITEM_ARCHETYPES, ARCHETYPE_SLOTS, isItemArchetype, matchArchetype, archetypeFor, SLOT_DEFAULT_ARCHETYPE,
 } from './itemArchetypes.js';
+import { GUN_TYPES } from './combat/ranged.js';
 
 describe('ITEM_ARCHETYPES', () => {
   it('has 23 unique archetypes, each valid for at least one slot', () => {
@@ -92,4 +93,10 @@ describe('archetypeFor', () => {
     expect(isItemArchetype('laser')).toBe(false);
     expect(isItemArchetype(undefined)).toBe(false);
   });
+});
+
+it('every gun type name resolves to the ranged archetype in the ranged slot', () => {
+  for (const name of Object.keys(GUN_TYPES)) {
+    expect(archetypeFor({ slot: 'ranged', name: `Rusty ${name}` }), name).toBe('ranged');
+  }
 });

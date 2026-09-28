@@ -15,7 +15,7 @@ export function actionIconSrc(action: ActionIcon): string {
 
 // Text stand-ins for empty sockets and failed icon loads.
 const SLOT_GLYPHS: Record<ItemSlot, string> = {
-  weapon: '†', offhand: '◘', armor: '▣', accessory: '○', consumable: '¡',
+  weapon: '†', offhand: '◘', armor: '▣', accessory: '○', consumable: '¡', ranged: '¬',
 };
 
 export function slotGlyph(slot: ItemSlot): string {

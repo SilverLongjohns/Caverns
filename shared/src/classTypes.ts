@@ -23,7 +23,7 @@ export interface ClassDefinition {
   id: string;
   displayName: string;
   description: string;
-  baseStats: { maxHp: number; damage: number; defense: number; initiative: number };
+  baseStats: { maxHp: number; damage: number; defense: number; initiative: number; marksmanship: number };
   starterWeaponId: string;
   starterOffhandId: string;
   abilities: AbilityDefinition[];
