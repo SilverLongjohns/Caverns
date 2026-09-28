@@ -18,10 +18,12 @@ export interface ExplorationInput {
   mobs: { mobId: string; mobName: string; templateId?: string; x: number; y: number }[];
   players: { id: string; className: string; x: number; y: number }[];
   localPlayerId: string;
+  /** Current room id, used to seed a stable sprite variant per placed furnishing: `${roomId}:${x},${y}`. */
+  roomId: string;
   /** undefined = no fog (show everything). */
   visibleTiles?: Set<string>;
   /** Injected so tests don't depend on shipped art. Default: getFurnishingGlyph. */
-  furnishingGlyph?: (id?: string) => string | null;
+  furnishingGlyph?: (id?: string, seedKey?: string) => string | null;
 }
 
 /** Exploration entities: props (furnishings, interactables) sit in tile cells; players and mobs float (they slide). */
@@ -33,7 +35,7 @@ export function buildExplorationEntities(input: ExplorationInput): { props: Enti
   const byTile = new Map<string, EntityOverlay>();
   for (const f of input.furnishings) {
     byTile.set(`${f.x},${f.y}`, {
-      x: f.x, y: f.y, char: f.char, sprite: glyphFor(f.id),
+      x: f.x, y: f.y, char: f.char, sprite: glyphFor(f.id, `${input.roomId}:${f.x},${f.y}`),
       className: f.interactable ? 'entity-interactable' : 'entity-furnishing',
     });
   }

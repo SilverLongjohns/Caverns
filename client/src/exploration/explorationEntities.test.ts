@@ -5,7 +5,7 @@ import { buildExplorationEntities, type ExplorationInput } from './explorationEn
 const cls = CLASS_GLYPHS[0];
 const mobT = MOB_GLYPHS[0];
 const base = (over: Partial<ExplorationInput> = {}): ExplorationInput => ({
-  interactables: [], furnishings: [], mobs: [], players: [], localPlayerId: 'p1', ...over,
+  interactables: [], furnishings: [], mobs: [], players: [], localPlayerId: 'p1', roomId: 'room1', ...over,
 });
 const withGlyph = (id?: string) => (id === 'furn_a' ? '/sprites/glyphs/furnishings/furn_a.png' : null);
 
@@ -75,5 +75,31 @@ describe('buildExplorationEntities', () => {
     const open = buildExplorationEntities(input);
     expect(open.units).toHaveLength(2);
     expect(open.props).toHaveLength(1);
+  });
+  it('passes a seedKey of `${roomId}:${x},${y}` to the injected furnishingGlyph', () => {
+    const calls: [string | undefined, string | undefined][] = [];
+    const capturing = (id?: string, seedKey?: string) => {
+      calls.push([id, seedKey]);
+      return null;
+    };
+    buildExplorationEntities(base({
+      roomId: 'dripping_halls_3',
+      furnishings: [{ x: 5, y: 2, char: '╥', interactable: false, id: 'furn_a' }],
+      furnishingGlyph: capturing,
+    }));
+    expect(calls).toEqual([['furn_a', 'dripping_halls_3:5,2']]);
+  });
+  it('two furnishings of the same id on different tiles can get different sprites via the injected fn', () => {
+    const bySeed = (id?: string, seedKey?: string) => (id && seedKey ? `/sprites/glyphs/furnishings/${id}-${seedKey}.png` : null);
+    const out = buildExplorationEntities(base({
+      roomId: 'room1',
+      furnishings: [
+        { x: 1, y: 1, char: '╥', interactable: false, id: 'furn_a' },
+        { x: 9, y: 9, char: '╥', interactable: false, id: 'furn_a' },
+      ],
+      furnishingGlyph: bySeed,
+    }));
+    const sprites = out.props.map((p) => p.sprite).sort();
+    expect(sprites).toEqual(['/sprites/glyphs/furnishings/furn_a-room1:1,1.png', '/sprites/glyphs/furnishings/furn_a-room1:9,9.png']);
   });
 });

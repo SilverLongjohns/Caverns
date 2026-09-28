@@ -1,0 +1,682 @@
+{
+  "starter_rubble": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_rubble-0.png",
+        "candidate": 0,
+        "job_id": "0e97a8dd-ff10-4d6f-9bf4-d7bcd1f69a7d"
+      },
+      {
+        "n": 1,
+        "file": "starter_rubble-1.png",
+        "candidate": 1,
+        "job_id": "0e97a8dd-ff10-4d6f-9bf4-d7bcd1f69a7d"
+      },
+      {
+        "n": 2,
+        "file": "starter_rubble-2.png",
+        "candidate": 6,
+        "job_id": "0e97a8dd-ff10-4d6f-9bf4-d7bcd1f69a7d"
+      },
+      {
+        "n": 3,
+        "file": "starter_rubble-3.png",
+        "candidate": 7,
+        "job_id": "0e97a8dd-ff10-4d6f-9bf4-d7bcd1f69a7d"
+      }
+    ],
+    "prompt": "Rubble, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_bones": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_bones-0.png",
+        "candidate": 0,
+        "job_id": "f993c33e-c373-4a04-87d9-cb62b28269cb"
+      },
+      {
+        "n": 1,
+        "file": "starter_bones-1.png",
+        "candidate": 1,
+        "job_id": "f993c33e-c373-4a04-87d9-cb62b28269cb"
+      },
+      {
+        "n": 2,
+        "file": "starter_bones-2.png",
+        "candidate": 3,
+        "job_id": "f993c33e-c373-4a04-87d9-cb62b28269cb"
+      },
+      {
+        "n": 3,
+        "file": "starter_bones-3.png",
+        "candidate": 4,
+        "job_id": "f993c33e-c373-4a04-87d9-cb62b28269cb"
+      },
+      {
+        "n": 4,
+        "file": "starter_bones-4.png",
+        "candidate": 5,
+        "job_id": "f993c33e-c373-4a04-87d9-cb62b28269cb"
+      }
+    ],
+    "prompt": "Bones, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_collapsed_cart": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_collapsed_cart-0.png",
+        "candidate": 0,
+        "job_id": "6a99a4f8-0a8d-4de0-be4f-098e399496d1"
+      },
+      {
+        "n": 1,
+        "file": "starter_collapsed_cart-1.png",
+        "candidate": 1,
+        "job_id": "6a99a4f8-0a8d-4de0-be4f-098e399496d1"
+      },
+      {
+        "n": 2,
+        "file": "starter_collapsed_cart-2.png",
+        "candidate": 2,
+        "job_id": "6a99a4f8-0a8d-4de0-be4f-098e399496d1"
+      }
+    ],
+    "prompt": "Collapsed Cart, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_table": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_table-0.png",
+        "candidate": 0,
+        "job_id": "1d896cb0-5b1a-4d6b-86d4-6fd835863169"
+      },
+      {
+        "n": 1,
+        "file": "starter_table-1.png",
+        "candidate": 2,
+        "job_id": "1d896cb0-5b1a-4d6b-86d4-6fd835863169"
+      },
+      {
+        "n": 2,
+        "file": "starter_table-2.png",
+        "candidate": 6,
+        "job_id": "1d896cb0-5b1a-4d6b-86d4-6fd835863169"
+      },
+      {
+        "n": 3,
+        "file": "starter_table-3.png",
+        "candidate": 7,
+        "job_id": "1d896cb0-5b1a-4d6b-86d4-6fd835863169"
+      }
+    ],
+    "prompt": "Table, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_chair": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_chair-0.png",
+        "candidate": 0,
+        "job_id": "2be5f1a9-fb61-440f-b20a-8475e3d2df7e"
+      },
+      {
+        "n": 1,
+        "file": "starter_chair-1.png",
+        "candidate": 1,
+        "job_id": "2be5f1a9-fb61-440f-b20a-8475e3d2df7e"
+      },
+      {
+        "n": 2,
+        "file": "starter_chair-2.png",
+        "candidate": 2,
+        "job_id": "2be5f1a9-fb61-440f-b20a-8475e3d2df7e"
+      },
+      {
+        "n": 3,
+        "file": "starter_chair-3.png",
+        "candidate": 4,
+        "job_id": "2be5f1a9-fb61-440f-b20a-8475e3d2df7e"
+      },
+      {
+        "n": 4,
+        "file": "starter_chair-4.png",
+        "candidate": 7,
+        "job_id": "2be5f1a9-fb61-440f-b20a-8475e3d2df7e"
+      }
+    ],
+    "prompt": "Chair, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_barrel": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_barrel-0.png",
+        "candidate": 0,
+        "job_id": "7a4d75b1-8834-4b6f-9140-0bc5217ea312"
+      },
+      {
+        "n": 1,
+        "file": "starter_barrel-1.png",
+        "candidate": 1,
+        "job_id": "7a4d75b1-8834-4b6f-9140-0bc5217ea312"
+      },
+      {
+        "n": 2,
+        "file": "starter_barrel-2.png",
+        "candidate": 2,
+        "job_id": "7a4d75b1-8834-4b6f-9140-0bc5217ea312"
+      },
+      {
+        "n": 3,
+        "file": "starter_barrel-3.png",
+        "candidate": 4,
+        "job_id": "7a4d75b1-8834-4b6f-9140-0bc5217ea312"
+      },
+      {
+        "n": 4,
+        "file": "starter_barrel-4.png",
+        "candidate": 6,
+        "job_id": "7a4d75b1-8834-4b6f-9140-0bc5217ea312"
+      },
+      {
+        "n": 5,
+        "file": "starter_barrel-5.png",
+        "candidate": 7,
+        "job_id": "7a4d75b1-8834-4b6f-9140-0bc5217ea312"
+      }
+    ],
+    "prompt": "Barrel, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_rotting_shelf": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_rotting_shelf-0.png",
+        "candidate": 2,
+        "job_id": "6700964d-b703-4bda-a66c-1a194977ca37"
+      },
+      {
+        "n": 1,
+        "file": "starter_rotting_shelf-1.png",
+        "candidate": 3,
+        "job_id": "6700964d-b703-4bda-a66c-1a194977ca37"
+      },
+      {
+        "n": 2,
+        "file": "starter_rotting_shelf-2.png",
+        "candidate": 4,
+        "job_id": "6700964d-b703-4bda-a66c-1a194977ca37"
+      },
+      {
+        "n": 3,
+        "file": "starter_rotting_shelf-3.png",
+        "candidate": 5,
+        "job_id": "6700964d-b703-4bda-a66c-1a194977ca37"
+      },
+      {
+        "n": 4,
+        "file": "starter_rotting_shelf-4.png",
+        "candidate": 7,
+        "job_id": "6700964d-b703-4bda-a66c-1a194977ca37"
+      }
+    ],
+    "prompt": "Rotting Shelf, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_locked_chest": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_locked_chest-0.png",
+        "candidate": 0,
+        "job_id": "fddae42b-2691-4367-bcf6-7fcab50b40cc"
+      },
+      {
+        "n": 1,
+        "file": "starter_locked_chest-1.png",
+        "candidate": 2,
+        "job_id": "fddae42b-2691-4367-bcf6-7fcab50b40cc"
+      },
+      {
+        "n": 2,
+        "file": "starter_locked_chest-2.png",
+        "candidate": 5,
+        "job_id": "fddae42b-2691-4367-bcf6-7fcab50b40cc"
+      },
+      {
+        "n": 3,
+        "file": "starter_locked_chest-3.png",
+        "candidate": 6,
+        "job_id": "fddae42b-2691-4367-bcf6-7fcab50b40cc"
+      },
+      {
+        "n": 4,
+        "file": "starter_locked_chest-4.png",
+        "candidate": 7,
+        "job_id": "fddae42b-2691-4367-bcf6-7fcab50b40cc"
+      }
+    ],
+    "prompt": "Locked Chest, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_stalagmite": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_stalagmite-0.png",
+        "candidate": 0,
+        "job_id": "1eff21d8-8fcd-4c3a-a4f7-4e80ce735993"
+      },
+      {
+        "n": 1,
+        "file": "starter_stalagmite-1.png",
+        "candidate": 1,
+        "job_id": "1eff21d8-8fcd-4c3a-a4f7-4e80ce735993"
+      },
+      {
+        "n": 2,
+        "file": "starter_stalagmite-2.png",
+        "candidate": 2,
+        "job_id": "1eff21d8-8fcd-4c3a-a4f7-4e80ce735993"
+      },
+      {
+        "n": 3,
+        "file": "starter_stalagmite-3.png",
+        "candidate": 4,
+        "job_id": "1eff21d8-8fcd-4c3a-a4f7-4e80ce735993"
+      },
+      {
+        "n": 4,
+        "file": "starter_stalagmite-4.png",
+        "candidate": 5,
+        "job_id": "1eff21d8-8fcd-4c3a-a4f7-4e80ce735993"
+      },
+      {
+        "n": 5,
+        "file": "starter_stalagmite-5.png",
+        "candidate": 6,
+        "job_id": "1eff21d8-8fcd-4c3a-a4f7-4e80ce735993"
+      },
+      {
+        "n": 6,
+        "file": "starter_stalagmite-6.png",
+        "candidate": 7,
+        "job_id": "1eff21d8-8fcd-4c3a-a4f7-4e80ce735993"
+      }
+    ],
+    "prompt": "Stalagmite, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_mushroom_cluster": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_mushroom_cluster-0.png",
+        "candidate": 0,
+        "job_id": "f4c7c569-6157-49a6-a729-1c0df8e90e20"
+      },
+      {
+        "n": 1,
+        "file": "starter_mushroom_cluster-1.png",
+        "candidate": 1,
+        "job_id": "f4c7c569-6157-49a6-a729-1c0df8e90e20"
+      },
+      {
+        "n": 2,
+        "file": "starter_mushroom_cluster-2.png",
+        "candidate": 2,
+        "job_id": "f4c7c569-6157-49a6-a729-1c0df8e90e20"
+      },
+      {
+        "n": 3,
+        "file": "starter_mushroom_cluster-3.png",
+        "candidate": 3,
+        "job_id": "f4c7c569-6157-49a6-a729-1c0df8e90e20"
+      },
+      {
+        "n": 4,
+        "file": "starter_mushroom_cluster-4.png",
+        "candidate": 4,
+        "job_id": "f4c7c569-6157-49a6-a729-1c0df8e90e20"
+      },
+      {
+        "n": 5,
+        "file": "starter_mushroom_cluster-5.png",
+        "candidate": 6,
+        "job_id": "f4c7c569-6157-49a6-a729-1c0df8e90e20"
+      },
+      {
+        "n": 6,
+        "file": "starter_mushroom_cluster-6.png",
+        "candidate": 7,
+        "job_id": "f4c7c569-6157-49a6-a729-1c0df8e90e20"
+      }
+    ],
+    "prompt": "Mushroom Cluster, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_puddle": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_puddle-0.png",
+        "candidate": 4,
+        "job_id": "0c5936fe-8e9c-49b5-9183-553cda121045"
+      },
+      {
+        "n": 1,
+        "file": "starter_puddle-1.png",
+        "candidate": 7,
+        "job_id": "0c5936fe-8e9c-49b5-9183-553cda121045"
+      }
+    ],
+    "prompt": "Puddle, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_glowing_fungus": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_glowing_fungus-0.png",
+        "candidate": 0,
+        "job_id": "a0e8395b-2379-46dc-a0fa-6eccea8f1135"
+      },
+      {
+        "n": 1,
+        "file": "starter_glowing_fungus-1.png",
+        "candidate": 3,
+        "job_id": "a0e8395b-2379-46dc-a0fa-6eccea8f1135"
+      },
+      {
+        "n": 2,
+        "file": "starter_glowing_fungus-2.png",
+        "candidate": 6,
+        "job_id": "a0e8395b-2379-46dc-a0fa-6eccea8f1135"
+      }
+    ],
+    "prompt": "Glowing Fungus, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_strange_fossil": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_strange_fossil-0.png",
+        "candidate": 0,
+        "job_id": "07763326-ecf6-45c4-bc6b-20c21c93fd89"
+      },
+      {
+        "n": 1,
+        "file": "starter_strange_fossil-1.png",
+        "candidate": 1,
+        "job_id": "07763326-ecf6-45c4-bc6b-20c21c93fd89"
+      },
+      {
+        "n": 2,
+        "file": "starter_strange_fossil-2.png",
+        "candidate": 4,
+        "job_id": "07763326-ecf6-45c4-bc6b-20c21c93fd89"
+      },
+      {
+        "n": 3,
+        "file": "starter_strange_fossil-3.png",
+        "candidate": 5,
+        "job_id": "07763326-ecf6-45c4-bc6b-20c21c93fd89"
+      }
+    ],
+    "prompt": "Strange Fossil, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_crate": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_crate-0.png",
+        "candidate": 0,
+        "job_id": "d31dffe0-2d81-4a8c-ae8d-e7f2d8f764b9"
+      },
+      {
+        "n": 1,
+        "file": "starter_crate-1.png",
+        "candidate": 3,
+        "job_id": "d31dffe0-2d81-4a8c-ae8d-e7f2d8f764b9"
+      },
+      {
+        "n": 2,
+        "file": "starter_crate-2.png",
+        "candidate": 4,
+        "job_id": "d31dffe0-2d81-4a8c-ae8d-e7f2d8f764b9"
+      },
+      {
+        "n": 3,
+        "file": "starter_crate-3.png",
+        "candidate": 5,
+        "job_id": "d31dffe0-2d81-4a8c-ae8d-e7f2d8f764b9"
+      },
+      {
+        "n": 4,
+        "file": "starter_crate-4.png",
+        "candidate": 6,
+        "job_id": "d31dffe0-2d81-4a8c-ae8d-e7f2d8f764b9"
+      }
+    ],
+    "prompt": "Crate, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_cobwebs": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_cobwebs-0.png",
+        "candidate": 0,
+        "job_id": "cbbd9cf7-e9ac-4685-af06-a684938e5182"
+      }
+    ],
+    "prompt": "Cobwebs, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_shrine": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_shrine-0.png",
+        "candidate": 2,
+        "job_id": "13bbf3b6-d857-4862-a873-5dafd5db2b9d"
+      },
+      {
+        "n": 1,
+        "file": "starter_shrine-1.png",
+        "candidate": 3,
+        "job_id": "13bbf3b6-d857-4862-a873-5dafd5db2b9d"
+      },
+      {
+        "n": 2,
+        "file": "starter_shrine-2.png",
+        "candidate": 6,
+        "job_id": "13bbf3b6-d857-4862-a873-5dafd5db2b9d"
+      },
+      {
+        "n": 3,
+        "file": "starter_shrine-3.png",
+        "candidate": 7,
+        "job_id": "13bbf3b6-d857-4862-a873-5dafd5db2b9d"
+      }
+    ],
+    "prompt": "Shrine, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_old_skeleton": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_old_skeleton-0.png",
+        "candidate": 0,
+        "job_id": "b6ff7f58-3823-40b6-a6ba-c4d26f8474ce"
+      },
+      {
+        "n": 1,
+        "file": "starter_old_skeleton-1.png",
+        "candidate": 1,
+        "job_id": "b6ff7f58-3823-40b6-a6ba-c4d26f8474ce"
+      },
+      {
+        "n": 2,
+        "file": "starter_old_skeleton-2.png",
+        "candidate": 2,
+        "job_id": "b6ff7f58-3823-40b6-a6ba-c4d26f8474ce"
+      },
+      {
+        "n": 3,
+        "file": "starter_old_skeleton-3.png",
+        "candidate": 6,
+        "job_id": "b6ff7f58-3823-40b6-a6ba-c4d26f8474ce"
+      }
+    ],
+    "prompt": "Old Skeleton, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_pillar": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_pillar-0.png",
+        "candidate": 0,
+        "job_id": "99304572-2b92-4542-86cf-dd233871e6bb"
+      },
+      {
+        "n": 1,
+        "file": "starter_pillar-1.png",
+        "candidate": 1,
+        "job_id": "99304572-2b92-4542-86cf-dd233871e6bb"
+      },
+      {
+        "n": 2,
+        "file": "starter_pillar-2.png",
+        "candidate": 2,
+        "job_id": "99304572-2b92-4542-86cf-dd233871e6bb"
+      },
+      {
+        "n": 3,
+        "file": "starter_pillar-3.png",
+        "candidate": 4,
+        "job_id": "99304572-2b92-4542-86cf-dd233871e6bb"
+      }
+    ],
+    "prompt": "Pillar, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_throne": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_throne-0.png",
+        "candidate": 0,
+        "job_id": "47b9ce0c-cd25-4118-b525-643f91b58e58"
+      },
+      {
+        "n": 1,
+        "file": "starter_throne-1.png",
+        "candidate": 1,
+        "job_id": "47b9ce0c-cd25-4118-b525-643f91b58e58"
+      },
+      {
+        "n": 2,
+        "file": "starter_throne-2.png",
+        "candidate": 2,
+        "job_id": "47b9ce0c-cd25-4118-b525-643f91b58e58"
+      },
+      {
+        "n": 3,
+        "file": "starter_throne-3.png",
+        "candidate": 6,
+        "job_id": "47b9ce0c-cd25-4118-b525-643f91b58e58"
+      },
+      {
+        "n": 4,
+        "file": "starter_throne-4.png",
+        "candidate": 7,
+        "job_id": "47b9ce0c-cd25-4118-b525-643f91b58e58"
+      }
+    ],
+    "prompt": "Throne, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_brazier": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_brazier-0.png",
+        "candidate": 0,
+        "job_id": "82a4a7a2-19bd-4b98-960b-dc7ea2d0a229"
+      },
+      {
+        "n": 1,
+        "file": "starter_brazier-1.png",
+        "candidate": 1,
+        "job_id": "82a4a7a2-19bd-4b98-960b-dc7ea2d0a229"
+      },
+      {
+        "n": 2,
+        "file": "starter_brazier-2.png",
+        "candidate": 2,
+        "job_id": "82a4a7a2-19bd-4b98-960b-dc7ea2d0a229"
+      },
+      {
+        "n": 3,
+        "file": "starter_brazier-3.png",
+        "candidate": 3,
+        "job_id": "82a4a7a2-19bd-4b98-960b-dc7ea2d0a229"
+      },
+      {
+        "n": 4,
+        "file": "starter_brazier-4.png",
+        "candidate": 7,
+        "job_id": "82a4a7a2-19bd-4b98-960b-dc7ea2d0a229"
+      }
+    ],
+    "prompt": "Brazier, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_altar": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_altar-0.png",
+        "candidate": 2,
+        "job_id": "c8c7ebe3-e79b-4afa-acd2-ce9eedf08903"
+      },
+      {
+        "n": 1,
+        "file": "starter_altar-1.png",
+        "candidate": 5,
+        "job_id": "c8c7ebe3-e79b-4afa-acd2-ce9eedf08903"
+      },
+      {
+        "n": 2,
+        "file": "starter_altar-2.png",
+        "candidate": 6,
+        "job_id": "c8c7ebe3-e79b-4afa-acd2-ce9eedf08903"
+      },
+      {
+        "n": 3,
+        "file": "starter_altar-3.png",
+        "candidate": 7,
+        "job_id": "c8c7ebe3-e79b-4afa-acd2-ce9eedf08903"
+      }
+    ],
+    "prompt": "Altar, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  },
+  "starter_weapon_rack": {
+    "variants": [
+      {
+        "n": 0,
+        "file": "starter_weapon_rack-0.png",
+        "candidate": 0,
+        "job_id": "ac8ffef2-91ab-4fc6-a56a-ea51e7205585"
+      },
+      {
+        "n": 1,
+        "file": "starter_weapon_rack-1.png",
+        "candidate": 1,
+        "job_id": "ac8ffef2-91ab-4fc6-a56a-ea51e7205585"
+      },
+      {
+        "n": 2,
+        "file": "starter_weapon_rack-2.png",
+        "candidate": 2,
+        "job_id": "ac8ffef2-91ab-4fc6-a56a-ea51e7205585"
+      }
+    ],
+    "prompt": "Weapon Rack, a piece of cave furniture from the starter caverns, strange post-collapse relic-tech, multi-colour pixel-art game object, top-down 3/4 view, isolated on transparent background, no floor"
+  }
+}

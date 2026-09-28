@@ -113,6 +113,7 @@ export function RoomView() {
         return pos ? [{ id: p.id, className: p.className, x: pos.x, y: pos.y }] : [];
       }),
       localPlayerId: playerId,
+      roomId: currentRoomId,
       visibleTiles,
     });
   }, [room, tileGrid, activeCombat, players, currentRoomId, playerId, mobPositions, playerPositions, visibleTiles]);
