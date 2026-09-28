@@ -254,6 +254,41 @@ describe('autotile — stamps', () => {
     expect(cells[1][1].stamp).toBeNull();
     expect(cells[1][1].quads[3]).not.toBeNull();
   });
+
+  it('leaves missingStamp null when a cell does not want a stamp', () => {
+    const grid = buildGrid(['...', '...', '...']);
+    const cells = autotile(grid, 'room', manifest);
+    expect(cells[1][1].stamp).toBeNull();
+    expect(cells[1][1].missingStamp).toBeNull();
+  });
+
+  it('leaves missingStamp null when a wanted stamp is present in the manifest', () => {
+    const grid = buildGrid(['...', '.^.', '...']);
+    const cells = autotile(grid, 'room', manifest);
+    expect(cells[1][1].stamp).not.toBeNull();
+    expect(cells[1][1].missingStamp).toBeNull();
+  });
+
+  it('reports missingStamp for hazard/exit/torch when their stamp is absent from the manifest', () => {
+    const bare = makeManifest({ stamps: {} });
+    expect(autotile(buildGrid(['...', '.^.', '...']), 'room', bare)[1][1].missingStamp).toBe('hazard');
+    expect(autotile(buildGrid(['...', '.E.', '...']), 'room', bare)[1][1].missingStamp).toBe('exit');
+    expect(autotile(buildGrid(['...', '.T.', '...']), 'room', bare)[1][1].missingStamp).toBe('torch');
+  });
+
+  it('reports missingStamp bridge_h/bridge_v for bridges when bridge stamps are absent', () => {
+    const bare = makeManifest({ stamps: {} });
+    expect(autotile(buildGrid(['.~.', '.=.', '.~.']), 'room', bare)[1][1].missingStamp).toBe('bridge_h');
+    expect(autotile(buildGrid(['...', '~=~', '...']), 'room', bare)[1][1].missingStamp).toBe('bridge_v');
+  });
+
+  it('reports missingStamp for only the stamp kind that is actually missing, not others', () => {
+    const onlyHazard = makeManifest({ stamps: { hazard: [200, 0] } });
+    const hazardCells = autotile(buildGrid(['...', '.^.', '...']), 'room', onlyHazard);
+    expect(hazardCells[1][1].missingStamp).toBeNull();
+    const exitCells = autotile(buildGrid(['...', '.E.', '...']), 'room', onlyHazard);
+    expect(exitCells[1][1].missingStamp).toBe('exit');
+  });
 });
 
 describe('autotile — floor variants', () => {

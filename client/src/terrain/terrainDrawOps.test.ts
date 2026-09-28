@@ -15,6 +15,7 @@ function fullCell(): TerrainCell {
     ],
     variant: [9, 10],
     stamp: [11, 12],
+    missingStamp: null,
   };
 }
 
@@ -40,7 +41,7 @@ describe('terrainDrawOps', () => {
   });
 
   it('skips null layers, emitting no ops for an empty cell', () => {
-    const emptyCell: TerrainCell = { quads: [null, null, null, null], variant: null, stamp: null };
+    const emptyCell: TerrainCell = { quads: [null, null, null, null], variant: null, stamp: null, missingStamp: null };
     const cells: TerrainCell[][] = [[emptyCell]];
     expect(terrainDrawOps(cells, TILE_SIZE, CELL)).toEqual([]);
   });
@@ -50,6 +51,7 @@ describe('terrainDrawOps', () => {
       quads: [{ tile: [1, 2], qx: 0, qy: 0 }, null, null, null],
       variant: null,
       stamp: null,
+      missingStamp: null,
     };
     const cells: TerrainCell[][] = [[cell]];
     expect(terrainDrawOps(cells, TILE_SIZE, CELL)).toEqual([
@@ -58,8 +60,8 @@ describe('terrainDrawOps', () => {
   });
 
   it('offsets destination rects by cell position for a multi-cell grid', () => {
-    const empty: TerrainCell = { quads: [null, null, null, null], variant: null, stamp: null };
-    const withVariant: TerrainCell = { quads: [null, null, null, null], variant: [0, 0], stamp: null };
+    const empty: TerrainCell = { quads: [null, null, null, null], variant: null, stamp: null, missingStamp: null };
+    const withVariant: TerrainCell = { quads: [null, null, null, null], variant: [0, 0], stamp: null, missingStamp: null };
     const cells: TerrainCell[][] = [
       [empty, empty],
       [empty, withVariant],

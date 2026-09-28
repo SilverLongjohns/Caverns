@@ -41,12 +41,17 @@ export function GlyphViewport({
   const set = useTerrainSet(grid.biomeId);
   const cells = useMemo(() => (set ? autotile(grid, roomKey ?? 'grid', set.manifest) : null),
     [grid, roomKey, set]);
+  // ASCII fallback applies both where the base terrain has no art at all (all-null quads — e.g.
+  // water/chasm before Task 7) and where the cell wanted a stamp (hazard/exit/bridge/torch-wall)
+  // that the active manifest doesn't have yet: a hazard or exit with no visible marker is a
+  // gameplay problem, not a cosmetic gap, so its ASCII character draws over the base terrain art.
   const asciiCells = useMemo(() => {
     if (!cells) return undefined;
     const s = new Set<string>();
     for (let y = 0; y < cells.length; y++) {
       for (let x = 0; x < cells[y].length; x++) {
-        if (cells[y][x].quads.every((q) => q === null)) s.add(`${x},${y}`);
+        const cell = cells[y][x];
+        if (cell.quads.every((q) => q === null) || cell.missingStamp !== null) s.add(`${x},${y}`);
       }
     }
     return s;

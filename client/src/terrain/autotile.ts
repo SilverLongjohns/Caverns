@@ -4,6 +4,9 @@ import { fnv1a32 } from '../glyphs.js';
 export type TerrainClass = 'floor' | 'rock' | 'water' | 'chasm';
 type UpperClass = 'rock' | 'water' | 'chasm';
 
+/** Stamp slots a manifest can supply (see TerrainManifest['stamps']). */
+export type StampKey = 'hazard' | 'bridge_h' | 'bridge_v' | 'exit' | 'torch';
+
 export interface Quad {
   tile: SheetPos;
   qx: 0 | 1;
@@ -15,6 +18,15 @@ export interface TerrainCell {
   quads: [Quad | null, Quad | null, Quad | null, Quad | null];
   variant: SheetPos | null;
   stamp: SheetPos | null;
+  /**
+   * The stamp this cell needs (hazard/exit/bridge/torch-wall) when `stamp` is null because the
+   * active manifest doesn't have that stamp yet — as opposed to this cell simply not wanting a
+   * stamp at all. The base terrain (quads/variant) still renders normally either way; callers
+   * use this to know when a cell needs its ASCII character drawn over the art anyway (a hazard
+   * or exit with no visible marker is a gameplay problem, not a cosmetic gap), unlike a plain
+   * floor/rock cell whose stamp field is simply and correctly null.
+   */
+  missingStamp: StampKey | null;
 }
 
 interface AutotileGrid {
@@ -78,20 +90,25 @@ export function vertexTile(grid: AutotileGrid, vx: number, vy: number, m: Terrai
   return m.sets[set]?.[String(mask)] ?? null;
 }
 
-function bridgeStamp(grid: AutotileGrid, x: number, y: number, m: TerrainManifest): SheetPos | null {
+function bridgeStampKey(grid: AutotileGrid, x: number, y: number): 'bridge_h' | 'bridge_v' {
   const left = tileAt(grid, x - 1, y);
   const right = tileAt(grid, x + 1, y);
   const isWaterOrChasm = (t: string | null) => t === 'water' || t === 'chasm';
   const horizontal = !isWaterOrChasm(left) || !isWaterOrChasm(right);
-  return (horizontal ? m.stamps.bridge_h : m.stamps.bridge_v) ?? null;
+  return horizontal ? 'bridge_h' : 'bridge_v';
 }
 
-function stampFor(grid: AutotileGridWithThemes, x: number, y: number, m: TerrainManifest): SheetPos | null {
+/**
+ * Which stamp slot a cell wants, if any — the single source of truth for "does this cell need a
+ * stamp" (used both to look the stamp up and, when it's missing from the manifest, to tell
+ * callers an ASCII fallback is needed even though the base terrain rendered fine).
+ */
+function stampKeyFor(grid: AutotileGridWithThemes, x: number, y: number): StampKey | null {
   const t = grid.tiles[y][x];
-  if (t === 'hazard') return m.stamps.hazard ?? null;
-  if (t === 'exit') return m.stamps.exit ?? null;
-  if (t === 'bridge') return bridgeStamp(grid, x, y, m);
-  if (t === 'wall' && grid.themes?.[y]?.[x] === 'torch') return m.stamps.torch ?? null;
+  if (t === 'hazard') return 'hazard';
+  if (t === 'exit') return 'exit';
+  if (t === 'bridge') return bridgeStampKey(grid, x, y);
+  if (t === 'wall' && grid.themes?.[y]?.[x] === 'torch') return 'torch';
   return null;
 }
 
@@ -125,8 +142,10 @@ export function autotile(grid: AutotileGridWithThemes, roomId: string, m: Terrai
         }
       }
 
-      const stamp = stampFor(grid, x, y, m);
-      row.push({ quads, variant, stamp });
+      const stampKey = stampKeyFor(grid, x, y);
+      const stamp = stampKey ? m.stamps[stampKey] ?? null : null;
+      const missingStamp = stampKey && !stamp ? stampKey : null;
+      row.push({ quads, variant, stamp, missingStamp });
     }
     rows.push(row);
   }

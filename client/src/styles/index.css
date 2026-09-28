@@ -2710,6 +2710,31 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 .glyph-grid.terrain .arena-target-highlight { background: rgba(220, 30, 30, 0.4) !important; }
 .glyph-grid.terrain .entity-ghost { opacity: 0.55; filter: drop-shadow(0 0 3px #4488ff); }
 
+/* Hazard/exit/torch ASCII fallback drawn over terrain art (autotile's `missingStamp`, wired in
+   GlyphViewport): the existing colours stay, but their glow-only text-shadow doesn't stand out
+   against a busy background, so a hard black outline (4-direction offset trick) is layered under
+   it here for contrast. Higher specificity than a biome theme override (e.g. tile-hazard.tile-
+   theme-lava) is an acceptable trade for now — no active biome pairs one with terrain art yet. */
+.glyph-grid.terrain .tile-hazard {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px rgba(221, 34, 34, 0.6);
+}
+.glyph-grid.terrain .tile-exit {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px rgba(68, 255, 68, 0.6);
+}
+.glyph-grid.terrain .tile-wall.tile-theme-torch {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px rgba(255, 170, 51, 0.7);
+}
+/* Volcanic biome's lava-hazard keeps its pulse animation over terrain art too (higher
+   specificity than the plain .tile-hazard override above so it wins). */
+.glyph-grid.terrain .tile-hazard.tile-theme-lava {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #ff2200, 0 0 8px #aa0000;
+  animation: lava-pulse-outlined 2s ease-in-out infinite;
+}
+@keyframes lava-pulse-outlined {
+  0%, 100% { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #ff2200, 0 0 8px #aa0000; }
+  50% { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 8px #ff4400, 0 0 16px #cc2200; }
+}
+
 .arena-target-highlight {
   background: #2a0b0b !important;
   cursor: crosshair !important;
