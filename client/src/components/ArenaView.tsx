@@ -4,7 +4,7 @@ import { ArenaGrid } from './ArenaGrid.js';
 import { TurnOrderBar } from './TurnOrderBar.js';
 import { ArenaUnitPanel } from './ArenaUnitPanel.js';
 import { ArenaActionBar } from './ArenaActionBar.js';
-import type { AbilityDefinition } from '@caverns/shared';
+import { hasLineOfSight, type AbilityDefinition } from '@caverns/shared';
 
 interface ArenaViewProps {
   onCombatAction: (
@@ -67,35 +67,6 @@ function tracePath(bfs: Map<string, { remaining: number; parent: string | null }
     key = entry.parent;
   }
   return path;
-}
-
-/** Bresenham LoS — duplicated from server (same pattern as BFS duplication) */
-function hasLineOfSight(
-  grid: { width: number; height: number; tiles: string[][] },
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-  maxRange: number,
-): boolean {
-  const dx = Math.abs(to.x - from.x);
-  const dy = Math.abs(to.y - from.y);
-  if (Math.max(dx, dy) > maxRange) return false;
-  if (dx === 0 && dy === 0) return true;
-
-  const sx = from.x < to.x ? 1 : -1;
-  const sy = from.y < to.y ? 1 : -1;
-  let err = dx - dy;
-  let x = from.x;
-  let y = from.y;
-
-  while (true) {
-    const e2 = 2 * err;
-    if (e2 > -dy) { err -= dy; x += sx; }
-    if (e2 < dx) { err += dx; y += sy; }
-    if (x === to.x && y === to.y) break;
-    const tile = grid.tiles[y]?.[x];
-    if (!tile || tile === 'wall' || tile === 'chasm') return false;
-  }
-  return true;
 }
 
 export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAbility }: ArenaViewProps) {
