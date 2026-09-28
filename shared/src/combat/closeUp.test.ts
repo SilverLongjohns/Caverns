@@ -42,6 +42,12 @@ describe('closeUpFor', () => {
     expect(closeUpFor({ action: 'attack', defendQte: true, targetDowned: true }, mobHit)).toBeNull();
     expect(closeUpFor({ action: 'attack', targetDowned: true }, { ...mobHit, targetType: 'mob' })).toBeNull();
   });
+  it('player shots: kill if it downs, otherwise strike (hit or miss); reload never', () => {
+    expect(closeUpFor({ action: 'shoot', hit: true, targetDowned: true }, player)).toEqual({ kind: 'kill', durationMs: CLOSE_UP_CONFIG.killMs });
+    expect(closeUpFor({ action: 'shoot', hit: true }, player)).toEqual({ kind: 'strike', durationMs: CLOSE_UP_CONFIG.strikeMs });
+    expect(closeUpFor({ action: 'shoot', hit: false, damage: 0 }, player)?.kind).toBe('strike');
+    expect(closeUpFor({ action: 'reload' }, player)).toBeNull();
+  });
 });
 
 describe('closeUpForParticipants', () => {

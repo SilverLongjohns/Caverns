@@ -1107,6 +1107,8 @@ wss.on('connection', (ws) => {
           getGameSession(playerId)?.handleUseAbility(playerId, msg.abilityId, msg.targetId, msg.targetX, msg.targetY);
         } else if (msg.action === 'use_item_effect' && msg.effectId) {
           getGameSession(playerId)?.handleItemEffectAction(playerId, msg.effectId, msg.targetId);
+        } else if (msg.action === 'shoot' || msg.action === 'reload') {
+          getGameSession(playerId)?.handleRangedAction(playerId, msg.action, msg.targetId);
         } else {
           getGameSession(playerId)?.handleCombatAction(playerId, msg.action as 'attack' | 'defend' | 'use_item' | 'flee', msg.targetId, msg.itemIndex, msg.fleeDirection, msg.critMultiplier);
         }

@@ -216,4 +216,20 @@ describe('close-up pacing', () => {
       session.dispose();
     } finally { restore(); vi.useRealTimers(); }
   });
+
+  it('a shot holds the next turn for the strike close-up', () => {
+    vi.useFakeTimers();
+    const restore = installSeededRandom(4242);
+    try {
+      const { session, sent } = setup();
+      closeIn(session);
+      const mob = session.getArenaSnapshot(SANDBOX_ROOM_ID)!.participants.find((p) => p.type === 'mob')!;
+      const before = sent.length;
+      session.handleRangedAction('p1', 'shoot', mob.id);
+      const res = sent.slice(before).find((m) => m.type === 'combat_action_result') as { targetDowned?: boolean };
+      const expected = res?.targetDowned ? CLOSE_UP_CONFIG.killMs : CLOSE_UP_CONFIG.strikeMs;
+      expect(msUntilNextAction(sent, before)).toBeGreaterThanOrEqual(expected);
+      session.dispose();
+    } finally { restore(); vi.useRealTimers(); }
+  });
 });

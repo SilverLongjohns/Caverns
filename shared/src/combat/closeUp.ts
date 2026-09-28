@@ -29,6 +29,7 @@ export function closeUpFor(r: Partial<CombatActionResultMessage>, ctx: Ctx): Clo
       if ((r.critMultiplier ?? 1) > 1) return make('crit');
       return make('strike');
     }
+    if (r.action === 'shoot') return make(r.targetDowned ? 'kill' : 'strike');
     return null;
   }
   // Mob actor: only hits that land on a player. A mob hit resolved through the defend QTE arrives as 'defend'.
