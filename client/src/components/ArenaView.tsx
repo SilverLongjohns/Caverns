@@ -8,7 +8,7 @@ import { hasLineOfSight, type AbilityDefinition } from '@caverns/shared';
 
 interface ArenaViewProps {
   onCombatAction: (
-    action: 'attack' | 'defend' | 'use_item' | 'flee',
+    action: 'attack' | 'defend' | 'use_item' | 'flee' | 'shoot' | 'reload',
     targetId?: string,
     itemIndex?: number,
   ) => void;

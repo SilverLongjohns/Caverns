@@ -89,3 +89,47 @@ describe('fxExpire', () => {
     expect(fxExpire(s, 1000 + 10_000).fx).toEqual([]);
   });
 });
+
+const shotCtx = (now = 1000) => ({
+  now,
+  positions: { p1: { x: 1, y: 1 }, m1: { x: 4, y: 1 } },
+  participants: [{ id: 'p1', type: 'player' as const }, { id: 'm1', type: 'mob' as const }],
+});
+const shot = (over: Record<string, unknown>) => ({ type: 'combat_action_result', action: 'shoot', actorId: 'p1', actorName: 'P', targetId: 'm1', ...over }) as never;
+
+describe('boardFx: shots', () => {
+  it('hit: recoil away from target, projectile, then tear + number when it lands', () => {
+    const s = fxReceive(initialBoardFx(), shot({ hit: true, damage: 6 }), shotCtx());
+    const travel = Math.min(3 * FX_TIMING.projectileMsPerTile, FX_TIMING.projectileMaxMs);
+    expect(s.fx.find((f) => f.kind === 'recoil')).toMatchObject({ unitId: 'p1', dir: 'left' });
+    expect(s.fx.find((f) => f.kind === 'projectile')).toMatchObject({ from: { x: 1, y: 1 }, to: { x: 4, y: 1 }, hit: true, travelMs: travel });
+    expect(s.fx.find((f) => f.kind === 'tear')).toMatchObject({ unitId: 'm1', delayMs: travel });
+    expect(s.fx.find((f) => f.kind === 'number')).toMatchObject({ value: 6, delayMs: travel });
+    expect(s.fx.some((f) => f.kind === 'lunge')).toBe(false);
+  });
+  it('travel time is capped', () => {
+    const far = { ...shotCtx(), positions: { p1: { x: 0, y: 0 }, m1: { x: 20, y: 0 } } };
+    expect(fxReceive(initialBoardFx(), shot({ hit: true, damage: 1 }), far).fx.find((f) => f.kind === 'projectile')).toMatchObject({ travelMs: FX_TIMING.projectileMaxMs });
+  });
+  it('miss: projectile with hit false, a MISS tag, and no tear or number', () => {
+    const s = fxReceive(initialBoardFx(), shot({ hit: false, damage: 0 }), shotCtx());
+    expect(s.fx.find((f) => f.kind === 'projectile')).toMatchObject({ hit: false });
+    expect(s.fx.find((f) => f.kind === 'tag')).toMatchObject({ text: 'MISS', tile: { x: 4, y: 1 } });
+    expect(s.fx.some((f) => f.kind === 'tear' || f.kind === 'number')).toBe(false);
+  });
+  it('waits behind the shooter\'s walk', () => {
+    let s = fxReceive(initialBoardFx(), { type: 'arena_positions_update', moverId: 'p1', path: [{ x: 1, y: 1 }, { x: 2, y: 1 }] } as never, shotCtx(1000));
+    s = fxReceive(s, shot({ hit: true, damage: 3 }), shotCtx(1000));
+    const walk = 2 * FX_TIMING.walkStepMs + FX_TIMING.walkTailMs;
+    expect(s.fx.find((f) => f.kind === 'projectile')!.delayMs).toBe(walk);
+  });
+  it('reload: a RELOAD tag on the actor, nothing else', () => {
+    const s = fxReceive(initialBoardFx(), { type: 'combat_action_result', action: 'reload', actorId: 'p1', actorName: 'P', ammo: 3 } as never, shotCtx());
+    expect(s.fx).toHaveLength(1);
+    expect(s.fx[0]).toMatchObject({ kind: 'tag', text: 'RELOAD', tile: { x: 1, y: 1 } });
+  });
+  it('melee attacks still lunge (unchanged)', () => {
+    const s = fxReceive(initialBoardFx(), { type: 'combat_action_result', action: 'attack', actorId: 'p1', actorName: 'P', targetId: 'm1', damage: 4 } as never, shotCtx());
+    expect(s.fx.some((f) => f.kind === 'lunge')).toBe(true);
+  });
+});

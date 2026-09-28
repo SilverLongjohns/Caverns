@@ -20,7 +20,7 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
   return {
     gridMove: (direction: GridDirection) => send({ type: 'grid_move', direction }),
     combatAction: (
-      action: 'attack' | 'defend' | 'use_item' | 'flee',
+      action: 'attack' | 'defend' | 'use_item' | 'flee' | 'shoot' | 'reload',
       targetId?: string, itemIndex?: number, fleeDirection?: Direction,
       critMultiplier?: number
     ) => send({ type: 'combat_action', action, targetId, itemIndex, fleeDirection, critMultiplier }),

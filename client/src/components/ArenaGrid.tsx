@@ -84,9 +84,10 @@ export function ArenaGrid({
   const unitFx = useMemo(() => {
     const m = new Map<string, { cls: string; style: Record<string, string> }>();
     for (const f of fx) {
-      if (f.kind === 'number') continue;
+      if (f.kind === 'number' || f.kind === 'projectile' || f.kind === 'tag') continue;
       const cur = m.get(f.unitId) ?? { cls: '', style: {} };
       if (f.kind === 'lunge') { cur.cls += ` fx-lunge fx-lunge-${f.dir}`; cur.style['--fx-lunge-delay'] = `${f.delayMs}ms`; }
+      else if (f.kind === 'recoil') { cur.cls += ` fx-recoil fx-recoil-${f.dir}`; cur.style['--fx-recoil-delay'] = `${f.delayMs}ms`; }
       else { cur.cls += ' fx-tear'; cur.style['--fx-tear-delay'] = `${f.delayMs}ms`; }
       m.set(f.unitId, cur);
     }
