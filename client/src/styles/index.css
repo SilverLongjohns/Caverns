@@ -1631,6 +1631,10 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   50% { text-shadow: 0 0 8px #ff4400, 0 0 16px #cc2200; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .tile-hazard.tile-theme-lava { animation: none !important; }
+}
+
 /* Pillars — standing stone */
 .tile-pillar { color: #8a8070; text-shadow: 0 0 3px rgba(138, 128, 112, 0.4); }
 .tile-pillar.tile-theme-rock { color: #9a8a78; text-shadow: 0 0 4px rgba(154, 138, 120, 0.5); }
@@ -2699,7 +2703,12 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 /* Terrain mode: fog and highlights sit over pixel art, so the opaque ASCII-era colors above
    become translucent overlays here. Tuned from screenshots to stay readable on both rock and
    floor (see Task 5 report). */
-.glyph-grid.terrain .room-row .tile-unseen { background: #000; }
+/* Unseen must stay fully opaque over the canvas, but #000 flat is a giveaway of the room's exact
+   rectangular extent on a panel whose own background isn't pure black (the arena screen's
+   .arena-view is #0a0a0a, not #000) -- match each panel's real background instead. Exploration's
+   .room-view IS #000000, so #000 there is already correct/invisible. */
+.room-view .glyph-grid.terrain .room-row .tile-unseen { background: #000; }
+.arena-view .glyph-grid.terrain .room-row .tile-unseen { background: #0a0a0a; }
 /* opacity:1 overrides the base .tile-explored dimming (which would also fade the terrain art
    drawn behind this transparent-background span); filter:brightness dims the ASCII fallback
    CHARACTER instead (hazard/exit/torch/bridge with missingStamp, or a cell with no terrain art at
@@ -2719,8 +2728,12 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 /* Hazard/exit/torch ASCII fallback drawn over terrain art (autotile's `missingStamp`, wired in
    GlyphViewport): the existing colours stay, but their glow-only text-shadow doesn't stand out
    against a busy background, so a hard black outline (4-direction offset trick) is layered under
-   it here for contrast. Higher specificity than a biome theme override (e.g. tile-hazard.tile-
-   theme-lava) is an acceptable trade for now — no active biome pairs one with terrain art yet. */
+   it here for contrast. This 3-class selector (.glyph-grid.terrain .tile-hazard) is intentionally
+   HIGHER specificity than a 2-class biome theme override (e.g. .tile-hazard.tile-theme-lava), so
+   the plain outline below would otherwise beat a lava biome's own colour/animation -- the volcanic
+   override just below adds `.tile-theme-lava` to match it back up to 4 classes and win instead.
+   Volcanic IS an active biome pairing hazard with terrain art (falls back to the 'default' set;
+   see art/tiles/default.json) -- confirmed in-game, e.g. .sandbox/terrain-art/shot-11.png. */
 .glyph-grid.terrain .tile-hazard {
   text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px rgba(221, 34, 34, 0.6);
 }
@@ -2739,6 +2752,10 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 @keyframes lava-pulse-outlined {
   0%, 100% { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #ff2200, 0 0 8px #aa0000; }
   50% { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 8px #ff4400, 0 0 16px #cc2200; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph-grid.terrain .tile-hazard.tile-theme-lava { animation: none !important; }
 }
 
 .arena-target-highlight {
@@ -2770,13 +2787,15 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 }
 
 /* Square 48x48 glyph-grid cells: no cell border (tiles join seamlessly, ASCII fallback or not) —
-   this beats `.arena-grid-container .room-grid` / `.room-row span` (lower specificity); other
-   screens that use TileGridView directly (e.g. WorldMapView) are unaffected and keep theirs. */
+   `.glyph-grid .room-grid` (below) has the SAME specificity as `.arena-grid-container .room-grid`
+   / `.room-row span` (both are two plain-class selectors), so it wins by appearing later in this
+   file, not by outranking it; other screens that use TileGridView directly (e.g. WorldMapView) are
+   unaffected and keep theirs. */
 .glyph-grid .room-grid { overflow: visible; border: none; }
 .glyph-grid .room-row { display: flex; }
-.arena-grid-container.glyph-grid .room-row > span { border: 0; }
 
 .arena-grid-container.glyph-grid .room-row > span {
+  border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
