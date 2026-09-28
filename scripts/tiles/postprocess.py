@@ -6,6 +6,9 @@ Pure python3 + Pillow (no numpy dependency, per env rules).
 Usage:
   python3 scripts/tiles/postprocess.py seam <in.png> [--repair] [--band 4] [--threshold 3.0] <out.png>
   python3 scripts/tiles/postprocess.py match <in.png> --ref <floor.png> <out.png>
+  python3 scripts/tiles/postprocess.py cutout <in.png> [--tolerance 12] [--border 1] [--feather 0] <out.png>
+  python3 scripts/tiles/postprocess.py cleanalpha <in.png> [--threshold 128] [--min-speck 3] [--min-hole 3] <out.png>
+  python3 scripts/tiles/postprocess.py grade <in.png> --sample <sample.png> --ref <ref.png> <out.png>
   python3 scripts/tiles/postprocess.py sheet <dir> <out.png>
   python3 scripts/tiles/postprocess.py preview <in.png> [--reps 4] [--scale 8] <out.png>
   python3 scripts/tiles/postprocess.py selftest
@@ -15,6 +18,7 @@ import argparse
 import math
 import os
 import sys
+from collections import deque
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -22,6 +26,19 @@ DEFAULT_BAND = 4  # px cross-fade band used by _eased_edge_blend (controller rul
 DEFAULT_THRESHOLD = 18.0  # legacy seam_score threshold (kept for the `seam` CLI's reference line)
 DEFAULT_BAND_THRESHOLD = 1.0  # band_score (per-axis std of column/row mean luma) threshold
 DEFAULT_EDGE_RATIO_THRESHOLD = 1.6  # edge-crossing gradient vs interior gradient: above this, blend the edge
+DEFAULT_CUTOUT_TOLERANCE = 12.0  # Lab distance from a border colour cluster, below which a pixel is background
+DEFAULT_CUTOUT_BORDER = 1  # px ring sampled to find the border's dominant colour(s)
+DEFAULT_CUTOUT_FEATHER = 0  # px soft-edge radius applied to the cutout alpha mask (off by default --
+                             # a feather ramp leaves semi-transparent fringe pixels, which read as
+                             # sloppy/anti-aliased blur in pixel art rather than a clean cut; use
+                             # `cleanalpha` to binarize + tidy the edge instead)
+DEFAULT_CLEAN_THRESHOLD = 128  # alpha binarize threshold: >= this -> 255, else 0
+DEFAULT_CLEAN_MIN_SPECK = 3  # opaque connected components smaller than this (px), other than the
+                              # main subject, are removed as stray specks
+DEFAULT_CLEAN_MIN_HOLE = 3  # transparent connected components smaller than this (px) that are fully
+                             # enclosed (don't touch the image border) are filled in as pinholes
+DEFAULT_GRADE_CHROMA_CLAMP = (0.3, 1.5)  # sanity clamp on the derived chroma_scale
+DEFAULT_GRADE_L_OFFSET_CLAMP = 40.0  # sanity clamp (abs) on the derived L offset
 
 
 def _smoothstep(t: float) -> float:
@@ -522,6 +539,334 @@ def palette_match(img: Image.Image, ref: Image.Image) -> Image.Image:
 
 
 # ---------------------------------------------------------------------------
+# Background cutout (border-connected flood fill in Lab space)
+# ---------------------------------------------------------------------------
+
+def _lab_dist(a, b) -> float:
+    return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2)
+
+
+def _cluster_border_labs(border_labs, cluster_tolerance: float = 6.0, min_share: float = 0.05):
+    """Greedy single-pass clustering of border pixel Lab values into a small set of dominant
+    background colours (a plain background gives one cluster; an outlined/vignetted border can
+    give two or three). Clusters covering less than `min_share` of the border are dropped as
+    noise (stray subject pixels that happen to touch the edge)."""
+    clusters = []  # each: [lab (running mean), count]
+    for lab in border_labs:
+        best = None
+        best_d = None
+        for c in clusters:
+            d = _lab_dist(lab, c[0])
+            if best_d is None or d < best_d:
+                best, best_d = c, d
+        if best is not None and best_d <= cluster_tolerance:
+            n = best[1]
+            best[0] = [(best[0][i] * n + lab[i]) / (n + 1) for i in range(3)]
+            best[1] = n + 1
+        else:
+            clusters.append([list(lab), 1])
+
+    total = sum(c[1] for c in clusters)
+    kept = [tuple(c[0]) for c in clusters if total and c[1] / total >= min_share]
+    return kept if kept else [tuple(clusters[0][0])]
+
+
+ALL_SIDES = ("top", "bottom", "left", "right")
+
+
+def _border_ring_coords(w, h, border, sides):
+    for y in range(h):
+        for x in range(w):
+            if ("top" in sides and y < border) or ("bottom" in sides and y >= h - border) \
+                    or ("left" in sides and x < border) or ("right" in sides and x >= w - border):
+                yield x, y
+
+
+def _on_selected_border(x, y, w, h, sides):
+    return (("top" in sides and y == 0) or ("bottom" in sides and y == h - 1)
+            or ("left" in sides and x == 0) or ("right" in sides and x == w - 1))
+
+
+def _connected_components(mask, w, h):
+    """4-connected components of True cells in `mask` (a list-of-lists of bool). Returns a list
+    of pixel-coordinate lists, one per component."""
+    seen = [[False] * w for _ in range(h)]
+    components = []
+    for sy in range(h):
+        for sx in range(w):
+            if not mask[sy][sx] or seen[sy][sx]:
+                continue
+            comp = []
+            seen[sy][sx] = True
+            q = deque([(sx, sy)])
+            while q:
+                x, y = q.popleft()
+                comp.append((x, y))
+                for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                    if 0 <= nx < w and 0 <= ny < h and mask[ny][nx] and not seen[ny][nx]:
+                        seen[ny][nx] = True
+                        q.append((nx, ny))
+            components.append(comp)
+    return components
+
+
+def cleanalpha(img: Image.Image, threshold: float = DEFAULT_CLEAN_THRESHOLD,
+               min_speck: int = DEFAULT_CLEAN_MIN_SPECK, min_hole: int = DEFAULT_CLEAN_MIN_HOLE) -> Image.Image:
+    """Tidies a cutout's alpha channel for pixel art, where partial alpha reads as an anti-aliased
+    smear rather than a clean cut:
+
+    1. Binarizes alpha: every pixel becomes fully opaque (255) or fully transparent (0), split at
+       `threshold`. No pixel keeps a partial value.
+    2. Removes stray opaque specks: 4-connected opaque components smaller than `min_speck` px,
+       other than the single largest opaque component (the main subject, always kept regardless of
+       its own size), are cut to transparent.
+    3. Fills small enclosed transparent pinholes: 4-connected transparent components smaller than
+       `min_hole` px that do NOT touch the image border (so they're holes IN the subject, not the
+       real surrounding background) are filled opaque, coloured by the mean RGB of the opaque
+       pixels immediately orthogonally adjacent to the hole.
+
+    Colour channels of already-opaque, already-large-enough pixels are left untouched.
+    """
+    rgba = img.convert("RGBA")
+    w, h = rgba.size
+    px = rgba.load()
+
+    opaque = [[px[x, y][3] >= threshold for x in range(w)] for y in range(h)]
+
+    # --- 2. remove stray opaque specks ---------------------------------------------------------
+    opaque_components = _connected_components(opaque, w, h)
+    if opaque_components:
+        main = max(opaque_components, key=len)
+        for comp in opaque_components:
+            if comp is main:
+                continue
+            if len(comp) < min_speck:
+                for x, y in comp:
+                    opaque[y][x] = False
+
+    # --- 3. fill small enclosed transparent pinholes -------------------------------------------
+    transparent = [[not opaque[y][x] for x in range(w)] for y in range(h)]
+    transparent_components = _connected_components(transparent, w, h)
+    fills = {}  # (x, y) -> RGB fill colour
+    for comp in transparent_components:
+        touches_border = any(x == 0 or x == w - 1 or y == 0 or y == h - 1 for x, y in comp)
+        if touches_border or len(comp) >= min_hole:
+            continue
+        comp_set = set(comp)
+        neighbour_rgbs = []
+        for x, y in comp:
+            for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in comp_set and opaque[ny][nx]:
+                    neighbour_rgbs.append(px[nx, ny][:3])
+        if not neighbour_rgbs:
+            continue  # fully isolated hole with no opaque rim (shouldn't happen for a real hole)
+        n = len(neighbour_rgbs)
+        fill_rgb = (
+            round(sum(c[0] for c in neighbour_rgbs) / n),
+            round(sum(c[1] for c in neighbour_rgbs) / n),
+            round(sum(c[2] for c in neighbour_rgbs) / n),
+        )
+        for x, y in comp:
+            fills[(x, y)] = fill_rgb
+            opaque[y][x] = True
+
+    out = Image.new("RGBA", (w, h))
+    out_px = out.load()
+    for y in range(h):
+        for x in range(w):
+            if not opaque[y][x]:
+                out_px[x, y] = (0, 0, 0, 0)
+            elif (x, y) in fills:
+                r, g, b = fills[(x, y)]
+                out_px[x, y] = (r, g, b, 255)
+            else:
+                r, g, b, _a = px[x, y]
+                out_px[x, y] = (r, g, b, 255)
+    return out
+
+
+def cutout(img: Image.Image, tolerance: float = DEFAULT_CUTOUT_TOLERANCE,
+           border: int = DEFAULT_CUTOUT_BORDER, feather: int = DEFAULT_CUTOUT_FEATHER,
+           sides=ALL_SIDES, keep_dark_l=None, clean: bool = True,
+           min_speck: int = DEFAULT_CLEAN_MIN_SPECK, min_hole: int = DEFAULT_CLEAN_MIN_HOLE) -> Image.Image:
+    """Removes the background of an opaque square tile, leaving the subject on transparency.
+
+    1. Samples the outer `border`-px ring to find the dominant background colour(s) (clustered
+       in Lab space -- handles a border with more than one background shade).
+    2. Flood-fills from every border pixel whose colour is within `tolerance` (Lab distance) of
+       one of those clusters, walking only through orthogonally-adjacent pixels that are ALSO
+       within tolerance. Only background reachable from the edge this way is removed, so an
+       enclosed subject-coloured hole or an interior fleck that happens to match the background
+       colour but isn't connected to the border is left alone.
+    3. Feathers the resulting hard alpha edge by `feather` px (a Gaussian blur of the alpha mask,
+       then `min()` with the original alpha -- this only ever softens the cut, never adds a halo
+       by raising alpha beyond what a pixel already had).
+
+    `sides` restricts which edges of the tile are trusted as "known background" for sampling AND
+    seeding the flood fill (default: all four). Use this for a tile whose subject is DESIGNED to
+    reach some edges on purpose (e.g. a bridge segment meant to tile seamlessly along its span
+    axis) -- e.g. `sides=("top","bottom")` for a horizontally-spanning bridge, so the subject's
+    own colour touching the left/right edges is never mistaken for background.
+
+    `keep_dark_l`, if given, is a Lab L threshold below which a pixel is NEVER classified as
+    background, no matter its Lab distance to a border cluster and no matter whether it touches
+    the border. This is for a subject whose own interior is intentionally a near-black void (e.g.
+    a doorway opening onto darkness) that happens to touch the tile edge (since it recedes "off
+    tile") -- without this, that void gets sampled into the border colour clusters and the whole
+    connected dark region is flood-filled away as if it were background, leaving a hole that shows
+    the art BEHIND the stamp instead of the void the artist actually painted.
+
+    `clean`, if true (the default), runs `cleanalpha` on the result before returning -- binarizes
+    alpha (no partial/fringe pixels), drops stray opaque specks and fills small enclosed pinholes.
+    `feather` defaults to 0 (off): a soft alpha ramp reads as an anti-aliased smear in pixel art,
+    not a clean cut, so it's opt-in only; `clean` is the intended way to tidy an edge now.
+    """
+    rgba = img.convert("RGBA")
+    w, h = rgba.size
+    px = rgba.load()
+
+    lab_grid = [[_rgb_to_lab_one(px[x, y][:3]) for x in range(w)] for y in range(h)]
+
+    border_labs = [lab_grid[y][x] for x, y in _border_ring_coords(w, h, border, sides)]
+    bg_labs = _cluster_border_labs(border_labs)
+
+    def is_bg(lab) -> bool:
+        if keep_dark_l is not None and lab[0] <= keep_dark_l:
+            return False
+        return min(_lab_dist(lab, bl) for bl in bg_labs) <= tolerance
+
+    remove = [[False] * w for _ in range(h)]
+    q = deque()
+    for y in range(h):
+        for x in range(w):
+            on_border = _on_selected_border(x, y, w, h, sides)
+            if on_border and not remove[y][x] and is_bg(lab_grid[y][x]):
+                remove[y][x] = True
+                q.append((x, y))
+    while q:
+        x, y = q.popleft()
+        for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if 0 <= nx < w and 0 <= ny < h and not remove[ny][nx] and is_bg(lab_grid[ny][nx]):
+                remove[ny][nx] = True
+                q.append((nx, ny))
+
+    out = Image.new("RGBA", (w, h))
+    out_px = out.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            out_px[x, y] = (r, g, b, 0 if remove[y][x] else a)
+
+    if feather > 0:
+        # Bounded multi-source BFS distance (capped at `feather`) from removed pixels, into the
+        # KEPT side only. Only kept pixels within `feather` px of the cut get a linear alpha
+        # ramp; everything deeper than that stays byte-identical to the un-feathered cutout. This
+        # is deliberately NOT a whole-image Gaussian blur -- a blur's effective spread is wider
+        # than its `radius` parameter and was eating well into small subjects/flecks.
+        inf = feather + 1
+        dist = [[inf] * w for _ in range(h)]
+        dq = deque()
+        for y in range(h):
+            for x in range(w):
+                if remove[y][x]:
+                    dist[y][x] = 0
+                    dq.append((x, y))
+        while dq:
+            x, y = dq.popleft()
+            d = dist[y][x]
+            if d >= feather:
+                continue
+            for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                if 0 <= nx < w and 0 <= ny < h and dist[ny][nx] > d + 1:
+                    dist[ny][nx] = d + 1
+                    dq.append((nx, ny))
+
+        out_px = out.load()
+        for y in range(h):
+            for x in range(w):
+                if remove[y][x]:
+                    continue
+                d = dist[y][x]
+                if d > feather:
+                    continue
+                factor = d / (feather + 1)
+                r, g, b, a = out_px[x, y]
+                out_px[x, y] = (r, g, b, int(round(a * factor)))
+
+    if clean:
+        out = cleanalpha(out, min_speck=min_speck, min_hole=min_hole)
+
+    return out
+
+
+def cutout_removed_fraction(img: Image.Image, tolerance: float = DEFAULT_CUTOUT_TOLERANCE,
+                             border: int = DEFAULT_CUTOUT_BORDER, sides=ALL_SIDES) -> float:
+    """Fraction of border-ring pixels classified as background (diagnostic for the CLI/report)."""
+    rgba = img.convert("RGBA")
+    w, h = rgba.size
+    px = rgba.load()
+    ring = list(_border_ring_coords(w, h, border, sides))
+    labs = [_rgb_to_lab_one(px[x, y][:3]) for x, y in ring]
+    bg_labs = _cluster_border_labs(labs)
+    hits = sum(1 for lab in labs if min(_lab_dist(lab, bl) for bl in bg_labs) <= tolerance)
+    return hits / len(labs) if labs else 0.0
+
+
+# ---------------------------------------------------------------------------
+# Global grade (uniform Lab luminance offset + chroma scale vs a reference)
+# ---------------------------------------------------------------------------
+
+def mean_lab_l_chroma(img: Image.Image):
+    """Mean (L, chroma) over every pixel of `img`, chroma = hypot(a, b) in CIE Lab."""
+    labs = [_rgb_to_lab_one(p) for p in _iter_pixels(img)]
+    n = len(labs)
+    l_mean = sum(l for l, _a, _b in labs) / n
+    c_mean = sum(math.hypot(a, b) for _l, a, b in labs) / n
+    return l_mean, c_mean
+
+
+def compute_grade(sample_img: Image.Image, ref_img: Image.Image):
+    """Derives ONE (l_offset, chroma_scale) transform from comparing `sample_img`'s mean Lab
+    (L, chroma) against `ref_img`'s -- meant to be computed ONCE from a single representative
+    sample (e.g. the plain floor tile) against a reference mockup/crop, then applied IDENTICALLY
+    to every tile in a terrain family via `apply_grade`. This is deliberately not a per-tile
+    `palette_match`: it preserves each tile's own hue and relative identity (water stays teal,
+    chasm stays near-black) while uniformly shifting the whole family's tone, so transitions
+    between rock/water/chasm/floor-variants stay consistent with each other."""
+    l_cur, c_cur = mean_lab_l_chroma(sample_img)
+    l_ref, c_ref = mean_lab_l_chroma(ref_img)
+    l_offset = max(-DEFAULT_GRADE_L_OFFSET_CLAMP, min(DEFAULT_GRADE_L_OFFSET_CLAMP, l_ref - l_cur))
+    raw_scale = (c_ref / c_cur) if c_cur > 1e-6 else 1.0
+    chroma_scale = max(DEFAULT_GRADE_CHROMA_CLAMP[0], min(DEFAULT_GRADE_CHROMA_CLAMP[1], raw_scale))
+    return {
+        "l_offset": l_offset, "chroma_scale": chroma_scale,
+        "l_cur": l_cur, "c_cur": c_cur, "l_ref": l_ref, "c_ref": c_ref,
+        "raw_chroma_scale": raw_scale,
+    }
+
+
+def apply_grade(img: Image.Image, grade) -> Image.Image:
+    """Applies a `compute_grade` transform to every pixel of `img` (alpha untouched): a uniform
+    Lab L offset (additive, clamped to [0, 100]) and a's/b's uniform scale by `chroma_scale`
+    (same hue angle, just less/more saturated)."""
+    rgba = img.convert("RGBA")
+    w, h = rgba.size
+    px = rgba.load()
+    out = Image.new("RGBA", (w, h))
+    out_px = out.load()
+    l_offset = grade["l_offset"]
+    cs = grade["chroma_scale"]
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            l, aa, bb = _rgb_to_lab_one((r, g, b))
+            l2 = min(100.0, max(0.0, l + l_offset))
+            r2, g2, b2 = _lab_to_rgb_one((l2, aa * cs, bb * cs))
+            out_px[x, y] = (r2, g2, b2, a)
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Contact sheet
 # ---------------------------------------------------------------------------
 
@@ -849,6 +1194,201 @@ def selftest() -> bool:
     else:
         print("  OK: every non-neutral output pixel stays in one of ref's hue families")
 
+    # --- cutout (background removal) ----------------------------------------
+    # Fixture: a flat-ish (small deterministic noise) background filling a tile, with a solid,
+    # sharp-edged subject square in the middle in a clearly different hue -- mirrors a stamp
+    # tile (background colour + isolated subject).
+    size = 32
+    lo, hi = 8, size - 8
+    bg_base = (60, 55, 50)
+    subject_color = (40, 170, 90, 255)
+    fixture = Image.new("RGBA", (size, size), (0, 0, 0, 255))
+    fpx = fixture.load()
+    for y in range(size):
+        for x in range(size):
+            if lo <= x < hi and lo <= y < hi:
+                fpx[x, y] = subject_color
+            else:
+                noise = ((x * 7 + y * 13) % 5) - 2  # deterministic +/-2 background noise
+                fpx[x, y] = (bg_base[0] + noise, bg_base[1] + noise, bg_base[2] + noise, 255)
+
+    cut = cutout(fixture)
+    cpx = cut.load()
+    w, h = cut.size
+
+    corner_alphas = [cpx[0, 0][3], cpx[w - 1, 0][3], cpx[0, h - 1][3], cpx[w - 1, h - 1][3]]
+    print(f"[selftest] cutout corner alphas (expect 0): {corner_alphas}")
+    if max(corner_alphas) > 5:
+        print("  FAIL: border corners were not cut to (near-)zero alpha")
+        ok = False
+    else:
+        print("  OK: border corners cut to (near-)zero alpha")
+
+    bg_total = bg_removed = 0
+    for y in range(h):
+        for x in range(w):
+            if not (lo <= x < hi and lo <= y < hi):
+                bg_total += 1
+                if cpx[x, y][3] == 0:
+                    bg_removed += 1
+    bg_removed_frac = bg_removed / bg_total if bg_total else 0.0
+    print(f"[selftest] background pixels fully removed: {bg_removed_frac * 100:.1f}%")
+    if bg_removed_frac < 0.85:
+        print("  FAIL: expected >=85% of the noisy background to be cut")
+        ok = False
+    else:
+        print("  OK: the noisy background was flood-filled away, not just the flat corners")
+
+    # Interior of the subject (inset past where a `feather=1` ramp could reach) must stay
+    # byte-for-byte opaque -- only the cut edge itself is allowed to be softened.
+    inset = 2
+    subject_total = subject_opaque = 0
+    for y in range(lo + inset, hi - inset):
+        for x in range(lo + inset, hi - inset):
+            subject_total += 1
+            if cpx[x, y][3] >= 250:
+                subject_opaque += 1
+    subject_opaque_frac = subject_opaque / subject_total if subject_total else 0.0
+    print(f"[selftest] subject interior pixels kept opaque: {subject_opaque_frac * 100:.1f}%")
+    if subject_opaque_frac < 0.99:
+        print("  FAIL: expected the subject's interior to stay opaque (subject eaten by the cutout)")
+        ok = False
+    else:
+        print("  OK: the subject's interior was preserved, not eaten by the flood fill")
+
+    # A subject-coloured fleck sitting IN the background but not touching the border, and not
+    # 4-connected to it through background-coloured pixels, must survive (border-connectivity,
+    # not just colour distance, gates removal). Sized so its centre sits outside the 1px feather
+    # ramp, so this isolates connectivity correctness from feather softening.
+    fixture2 = fixture.copy()
+    f2px = fixture2.load()
+    for yy in range(2, 8):
+        for xx in range(2, 8):
+            f2px[xx, yy] = subject_color
+    cut2 = cutout(fixture2)
+    c2px = cut2.load()
+    fleck_center_alpha = c2px[4, 4][3]
+    fleck_opaque_count = sum(1 for yy in range(2, 8) for xx in range(2, 8) if c2px[xx, yy][3] > 0)
+    print(f"[selftest] isolated subject-coloured fleck: centre alpha {fleck_center_alpha}, "
+          f"{fleck_opaque_count}/36 px non-zero")
+    if fleck_center_alpha < 250 or fleck_opaque_count < 30:
+        print("  FAIL: an enclosed subject-coloured region was removed even though it never touched the border")
+        ok = False
+    else:
+        print("  OK: only background reachable from the border was removed")
+
+    # --- keep_dark_l: a doorway-to-darkness subject whose own void touches the border ----------
+    # Fixture: light grey background (like a stone frame/floor), with a near-black void in the
+    # lower-middle that reaches the BOTTOM edge (mirrors an exit stamp: the passage "recedes off
+    # tile" so its own dark interior necessarily touches the border). Without protection, that
+    # void gets sampled into the border colour clusters and the whole connected dark region --
+    # not just the true light-grey background -- is flood-filled away.
+    dsize = 32
+    void_x0, void_x1 = 10, 22
+    void_y0 = 18
+    light_bg = (150, 148, 145)
+    void_color = (6, 5, 5, 255)
+    door_fixture = Image.new("RGBA", (dsize, dsize), (0, 0, 0, 255))
+    dfpx = door_fixture.load()
+    for y in range(dsize):
+        for x in range(dsize):
+            if void_x0 <= x < void_x1 and void_y0 <= y < dsize:
+                dfpx[x, y] = void_color
+            else:
+                n = ((x * 5 + y * 11) % 5) - 2
+                dfpx[x, y] = (light_bg[0] + n, light_bg[1] + n, light_bg[2] + n, 255)
+
+    without_protection = cutout(door_fixture, keep_dark_l=None)
+    with_protection = cutout(door_fixture, keep_dark_l=15.0)
+    wpx, ppx = without_protection.load(), with_protection.load()
+    void_probe = (16, dsize - 2)  # deep inside the void, on the border row
+
+    unprotected_alpha = wpx[void_probe][3]
+    protected_alpha = ppx[void_probe][3]
+    print(f"[selftest] doorway-void probe alpha: without keep_dark_l={unprotected_alpha}, "
+          f"with keep_dark_l=15 -> {protected_alpha}")
+    if unprotected_alpha > 50:
+        print("  NOTE: fixture didn't reproduce the failure (void survived even unprotected) -- "
+              "keep_dark_l test is inconclusive on this fixture, not a pass/fail signal on its own")
+    if protected_alpha < 250:
+        print("  FAIL: keep_dark_l did not protect the near-black void that touches the border")
+        ok = False
+    else:
+        print("  OK: keep_dark_l kept the border-touching dark void opaque")
+
+    # The light background must still be removed normally even with keep_dark_l active.
+    bg_probe = (2, 2)
+    bg_alpha_with_protection = ppx[bg_probe][3]
+    print(f"[selftest] background probe alpha with keep_dark_l active: {bg_alpha_with_protection}")
+    if bg_alpha_with_protection != 0:
+        print("  FAIL: keep_dark_l over-protected -- the real light background was not cut")
+        ok = False
+    else:
+        print("  OK: the real background is still cut normally with keep_dark_l active")
+
+    # --- cleanalpha: feathered edges + stray specks + a pinhole -----------------------------
+    csize = 32
+    subject_color = (60, 150, 90, 255)
+    clean_fixture = Image.new("RGBA", (csize, csize), (0, 0, 0, 0))
+    cfpx = clean_fixture.load()
+    sub_lo, sub_hi = 8, 24
+    pinhole = {(14, 14), (15, 14)}  # size 2 < default min_hole (3) -> should be filled
+    for y in range(csize):
+        for x in range(csize):
+            if sub_lo <= x < sub_hi and sub_lo <= y < sub_hi:
+                cfpx[x, y] = (0, 0, 0, 0) if (x, y) in pinhole else subject_color
+    # feathered ramp just outside the subject's edge, both directions of the threshold
+    for y in range(sub_lo, sub_hi):
+        cfpx[sub_lo - 1, y] = subject_color[:3] + (64,)   # below threshold -> should become 0
+        cfpx[sub_hi, y] = subject_color[:3] + (180,)      # above threshold -> should become 255
+    for x in range(sub_lo, sub_hi):
+        cfpx[x, sub_lo - 1] = subject_color[:3] + (64,)
+        cfpx[x, sub_hi] = subject_color[:3] + (180,)
+    # stray opaque specks, isolated in the background, sizes < default min_speck (3)
+    speck_pixels = [(2, 2), (3, 2), (28, 5)]
+    for x, y in speck_pixels:
+        cfpx[x, y] = subject_color
+
+    cleaned = cleanalpha(clean_fixture)
+    clpx = cleaned.load()
+
+    all_alphas = [clpx[x, y][3] for y in range(csize) for x in range(csize)]
+    non_binary = sum(1 for a in all_alphas if a not in (0, 255))
+    print(f"[selftest] cleanalpha: non-binary alpha pixels remaining: {non_binary}")
+    if non_binary != 0:
+        print("  FAIL: expected every output pixel's alpha to be exactly 0 or 255")
+        ok = False
+    else:
+        print("  OK: alpha fully binarized, no fringe")
+
+    specks_gone = all(clpx[x, y][3] == 0 for x, y in speck_pixels)
+    print(f"[selftest] cleanalpha: stray specks removed: {specks_gone}")
+    if not specks_gone:
+        print("  FAIL: a stray opaque speck survived cleanalpha")
+        ok = False
+    else:
+        print("  OK: stray specks removed")
+
+    pinhole_filled = all(clpx[x, y][3] == 255 for x, y in pinhole)
+    print(f"[selftest] cleanalpha: pinhole filled: {pinhole_filled}")
+    if not pinhole_filled:
+        print("  FAIL: the enclosed pinhole was not filled")
+        ok = False
+    else:
+        print("  OK: enclosed pinhole filled")
+
+    subject_intact = all(
+        clpx[x, y][3] == 255
+        for y in range(sub_lo, sub_hi) for x in range(sub_lo, sub_hi)
+        if (x, y) not in pinhole
+    )
+    print(f"[selftest] cleanalpha: main subject unchanged: {subject_intact}")
+    if not subject_intact:
+        print("  FAIL: cleanalpha altered the main subject's own opaque pixels")
+        ok = False
+    else:
+        print("  OK: main subject left unchanged")
+
     print()
     print("SELFTEST " + ("PASSED" if ok else "FAILED"))
     return ok
@@ -874,6 +1414,33 @@ def main(argv=None):
     p_match.add_argument("input")
     p_match.add_argument("output")
     p_match.add_argument("--ref", required=True)
+
+    p_cutout = sub.add_parser("cutout")
+    p_cutout.add_argument("input")
+    p_cutout.add_argument("output")
+    p_cutout.add_argument("--tolerance", type=float, default=DEFAULT_CUTOUT_TOLERANCE)
+    p_cutout.add_argument("--border", type=int, default=DEFAULT_CUTOUT_BORDER)
+    p_cutout.add_argument("--feather", type=int, default=DEFAULT_CUTOUT_FEATHER)
+    p_cutout.add_argument("--sides", default="top,bottom,left,right",
+                           help="comma list of top,bottom,left,right edges trusted as background (default: all)")
+    p_cutout.add_argument("--keep-dark", type=float, default=None,
+                           help="never cut a pixel with Lab L at or below this value (protects an intentional near-black void subject)")
+    p_cutout.add_argument("--no-clean", action="store_true", help="skip the cleanalpha pass (keep raw/feathered alpha)")
+    p_cutout.add_argument("--min-speck", type=int, default=DEFAULT_CLEAN_MIN_SPECK)
+    p_cutout.add_argument("--min-hole", type=int, default=DEFAULT_CLEAN_MIN_HOLE)
+
+    p_cleanalpha = sub.add_parser("cleanalpha")
+    p_cleanalpha.add_argument("input")
+    p_cleanalpha.add_argument("output")
+    p_cleanalpha.add_argument("--threshold", type=float, default=DEFAULT_CLEAN_THRESHOLD)
+    p_cleanalpha.add_argument("--min-speck", type=int, default=DEFAULT_CLEAN_MIN_SPECK)
+    p_cleanalpha.add_argument("--min-hole", type=int, default=DEFAULT_CLEAN_MIN_HOLE)
+
+    p_grade = sub.add_parser("grade")
+    p_grade.add_argument("input")
+    p_grade.add_argument("output")
+    p_grade.add_argument("--sample", required=True, help="representative tile (e.g. the plain floor) to derive the transform from")
+    p_grade.add_argument("--ref", required=True, help="reference image/crop to grade toward")
 
     p_sheet = sub.add_parser("sheet")
     p_sheet.add_argument("input_dir")
@@ -947,6 +1514,45 @@ def main(argv=None):
         print(f"luma after:  mean {after_mean:.3f}  std {after_std:.3f}")
         print(f"ref luma:    mean {ref_mean:.3f}")
         print(f"mean diff vs ref: {mean_diff_pct:.2f}%   std retained: {std_ratio:.1f}% of source")
+
+    elif args.cmd == "cutout":
+        img = Image.open(args.input)
+        sides = tuple(s.strip() for s in args.sides.split(",") if s.strip())
+        before_frac = cutout_removed_fraction(img, tolerance=args.tolerance, border=args.border, sides=sides)
+        out_img = cutout(img, tolerance=args.tolerance, border=args.border, feather=args.feather, sides=sides,
+                          keep_dark_l=args.keep_dark, clean=not args.no_clean,
+                          min_speck=args.min_speck, min_hole=args.min_hole)
+        out_img.save(args.output)
+        alphas = [p[3] for p in out_img.convert("RGBA").getdata()]
+        transparent_frac = sum(1 for a in alphas if a == 0) / len(alphas)
+        partial_frac = sum(1 for a in alphas if 0 < a < 255) / len(alphas)
+        print(f"border pixels classified as background: {before_frac * 100:.1f}%")
+        print(f"whole-tile fully-transparent pixels after cutout: {transparent_frac * 100:.1f}%")
+        print(f"partial-alpha (fringe) pixels remaining: {partial_frac * 100:.1f}%")
+
+    elif args.cmd == "cleanalpha":
+        img = Image.open(args.input)
+        before_alphas = [p[3] for p in img.convert("RGBA").getdata()]
+        before_partial = sum(1 for a in before_alphas if 0 < a < 255)
+        out_img = cleanalpha(img, threshold=args.threshold, min_speck=args.min_speck, min_hole=args.min_hole)
+        out_img.save(args.output)
+        after_alphas = [p[3] for p in out_img.convert("RGBA").getdata()]
+        after_partial = sum(1 for a in after_alphas if 0 < a < 255)
+        after_opaque = sum(1 for a in after_alphas if a == 255)
+        print(f"partial-alpha pixels: {before_partial} before -> {after_partial} after")
+        print(f"opaque pixels after: {after_opaque}/{len(after_alphas)}")
+
+    elif args.cmd == "grade":
+        img = Image.open(args.input)
+        sample = Image.open(args.sample)
+        ref = Image.open(args.ref)
+        g = compute_grade(sample, ref)
+        out_img = apply_grade(img, g)
+        out_img.save(args.output)
+        print(f"sample: L={g['l_cur']:.2f} chroma={g['c_cur']:.2f}")
+        print(f"ref:    L={g['l_ref']:.2f} chroma={g['c_ref']:.2f}")
+        print(f"transform: l_offset={g['l_offset']:+.2f}  chroma_scale={g['chroma_scale']:.3f} "
+              f"(raw {g['raw_chroma_scale']:.3f})")
 
     elif args.cmd == "sheet":
         sheet = build_contact_sheet(args.input_dir)
