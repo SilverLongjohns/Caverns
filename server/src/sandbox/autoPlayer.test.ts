@@ -127,17 +127,37 @@ describe('bot ranged', () => {
   it('mobs (no ranged) keep the old behaviour', () => {
     expect(decideTurn(snapOf(undefined, 4), 'p1').some((a) => a.type === 'shoot' || a.type === 'reload')).toBe(false);
   });
-  it('moves into shooting range and shoots, when reachable, instead of just closing in', () => {
-    const snap = {
-      grid: rangedGrid, currentTurnId: 'p1', roundNumber: 1, movementRemaining: 5,
-      positions: { p1: { x: 1, y: 2 }, m1: { x: 8, y: 2 } },
-      participants: [
-        { id: 'p1', type: 'player' as const, hp: 50, ranged: { ammo: 2, magazine: 2, range: 3, marksmanship: 2 } },
-        { id: 'm1', type: 'mob' as const, hp: 10 },
-      ],
-    };
-    const actions = decideTurn(snap, 'p1');
-    expect(actions[0]).toEqual({ type: 'move', x: 5, y: 2 });
-    expect(actions[1]).toEqual({ type: 'shoot', targetId: 'm1' });
+  // Melee can't be reached this turn: close in as far as the gunless bot would, then fire from there
+  // (a player advances and shoots; stopping at the edge of range only trades melee for weak chip shots).
+  const farSnap = (ranged: { ammo: number; magazine: number; range: number; marksmanship: number }) => ({
+    grid: rangedGrid, currentTurnId: 'p1', roundNumber: 1, movementRemaining: 5,
+    positions: { p1: { x: 1, y: 2 }, m1: { x: 8, y: 2 } },
+    participants: [
+      { id: 'p1', type: 'player' as const, hp: 50, ranged },
+      { id: 'm1', type: 'mob' as const, hp: 10 },
+    ],
+  });
+  it('closes in as far as it can, then shoots, when melee is out of reach', () => {
+    expect(decideTurn(farSnap({ ammo: 2, magazine: 2, range: 3, marksmanship: 2 }), 'p1'))
+      .toEqual([{ type: 'move', x: 6, y: 2 }, { type: 'shoot', targetId: 'm1' }, { type: 'end_turn' }]);
+  });
+  it('closes in, then reloads, when melee is out of reach and the gun is empty', () => {
+    expect(decideTurn(farSnap({ ammo: 0, magazine: 2, range: 3, marksmanship: 2 }), 'p1'))
+      .toEqual([{ type: 'move', x: 6, y: 2 }, { type: 'reload' }, { type: 'end_turn' }]);
+  });
+
+  // Melee reachable this turn: walk in and hit — a melee swing out-damages the class gun (no Ferocity, no crits).
+  const nearSnap = (ranged: { ammo: number; magazine: number; range: number; marksmanship: number }) => ({
+    ...snapOf(ranged, 5), movementRemaining: 5,
+  });
+  it('prefers moving into melee over shooting when melee is reachable this turn', () => {
+    const actions = decideTurn(nearSnap({ ammo: 2, magazine: 2, range: 5, marksmanship: 2 }), 'p1');
+    expect(actions[0].type).toBe('move');
+    expect(actions.slice(1)).toEqual([{ type: 'attack', targetId: 'm1' }, { type: 'end_turn' }]);
+  });
+  it('does not spend the turn reloading when melee is reachable', () => {
+    const actions = decideTurn(nearSnap({ ammo: 0, magazine: 2, range: 5, marksmanship: 2 }), 'p1');
+    expect(actions[0].type).toBe('move');
+    expect(actions.slice(1)).toEqual([{ type: 'attack', targetId: 'm1' }, { type: 'end_turn' }]);
   });
 });

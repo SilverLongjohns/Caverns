@@ -47,17 +47,22 @@ describe('createSandboxSession bot turn handling', () => {
 
         // The bot's very first decideTurn call is scheduled via a real (0ms) timer, so
         // there's a tick here before it runs. Use it to drag the mob into the bot's gun
-        // range (but not adjacent), so decideTurn picks 'shoot' on the bot's first turn
-        // instead of closing the distance.
+        // range (but not adjacent), and take away the bot's movement so melee is out of
+        // reach — then decideTurn picks 'shoot' on the bot's first turn instead of walking in.
         const snap = sandbox.session.getArenaSnapshot(sandbox.roomId)!;
         const botId = sandbox.memberIds[0];
         const mob = snap.participants.find((p) => p.type === 'mob')!;
         const gunRange = snap.participants.find((p) => p.id === botId)!.ranged!.range;
         const botPos = snap.positions[botId];
-        const positions = (sandbox.session as unknown as {
-          combats: Map<string, { positions: Map<string, { x: number; y: number }> }>;
-        }).combats.get(sandbox.roomId)!.positions;
-        positions.set(mob.id, { x: botPos.x + Math.max(2, gunRange - 1), y: botPos.y });
+        const combat = (sandbox.session as unknown as {
+          combats: Map<string, {
+            positions: Map<string, { x: number; y: number }>;
+            getTurnState(id: string): { movementRemaining: number } | undefined;
+          }>;
+        }).combats.get(sandbox.roomId)!;
+        combat.positions.set(mob.id, { x: botPos.x + Math.max(2, gunRange - 1), y: botPos.y });
+        const turn = combat.getTurnState(botId);
+        if (turn) turn.movementRemaining = 0;
       });
 
       // The refusal path must actually have been exercised, or this test proves nothing.
