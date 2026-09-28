@@ -227,7 +227,7 @@ describe('close-up pacing', () => {
       const before = sent.length;
       session.handleRangedAction('p1', 'shoot', mob.id);
       const res = sent.slice(before).find((m) => m.type === 'combat_action_result') as { targetDowned?: boolean };
-      const expected = res?.targetDowned ? CLOSE_UP_CONFIG.killMs : CLOSE_UP_CONFIG.shotMs;
+      const expected = res?.targetDowned ? Math.max(CLOSE_UP_CONFIG.killMs, CLOSE_UP_CONFIG.shotMs) : CLOSE_UP_CONFIG.shotMs;
       expect(msUntilNextAction(sent, before)).toBeGreaterThanOrEqual(expected);
       session.dispose();
     } finally { restore(); vi.useRealTimers(); }

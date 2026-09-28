@@ -29,7 +29,12 @@ export function closeUpFor(r: Partial<CombatActionResultMessage>, ctx: Ctx): Clo
       if ((r.critMultiplier ?? 1) > 1) return make('crit');
       return make('strike');
     }
-    if (r.action === 'shoot') return r.targetDowned ? make('kill') : { kind: 'strike', durationMs: CLOSE_UP_CONFIG.shotMs };
+    if (r.action === 'shoot') {
+      // A kill shot lasts at least as long as an ordinary shot, so the close-up never cuts away early.
+      return r.targetDowned
+        ? { kind: 'kill', durationMs: Math.max(CLOSE_UP_CONFIG.killMs, CLOSE_UP_CONFIG.shotMs) }
+        : { kind: 'strike', durationMs: CLOSE_UP_CONFIG.shotMs };
+    }
     return null;
   }
   // Mob actor: only hits that land on a player. A mob hit resolved through the defend QTE arrives as 'defend'.
