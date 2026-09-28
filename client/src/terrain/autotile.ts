@@ -90,12 +90,26 @@ export function vertexTile(grid: AutotileGrid, vx: number, vy: number, m: Terrai
   return m.sets[set]?.[String(mask)] ?? null;
 }
 
+/** Walks from (x,y) in direction (0,dy), skipping over 'bridge' cells, and returns the first
+ * non-bridge tile found (or null past the grid edge). Used to find the terrain flanking a bridge
+ * on its width axis even when the bridge itself is more than 1 cell wide on that axis (e.g. a
+ * 2-wide volcanic chasm bridge, where the immediate neighbour is another bridge cell, not the
+ * chasm). */
+function firstNonBridge(grid: AutotileGrid, x: number, y: number, dy: number): string | null {
+  let cy = y + dy;
+  let t = tileAt(grid, x, cy);
+  while (t === 'bridge') {
+    cy += dy;
+    t = tileAt(grid, x, cy);
+  }
+  return t;
+}
+
 function bridgeStampKey(grid: AutotileGrid, x: number, y: number): 'bridge_h' | 'bridge_v' {
-  const left = tileAt(grid, x - 1, y);
-  const right = tileAt(grid, x + 1, y);
   const isWaterOrChasm = (t: string | null) => t === 'water' || t === 'chasm';
-  const horizontal = !isWaterOrChasm(left) || !isWaterOrChasm(right);
-  return horizontal ? 'bridge_h' : 'bridge_v';
+  const above = firstNonBridge(grid, x, y, -1);
+  const below = firstNonBridge(grid, x, y, 1);
+  return isWaterOrChasm(above) || isWaterOrChasm(below) ? 'bridge_h' : 'bridge_v';
 }
 
 /**

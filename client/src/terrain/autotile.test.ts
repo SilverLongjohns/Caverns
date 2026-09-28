@@ -226,6 +226,48 @@ describe('autotile — bridges', () => {
     const cells = autotile(grid, 'room', manifest);
     expect(cells[1][1].stamp).toEqual([200, 3]); // bridge_h
   });
+
+  it('stamps a vertical bridge over chasm (1-wide, still correct)', () => {
+    const grid = buildGrid(['...', 'X=X', '...']);
+    const cells = autotile(grid, 'room', manifest);
+    expect(cells[1][1].stamp).toEqual([200, 4]); // bridge_v
+  });
+
+  it('stamps a 2-wide vertical bridge over chasm on BOTH columns as bridge_v (not bridge_h just because the immediate left/right neighbour is another bridge cell, not chasm)', () => {
+    // Bridge spans top-to-bottom across 2 columns; chasm flanks the pair on the left and right,
+    // floor above/below. Directly left/right of column 1 is chasm, but directly left/right of
+    // column 2 is the OTHER bridge column, not chasm -- the fix must skip over bridge cells when
+    // walking to find the flanking terrain, rather than testing only the immediate neighbour.
+    const grid = buildGrid(['....', 'X==X', '....']);
+    const cells = autotile(grid, 'room', manifest);
+    expect(cells[1][1].stamp).toEqual([200, 4]); // bridge_v
+    expect(cells[1][2].stamp).toEqual([200, 4]); // bridge_v
+  });
+
+  it('stamps a 2-wide horizontal bridge over chasm on BOTH rows as bridge_h', () => {
+    // Bridge spans left-to-right across 2 rows; chasm flanks the pair above and below, floor to
+    // either side. Directly above row 2 is the OTHER bridge row, not chasm -- same skip-over-
+    // bridge-cells requirement, on the other axis.
+    const grid = buildGrid(['XXX', '.=.', '.=.', 'XXX']);
+    const cells = autotile(grid, 'room', manifest);
+    expect(cells[1][1].stamp).toEqual([200, 3]); // bridge_h
+    expect(cells[2][1].stamp).toEqual([200, 3]); // bridge_h
+  });
+});
+
+describe('autotile — chasm', () => {
+  it('uses the chasm set for a pure-chasm vertex', () => {
+    const grid = buildGrid(['......', '.XX...', '.XX...', '......']);
+    const cells = autotile(grid, 'room', manifest);
+    // cell (1,1): SE quad = NW quarter of vertexTile(2,2), a fully-interior chasm vertex -> mask 15
+    expect(cells[1][1].quads[3]).toEqual({ tile: [15, 2], qx: 0, qy: 0 });
+  });
+
+  it('resolves a chasm/water mixed vertex to the chasm set (priority chasm > water)', () => {
+    // vertex (1,1): NW=chasm, NE=water, SW=floor, SE=floor -> chasm wins, mask 1000 = 8
+    const grid = buildGrid(['X~', '..']);
+    expect(vertexTile(grid, 1, 1, manifest)).toEqual([8, 2]);
+  });
 });
 
 describe('autotile — stamps', () => {
