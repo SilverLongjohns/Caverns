@@ -138,6 +138,51 @@
   "identity_ref": true,
   "file": "raw/v2-ability-scrap_volley_3.png"
  },
+ "vanguard-ranged": {
+  "job_id": "00e543e4-46bc-4f23-9361-e8504940e781",
+  "index": 3,
+  "ref": "templar",
+  "prompt": "the SAME character as the reference image — identical helmet, armour, colours and silhouette — full-body, side view facing right, braced and firing Censer Blunderbuss: A relic thurible bored into a barrel. Belches shrapnel and incense., bright muzzle flash at the barrel, dark background, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/vanguard-ranged-3.png"
+ },
+ "cleric-ranged": {
+  "job_id": "7f6f25d7-a7e9-46e8-b603-c538737a95a5",
+  "index": 1,
+  "ref": "suturist",
+  "prompt": "the SAME character as the reference image — identical hood, smooth visor face-mask, flowing orange cape and teal robes and colours — full-body, side view facing right, braced and firing Needle Rifle: Fires surgical bone-needles from the back line., bright muzzle flash at the barrel, dark background, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/cleric-ranged-1.png"
+ },
+ "artificer-ranged": {
+  "job_id": "45f7675b-e1ae-47d7-aba4-c970f319a820",
+  "index": 1,
+  "ref": "junk_prophet",
+  "prompt": "the SAME character as the reference image — identical hood, mask, ragged robes and scrap tools and colours — full-body, side view facing right, braced and firing Scrap Autogun: A crank-fed junk repeater. Many weak shots., bright muzzle flash at the barrel, dark background, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/artificer-ranged-1.png"
+ },
+ "icon-shoot": {
+  "job_id": "e310739d-6a20-429e-851e-52a3447549a8",
+  "index": 1,
+  "ref": "attack.png",
+  "prompt": "a relic pistol, side view, icon",
+  "version": 1,
+  "identity_ref": false,
+  "file": "raw/icon-shoot-1.png"
+ },
+ "icon-reload": {
+  "job_id": "2fc8b109-1c7d-426d-8c00-ce6c23d6ad02",
+  "index": 1,
+  "ref": "attack.png",
+  "prompt": "a curved magazine with a circular reload arrow, icon",
+  "version": 1,
+  "identity_ref": false,
+  "file": "raw/icon-reload-1.png"
+ },
  "mob-tunnel_rat": {
   "job_id": "06d58caf-ddb1-4ad1-825c-3a0b5d791356",
   "index": 0,
