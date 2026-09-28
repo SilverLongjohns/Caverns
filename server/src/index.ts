@@ -1002,7 +1002,7 @@ wss.on('connection', (ws) => {
         if (!ch) break;
         const inventory = [...ch.inventory];
         const consumables = [...ch.consumables];
-        const equipment = { ...ch.equipment };
+        const equipment = withStarterRanged({ ...ch.equipment }, ch.class);
         const item = inventory[msg.inventoryIndex];
         if (!item) {
           sendTo(playerId, { type: 'character_panel_error', reason: 'No item in that slot.' });
