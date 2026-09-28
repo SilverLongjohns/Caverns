@@ -32,6 +32,7 @@ export const BONE_PALETTE: BiomePalette = {
       offhand: ['skull cap shield', 'rib buckler', 'bone ward', 'femur round shield', 'ossified orb', 'marrow tome'],
       armor: ['bone weave', 'rib cage mail', 'skull plate', 'marrow vest', 'ossified hauberk', 'vertebrae mantle', 'deathbone cuirass'],
       accessory: ['finger bone ring', 'vertebrae necklace', 'skull amulet', 'bone pendant', 'marrow charm', 'ossified circlet', 'rib brooch'],
+      ranged: ['scattergun', 'sidearm', 'long rifle', 'autogun'],
     },
   },
 };

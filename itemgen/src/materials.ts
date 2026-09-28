@@ -27,7 +27,9 @@ export function rollMaterial(
 ): MaterialDef {
   const weights = TIER_WEIGHTS[skullRating] ?? TIER_WEIGHTS[1];
 
-  const candidates = palette.materials.filter(m => m.slots.includes(slot));
+  // Guns are forged from the same stock as melee weapons.
+  const materialSlot: EquipmentSlot = slot === 'ranged' ? 'weapon' : slot;
+  const candidates = palette.materials.filter(m => m.slots.includes(materialSlot));
   if (candidates.length === 0) {
     throw new Error(`No materials for slot '${slot}' in biome '${palette.biomeId}'`);
   }

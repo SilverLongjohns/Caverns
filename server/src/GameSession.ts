@@ -2092,7 +2092,7 @@ export class GameSession {
   }
 
   private buildSecretRoomLootPool(): Item[] {
-    const slots: EquipmentSlot[] = ['weapon', 'offhand', 'armor', 'accessory'];
+    const slots: EquipmentSlot[] = ['weapon', 'offhand', 'armor', 'accessory', 'ranged'];
     const pool: Item[] = [];
     for (const slot of slots) {
       pool.push(

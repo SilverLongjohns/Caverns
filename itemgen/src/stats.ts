@@ -14,6 +14,7 @@ export const BASE_STAT_RANGES: Record<EquipmentSlot, SlotStatRanges> = {
   offhand:   { 1: { min: 1, max: 2 },  2: { min: 3, max: 4 },   3: { min: 5, max: 7 } },
   armor:     { 1: { min: 1, max: 3 },  2: { min: 3, max: 5 },   3: { min: 5, max: 8 } },
   accessory: { 1: { min: 3, max: 5 },  2: { min: 6, max: 10 },  3: { min: 10, max: 15 } },
+  ranged:    { 1: { min: 2, max: 4 },  2: { min: 5, max: 8 },   3: { min: 10, max: 14 } },
 };
 
 /** Ceiling = next skull tier's floor. Skull-3 has no ceiling. */
@@ -22,6 +23,7 @@ export const STAT_CEILINGS: Record<EquipmentSlot, Record<number, number | null>>
   offhand:   { 1: 3,  2: 5,  3: null },
   armor:     { 1: 3,  2: 5,  3: null },
   accessory: { 1: 6,  2: 10, 3: null },
+  ranged:    { 1: 5,  2: 10, 3: null },
 };
 
 const PRIMARY_STAT: Record<EquipmentSlot, keyof ItemStats> = {
@@ -29,6 +31,7 @@ const PRIMARY_STAT: Record<EquipmentSlot, keyof ItemStats> = {
   offhand: 'defense',
   armor: 'defense',
   accessory: 'damage', // placeholder — accessories pick a random primary
+  ranged: 'damage',
 };
 
 const ACCESSORY_STATS: (keyof ItemStats)[] = ['maxHp', 'damage', 'defense', 'initiative'];

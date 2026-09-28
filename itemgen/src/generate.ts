@@ -1,5 +1,5 @@
 import type { Item, Rarity } from '@caverns/shared';
-import { matchArchetype, SLOT_DEFAULT_ARCHETYPE } from '@caverns/shared';
+import { matchArchetype, SLOT_DEFAULT_ARCHETYPE, GUN_TYPES } from '@caverns/shared';
 import type { ItemGenerationRequest } from './types.js';
 import { createRng } from './rng.js';
 import { getPalette, rollMaterial } from './materials.js';
@@ -76,6 +76,14 @@ export function generateItem(request: ItemGenerationRequest): Item {
     description = `${name} — ${qualityWord} ${material.name.toLowerCase()} ${baseType}.`;
   } else {
     description = `A ${quality === 'standard' ? '' : quality + ' '}${material.name.toLowerCase()} ${slot}.`;
+  }
+
+  if (slot === 'ranged') {
+    const gun = GUN_TYPES[iconBaseType];
+    if (!gun) throw new Error(`Ranged base type '${iconBaseType}' has no GUN_TYPES entry`);
+    stats.damage = Math.max(1, Math.round((stats.damage ?? 1) * gun.damageMult));
+    stats.range = gun.range;
+    stats.magazine = gun.magazine;
   }
 
   // Generate unique ID using RNG for determinism

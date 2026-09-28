@@ -3,7 +3,7 @@ import { DROP_SPECS } from './dropSpecs.js';
 import { DRIPPING_HALLS } from './content.js';
 import type { EquipmentSlot } from './types.js';
 
-const VALID_SLOTS: EquipmentSlot[] = ['weapon', 'offhand', 'armor', 'accessory'];
+const VALID_SLOTS: EquipmentSlot[] = ['weapon', 'offhand', 'armor', 'accessory', 'ranged'];
 
 describe('DROP_SPECS registry', () => {
   const consumableIds = new Set(

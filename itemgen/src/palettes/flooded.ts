@@ -32,6 +32,7 @@ export const FLOODED_PALETTE: BiomePalette = {
       offhand: ['shell shield', 'driftwood buckler', 'coral ward', 'barnacle shield', 'pearl orb', 'brine focus'],
       armor: ['barnacle mail', 'coral plate', 'pearl vest', 'abyssal hauberk', 'leviathan scale', 'brine weave', 'driftwood mantle'],
       accessory: ['pearl earring', 'shell pendant', 'coral ring', 'brine amulet', 'abyssal charm', 'tide band', 'driftwood brooch'],
+      ranged: ['scattergun', 'sidearm', 'long rifle', 'autogun'],
     },
   },
 };

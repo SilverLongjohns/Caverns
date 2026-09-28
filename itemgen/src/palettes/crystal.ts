@@ -32,6 +32,7 @@ export const CRYSTAL_PALETTE: BiomePalette = {
       offhand: ['crystal buckler', 'prism focus', 'quartz ward', 'facet shield', 'lattice orb', 'shard tome'],
       armor: ['crystal mail', 'lattice vest', 'prism plate', 'geode hauberk', 'quartz mantle', 'facet cuirass', 'resonance wrap'],
       accessory: ['crystal pendant', 'prism ring', 'quartz amulet', 'facet circlet', 'shard charm', 'resonance band', 'geode brooch'],
+      ranged: ['scattergun', 'sidearm', 'long rifle', 'autogun'],
     },
   },
 };
