@@ -47,6 +47,20 @@ export function isStep(a: Pt, b: Pt): boolean {
   return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) === 1;
 }
 
+/** A floating unit's last-known position plus the CSS transition string that should apply for it. */
+export type SlideState = { x: number; y: number; t: string };
+
+/**
+ * Derives the next slide state from the previous one and the unit's current position.
+ * Pure and idempotent at a fixed position: called again with the same (x, y) it returns
+ * `last` unchanged, so a re-render that doesn't move the unit can't cancel a running CSS
+ * transition by flipping it to 'none' mid-slide (see FloatingUnit).
+ */
+export function nextSlide(last: SlideState, unit: Pt, reduced: boolean, stepMs: number): SlideState {
+  if (unit.x === last.x && unit.y === last.y) return last;
+  return { x: unit.x, y: unit.y, t: !reduced && isStep(last, unit) ? `transform ${stepMs}ms linear` : 'none' };
+}
+
 /** Tiles the minimap draws: all of them, or only explored ones when fog is on. */
 export function minimapTiles(grid: { width: number; height: number; tiles: string[][] }, explored?: Set<string>) {
   const out: { x: number; y: number; type: string }[] = [];

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CELL_W, CELL_H, GRID_BORDER, MINIMAP_PX, MINIMAP_GAP, fitViewport, clampCam, centreOn, cellOrigin, isStep, minimapTiles } from './viewportMath.js';
+import { CELL_W, CELL_H, GRID_BORDER, MINIMAP_PX, MINIMAP_GAP, fitViewport, clampCam, centreOn, cellOrigin, isStep, minimapTiles, nextSlide } from './viewportMath.js';
 
 describe('fitViewport', () => {
   it('no camera when the whole grid fits', () => {
@@ -41,6 +41,35 @@ describe('cellOrigin / isStep', () => {
     expect(isStep({ x: 1, y: 1 }, { x: 2, y: 2 })).toBe(true);
     expect(isStep({ x: 1, y: 1 }, { x: 1, y: 1 })).toBe(false);
     expect(isStep({ x: 1, y: 1 }, { x: 3, y: 1 })).toBe(false);
+  });
+});
+
+describe('nextSlide', () => {
+  const STEP_MS = 120;
+
+  it('a one-tile step sets a sliding transition', () => {
+    const last = { x: 1, y: 1, t: 'none' };
+    const next = nextSlide(last, { x: 2, y: 1 }, false, STEP_MS);
+    expect(next).toEqual({ x: 2, y: 1, t: `transform ${STEP_MS}ms linear` });
+  });
+
+  it('a subsequent render at the same position keeps the same transition string (does not snap to none)', () => {
+    const last = { x: 2, y: 1, t: `transform ${STEP_MS}ms linear` };
+    const next = nextSlide(last, { x: 2, y: 1 }, false, STEP_MS);
+    expect(next).toEqual(last);
+    expect(next.t).toBe(`transform ${STEP_MS}ms linear`);
+  });
+
+  it('a multi-tile jump snaps (no transition)', () => {
+    const last = { x: 1, y: 1, t: 'none' };
+    const next = nextSlide(last, { x: 5, y: 1 }, false, STEP_MS);
+    expect(next).toEqual({ x: 5, y: 1, t: 'none' });
+  });
+
+  it('reduced motion never slides', () => {
+    const last = { x: 1, y: 1, t: 'none' };
+    const next = nextSlide(last, { x: 2, y: 1 }, true, STEP_MS);
+    expect(next).toEqual({ x: 2, y: 1, t: 'none' });
   });
 });
 

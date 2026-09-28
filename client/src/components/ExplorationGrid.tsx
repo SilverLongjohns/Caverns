@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 import type { TileGrid } from '@caverns/shared';
 import type { EntityOverlay } from './TileGridView.js';
 import { GlyphViewport } from './grid/GlyphViewport.js';
-import { CELL_W, CELL_H, cellOrigin, isStep } from './grid/viewportMath.js';
+import { CELL_W, CELL_H, cellOrigin, nextSlide } from './grid/viewportMath.js';
 import type { FloatUnit } from '../exploration/explorationEntities.js';
 import { prefersReducedMotion } from '../ui/motion.js';
 
@@ -40,19 +40,23 @@ export function ExplorationGrid({ roomId, grid, props, units, localPlayerId, vis
   );
 }
 
-function FloatingUnit({ unit, reduced }: { unit: FloatUnit; reduced: boolean }) {
-  const prev = useRef({ x: unit.x, y: unit.y });
-  const slide = !reduced && isStep(prev.current, unit);
-  useEffect(() => { prev.current = { x: unit.x, y: unit.y }; }, [unit.x, unit.y]);
+const FloatingUnit = memo(function FloatingUnit({ unit, reduced }: { unit: FloatUnit; reduced: boolean }) {
+  // last.current is updated DURING render (not in an effect), so `t` only changes when the
+  // position actually changes. A re-render at the same position (e.g. another unit moving,
+  // or exploredTiles updating right after a step) reuses the same transition string instead of
+  // recomputing 'none', which would otherwise cancel the running CSS transition mid-slide.
+  const last = useRef({ x: unit.x, y: unit.y, t: 'none' });
+  last.current = nextSlide(last.current, unit, reduced, EXPLORE_TIMING.stepMs);
   const { left, top } = cellOrigin(unit.x, unit.y);
   return (
     <span className={`explore-unit ${unit.className}`}
       style={{
         width: CELL_W, height: CELL_H,
         transform: `translate(${left}px, ${top}px)`,
-        transition: slide ? `transform ${EXPLORE_TIMING.stepMs}ms linear` : 'none',
+        transition: last.current.t,
       }}>
       {unit.sprite ? <span className="entity-glyph" style={{ backgroundImage: `url(${unit.sprite})` }} /> : unit.char}
     </span>
   );
-}
+}, (a, b) => a.reduced === b.reduced && a.unit.x === b.unit.x && a.unit.y === b.unit.y
+  && a.unit.sprite === b.unit.sprite && a.unit.className === b.unit.className);
