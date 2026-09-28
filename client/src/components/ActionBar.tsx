@@ -1,16 +1,6 @@
 import { useGameStore } from '../store/gameStore.js';
-import type { ItemStats } from '@caverns/shared';
 import { RelicButton, ItemIcon } from './relic/index.js';
-
-function formatStats(stats: ItemStats): string {
-  const parts: string[] = [];
-  if (stats.damage) parts.push(`+${stats.damage} dmg`);
-  if (stats.defense) parts.push(`+${stats.defense} def`);
-  if (stats.maxHp) parts.push(`+${stats.maxHp} hp`);
-  if (stats.initiative) parts.push(`+${stats.initiative} init`);
-  if (stats.healAmount) parts.push(`heals ${stats.healAmount}`);
-  return parts.join(', ');
-}
+import { formatItemStats } from '../ui/itemStatText.js';
 
 interface ActionBarProps {
   onLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
@@ -63,7 +53,7 @@ export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAc
             <ItemIcon item={item} />
             <div className="slot-body">
               <span className={`slot-name item-name rarity-${item.rarity}`}>{item.name}</span>
-              <span className="item-stats">[{item.slot}] {formatStats(item.stats)}</span>
+              <span className="item-stats">[{item.slot}] {formatItemStats(item.stats)}</span>
             </div>
             <div className="loot-buttons">
               {(['need', 'greed', 'pass'] as const).map((choice) => {
