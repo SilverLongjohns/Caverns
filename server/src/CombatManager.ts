@@ -6,6 +6,7 @@ import type {
   Direction,
   ActiveBuff,
   EquippedEffect,
+  RangedProfile,
 } from '@caverns/shared';
 import { COMBAT_CONFIG } from '@caverns/shared';
 import { ItemEffectResolver } from './ItemEffectResolver.js';
@@ -19,6 +20,7 @@ export interface CombatPlayerInfo {
   defense: number;
   initiative: number;
   className?: string;
+  ranged?: RangedProfile | null;
 }
 
 interface InternalParticipant {
@@ -35,6 +37,8 @@ interface InternalParticipant {
   className?: string;
   templateId?: string;
   buffs: ActiveBuff[];
+  ranged: RangedProfile | null;
+  ammo: number;
 }
 
 export class CombatManager {
@@ -64,6 +68,7 @@ export class CombatManager {
         hp: p.hp, maxHp: p.maxHp, damage: p.damage,
         defense: p.defense, initiative: p.initiative,
         isDefending: false, alive: true, className: p.className, buffs: [],
+        ranged: p.ranged ?? null, ammo: p.ranged?.magazine ?? 0,
       });
     }
     for (const m of mobs) {
@@ -72,6 +77,7 @@ export class CombatManager {
         hp: m.hp, maxHp: m.maxHp, damage: m.damage,
         defense: m.defense, initiative: m.initiative,
         isDefending: false, alive: true, templateId: m.templateId, buffs: [],
+        ranged: null, ammo: 0,
       });
     }
     this.rollInitiativeOrder();
@@ -133,10 +139,48 @@ export class CombatManager {
       hp: player.hp, maxHp: player.maxHp, damage: player.damage,
       defense: player.defense, initiative: player.initiative,
       isDefending: false, alive: true, className: player.className, buffs: [],
+      ranged: player.ranged ?? null, ammo: player.ranged?.magazine ?? 0,
     });
     if (effects) {
       this.effectResolver.registerPlayer(player.id, effects, usedEffects ?? []);
     }
+  }
+
+  getRanged(id: string): { profile: RangedProfile; ammo: number } | null {
+    const p = this.participants.get(id);
+    return p?.ranged ? { profile: p.ranged, ammo: p.ammo } : null;
+  }
+
+  /** A gun shot. Range/LoS are the arena's job; `hit` is rolled by the caller. Gun damage only: no melee gear, crits or item effects. */
+  resolveShot(actorId: string, targetId: string, hit: boolean, hitChance: number): Partial<CombatActionResultMessage> | null {
+    const actor = this.participants.get(actorId);
+    const target = this.participants.get(targetId);
+    if (!actor?.alive || !actor.ranged || actor.ammo <= 0 || !target?.alive) return null;
+    actor.isDefending = false;
+    actor.ammo -= 1;
+    let damage = 0;
+    if (hit) {
+      const mods = this.effectResolver.resolvePassiveStats(target);
+      const defense = mods.overrideDefense !== undefined ? 0 : target.defense + mods.bonusDefense;
+      const effective = target.isDefending ? defense * COMBAT_CONFIG.defenseMultiplierWhenDefending : defense;
+      damage = Math.max(COMBAT_CONFIG.minDamage, Math.floor(actor.ranged.shotDamage - effective));
+      target.hp = Math.max(0, target.hp - damage);
+      if (target.hp === 0) target.alive = false;
+    }
+    return {
+      actorId, actorName: actor.name, action: 'shoot',
+      targetId: target.id, targetName: target.name, damage,
+      targetHp: target.hp, targetMaxHp: target.maxHp, targetDowned: !target.alive,
+      hit, hitChance, ammo: actor.ammo,
+    };
+  }
+
+  reload(actorId: string): Partial<CombatActionResultMessage> | null {
+    const actor = this.participants.get(actorId);
+    if (!actor?.alive || !actor.ranged || actor.ammo >= actor.ranged.magazine) return null;
+    actor.isDefending = false;
+    actor.ammo = actor.ranged.magazine;
+    return { actorId, actorName: actor.name, action: 'reload', ammo: actor.ammo };
   }
 
   resolvePlayerAction(playerId: string, action: {
@@ -490,6 +534,7 @@ export class CombatManager {
         className: p.className,
         templateId: p.templateId,
         buffs: p.buffs.length > 0 ? [...p.buffs] : undefined,
+        ...(p.ranged ? { ammo: p.ammo, magazine: p.ranged.magazine } : {}),
       }));
     return {
       roomId: this.roomId, participants,

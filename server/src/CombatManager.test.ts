@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CombatManager } from './CombatManager.js';
 import type { MobInstance, CombatState, EquippedEffect } from '@caverns/shared';
+import { COMBAT_CONFIG, CLASS_DEFINITIONS, type RangedProfile } from '@caverns/shared';
 
 function makeMob(overrides?: Partial<MobInstance>): MobInstance {
   return {
@@ -284,5 +285,65 @@ describe('CombatManager — Item Effects', () => {
     const used = new Map([['p1', ['self_revive']]]);
     const cm = new CombatManager('room1', [], [], new Map(), used);
     expect(cm.getConsumedEffects().get('p1')).toEqual(['self_revive']);
+  });
+});
+
+const prof: RangedProfile = { shotDamage: 9, range: 4, magazine: 2, marksmanship: 2 };
+const gunner = (over = {}) => ({ id: 'p1', name: 'Gunner', hp: 50, maxHp: 50, damage: 30, defense: 2, initiative: 6, className: CLASS_DEFINITIONS[0].id, ranged: prof, ...over });
+const mob = (over = {}) => ({ instanceId: 'm1', templateId: 't', name: 'Mob', maxHp: 40, hp: 40, damage: 5, defense: 3, initiative: 1, ...over });
+
+describe('ranged: resolveShot / reload', () => {
+  it('starts with a full magazine; state exposes ammo and magazine', () => {
+    const cm = new CombatManager('r', [gunner()], [mob()]);
+    expect(cm.getRanged('p1')).toEqual({ profile: prof, ammo: 2 });
+    const p = cm.getState().participants.find((x) => x.id === 'p1')!;
+    expect(p.ammo).toBe(2); expect(p.magazine).toBe(2);
+  });
+  it('a hit deals shotDamage - defense, ignoring melee damage', () => {
+    const cm = new CombatManager('r', [gunner()], [mob()]);
+    const r = cm.resolveShot('p1', 'm1', true, 0.8)!;
+    expect(r).toMatchObject({ action: 'shoot', hit: true, hitChance: 0.8, damage: 9 - 3, targetHp: 40 - 6, ammo: 1 });
+  });
+  it('defending doubles defense against shots', () => {
+    const cm = new CombatManager('r', [gunner()], [mob()]);
+    (cm.getParticipant('m1') as { isDefending: boolean }).isDefending = true;
+    expect(cm.resolveShot('p1', 'm1', true, 1)!.damage).toBe(Math.max(COMBAT_CONFIG.minDamage, 9 - 3 * COMBAT_CONFIG.defenseMultiplierWhenDefending));
+  });
+  it('a miss deals 0, still spends a round, never downs', () => {
+    const cm = new CombatManager('r', [gunner()], [mob({ hp: 1 })]);
+    const r = cm.resolveShot('p1', 'm1', false, 0.3)!;
+    expect(r).toMatchObject({ action: 'shoot', hit: false, damage: 0, targetDowned: false, ammo: 1, targetHp: 1 });
+  });
+  it('downs the target at 0 HP', () => {
+    const cm = new CombatManager('r', [gunner()], [mob({ hp: 2 })]);
+    expect(cm.resolveShot('p1', 'm1', true, 1)!.targetDowned).toBe(true);
+    expect(cm.getParticipant('m1')!.alive).toBe(false);
+  });
+  it('refuses with no ammo, no gun, dead or unknown target', () => {
+    const cm = new CombatManager('r', [gunner({ ranged: { ...prof, magazine: 1 } })], [mob()]);
+    expect(cm.resolveShot('p1', 'm1', true, 1)).not.toBeNull();
+    expect(cm.resolveShot('p1', 'm1', true, 1)).toBeNull();          // empty
+    const bare = new CombatManager('r', [gunner({ ranged: null })], [mob()]);
+    expect(bare.resolveShot('p1', 'm1', true, 1)).toBeNull();        // no gun
+    expect(cm.resolveShot('p1', 'nope', true, 1)).toBeNull();        // unknown target
+  });
+  it('reload refills; refused when full or without a gun', () => {
+    const cm = new CombatManager('r', [gunner()], [mob()]);
+    expect(cm.reload('p1')).toBeNull();                              // full
+    cm.resolveShot('p1', 'm1', false, 0.5);
+    expect(cm.reload('p1')).toMatchObject({ action: 'reload', actorId: 'p1', ammo: 2 });
+    expect(new CombatManager('r', [gunner({ ranged: null })], [mob()]).reload('p1')).toBeNull();
+  });
+  it('a mid-combat joiner starts loaded', () => {
+    const cm = new CombatManager('r', [gunner()], [mob()]);
+    cm.addPlayer(gunner({ id: 'p2', name: 'Late' }));
+    expect(cm.getRanged('p2')?.ammo).toBe(prof.magazine);
+    expect(cm.getState().participants.find((p) => p.id === 'p2')!.ammo).toBe(prof.magazine);
+  });
+  it('shooting clears the actor\'s defend stance', () => {
+    const cm = new CombatManager('r', [gunner()], [mob()]);
+    cm.resolvePlayerAction('p1', { action: 'defend' });
+    cm.resolveShot('p1', 'm1', true, 1);
+    expect((cm.getParticipant('p1') as { isDefending: boolean }).isDefending).toBe(false);
   });
 });

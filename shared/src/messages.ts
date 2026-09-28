@@ -21,7 +21,7 @@ export interface GridMoveMessage {
 
 export interface CombatActionMessage {
   type: 'combat_action';
-  action: 'attack' | 'defend' | 'use_item' | 'flee' | 'use_ability' | 'use_item_effect';
+  action: 'attack' | 'defend' | 'use_item' | 'flee' | 'use_ability' | 'use_item_effect' | 'shoot' | 'reload';
   targetId?: string;
   itemIndex?: number;
   fleeDirection?: Direction;
@@ -474,7 +474,7 @@ export interface CombatActionResultMessage {
   type: 'combat_action_result';
   actorId: string;
   actorName: string;
-  action: 'attack' | 'defend' | 'use_item' | 'flee' | 'use_ability' | 'use_item_effect';
+  action: 'attack' | 'defend' | 'use_item' | 'flee' | 'use_ability' | 'use_item_effect' | 'shoot' | 'reload';
   targetId?: string;
   targetName?: string;
   damage?: number;
@@ -498,6 +498,11 @@ export interface CombatActionResultMessage {
   /** Area abilities: every participant hit, and every participant downed. */
   targetIds?: string[];
   downedIds?: string[];
+  /** Shots: whether it landed, and the chance it had (0..1). */
+  hit?: boolean;
+  hitChance?: number;
+  /** Shoot/reload: the actor's rounds left afterwards. */
+  ammo?: number;
 }
 
 export interface CombatEndMessage {
