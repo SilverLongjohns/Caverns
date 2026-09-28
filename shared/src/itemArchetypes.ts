@@ -41,7 +41,7 @@ const KEYWORDS: Record<ItemArchetype, readonly string[]> = {
   axe: ['axe', 'cleaver'],
   polearm: ['spear', 'lance', 'harpoon', 'trident'],
   staff: ['staff'],
-  ranged: ['crossbow', 'bow', 'gun', 'autogun', 'rifle', 'pistol', 'sidearm', 'scattergun', 'blunderbuss', 'hushpistol', 'repeater'],
+  ranged: ['crossbow', 'bow', 'gun', 'autogun', 'rifle', 'pistol', 'sidearm', 'scattergun', 'blunderbuss', 'repeater'],
   shield: ['shield', 'buckler', 'ward', 'bulwark', 'guard'],
   focus: ['orb', 'focus', 'lantern', 'symbol', 'horn', 'gauntlet', 'toolkit', 'cloak'],
   tome: ['tome'],
