@@ -47,6 +47,15 @@ describe('buildExplorationEntities', () => {
     expect(out.props).toHaveLength(1);
     expect(out.props[0]).toMatchObject({ x: 4, y: 2, sprite: '/sprites/glyphs/furnishings/furn_a.png', className: 'entity-interactable' });
   });
+  it('a used interactable furnishing keeps the furnishing sprite but the used class', () => {
+    const out = buildExplorationEntities(base({
+      interactables: [{ x: 6, y: 3, char: '⊞', used: true }],
+      furnishings: [{ x: 6, y: 3, char: '⊞', interactable: true, id: 'furn_a' }],
+      furnishingGlyph: withGlyph,
+    }));
+    expect(out.props).toHaveLength(1);
+    expect(out.props[0]).toMatchObject({ x: 6, y: 3, sprite: '/sprites/glyphs/furnishings/furn_a.png', className: 'entity-interactable-used' });
+  });
   it('plain interactables stay ASCII; used ones are dimmed', () => {
     const out = buildExplorationEntities(base({ interactables: [{ x: 1, y: 1, char: 'Ω', used: false }, { x: 2, y: 1, char: '¤', used: true }] }));
     expect(out.props).toEqual([
