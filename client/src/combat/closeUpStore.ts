@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { closeUpForParticipants, CLOSE_UP_CONFIG, type ServerMessage } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore.js';
 import { boardFxReceive } from './boardFxStore.js';
+import { soundsFor } from '../audio/sfxDirector.js';
+import { playCues } from '../audio/playCues.js';
 import { initialGate, gateReceive, gateImpact, gateEnd, gateSkip, gateFlush, type ActiveCloseUp, type GateState } from './closeUpGate.js';
 
 interface CloseUpUi { current: ActiveCloseUp | null; skip: () => void }
@@ -10,7 +12,12 @@ export const useCloseUpStore = create<CloseUpUi>(() => ({ current: null, skip: (
 let gate: GateState = initialGate();
 let timers: number[] = [];
 const deliver = (msgs: ServerMessage[]) => {
-  for (const m of msgs) { useGameStore.getState().handleServerMessage(m); boardFxReceive(m); }
+  for (const m of msgs) {
+    const before = useGameStore.getState();
+    before.handleServerMessage(m);
+    boardFxReceive(m);
+    try { playCues(soundsFor(m, before, useGameStore.getState())); } catch { /* audio is best-effort */ }
+  }
 };
 const clearTimers = () => { timers.forEach((t) => window.clearTimeout(t)); timers = []; };
 

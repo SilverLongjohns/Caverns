@@ -48,7 +48,8 @@
   "ref": "phaseknife",
   "prompt": "full-body pose, side view facing right: Phaseknife (A blink-footed killer who slips in, opens a throat, and is gone) staggering back from a hit, bracing, strange post-collapse retro-future relic tech",
   "file": "raw/shadowblade-hurt_0.png",
-  "version": 1
+  "version": 1,
+  "note": "Generated facing left; the installed client/public/closeups/classes/shadowblade-hurt.png is hflipped (player close-ups must face right). Re-flip if re-installing from raw."
  },
  "ability-backstab": {
   "job_id": "4ecc181b-2f06-4ff3-9957-dff08299eaec",

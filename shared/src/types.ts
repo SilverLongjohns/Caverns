@@ -188,6 +188,8 @@ export interface Room {
   gridY?: number;
   tileGrid?: TileGrid;
   interactables?: InteractableInstance[];
+  /** Biome the room was generated in (procedural dungeons only). */
+  biomeId?: string;
 }
 
 // === Mobs ===

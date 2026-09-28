@@ -1,0 +1,270 @@
+{
+  "step": {
+    "kind": "oneshot",
+    "prompt": "Single boot footstep on gritty cave stone, crunch of loose grit, close-mic, dry"
+  },
+  "step_wet": {
+    "kind": "oneshot",
+    "prompt": "Single boot footstep splashing into shallow cave water, small wet slap, close-mic"
+  },
+  "room_enter": {
+    "kind": "oneshot",
+    "prompt": "Short low whoosh of stale cave air shifting, faint distant metallic groan"
+  },
+  "exit_blocked": {
+    "kind": "oneshot",
+    "prompt": "Heavy corroded metal door rattling against a locked bolt, dull clank, refusal"
+  },
+  "unlock": {
+    "kind": "oneshot",
+    "prompt": "Old mechanical lock releasing, key turning, heavy bolt sliding back, servo whine and hiss of air"
+  },
+  "key_pickup": {
+    "kind": "oneshot",
+    "prompt": "Single small metal key picked up off stone, one short bright clink, close-mic, dry",
+    "duration": 0.8,
+    "model": "sfx"
+  },
+  "torch_pickup": {
+    "kind": "oneshot",
+    "prompt": "Oil torch catching flame, quick whoomp ignition then crackle"
+  },
+  "torch_out": {
+    "kind": "oneshot",
+    "prompt": "Burning torch extinguished, single clean sharp steamy hiss fading out, quiet, close-mic, no other sounds",
+    "duration": 1.5,
+    "model": "sfx"
+  },
+  "mob_alert": {
+    "kind": "oneshot",
+    "prompt": "Short guttural creature snarl with a sharp burst of radio static"
+  },
+  "hazard_tick": {
+    "kind": "oneshot",
+    "prompt": "Sharp sizzle of skin touching caustic sludge, short painful hiss"
+  },
+  "interact_start": {
+    "kind": "oneshot",
+    "prompt": "Hands rummaging through scrap metal and debris, short clatter"
+  },
+  "interact_loot": {
+    "kind": "oneshot",
+    "prompt": "Old metal lockbox creaking open followed by a bright rising two-note relay chime"
+  },
+  "interact_hazard": {
+    "kind": "oneshot",
+    "prompt": "Hidden trap springing, loud sharp metal snap followed by a short burst of hissing gas",
+    "duration": 1.5,
+    "model": "sfx"
+  },
+  "interact_secret": {
+    "kind": "oneshot",
+    "prompt": "Hidden stone panel grinding open, deep rumble, low resonant electronic hum swelling"
+  },
+  "interact_flavor": {
+    "kind": "oneshot",
+    "prompt": "Soft rustle of old dust and pebbles trickling, quiet, close-mic"
+  },
+  "puzzle_ping": {
+    "kind": "oneshot",
+    "prompt": "Old terminal attention beep, two short square-wave tones through a small speaker"
+  },
+  "gold": {
+    "kind": "oneshot",
+    "prompt": "Handful of small metal scrap chits clinking together, bright, short"
+  },
+  "level_up": {
+    "kind": "oneshot",
+    "prompt": "Rising electronic power-up chime on an old relay machine, warm hum swelling to a bright tone"
+  },
+  "amb_starter": {
+    "kind": "bed",
+    "prompt": "Continuous dark cave ambience, slow water drips, distant low wind through tunnels, faint electrical hum"
+  },
+  "amb_fungal": {
+    "kind": "bed",
+    "prompt": "Continuous damp cavern ambience, soft wet organic squelches, spores popping, slow drips, low drone"
+  },
+  "amb_crystal": {
+    "kind": "bed",
+    "prompt": "Continuous cave ambience with faint ringing crystal resonance, glassy shimmering tones, soft air movement"
+  },
+  "amb_flooded": {
+    "kind": "bed",
+    "prompt": "Continuous flooded tunnel ambience, lapping water, echoing drips, gurgling pipes, distant rush"
+  },
+  "amb_volcanic": {
+    "kind": "bed",
+    "prompt": "Continuous volcanic cavern ambience, deep rumbling magma, bubbling lava, hissing steam vents"
+  },
+  "amb_bone": {
+    "kind": "bed",
+    "prompt": "Continuous ossuary cave ambience, dry hollow wind, faint rattling bones, distant creaking"
+  },
+  "combat_start": {
+    "kind": "oneshot",
+    "prompt": "Short tense combat stinger for a retro dungeon crawler game, sudden low brass hit and pounding drum, dark and ominous",
+    "duration": 3,
+    "model": "music"
+  },
+  "melee_hit": {
+    "kind": "oneshot",
+    "prompt": "Heavy scrap-metal weapon striking flesh and armor, meaty thud with metallic clank"
+  },
+  "melee_crit": {
+    "kind": "oneshot",
+    "prompt": "Brutal heavy impact, bone crunch and metal crash, deep punchy transient"
+  },
+  "melee_miss": {
+    "kind": "oneshot",
+    "prompt": "Fast heavy weapon swinging through air, whoosh, no impact"
+  },
+  "gun_shot": {
+    "kind": "oneshot",
+    "prompt": "Crude junk-built scrap gun firing, loud cracking blast with rattling loose metal parts"
+  },
+  "gun_miss": {
+    "kind": "oneshot",
+    "prompt": "Bullet whizzing past very close, fast sharp supersonic whiz",
+    "duration": 0.8,
+    "model": "sfx"
+  },
+  "reload": {
+    "kind": "oneshot",
+    "prompt": "Reloading a crude scrap-metal gun, clunky magazine slide, lever cock, loose metal rattle"
+  },
+  "dry_click": {
+    "kind": "oneshot",
+    "prompt": "Empty gun dry-firing, single hollow metallic click"
+  },
+  "defend": {
+    "kind": "oneshot",
+    "prompt": "Deep armoured bracing thud with a heavy metal shield slam and a short low power hum, close-mic",
+    "duration": 1.2,
+    "model": "sfx"
+  },
+  "mob_hit": {
+    "kind": "oneshot",
+    "prompt": "Creature claw strike hitting armor, one short heavy impact thud with a metal scrape",
+    "duration": 0.6,
+    "model": "sfx"
+  },
+  "player_down": {
+    "kind": "oneshot",
+    "prompt": "Armored body collapsing onto a stone floor, one heavy thud and a clatter of gear",
+    "duration": 1.2,
+    "model": "sfx"
+  },
+  "mob_death": {
+    "kind": "oneshot",
+    "prompt": "Mutant creature death gurgle and heavy wet collapse onto stone"
+  },
+  "heal": {
+    "kind": "oneshot",
+    "prompt": "Short gentle healing stinger for a video game, soft rising bells over a warm synth pad, hopeful",
+    "duration": 3,
+    "model": "music"
+  },
+  "ability_generic": {
+    "kind": "oneshot",
+    "prompt": "Single bright sustained synth chord swelling in then fading out, short uplifting video game ability cue, instrumental",
+    "duration": 3,
+    "model": "music"
+  },
+  "flee": {
+    "kind": "oneshot",
+    "prompt": "Person sprinting away fast on gravel, rapid running footsteps receding into the distance",
+    "duration": 2.0,
+    "model": "sfx"
+  },
+  "qte_prompt": {
+    "kind": "oneshot",
+    "prompt": "Short tense rising electronic tick sweep, old targeting computer"
+  },
+  "qte_success": {
+    "kind": "oneshot",
+    "prompt": "Crisp satisfying electronic lock-on confirm tone, bright relay snap"
+  },
+  "qte_fail": {
+    "kind": "oneshot",
+    "prompt": "Low descending buzzer error tone on an old terminal, short"
+  },
+  "victory": {
+    "kind": "oneshot",
+    "prompt": "Short triumphant victory fanfare stinger for a retro dungeon crawler game, brass and analog synth, bright resolving chord",
+    "duration": 4,
+    "model": "music"
+  },
+  "wipe": {
+    "kind": "oneshot",
+    "prompt": "Short somber defeat stinger for a dungeon crawler game, slow descending minor chord on low strings and dark synth, final",
+    "duration": 4,
+    "model": "music"
+  },
+  "crack": {
+    "kind": "oneshot",
+    "prompt": "Sharp bone-snapping crack with a bright metallic snap, punchy"
+  },
+  "boom": {
+    "kind": "oneshot",
+    "prompt": "Deep concussive impact boom with a rumbling low tail, cave echo"
+  },
+  "shimmer": {
+    "kind": "oneshot",
+    "prompt": "Shimmering rising electronic tone with sparkling static, energy charge"
+  },
+  "ui_click": {
+    "kind": "oneshot",
+    "prompt": "Single crisp loud mechanical switch click, sharp transient, close-mic, dry",
+    "duration": 0.5,
+    "model": "sfx"
+  },
+  "ui_tick": {
+    "kind": "oneshot",
+    "prompt": "Very short crisp electronic tick like a relay contact closing, close-mic, dry",
+    "duration": 0.5,
+    "model": "sfx"
+  },
+  "ui_power": {
+    "kind": "oneshot",
+    "prompt": "Old CRT monitor switching on, sharp electrical thunk then a quick rising high whine, crisp and loud",
+    "duration": 1.0,
+    "model": "sfx"
+  },
+  "ui_open": {
+    "kind": "oneshot",
+    "prompt": "Metal cabinet panel sliding open with a servo whirr and click"
+  },
+  "ui_close": {
+    "kind": "oneshot",
+    "prompt": "Metal cabinet panel sliding shut, soft thunk and latch click"
+  },
+  "shop_buy": {
+    "kind": "oneshot",
+    "prompt": "Old mechanical cash register ding with coins dropping into a tray"
+  },
+  "shop_sell": {
+    "kind": "oneshot",
+    "prompt": "Scrap items dropped onto a metal counter, then chits clinking into a hand"
+  },
+  "shop_reroll": {
+    "kind": "oneshot",
+    "prompt": "Mechanical slot drum spinning and clattering to a stop, relay click"
+  },
+  "stash_move": {
+    "kind": "oneshot",
+    "prompt": "Heavy item placed into a metal locker, clunk and short rattle"
+  },
+  "equip": {
+    "kind": "oneshot",
+    "prompt": "Armor strap buckling and metal gear clicking into place, leather creak"
+  },
+  "portal_ready": {
+    "kind": "oneshot",
+    "prompt": "Old machine arming, rising hum and heavy switch click"
+  },
+  "portal_enter": {
+    "kind": "oneshot",
+    "prompt": "Deep humming energy gate activating, rising whoosh into a warping electrical roar"
+  }
+}

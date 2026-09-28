@@ -1,4 +1,5 @@
 import type { Item } from '@caverns/shared';
+import { audioEngine } from '../audio/audioEngine.js';
 import { useGameStore } from '../store/gameStore.js';
 import { ScreenTransition, MenuConsole } from './menu/index.js';
 import { RelicButton, ItemIcon } from './relic/index.js';
@@ -37,7 +38,7 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                 <button
                   key={`inv-${i}`}
                   className={`stash-slot ${item ? 'filled' : 'empty'}`}
-                  onClick={() => { if (item) { new Audio('/audio/stash.mp3').play(); onDeposit('inventory', i); } }}
+                  onClick={() => { if (item) { audioEngine.playSfx('stash_move'); onDeposit('inventory', i); } }}
                   disabled={!item}
                   title={item?.description ?? ''}
                 >
@@ -51,7 +52,7 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                 <button
                   key={`con-${i}`}
                   className={`stash-slot ${item ? 'filled' : 'empty'}`}
-                  onClick={() => { if (item) { new Audio('/audio/stash.mp3').play(); onDeposit('consumables', i); } }}
+                  onClick={() => { if (item) { audioEngine.playSfx('stash_move'); onDeposit('consumables', i); } }}
                   disabled={!item}
                   title={item?.description ?? ''}
                 >
@@ -69,7 +70,7 @@ export function StashModal({ onDeposit, onWithdraw, onClose }: Props) {
                 <button
                   key={`stash-${i}`}
                   className={`stash-slot ${item ? 'filled' : 'empty'}`}
-                  onClick={() => { if (item) { new Audio('/audio/stash.mp3').play(); onWithdraw(i, inferStashTarget(item)); } }}
+                  onClick={() => { if (item) { audioEngine.playSfx('stash_move'); onWithdraw(i, inferStashTarget(item)); } }}
                   disabled={!item}
                   title={item?.description ?? ''}
                 >

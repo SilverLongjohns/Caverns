@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import type { ClientMessage, Direction, GridDirection, SandboxOverrides } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore';
+import { audioEngine } from '../audio/audioEngine.js';
 
 export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
   const send = useCallback(
@@ -27,12 +28,14 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     defendResult: (damageReduction: number) => send({ type: 'defend_result', damageReduction }),
     lootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => send({ type: 'loot_choice', itemId, choice }),
     revive: (targetPlayerId: string) => send({ type: 'revive', targetPlayerId }),
-    equipItem: (inventoryIndex: number) => send({ type: 'equip_item', inventoryIndex }),
+    equipItem: (inventoryIndex: number) => { audioEngine.playSfx('equip'); send({ type: 'equip_item', inventoryIndex }); },
     dropItem: (inventoryIndex: number) => send({ type: 'drop_item', inventoryIndex }),
     useConsumable: (consumableIndex: number) => send({ type: 'use_consumable', consumableIndex }),
     puzzleAnswer: (roomId: string, answerIndex: number) => send({ type: 'puzzle_answer', roomId, answerIndex }),
-    interactAction: (interactableId: string, actionId: string) =>
-      send({ type: 'interact_action', interactableId, actionId }),
+    interactAction: (interactableId: string, actionId: string) => {
+      audioEngine.playSfx('interact_start');
+      send({ type: 'interact_action', interactableId, actionId });
+    },
     useAbility: (abilityId: string, targetId?: string, targetX?: number, targetY?: number) =>
       send({ type: 'combat_action', action: 'use_ability', abilityId, targetId, targetX, targetY }),
     useItemEffect: (effectId: string, targetId?: string) =>
@@ -64,9 +67,9 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     overworldMove: (x: number, y: number) => {
       send({ type: 'overworld_move', targetX: x, targetY: y });
     },
-    portalReady: () => send({ type: 'portal_ready' }),
+    portalReady: () => { audioEngine.playSfx('portal_ready'); send({ type: 'portal_ready' }); },
     portalUnready: () => send({ type: 'portal_unready' }),
-    portalEnter: () => send({ type: 'portal_enter' }),
+    portalEnter: () => { audioEngine.playSfx('portal_enter'); send({ type: 'portal_enter' }); },
     interactOverworld: (interactableId: string) =>
       send({ type: 'overworld_interact', interactableId }),
     stashDeposit: (from: 'inventory' | 'consumables', fromIndex: number) =>
@@ -82,7 +85,7 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
     closeShop: () => useGameStore.setState({ openShop: null, shopError: null }),
     openCharacterPanel: () => send({ type: 'open_character_panel' }),
     closeCharacterPanel: () => useGameStore.setState({ openCharacterPanel: null, characterPanelError: null }),
-    overworldEquipItem: (inventoryIndex: number) => send({ type: 'overworld_equip_item', inventoryIndex }),
+    overworldEquipItem: (inventoryIndex: number) => { audioEngine.playSfx('equip'); send({ type: 'overworld_equip_item', inventoryIndex }); },
     overworldDropItem: (inventoryIndex: number) => send({ type: 'overworld_drop_item', inventoryIndex }),
     overworldAllocateStat: (statId: string, points: number) => send({ type: 'overworld_allocate_stat', statId, points }),
     leaveWorld: () => {

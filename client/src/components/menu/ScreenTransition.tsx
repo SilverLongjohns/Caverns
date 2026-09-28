@@ -25,9 +25,15 @@ export function ScreenTransition({ screenKey, children, className = '', onBackdr
   useLayoutEffect(() => {
     if (screenKey === targetKey(state)) return;
     const reduced = prefersReducedMotion();
-    if (!reduced) audioEngine.playUi('power');
     const isEmpty = (n: ReactNode) => n == null || n === false;
-    dispatch({ type: 'change', key: screenKey, reduced, fromEmpty: isEmpty(committed.current.node), toEmpty: isEmpty(children) });
+    const fromEmpty = isEmpty(committed.current.node);
+    const toEmpty = isEmpty(children);
+    if (!reduced) {
+      if (fromEmpty && !toEmpty) audioEngine.playSfx('ui_open', { fallback: 'power' });
+      else if (toEmpty && !fromEmpty) audioEngine.playSfx('ui_close', { fallback: 'power' });
+      else audioEngine.playUi('power');
+    }
+    dispatch({ type: 'change', key: screenKey, reduced, fromEmpty, toEmpty });
   }, [screenKey, state]);
 
   useLayoutEffect(() => {

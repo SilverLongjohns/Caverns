@@ -4,6 +4,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "jsx": "react-jsx",
+    "resolveJsonModule": true,
     "module": "ESNext",
     "moduleResolution": "bundler"
   },
