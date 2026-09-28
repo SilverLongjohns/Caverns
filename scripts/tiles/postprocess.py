@@ -4,9 +4,10 @@
 Pure python3 + Pillow (no numpy dependency, per env rules).
 
 Usage:
-  python3 scripts/tiles/postprocess.py seam <in.png> [--repair] [--threshold 18] <out.png>
+  python3 scripts/tiles/postprocess.py seam <in.png> [--repair] [--band 4] [--threshold 3.0] <out.png>
   python3 scripts/tiles/postprocess.py match <in.png> --ref <floor.png> <out.png>
   python3 scripts/tiles/postprocess.py sheet <dir> <out.png>
+  python3 scripts/tiles/postprocess.py preview <in.png> [--reps 4] [--scale 8] <out.png>
   python3 scripts/tiles/postprocess.py selftest
 """
 
@@ -17,8 +18,10 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
-DEFAULT_BAND = 4  # px cross-fade band used by repair_seam (controller ruling R4: 4, not the brief's 8)
-DEFAULT_THRESHOLD = 18.0
+DEFAULT_BAND = 4  # px cross-fade band used by _eased_edge_blend (controller ruling R4: 4, not the brief's 8)
+DEFAULT_THRESHOLD = 18.0  # legacy seam_score threshold (kept for the `seam` CLI's reference line)
+DEFAULT_BAND_THRESHOLD = 1.0  # band_score (per-axis std of column/row mean luma) threshold
+DEFAULT_EDGE_RATIO_THRESHOLD = 1.6  # edge-crossing gradient vs interior gradient: above this, blend the edge
 
 
 def _smoothstep(t: float) -> float:
@@ -27,15 +30,19 @@ def _smoothstep(t: float) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Seam scoring / repair
+# Seam / banding scoring
 # ---------------------------------------------------------------------------
 
 def seam_score(img: Image.Image) -> float:
     """Mean absolute RGB difference between column 0 & column w-1, plus row 0 & row h-1.
 
-    Two independent means (columns pair, rows pair) are computed and summed,
-    so a tile that only misaligns on one axis still registers a meaningful
-    score, and a tile that misaligns on both axes scores proportionally higher.
+    LEGACY metric, kept for reference/continuity with earlier reports. This
+    only measures the single edge-crossing discontinuity; it does NOT detect
+    low-frequency per-column/per-row luminance drift, which is what actually
+    produces visible banding when a tile is repeated (see `band_score`).
+    Forcing this metric to exactly zero (a bug in an earlier round) makes the
+    two wrap-edge columns/rows literally identical, which reads as a doubled
+    column/row when tiled -- do not gate repairs on this alone.
     """
     rgb = img.convert("RGB")
     w, h = rgb.size
@@ -58,7 +65,134 @@ def seam_score(img: Image.Image) -> float:
     return col_mean + row_mean
 
 
-def repair_seam(img: Image.Image, band: int = DEFAULT_BAND) -> Image.Image:
+def band_score(img: Image.Image, reps: int = 3):
+    """Low-frequency per-column / per-row mean-luminance DRIFT that repeats
+    at the tile period once the tile is placed edge-to-edge -- this, not a
+    single hard edge discontinuity, is what actually produces visible
+    banding (some columns/rows are systematically lighter or darker than
+    others, and that pattern repeats every `tile width` pixels).
+
+    The image is tiled `reps`x`reps`, per-column (and per-row) mean luma is
+    measured across the tiled image and folded back to one tile period
+    (mathematically this just reproduces the original tile's own per-column/
+    row means, since tiling only repeats content -- tiling first is done
+    anyway so the metric is explicitly defined in terms of "what repeats at
+    the tile period" rather than relying on that equivalence silently).
+    Returns (col_std, row_std): the std of those folded per-axis means
+    (equivalently, after removing their own mean, since subtracting a
+    constant doesn't change a std). High values on either axis mean that
+    axis will show visible banding when tiled.
+    """
+    rgb = img.convert("RGB")
+    w, h = rgb.size
+    tiled = Image.new("RGB", (w * reps, h * reps))
+    for j in range(reps):
+        for i in range(reps):
+            tiled.paste(rgb, (i * w, j * h))
+    tpx = tiled.load()
+    tw, th = tiled.size
+
+    col_sum = [0.0] * w
+    for x in range(tw):
+        c = x % w
+        for y in range(th):
+            r, g, b = tpx[x, y]
+            col_sum[c] += _luma(r, g, b)
+    col_means = [s / th for s in col_sum]
+
+    row_sum = [0.0] * h
+    for y in range(th):
+        rr = y % h
+        for x in range(tw):
+            r, g, b = tpx[x, y]
+            row_sum[rr] += _luma(r, g, b)
+    row_means = [s / tw for s in row_sum]
+
+    _cm, col_std = _mean_and_std(col_means)
+    _rm, row_std = _mean_and_std(row_means)
+    return col_std, row_std
+
+
+def edge_interior_gradient(img: Image.Image):
+    """Compares the wrap-edge crossing gradient (|col w-1 -> col 0|, and the
+    row equivalent) to the TYPICAL interior neighbour-to-neighbour gradient.
+
+    A well-behaved seamless tile has these close to each other (ratio near
+    1.0): the step across the wrap looks like just another normal step of
+    texture, not a hard cut and not an artificially perfect match either.
+    Forcing the ratio to ~0 (matching columns/rows made byte-identical) is
+    itself a defect -- it reads as a doubled column/row when tiled.
+    """
+    rgb = img.convert("RGB")
+    w, h = rgb.size
+    px = rgb.load()
+
+    def diff(a, b):
+        return sum(abs(u - v) for u, v in zip(a, b)) / 3.0
+
+    col_edge = sum(diff(px[0, y], px[w - 1, y]) for y in range(h)) / h
+    col_interior_vals = [diff(px[x, y], px[x + 1, y]) for y in range(h) for x in range(w - 1)]
+    col_interior = sum(col_interior_vals) / len(col_interior_vals) if col_interior_vals else 0.0
+
+    row_edge = sum(diff(px[x, 0], px[x, h - 1]) for x in range(w)) / w
+    row_interior_vals = [diff(px[x, y], px[x, y + 1]) for x in range(w) for y in range(h - 1)]
+    row_interior = sum(row_interior_vals) / len(row_interior_vals) if row_interior_vals else 0.0
+
+    col_ratio = (col_edge / col_interior) if col_interior else (0.0 if col_edge == 0 else float("inf"))
+    row_ratio = (row_edge / row_interior) if row_interior else (0.0 if row_edge == 0 else float("inf"))
+
+    return {
+        "col_edge": col_edge, "col_interior": col_interior, "col_ratio": col_ratio,
+        "row_edge": row_edge, "row_interior": row_interior, "row_ratio": row_ratio,
+    }
+
+
+def _flatten_axis_drift(buf, w: int, h: int, axis: str):
+    """Subtract each column's (axis='col') or row's (axis='row') deviation
+    of mean luma from the whole tile's mean luma -- a per-column/row
+    luminance OFFSET, clamped, alpha untouched. This removes the DC bias a
+    column/row carries while leaving every pixel's deviation from its own
+    column/row mean exactly as it was (offset is constant per column/row, so
+    it cancels out of that deviation) -- i.e. it kills the low-frequency
+    drift that causes banding without touching high-frequency texture.
+    """
+    if axis == "col":
+        lines = range(w)
+
+        def get(i, j):
+            return buf[j][i]
+
+        def set_(i, j, v):
+            buf[j][i] = v
+
+        other = h
+    else:
+        lines = range(h)
+
+        def get(i, j):
+            return buf[i][j]
+
+        def set_(i, j, v):
+            buf[i][j] = v
+
+        other = w
+
+    means = []
+    for i in lines:
+        s = sum(_luma(get(i, j)[0], get(i, j)[1], get(i, j)[2]) for j in range(other))
+        means.append(s / other)
+    global_mean = sum(means) / len(means)
+
+    for i in lines:
+        offset = global_mean - means[i]
+        if offset == 0:
+            continue
+        for j in range(other):
+            px4 = get(i, j)
+            set_(i, j, [min(255.0, max(0.0, c + offset)) for c in px4[:3]] + [px4[3]])
+
+
+def _eased_edge_blend(img: Image.Image, band: int = DEFAULT_BAND) -> Image.Image:
     """Offset-wrap the tile by half in x/y, feather the (now centered) seam
     across `band` px on each axis, then wrap back so the tile keeps its
     original framing.
@@ -73,17 +207,11 @@ def repair_seam(img: Image.Image, band: int = DEFAULT_BAND) -> Image.Image:
     across the middle of the band instead of flattening it into a gradient.
     Pixels further than `band/2` from the wrap edges are left byte-identical.
 
-    That eased cross-dissolve alone doesn't force the two columns/rows that
-    `seam_score` actually compares (the ones straddling the exact centre of
-    the offset-wrapped image, which become column 0 / column w-1 and row 0 /
-    row h-1 again once wrapped back) to converge on each other -- on a
-    tile with little inherent gradient (most real floor tiles) that can
-    leave the measured seam no better, or even worse, than before. So after
-    the texture cross-dissolve, those two critical columns and two critical
-    rows are additionally nudged to their mutual average -- a narrow,
-    targeted correction (2 columns + 2 rows, not the whole band) that
-    directly zeroes out what the metric measures while leaving the rest of
-    the eased band's texture alone.
+    Unlike an earlier round, this does NOT force the two wrap-edge columns
+    (or rows) to become exactly equal -- doing that makes them byte-
+    identical, which reads as a doubled column/row when the tile repeats.
+    `repair_seam` only calls this when `edge_interior_gradient` says the
+    edge-crossing step is still clearly abnormal after the drift flatten.
     """
     rgba = img.convert("RGBA")
     w, h = rgba.size
@@ -123,22 +251,6 @@ def repair_seam(img: Image.Image, band: int = DEFAULT_BAND) -> Image.Image:
             bottom_src = snapshot[(hi + j) % h][x]
             rolled[idx][x] = [(1 - weight) * top_v + weight * bot_v for top_v, bot_v in zip(top_src, bottom_src)]
 
-    # --- final targeted correction: converge the two exact seam columns
-    # and the two exact seam rows onto each other (see docstring) ---------
-    mid_a_x, mid_b_x = (ox - 1) % w, ox % w
-    for y in range(h):
-        va, vb = rolled[y][mid_a_x], rolled[y][mid_b_x]
-        avg = [(a + b) / 2.0 for a, b in zip(va, vb)]
-        rolled[y][mid_a_x] = avg[:]
-        rolled[y][mid_b_x] = avg[:]
-
-    mid_a_y, mid_b_y = (oy - 1) % h, oy % h
-    for x in range(w):
-        va, vb = rolled[mid_a_y][x], rolled[mid_b_y][x]
-        avg = [(a + b) / 2.0 for a, b in zip(va, vb)]
-        rolled[mid_a_y][x] = avg[:]
-        rolled[mid_b_y][x] = avg[:]
-
     # Wrap back: out[y][x] = rolled[(y+oy) mod h][(x+ox) mod w].
     out = Image.new("RGBA", (w, h))
     out_px = out.load()
@@ -147,6 +259,42 @@ def repair_seam(img: Image.Image, band: int = DEFAULT_BAND) -> Image.Image:
             v = rolled[(y + oy) % h][(x + ox) % w]
             out_px[x, y] = tuple(int(round(min(255.0, max(0.0, c)))) for c in v)
     return out
+
+
+def repair_seam(img: Image.Image, band: int = DEFAULT_BAND,
+                 ratio_threshold: float = DEFAULT_EDGE_RATIO_THRESHOLD) -> Image.Image:
+    """Fix tiling banding in two stages:
+
+    1. Flatten low-frequency per-column and per-row luminance drift (see
+       `_flatten_axis_drift`) -- this is the actual cause of the periodic
+       banding a tiled render shows, and it preserves high-frequency texture
+       exactly (a per-line constant offset cancels out of every pixel's
+       deviation from its own line's mean).
+    2. Only if `edge_interior_gradient` on the flattened result still shows
+       an abnormal edge-crossing step (ratio above `ratio_threshold` on
+       either axis) is the narrow eased cross-dissolve (`_eased_edge_blend`)
+       additionally applied. Most tiles -- including the real spike floor --
+       never need this second stage once the drift is gone.
+    """
+    rgba = img.convert("RGBA")
+    w, h = rgba.size
+    px = rgba.load()
+    buf = [[list(px[x, y]) for x in range(w)] for y in range(h)]
+
+    _flatten_axis_drift(buf, w, h, axis="col")
+    _flatten_axis_drift(buf, w, h, axis="row")
+
+    flattened = Image.new("RGBA", (w, h))
+    flat_px = flattened.load()
+    for y in range(h):
+        for x in range(w):
+            v = buf[y][x]
+            flat_px[x, y] = (int(round(v[0])), int(round(v[1])), int(round(v[2])), int(round(v[3])))
+
+    grad = edge_interior_gradient(flattened)
+    if grad["col_ratio"] > ratio_threshold or grad["row_ratio"] > ratio_threshold:
+        return _eased_edge_blend(flattened, band=band)
+    return flattened
 
 
 # ---------------------------------------------------------------------------
@@ -430,27 +578,40 @@ def build_contact_sheet(directory: str, scale: int = 2, bg=(10, 10, 10, 255)) ->
     return sheet
 
 
+def build_tiled_preview(img: Image.Image, reps: int = 4, scale: int = 8) -> Image.Image:
+    """Tile `img` `reps`x`reps` and scale it up `scale`x (nearest-neighbour)
+    -- the actual visual check for banding: does the repeated tile show a
+    periodic stripe pattern at this reduced-zoom, real-render-ish scale.
+    """
+    rgb = img.convert("RGBA")
+    w, h = rgb.size
+    tiled = Image.new("RGBA", (w * reps, h * reps))
+    for j in range(reps):
+        for i in range(reps):
+            tiled.paste(rgb, (i * w, j * h))
+    return tiled.resize((tiled.width * scale, tiled.height * scale), resample=Image.NEAREST)
+
+
 # ---------------------------------------------------------------------------
 # Self-test
 # ---------------------------------------------------------------------------
 
-def _make_seam_test_image(size=32):
-    """A tile with a hard discontinuity at both the x and y wrap edges."""
+def _make_band_test_image(size=32):
+    """A tile with a deliberate low-frequency per-column (and per-row)
+    brightness DRIFT -- the actual cause of periodic banding when tiled --
+    layered over deterministic high-frequency texture noise, so a repair
+    can be checked both for killing the drift AND for keeping the texture.
+    """
     img = Image.new("RGBA", (size, size))
     px = img.load()
     for y in range(size):
         for x in range(size):
-            t = x / (size - 1)
-            r = int(40 + t * (210 - 40))
-            g = int(r * 0.6)
-            b = 60
-            px[x, y] = (r, g, b, 255)
-    for y in range(size):
-        px[0, y] = (250, 250, 250, 255)
-        px[size - 1, y] = (5, 5, 5, 255)
-    for x in range(size):
-        px[x, 0] = (250, 250, 250, 255)
-        px[x, size - 1] = (5, 5, 5, 255)
+            col_drift = (x / (size - 1)) * 70.0   # 0..70 across columns
+            row_drift = (y / (size - 1)) * 40.0   # 0..40 across rows
+            noise = ((x * 13 + y * 29) % 17) - 8  # deterministic +/-8 texture
+            v = 90.0 + col_drift + row_drift + noise
+            v = max(0, min(255, int(round(v))))
+            px[x, y] = (v, v, v, 255)
     return img
 
 
@@ -515,40 +676,90 @@ def _make_detailed_variant(size=16):
     return src
 
 
+def _texture_std(img: Image.Image):
+    """Std of each pixel's luma deviation from a two-way (column mean + row
+    mean - global mean) baseline -- the high-frequency texture component,
+    with BOTH the low-frequency column drift and the low-frequency row
+    drift factored out (not just one axis, so a repair that flattens both
+    axes isn't unfairly penalized for "losing" what was actually the other
+    axis's drift, not real texture). Used to check a repair preserves
+    texture rather than just flattening everything.
+    """
+    rgb = img.convert("RGB")
+    w, h = rgb.size
+    px = rgb.load()
+    col_means = [sum(_luma(*px[x, y]) for y in range(h)) / h for x in range(w)]
+    row_means = [sum(_luma(*px[x, y]) for x in range(w)) / w for y in range(h)]
+    global_mean = sum(col_means) / w
+    residuals = [
+        _luma(*px[x, y]) - col_means[x] - row_means[y] + global_mean
+        for x in range(w) for y in range(h)
+    ]
+    _m, std = _mean_and_std(residuals)
+    return std
+
+
 def selftest() -> bool:
     ok = True
 
-    # --- seam scoring / repair -------------------------------------------------
-    seam_img = _make_seam_test_image()
-    before = seam_score(seam_img)
-    repaired = repair_seam(seam_img, band=DEFAULT_BAND)
-    after = seam_score(repaired)
-    print(f"[selftest] seam score before repair: {before:.3f}")
-    print(f"[selftest] seam score after repair:  {after:.3f}")
+    # --- band scoring / repair ----------------------------------------------
+    band_img = _make_band_test_image()
+    w0, h0 = band_img.size
+    band_before = band_score(band_img)
+    grad_before = edge_interior_gradient(band_img)
+    texture_before = _texture_std(band_img)
+    print(f"[selftest] band_score before repair: col={band_before[0]:.3f} row={band_before[1]:.3f}")
+    print(f"[selftest] edge/interior ratio before: col={grad_before['col_ratio']:.2f} row={grad_before['row_ratio']:.2f}")
 
-    if not (before > 50):
-        print("  FAIL: expected hard-seam image to score high (>50)")
+    if not (max(band_before) > 15.0):
+        print("  FAIL: expected the deliberate column/row drift to score high on band_score (>15)")
         ok = False
     else:
-        print("  OK: hard-seam image scores high")
+        print("  OK: deliberately drifted image scores high on band_score")
 
-    if not (after < before):
-        print("  FAIL: expected repaired score to be lower than before")
+    repaired = repair_seam(band_img, band=DEFAULT_BAND)
+    band_after = band_score(repaired)
+    grad_after = edge_interior_gradient(repaired)
+    texture_after = _texture_std(repaired)
+    print(f"[selftest] band_score after repair:  col={band_after[0]:.3f} row={band_after[1]:.3f}")
+    print(f"[selftest] edge/interior ratio after:  col={grad_after['col_ratio']:.2f} row={grad_after['row_ratio']:.2f}")
+
+    if not (band_after[0] < band_before[0] * 0.3 and band_after[1] < band_before[1] * 0.3):
+        print("  FAIL: expected band_score to drop substantially (< 30% of original) on both axes")
         ok = False
     else:
-        print("  OK: repaired score is lower")
+        print("  OK: band_score dropped substantially on both axes")
 
-    size = seam_img.size[0]
-    half = max(1, DEFAULT_BAND // 2)
-    interior = (size // 2, size // 2)  # far from every wrap edge for this size/band
-    before_px = seam_img.getpixel(interior)
-    after_px = repaired.getpixel(interior)
-    assert interior[0] >= half and interior[0] < size - half
-    if before_px != after_px:
-        print(f"  FAIL: interior pixel {interior} changed ({before_px} -> {after_px}); band leaked outside its width")
+    texture_ratio = (texture_after / texture_before) if texture_before else 1.0
+    print(f"[selftest] texture std before {texture_before:.3f}  after {texture_after:.3f}  "
+          f"ratio {texture_ratio * 100:.1f}%")
+    if texture_ratio < 0.80:
+        print("  FAIL: high-frequency texture std dropped below 80% of original (over-smoothed)")
         ok = False
     else:
-        print(f"  OK: interior pixel {interior} untouched by repair (band={DEFAULT_BAND})")
+        print("  OK: high-frequency texture mostly preserved (>=80%)")
+
+    px_in = band_img.load()
+    px_out = repaired.load()
+    input_edges_identical = all(px_in[0, y] == px_in[w0 - 1, y] for y in range(h0))
+    output_edges_identical = all(px_out[0, y] == px_out[w0 - 1, y] for y in range(h0))
+    if output_edges_identical and not input_edges_identical:
+        print("  FAIL: repair forced edge columns to become byte-identical (doubled-column bug)")
+        ok = False
+    else:
+        print("  OK: repair did not force edge columns to become identical")
+
+    # A previous round's bug forced seam_score to exactly 0 by making the
+    # edge columns/rows literally identical. Guard against that regressing:
+    # the legacy score should be low-ish but not suspiciously exactly zero
+    # given this fixture still has real texture noise crossing the edge.
+    legacy_after = seam_score(repaired)
+    print(f"[selftest] legacy seam_score after repair: {legacy_after:.3f}")
+    if legacy_after == 0.0:
+        print("  FAIL: legacy seam_score is exactly 0 -- likely an edge-equality bug, not a real repair")
+        ok = False
+    else:
+        print("  OK: legacy seam_score is nonzero (edges are similar, not forced-identical)")
 
     # --- palette matching (well-separated palette, sanity baseline) --------
     src, ref = _make_palette_test_images()
@@ -656,7 +867,8 @@ def main(argv=None):
     p_seam.add_argument("output")
     p_seam.add_argument("--repair", action="store_true")
     p_seam.add_argument("--band", type=int, default=DEFAULT_BAND)
-    p_seam.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD)
+    p_seam.add_argument("--threshold", type=float, default=DEFAULT_BAND_THRESHOLD)
+    p_seam.add_argument("--ratio-threshold", type=float, default=DEFAULT_EDGE_RATIO_THRESHOLD)
 
     p_match = sub.add_parser("match")
     p_match.add_argument("input")
@@ -666,6 +878,12 @@ def main(argv=None):
     p_sheet = sub.add_parser("sheet")
     p_sheet.add_argument("input_dir")
     p_sheet.add_argument("output")
+
+    p_preview = sub.add_parser("preview")
+    p_preview.add_argument("input")
+    p_preview.add_argument("output")
+    p_preview.add_argument("--reps", type=int, default=4)
+    p_preview.add_argument("--scale", type=int, default=8)
 
     sub.add_parser("selftest")
 
@@ -677,23 +895,37 @@ def main(argv=None):
 
     elif args.cmd == "seam":
         img = Image.open(args.input)
-        before = seam_score(img)
+        band_before = band_score(img)
+        grad_before = edge_interior_gradient(img)
+        legacy_before = seam_score(img)
+
+        def _report(label, band_vals, grad, legacy):
+            print(f"band_score {label}: col={band_vals[0]:.3f} row={band_vals[1]:.3f}")
+            print(f"edge/interior ratio {label}: col={grad['col_ratio']:.2f} "
+                  f"(edge {grad['col_edge']:.3f} / interior {grad['col_interior']:.3f})  "
+                  f"row={grad['row_ratio']:.2f} (edge {grad['row_edge']:.3f} / interior {grad['row_interior']:.3f})")
+            print(f"(legacy seam_score {label}: {legacy:.3f})")
+
         if args.repair:
-            out_img = repair_seam(img, band=args.band)
-            after = seam_score(out_img)
+            out_img = repair_seam(img, band=args.band, ratio_threshold=args.ratio_threshold)
+            band_after = band_score(out_img)
+            grad_after = edge_interior_gradient(out_img)
+            legacy_after = seam_score(out_img)
             out_img.save(args.output)
-            print(f"seam score before: {before:.3f}")
-            print(f"seam score after:  {after:.3f}  (band={args.band})")
-            status = "OK" if after <= args.threshold else "WARN"
-            print(f"{status}: after {after:.3f} vs threshold {args.threshold}")
+            _report("before", band_before, grad_before, legacy_before)
+            _report("after ", band_after, grad_after, legacy_after)
+            max_after = max(band_after)
+            status = "OK" if max_after <= args.threshold else "WARN"
+            print(f"{status}: band_score after (max axis) {max_after:.3f} vs threshold {args.threshold}")
         else:
-            # No repair ran -- report only the single measured score, not a
+            # No repair ran -- report only the single measured state, not a
             # fabricated "after" as if a repair had happened.
             out_img = img
             out_img.save(args.output)
-            print(f"seam score: {before:.3f}")
-            status = "OK" if before <= args.threshold else "WARN"
-            print(f"{status}: score {before:.3f} vs threshold {args.threshold}")
+            _report("", band_before, grad_before, legacy_before)
+            max_before = max(band_before)
+            status = "OK" if max_before <= args.threshold else "WARN"
+            print(f"{status}: band_score (max axis) {max_before:.3f} vs threshold {args.threshold}")
 
     elif args.cmd == "match":
         img = Image.open(args.input)
@@ -720,6 +952,13 @@ def main(argv=None):
         sheet = build_contact_sheet(args.input_dir)
         sheet.save(args.output)
         print(f"wrote contact sheet to {args.output}")
+
+    elif args.cmd == "preview":
+        img = Image.open(args.input)
+        preview = build_tiled_preview(img, reps=args.reps, scale=args.scale)
+        preview.save(args.output)
+        print(f"wrote {args.reps}x{args.reps} tiled preview at {args.scale}x to {args.output} "
+              f"({preview.width}x{preview.height})")
 
 
 if __name__ == "__main__":
