@@ -93,6 +93,7 @@ describe('withStarterRanged (save migration)', () => {
     const eq = withStarterRanged(base as never, cls);
     expect(eq.ranged?.id).toBe(CLASS_STARTER_ITEMS[cls].ranged.id);
     expect(eq.ranged).not.toBe(CLASS_STARTER_ITEMS[cls].ranged); // a copy, not the shared object
+    expect('ranged' in base).toBe(false); // input not mutated
   });
   it('leaves a deliberately emptied slot (null) empty', () => {
     expect(withStarterRanged({ ...base, ranged: null }, cls).ranged).toBeNull();
