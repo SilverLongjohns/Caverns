@@ -28,7 +28,8 @@ export function ExplorationGrid({ roomId, grid, props, units, localPlayerId, vis
     // key: a room change remounts the viewport, so the camera and units snap instead of sliding across rooms
     <GlyphViewport key={roomId} grid={grid} entities={props} focus={me ? { x: me.x, y: me.y } : null}
       panKeys={false} minimapUnits={minimapUnits} visibleTiles={visibleTiles} exploredTiles={exploredTiles}
-      cameraGlideMs={reduced ? 0 : EXPLORE_TIMING.stepMs} minimapTitle="Click to look around · moving re-centres">
+      cameraGlideMs={reduced ? 0 : EXPLORE_TIMING.stepMs} minimapTitle="Click to look around · moving re-centres"
+      roomKey={roomId}>
       <div className="explore-units">
         {units.map((u) => <FloatingUnit key={u.id} unit={u} reduced={reduced} />)}
       </div>

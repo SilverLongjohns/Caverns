@@ -45,6 +45,7 @@ export function TerrainCanvas({ cells, width, height, set, cell }: TerrainCanvas
         top: 0,
         zIndex: 0,
         pointerEvents: 'none',
+        imageRendering: 'pixelated', // HiDPI-scaled canvas stays crisp, not blurred
       }}
     />
   );

@@ -1,7 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback, type ReactNode, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback, type ReactNode, type RefObject } from 'react';
 import type { TileGrid } from '@caverns/shared';
 import { TileGridView, type EntityOverlay } from '../TileGridView.js';
 import { CELL_W, CELL_H, GRID_BORDER, PAN_STEP, MINIMAP_PX, MINIMAP_COLORS, fitViewport, clampCam as clamp, centreOn, minimapTiles } from './viewportMath.js';
+import { useTerrainSet } from '../../terrain/terrainManifest.js';
+import { autotile } from '../../terrain/autotile.js';
+import { TerrainCanvas } from './TerrainCanvas.js';
 
 export interface GlyphViewportProps {
   grid: TileGrid;
@@ -24,6 +27,8 @@ export interface GlyphViewportProps {
   minimapTitle?: string;
   /** World-layer ref, for callers that position overlays inside it (arena animation, fx). */
   worldRef?: RefObject<HTMLDivElement | null>;
+  /** Stable per-room/arena key for floor-variant hashing (exploration: roomId; arena: 'arena'). */
+  roomKey?: string;
   /** Rendered inside the world layer (moves with the camera). */
   children?: ReactNode;
 }
@@ -31,8 +36,21 @@ export interface GlyphViewportProps {
 export function GlyphViewport({
   grid, entities, focus, panKeys, minimapUnits, visibleTiles, exploredTiles,
   onTileClick, onTileHover, onTileHoverEnd, tileHighlights, cameraGlideMs,
-  minimapTitle = 'Click to move the view', worldRef: worldRefProp, children,
+  minimapTitle = 'Click to move the view', worldRef: worldRefProp, roomKey, children,
 }: GlyphViewportProps) {
+  const set = useTerrainSet(grid.biomeId);
+  const cells = useMemo(() => (set ? autotile(grid, roomKey ?? 'grid', set.manifest) : null),
+    [grid, roomKey, set]);
+  const asciiCells = useMemo(() => {
+    if (!cells) return undefined;
+    const s = new Set<string>();
+    for (let y = 0; y < cells.length; y++) {
+      for (let x = 0; x < cells[y].length; x++) {
+        if (cells[y][x].quads.every((q) => q === null)) s.add(`${x},${y}`);
+      }
+    }
+    return s;
+  }, [cells]);
   const containerRef = useRef<HTMLDivElement>(null);
   const ownWorldRef = useRef<HTMLDivElement>(null);
   const worldRef = worldRefProp ?? ownWorldRef;
@@ -110,12 +128,16 @@ export function GlyphViewport({
     : (!settled || cameraGlideMs === 0) ? 'none' : `transform ${cameraGlideMs}ms linear`;
 
   return (
-    <div className="arena-grid-container glyph-grid" ref={containerRef}>
+    <div className={`arena-grid-container glyph-grid${set ? ' terrain' : ''}`} ref={containerRef}>
       <div className="arena-viewport" style={{ width: cols * CELL_W + GRID_BORDER, height: rows * CELL_H + GRID_BORDER }}>
         <div className="arena-world" ref={worldRef}
           style={{ transform: `translate(${-view.x * CELL_W}px, ${-view.y * CELL_H}px)`, transition }}>
+          {set && cells && (
+            <TerrainCanvas cells={cells} width={grid.width} height={grid.height} set={set} cell={CELL_W} />
+          )}
           <TileGridView tileGrid={grid} entities={entities} visibleTiles={visibleTiles} exploredTiles={exploredTiles}
-            onTileClick={onTileClick} onTileHover={onTileHover} onTileHoverEnd={onTileHoverEnd} tileHighlights={tileHighlights} />
+            onTileClick={onTileClick} onTileHover={onTileHover} onTileHoverEnd={onTileHoverEnd} tileHighlights={tileHighlights}
+            terrainMode={!!set} asciiCells={asciiCells} />
           {children}
         </div>
         {view.x > 0 && <div className="arena-edge arena-edge-l" />}

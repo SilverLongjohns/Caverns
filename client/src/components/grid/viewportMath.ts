@@ -1,11 +1,11 @@
 // Shared glyph-grid geometry and camera maths (arena + exploration). Pure; see GlyphViewport.
 export type Pt = { x: number; y: number };
 
-// Fixed cell box: 16x24 at 2x (32x48) plus a 1px border on each side. Glyph art is 24x24 at 2x,
-// so wider sprites overflow the cell sideways (see .entity-glyph in index.css).
-export const CELL_W = 34;
-export const CELL_H = 50;
-export const GRID_BORDER = 2;
+// Fixed square cell box: terrain art is 24x24 at 2x (48x48), the same scale as the glyph
+// sprites, so every unit stands exactly on one tile with no cell border.
+export const CELL_W = 48;
+export const CELL_H = 48;
+export const GRID_BORDER = 0;
 export const PAN_STEP = 2;
 export const MINIMAP_PX = 4;
 export const MINIMAP_GAP = 8;

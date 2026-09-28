@@ -2696,12 +2696,26 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   opacity: 0.4;
 }
 
+/* Terrain mode: fog and highlights sit over pixel art, so the opaque ASCII-era colors above
+   become translucent overlays here. Tuned from screenshots to stay readable on both rock and
+   floor (see Task 5 report). */
+.glyph-grid.terrain .room-row .tile-unseen { background: #000; }
+.glyph-grid.terrain .room-row .tile-explored { background: rgba(0, 0, 0, 0.62); opacity: 1; }
+
+.glyph-grid.terrain .arena-move-highlight { background: rgba(60, 200, 90, 0.22) !important; }
+.glyph-grid.terrain .arena-path-trace { background: rgba(90, 230, 120, 0.38) !important; }
+.glyph-grid.terrain .arena-range-highlight { background: rgba(80, 140, 230, 0.28) !important; }
+.glyph-grid.terrain .arena-area-highlight { background: rgba(220, 50, 50, 0.32) !important; }
+.glyph-grid.terrain .arena-shoot-range { background: rgba(230, 120, 40, 0.24) !important; }
+.glyph-grid.terrain .arena-target-highlight { background: rgba(220, 30, 30, 0.4) !important; }
+.glyph-grid.terrain .entity-ghost { opacity: 0.55; filter: drop-shadow(0 0 3px #4488ff); }
+
 .arena-target-highlight {
   background: #2a0b0b !important;
   cursor: crosshair !important;
 }
 
-/* --- Glyph grid: fixed 34x50 cells, camera viewport --- */
+/* --- Glyph grid: fixed 48x48 cells, camera viewport --- */
 .arena-grid-container.glyph-grid {
   flex-direction: column;
   gap: 8px;
@@ -2724,23 +2738,26 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   will-change: transform;
 }
 
-.glyph-grid .room-grid { overflow: visible; }
+/* Square 48x48 glyph-grid cells: no cell border (tiles join seamlessly, ASCII fallback or not) —
+   this beats `.arena-grid-container .room-grid` / `.room-row span` (lower specificity); other
+   screens that use TileGridView directly (e.g. WorldMapView) are unaffected and keep theirs. */
+.glyph-grid .room-grid { overflow: visible; border: none; }
 .glyph-grid .room-row { display: flex; }
+.arena-grid-container.glyph-grid .room-row > span { border: 0; }
 
 .arena-grid-container.glyph-grid .room-row > span {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 34px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   min-width: 0;
   font-size: 30px;
   line-height: 1;
 }
 
-/* Glyphs are 24x24 art drawn at 2x: 48px tall fits the cell, and wide sprites spill
-   ~7px into the neighbouring cells, drawn above their backgrounds */
+/* Glyphs are 24x24 art drawn at 2x: 48px exactly fills the square cell now (no sideways spill). */
 .arena-grid-container .room-row span.entity-glyph,
 .arena-anim-entity .entity-glyph {
   display: block;
@@ -2798,11 +2815,6 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 .room-view { flex: 1; min-height: 0; justify-content: flex-start; }
 .room-view > .arena-grid-container { width: 100%; }
 
-/* Unseen tiles are blank — no cell border. Beats `.arena-grid-container .room-row span`
-   (0,0,2,1) with a 3-class selector (0,0,3,0); the arena never has fog, so this never applies
-   there. Explored-but-not-visible tiles keep their dim border (tile-explored, not tile-unseen). */
-.glyph-grid .room-row .tile-unseen { border-color: transparent; }
-
 /* Players and mobs float above the terrain and slide between cells */
 .explore-units { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
 .explore-unit {
@@ -2823,7 +2835,7 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 .glyph-grid .entity-interactable { color: #ffd98a; text-shadow: 0 0 6px #ffb000, 0 0 2px #ffb000; }
 .glyph-grid .entity-interactable .entity-glyph { filter: drop-shadow(0 0 4px #ffb000); }
 .glyph-grid .entity-interactable-used { opacity: 0.45; text-shadow: none; }
-/* Readable size matching the 34x50 cell's glyph font, and its own float so the offset suits
+/* Readable size matching the 48x48 cell's glyph font, and its own float so the offset suits
    the cell instead of the small text-log ".mob-alert" reach (2ch/-2em). Full shorthand here
    beats .mob-alert on source order (equal specificity). */
 .explore-alert {

@@ -177,7 +177,7 @@ export function ArenaGrid({
   return (
     <GlyphViewport grid={grid} entities={entities} focus={focus} panKeys minimapUnits={minimapUnits}
       onTileClick={onTileClick} onTileHover={onTileHover} onTileHoverEnd={onTileHoverEnd}
-      tileHighlights={tileHighlights} worldRef={worldRef}
+      tileHighlights={tileHighlights} worldRef={worldRef} roomKey="arena"
       minimapTitle="Click to move the view · arrow keys pan">
       <span ref={overlayRef} className="arena-anim-entity" style={{ display: 'none', position: 'absolute', pointerEvents: 'none' }} />
       <FxNumbers numbers={numbers} worldRef={worldRef} />
