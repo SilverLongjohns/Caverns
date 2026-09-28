@@ -21,3 +21,4 @@ artificer-ranged 45f7675b-e1ae-47d7-aba4-c970f319a820
 icon-shoot e310739d-6a20-429e-851e-52a3447549a8
 icon-reload 2fc8b109-1c7d-426d-8c00-ce6c23d6ad02
 shadowblade-ranged-v2 66f6b84f-267a-4ec2-92e1-834f6981cdd5
+shadowblade-ranged-v3 02049bc1-7fbb-445c-880a-bc3605ede0bc

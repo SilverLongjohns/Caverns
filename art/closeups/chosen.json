@@ -183,6 +183,15 @@
   "identity_ref": false,
   "file": "raw/icon-reload-1.png"
  },
+ "shadowblade-ranged": {
+  "job_id": "02049bc1-7fbb-445c-880a-bc3605ede0bc",
+  "index": 2,
+  "ref": "phaseknife",
+  "prompt": "the SAME character as the reference image — identical hood, visor, cloak and armour and colours — full-body, mid-air backwards dive: body airborne, tilted back, diving and leaping evasively to the left, knees tucked, cloak streaming forward and upward from the motion, gun arm extended to the right firing the suppressed Hushpistol at the enemy, small cold muzzle flash at the barrel on the right, head turned and aiming to the right, faint smoke puff on the ground where he leapt from, dark background, no text, no letters, no symbols written",
+  "version": 2,
+  "identity_ref": true,
+  "file": "raw/shadowblade-ranged-v3-2.png"
+ },
  "mob-tunnel_rat": {
   "job_id": "06d58caf-ddb1-4ad1-825c-3a0b5d791356",
   "index": 0,
