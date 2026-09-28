@@ -9,6 +9,11 @@ describe('ProceduralGenerator', () => {
     expect(dungeon.rooms.length).toBeGreaterThanOrEqual(13);
   });
 
+  it('stamps every room with the biome it was built in', () => {
+    const dungeon = generateProceduralDungeon(3);
+    for (const room of dungeon.rooms) expect(typeof room.biomeId).toBe('string');
+  });
+
 
   it('has an entrance room with no encounter', () => {
     const dungeon = generateProceduralDungeon(3);

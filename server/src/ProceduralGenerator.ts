@@ -478,6 +478,7 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
   for (const room of allRooms) {
     const biome = getBiomeForRoom(room, biomes, zoneEntries, zoneCount);
     room.tileGrid = buildTileGrid(room, biome.id);
+    room.biomeId = biome.id;
   }
 
   // 5. Populate mobs

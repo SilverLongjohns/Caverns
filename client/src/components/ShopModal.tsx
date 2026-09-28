@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Item } from '@caverns/shared';
+import { audioEngine } from '../audio/audioEngine.js';
 import { useGameStore } from '../store/gameStore.js';
 import { ScreenTransition, MenuConsole } from './menu/index.js';
 import { RelicButton, ItemIcon } from './relic/index.js';
@@ -65,7 +66,7 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
               <button
                 key={`fixed-${i}`}
                 className="shop-slot"
-                onClick={() => { new Audio('/audio/buy-sell.mp3').play(); onBuy(shop.shopId, 'fixed', i); }}
+                onClick={() => { audioEngine.playSfx('shop_buy'); onBuy(shop.shopId, 'fixed', i); }}
                 disabled={shop.gold < slot.price}
                 title={slot.item.description}
               >
@@ -83,7 +84,7 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
             <RelicButton
               size="sm"
               className="shop-reroll-btn"
-              onClick={() => { new Audio('/audio/reroll.mp3').play(); onReroll(shop.shopId); }}
+              onClick={() => { audioEngine.playSfx('shop_reroll'); onReroll(shop.shopId); }}
               disabled={shop.gold < shop.rerollCost}
             >
               Reroll ({shop.rerollCost}g)
@@ -94,7 +95,7 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
               <button
                 key={`rot-${i}`}
                 className="shop-slot"
-                onClick={() => { if (slot.item) { new Audio('/audio/buy-sell.mp3').play(); onBuy(shop.shopId, 'rotating', i); } }}
+                onClick={() => { if (slot.item) { audioEngine.playSfx('shop_buy'); onBuy(shop.shopId, 'rotating', i); } }}
                 disabled={!slot.item || (slot.price != null && shop.gold < slot.price)}
                 title={slot.item?.description ?? 'Bought'}
               >
@@ -116,12 +117,12 @@ export function ShopModal({ onBuy, onSell, onReroll, onClose }: Props) {
           <h3>Your Inventory (click to sell at {Math.round(shop.sellBackPct * 100)}%)</h3>
           <div className="shop-row">
             {shop.character.inventory.map((item, i) => (
-              <SellSlot key={`inv-${i}`} item={item} onClick={() => { if (item) { new Audio('/audio/buy-sell.mp3').play(); onSell(shop.shopId, 'inventory', i); } }} />
+              <SellSlot key={`inv-${i}`} item={item} onClick={() => { if (item) { audioEngine.playSfx('shop_sell'); onSell(shop.shopId, 'inventory', i); } }} />
             ))}
           </div>
           <div className="shop-row">
             {shop.character.consumables.map((item, i) => (
-              <SellSlot key={`con-${i}`} item={item} onClick={() => { if (item) { new Audio('/audio/buy-sell.mp3').play(); onSell(shop.shopId, 'consumables', i); } }} />
+              <SellSlot key={`con-${i}`} item={item} onClick={() => { if (item) { audioEngine.playSfx('shop_sell'); onSell(shop.shopId, 'consumables', i); } }} />
             ))}
           </div>
         </section>

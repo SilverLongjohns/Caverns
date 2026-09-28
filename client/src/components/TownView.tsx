@@ -29,7 +29,7 @@ export function TownView({ onPortalReady, onPortalUnready, onPortalEnter, onInte
   );
   const readyCount = muster?.readyMembers.length ?? 0;
 
-  const open = (fn: () => void) => () => { new Audio('/audio/open_audio.mp3').play(); fn(); };
+  const open = (fn: () => void) => () => { fn(); };
   const tick = () => audioEngine.playUi('tick');
   const portrait = mine ? getClassPortrait(mine.className) : null;
   return (

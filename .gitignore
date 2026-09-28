@@ -33,3 +33,5 @@ Thumbs.db
 # Intro cold open: raw generations and review renders
 art/intro/raw/
 .intro/
+# SFX pass: raw generations awaiting audition
+client/public/audio/_staging/

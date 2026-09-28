@@ -1,0 +1,166 @@
+{
+  "amb_bone": [
+    "/audio/sfx/amb_bone_1.mp3"
+  ],
+  "amb_crystal": [
+    "/audio/sfx/amb_crystal_1.mp3"
+  ],
+  "amb_flooded": [
+    "/audio/sfx/amb_flooded_1.mp3"
+  ],
+  "amb_fungal": [
+    "/audio/sfx/amb_fungal_1.mp3"
+  ],
+  "amb_starter": [
+    "/audio/sfx/amb_starter_1.mp3"
+  ],
+  "amb_volcanic": [
+    "/audio/sfx/amb_volcanic_1.mp3"
+  ],
+  "combat_start": [
+    "/audio/sfx/combat_start_1.mp3"
+  ],
+  "dry_click": [
+    "/audio/sfx/dry_click_1.mp3"
+  ],
+  "equip": [
+    "/audio/sfx/equip_1.mp3"
+  ],
+  "exit_blocked": [
+    "/audio/sfx/exit_blocked_1.mp3"
+  ],
+  "flee": [
+    "/audio/sfx/flee_1.mp3"
+  ],
+  "gold": [
+    "/audio/sfx/gold_1.mp3"
+  ],
+  "gun_miss": [
+    "/audio/sfx/gun_miss_1.mp3"
+  ],
+  "gun_shot": [
+    "/audio/sfx/gun_shot_1.mp3",
+    "/audio/sfx/gun_shot_2.mp3",
+    "/audio/sfx/gun_shot_3.mp3",
+    "/audio/sfx/gun_shot_4.mp3"
+  ],
+  "hazard_tick": [
+    "/audio/sfx/hazard_tick_1.mp3"
+  ],
+  "heal": [
+    "/audio/sfx/heal_1.mp3"
+  ],
+  "interact_flavor": [
+    "/audio/sfx/interact_flavor_1.mp3"
+  ],
+  "interact_hazard": [
+    "/audio/sfx/interact_hazard_1.mp3"
+  ],
+  "interact_loot": [
+    "/audio/sfx/interact_loot_1.mp3"
+  ],
+  "interact_secret": [
+    "/audio/sfx/interact_secret_1.mp3"
+  ],
+  "interact_start": [
+    "/audio/sfx/interact_start_1.mp3",
+    "/audio/sfx/interact_start_2.mp3",
+    "/audio/sfx/interact_start_3.mp3"
+  ],
+  "key_pickup": [
+    "/audio/sfx/key_pickup_1.mp3"
+  ],
+  "level_up": [
+    "/audio/sfx/level_up_1.mp3"
+  ],
+  "melee_crit": [
+    "/audio/sfx/melee_crit_1.mp3"
+  ],
+  "melee_hit": [
+    "/audio/sfx/melee_hit_1.mp3"
+  ],
+  "melee_miss": [
+    "/audio/sfx/melee_miss_1.mp3"
+  ],
+  "mob_alert": [
+    "/audio/sfx/mob_alert_1.mp3",
+    "/audio/sfx/mob_alert_2.mp3"
+  ],
+  "mob_death": [
+    "/audio/sfx/mob_death_1.mp3"
+  ],
+  "mob_hit": [
+    "/audio/sfx/mob_hit_1.mp3",
+    "/audio/sfx/mob_hit_2.mp3"
+  ],
+  "player_down": [
+    "/audio/sfx/player_down_1.mp3",
+    "/audio/sfx/player_down_2.mp3"
+  ],
+  "portal_enter": [
+    "/audio/sfx/portal_enter_1.mp3"
+  ],
+  "portal_ready": [
+    "/audio/sfx/portal_ready_1.mp3"
+  ],
+  "reload": [
+    "/audio/sfx/reload_1.mp3"
+  ],
+  "room_enter": [
+    "/audio/sfx/room_enter_1.mp3"
+  ],
+  "shop_buy": [
+    "/audio/sfx/shop_buy_1.mp3"
+  ],
+  "shop_reroll": [
+    "/audio/sfx/shop_reroll_1.mp3"
+  ],
+  "shop_sell": [
+    "/audio/sfx/shop_sell_1.mp3"
+  ],
+  "stash_move": [
+    "/audio/sfx/stash_move_1.mp3"
+  ],
+  "step": [
+    "/audio/sfx/step_1.mp3",
+    "/audio/sfx/step_2.mp3",
+    "/audio/sfx/step_3.mp3",
+    "/audio/sfx/step_4.mp3"
+  ],
+  "step_wet": [
+    "/audio/sfx/step_wet_1.mp3",
+    "/audio/sfx/step_wet_2.mp3",
+    "/audio/sfx/step_wet_3.mp3"
+  ],
+  "torch_out": [
+    "/audio/sfx/torch_out_1.mp3"
+  ],
+  "torch_pickup": [
+    "/audio/sfx/torch_pickup_1.mp3"
+  ],
+  "ui_click": [
+    "/audio/sfx/ui_click_1.mp3",
+    "/audio/sfx/ui_click_2.mp3"
+  ],
+  "ui_close": [
+    "/audio/sfx/ui_close_1.mp3"
+  ],
+  "ui_open": [
+    "/audio/sfx/ui_open_1.mp3"
+  ],
+  "ui_power": [
+    "/audio/sfx/ui_power_1.mp3"
+  ],
+  "ui_tick": [
+    "/audio/sfx/ui_tick_1.mp3"
+  ],
+  "unlock": [
+    "/audio/sfx/unlock_1.mp3"
+  ],
+  "victory": [
+    "/audio/sfx/victory_1.mp3"
+  ],
+  "wipe": [
+    "/audio/sfx/wipe_1.mp3"
+  ]
+}

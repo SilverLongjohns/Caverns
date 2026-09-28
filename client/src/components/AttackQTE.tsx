@@ -1,5 +1,6 @@
 import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { QTE_CONFIG, type CritMultiplier } from '@caverns/shared';
+import { audioEngine } from '../audio/audioEngine.js';
 
 interface AttackQTEProps {
   initiative: number;
@@ -43,10 +44,12 @@ export const AttackQTE = memo(function AttackQTE({ initiative, onComplete }: Att
     cancelAnimationFrame(animRef.current);
     const zone = getZoneForPosition(positionRef.current);
     setResult(zone);
+    audioEngine.playSfx(zone.multiplier > 1 ? 'qte_success' : 'qte_fail');
     setTimeout(() => onComplete(zone.multiplier), 500);
   }, [onComplete]);
 
   useEffect(() => {
+    audioEngine.playSfx('qte_prompt');
     startTimeRef.current = performance.now();
     // Cache bar width once — avoids forced layout read every frame
     const barWidth = cursorRef.current?.parentElement?.clientWidth ?? 280;
@@ -66,6 +69,7 @@ export const AttackQTE = memo(function AttackQTE({ initiative, onComplete }: Att
           completedRef.current = true;
           const zone = getZoneForPosition(1);
           setResult(zone);
+          audioEngine.playSfx(zone.multiplier > 1 ? 'qte_success' : 'qte_fail');
           setTimeout(() => onComplete(zone.multiplier), 500);
         }
         return;

@@ -249,7 +249,8 @@ describe('GameSession', () => {
       const messages: { playerId: string; msg: any }[] = [];
       const broadcast = (msg: any) => { messages.push({ playerId: '__broadcast__', msg }); };
       const sendTo = (playerId: string, msg: any) => { messages.push({ playerId, msg }); };
-      const session = new GameSession(broadcast, sendTo, lockedContent);
+      // Clone: unlocking deletes from room.lockedExits, which would leak into later tests.
+      const session = new GameSession(broadcast, sendTo, structuredClone(lockedContent));
       session.addPlayer('p1', 'Alice');
       session.startGame();
       return { session, messages };
@@ -287,6 +288,23 @@ describe('GameSession', () => {
       expect(session.getPlayerRoom('p1')).toBe('room_b');
       const unlockMsg = messages.find((m) => m.msg.type === 'text_log' && m.msg.message.includes('lock clicks'));
       expect(unlockMsg).toBeUndefined();
+    });
+
+    it('tags the locked-exit refusal with code exit_locked', () => {
+      const { session, messages } = createLockedSession();
+      messages.length = 0;
+      movePlayerThroughExit(session, 'p1', 'north');
+      const errorMsg = messages.find((m) => m.msg.type === 'error');
+      expect(errorMsg!.msg.code).toBe('exit_locked');
+    });
+
+    it('tags the unlock narration with event unlock', () => {
+      const { session, messages } = createLockedSession();
+      messages.length = 0;
+      // Finding the key unlocks its door on the spot ("A distant lock clicks open...").
+      session.addKeyToParty('p1', 'test_key');
+      const unlock = messages.find((m) => m.msg.type === 'text_log' && m.msg.message.includes('lock clicks'));
+      expect(unlock!.msg.event).toBe('unlock');
     });
   });
 

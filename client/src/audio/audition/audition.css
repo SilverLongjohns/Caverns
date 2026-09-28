@@ -1,0 +1,12 @@
+.audition { background: #0b0906; color: #d8c9a8; font-family: monospace; padding: 16px; height: calc(100vh - 16px); overflow-y: auto; }
+.audition__bar { position: sticky; top: 0; display: flex; gap: 12px; align-items: center; background: #0b0906; padding: 8px 0; border-bottom: 1px solid #3a2f20; }
+.audition__bar h1 { font-size: 18px; margin: 0; color: #e0a84a; }
+.audition__row { border-bottom: 1px solid #2a2218; padding: 10px 0; }
+.audition__row--done .audition__id { color: #7fc47f; }
+.audition__id { font-weight: bold; }
+.audition__id small { color: #8a7a5a; font-weight: normal; }
+.audition__prompt { color: #9a8a6a; margin: 4px 0; }
+.audition__takes { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.audition__take { display: inline-flex; gap: 4px; align-items: center; }
+.audition__reroll { margin-top: 6px; width: 100%; max-width: 520px; background: #151109; color: #d8c9a8; border: 1px solid #3a2f20; padding: 4px; }
+.audition button { background: #1d170e; color: #e0c890; border: 1px solid #5a4830; padding: 2px 8px; cursor: pointer; }

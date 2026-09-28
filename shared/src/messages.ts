@@ -544,6 +544,10 @@ export interface TextLogMessage {
   type: 'text_log';
   message: string;
   logType: 'narration' | 'combat' | 'loot' | 'system' | 'chat';
+  /** Structured tag for clients that react to the event (e.g. audio), not just the text. */
+  event?: 'unlock' | 'hazard';
+  /** The player the event happened to, when there is one. */
+  playerId?: string;
 }
 
 export interface PuzzlePromptMessage {
@@ -646,6 +650,7 @@ export interface PlayerPositionMessage {
 export interface ErrorMessage {
   type: 'error';
   message: string;
+  code?: 'exit_locked';
 }
 
 export interface SandboxErrorMessage {

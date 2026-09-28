@@ -1,5 +1,6 @@
 import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { QTE_CONFIG, type DamageReduction } from '@caverns/shared';
+import { audioEngine } from '../audio/audioEngine.js';
 
 interface DefenseQTEProps {
   initiative: number;
@@ -30,10 +31,12 @@ export const DefenseQTE = memo(function DefenseQTE({ initiative, onComplete }: D
     cancelAnimationFrame(animRef.current);
     const res = getReductionForRatio(scaleRef.current);
     setResult(res);
+    audioEngine.playSfx(res.reduction > 0 ? 'qte_success' : 'qte_fail');
     setTimeout(() => onComplete(res.reduction), 500);
   }, [onComplete]);
 
   useEffect(() => {
+    audioEngine.playSfx('qte_prompt');
     startTimeRef.current = performance.now();
     const animate = (now: number) => {
       const elapsed = now - startTimeRef.current;
@@ -50,6 +53,7 @@ export const DefenseQTE = memo(function DefenseQTE({ initiative, onComplete }: D
         if (!completedRef.current) {
           completedRef.current = true;
           setResult({ label: 'MISS', reduction: 0 });
+          audioEngine.playSfx('qte_fail');
           setTimeout(() => onComplete(0), 500);
         }
         return;

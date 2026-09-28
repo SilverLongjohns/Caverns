@@ -688,7 +688,7 @@ export class GameSession {
               if (oppositeGridDir) {
                 grid.moveEntity(playerId, oppositeGridDir as GridDirection);
               }
-              this.sendTo(playerId, { type: 'error', message: 'This passage is locked. You need a key to proceed.' });
+              this.sendTo(playerId, { type: 'error', message: 'This passage is locked. You need a key to proceed.', code: 'exit_locked' });
               return;
             }
             // Unlock permanently
@@ -697,6 +697,7 @@ export class GameSession {
               type: 'text_log',
               message: 'The lock clicks open. The passage is now clear.',
               logType: 'system',
+              event: 'unlock',
             });
           }
 
@@ -771,6 +772,8 @@ export class GameSession {
             type: 'text_log',
             message: `${player.name} takes ${event.damage} damage from a hazard!`,
             logType: 'combat',
+            event: 'hazard',
+            playerId,
           });
           break;
         }
@@ -1489,6 +1492,7 @@ export class GameSession {
             type: 'text_log',
             message: 'A distant lock clicks open...',
             logType: 'system',
+            event: 'unlock',
           });
         }
       }
