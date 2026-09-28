@@ -2689,6 +2689,7 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 
 .arena-area-highlight { background: rgba(180, 40, 40, 0.25) !important; }
 .arena-range-highlight { background: rgba(80, 120, 200, 0.15) !important; }
+.arena-shoot-range { background: rgba(160, 70, 20, 0.14) !important; }
 
 .entity-ghost {
   color: #4488ff;

@@ -5,7 +5,7 @@ import { TurnOrderBar } from './TurnOrderBar.js';
 import { ArenaUnitPanel } from './ArenaUnitPanel.js';
 import { ArenaActionBar } from './ArenaActionBar.js';
 import { hasLineOfSight, rangedProfile, type AbilityDefinition } from '@caverns/shared';
-import { shotTargets } from '../ui/shotTargets.js';
+import { shotTargets, shotRangeTiles } from '../ui/shotTargets.js';
 
 interface ArenaViewProps {
   onCombatAction: (
@@ -101,6 +101,12 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
     const enemies = activeCombat.participants.filter((p) => p.type === 'mob' && p.hp > 0 && arenaPositions[p.id]).map((p) => ({ id: p.id, pos: arenaPositions[p.id] }));
     return shotTargets(arenaGrid, myPos, gun.range, gun.marksmanship, enemies);
   }, [interactionMode, gun, arenaGrid, arenaPositions, playerId, activeCombat]);
+
+  const shootRange = useMemo(() => {
+    const myPos = arenaPositions[playerId];
+    if (interactionMode !== 'shoot' || !gun || !arenaGrid || !myPos) return new Set<string>();
+    return shotRangeTiles(arenaGrid, myPos, gun.range);
+  }, [interactionMode, gun, arenaGrid, arenaPositions, playerId]);
 
   const combatLogLines = useMemo(() => {
     return textLog
@@ -232,13 +238,16 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
     }
 
     if (interactionMode === 'shoot') {
+      for (const key of shootRange) {
+        highlights.set(key, 'arena-shoot-range');
+      }
       for (const [id, pos] of Object.entries(arenaPositions)) {
         if (shootable.has(id)) highlights.set(`${pos.x},${pos.y}`, 'arena-range-highlight');
       }
     }
 
     return highlights;
-  }, [movementRange, interactionMode, hoverPath, targetingAbility, arenaGrid, arenaPositions, playerId, activeCombat, hoverTile, shootable]);
+  }, [movementRange, interactionMode, hoverPath, targetingAbility, arenaGrid, arenaPositions, playerId, activeCombat, hoverTile, shootable, shootRange]);
 
   // When arenaMovePath arrives from server, set animation state.
   // ArenaGrid handles the DOM animation; we just track start/end for the entity exclusion.
