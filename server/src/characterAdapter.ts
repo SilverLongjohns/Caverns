@@ -1,5 +1,5 @@
 import type { Player } from '@caverns/shared';
-import { computePlayerStats } from '@caverns/shared';
+import { computePlayerStats, withStarterRanged } from '@caverns/shared';
 import type { CharactersTable } from './db/types.js';
 
 export type CharacterSnapshot = Pick<
@@ -22,7 +22,7 @@ export function playerFromCharacter(
     maxHp: 0,
     hp: 0,
     roomId,
-    equipment: character.equipment,
+    equipment: withStarterRanged(character.equipment, character.class),
     consumables: character.consumables,
     inventory: character.inventory,
     status: 'exploring',

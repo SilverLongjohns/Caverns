@@ -4,7 +4,7 @@ import { join, extname } from 'path';
 import { fileURLToPath } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
 import type { ClientMessage, ServerMessage, CharacterSummary, Item, CharacterPanelView, Equipment } from '@caverns/shared';
-import { SHOP_TEMPLATES, validateStatPoints, computePlayerStats, PROGRESSION_CONFIG, ENERGY_CONFIG } from '@caverns/shared';
+import { SHOP_TEMPLATES, validateStatPoints, computePlayerStats, PROGRESSION_CONFIG, ENERGY_CONFIG, withStarterRanged } from '@caverns/shared';
 import { GameSession } from './GameSession.js';
 import { generateProceduralDungeon } from './ProceduralGenerator.js';
 import { db } from './db/connection.js';
@@ -91,10 +91,12 @@ function buildCharacterPanelView(ch: CharactersTable): CharacterPanelView {
   const earnedPoints = (ch.level - 1) * PROGRESSION_CONFIG.statPointsPerLevel;
   const unspentStatPoints = Math.max(0, earnedPoints - totalAllocated);
 
+  const equipment = withStarterRanged(ch.equipment, ch.class);
+
   // Compute stats using a minimal Player shape
   const tempPlayer = {
     className: ch.class,
-    equipment: ch.equipment,
+    equipment,
     statAllocations: ch.stat_allocations,
   } as import('@caverns/shared').Player;
   const stats = computePlayerStats(tempPlayer);
@@ -105,7 +107,7 @@ function buildCharacterPanelView(ch: CharactersTable): CharacterPanelView {
     level: ch.level,
     xp: ch.xp,
     gold: ch.gold,
-    equipment: ch.equipment,
+    equipment,
     inventory: ch.inventory,
     consumables: ch.consumables,
     statAllocations: ch.stat_allocations,

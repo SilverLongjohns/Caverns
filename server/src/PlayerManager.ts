@@ -32,6 +32,7 @@ export class PlayerManager {
     if (starterItems) {
       player.equipment.weapon = { ...starterItems.weapon };
       player.equipment.offhand = { ...starterItems.offhand };
+      player.equipment.ranged = { ...starterItems.ranged };
     }
 
     player.consumables[0] = { ...STARTER_POTION };

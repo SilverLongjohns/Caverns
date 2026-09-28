@@ -1,4 +1,9 @@
 import rangedConfig from '../data/rangedConfig.json' with { type: 'json' };
+import type { Equipment, Player } from '../types.js';
+import { computePlayerStats } from '../types.js';
+import { getClassDefinition } from '../classData.js';
+import { CLASS_STARTER_ITEMS } from '../content.js';
+import { COMBAT_CONFIG } from '../data/combat.js';
 
 type Tile = { x: number; y: number };
 export interface GunType { range: number; magazine: number; damageMult: number }
@@ -49,4 +54,28 @@ export function hasLineOfSight(grid: { tiles: string[][] }, from: Tile, to: Tile
     if (!tile || tile === 'wall' || tile === 'chasm') return false;
   }
   return true;
+}
+
+export interface RangedProfile { shotDamage: number; range: number; magazine: number; marksmanship: number }
+
+/** Everything a shot needs, precomputed from the player's gun and stats. Null without a usable gun. */
+export function rangedProfile(player: Pick<Player, 'className' | 'equipment' | 'statAllocations'>): RangedProfile | null {
+  const gun = player.equipment.ranged;
+  if (!gun || !gun.stats.magazine || !gun.stats.range) return null;
+  const { marksmanship } = computePlayerStats(player as Player);
+  const classDamage = getClassDefinition(player.className)?.baseStats.damage ?? 0;
+  return {
+    shotDamage: Math.max(COMBAT_CONFIG.minDamage, classDamage + (gun.stats.damage ?? 0)),
+    range: effectiveRange(gun.stats.range, marksmanship),
+    magazine: gun.stats.magazine,
+    marksmanship,
+  };
+}
+
+/** Save migration: a save from before the ranged slot (key absent) gets the class starter gun. `null` means deliberately empty. */
+export function withStarterRanged(equipment: Equipment, className: string): Equipment {
+  const eq = equipment as Partial<Equipment>;
+  if ('ranged' in eq) return equipment;
+  const gun = CLASS_STARTER_ITEMS[className]?.ranged;
+  return { ...eq, ranged: gun ? { ...gun } : null } as Equipment;
 }

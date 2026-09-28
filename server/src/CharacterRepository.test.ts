@@ -91,6 +91,7 @@ describe.skipIf(!process.env.DATABASE_URL)('CharacterRepository', () => {
     expect(w?.gold).toBe(0);
     expect(w?.keychain).toEqual([]);
     expect(w?.in_use).toBe(false);
+    expect(w?.equipment.ranged).toBeNull();
   });
 
   it('clearAllInUse releases stranded locks', async () => {

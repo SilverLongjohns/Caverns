@@ -3,7 +3,7 @@ import biomes from '../data/biomes.json' with { type: 'json' };
 import uniqueItems from '../data/uniqueItems.json' with { type: 'json' };
 import items from '../data/items.json' with { type: 'json' };
 import { CLASS_DEFINITIONS } from '../classData.js';
-import { CLASS_STARTER_ITEMS } from '../content.js';
+import { CLASS_STARTER_ITEMS, LEGACY_REPEATING_CROSSBOW } from '../content.js';
 import { PROGRESSION_CONFIG } from '../data/progression.js';
 import type { EquipmentSlot, Item, RoomType } from '../types.js';
 import { SANDBOX_PRESETS } from './presets.js';
@@ -19,7 +19,8 @@ const BIOME_IDS = new Set((biomes as { id: string }[]).map((b) => b.id));
 const ALL_ITEMS: Item[] = [
   ...(uniqueItems as unknown as Item[]),
   ...(items as unknown as Item[]),
-  ...Object.values(CLASS_STARTER_ITEMS).flatMap((s) => [s.weapon, s.offhand]),
+  ...Object.values(CLASS_STARTER_ITEMS).flatMap((s) => [s.weapon, s.offhand, s.ranged]),
+  LEGACY_REPEATING_CROSSBOW,
 ];
 
 export function findSandboxItem(id: string): Item | undefined {

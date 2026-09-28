@@ -26,6 +26,7 @@ export interface ClassDefinition {
   baseStats: { maxHp: number; damage: number; defense: number; initiative: number; marksmanship: number };
   starterWeaponId: string;
   starterOffhandId: string;
+  starterRangedId: string;
   abilities: AbilityDefinition[];
   /** Optional class colour (#rrggbb), used to tint ability close-ups. */
   color?: string;

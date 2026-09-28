@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { RANGED_CONFIG, GUN_TYPES, chebyshev, effectiveRange, hitChance, hasLineOfSight } from './ranged.js';
+import { RANGED_CONFIG, GUN_TYPES, chebyshev, effectiveRange, hitChance, hasLineOfSight, rangedProfile, withStarterRanged } from './ranged.js';
+import { CLASS_STARTER_ITEMS } from '../content.js';
+import { CLASS_DEFINITIONS } from '../classData.js';
+import { createPlayer, computePlayerStats } from '../types.js';
 
 const open = (w: number, h: number) => ({ width: w, height: h, tiles: Array.from({ length: h }, () => Array(w).fill('floor')) });
 
@@ -47,5 +50,58 @@ describe('hasLineOfSight', () => {
     expect(hasLineOfSight(g, { x: 1, y: 1 }, { x: 5, y: 1 }, 6)).toBe(false);
     g.tiles[1][3] = 'floor'; g.tiles[1][5] = 'wall';
     expect(hasLineOfSight(g, { x: 1, y: 1 }, { x: 5, y: 1 }, 6)).toBe(true);
+  });
+});
+
+describe('class starter guns', () => {
+  it('every class has a ranged-slot starter gun with range and magazine, matching starterRangedId', () => {
+    for (const c of CLASS_DEFINITIONS) {
+      const gun = CLASS_STARTER_ITEMS[c.id]?.ranged;
+      expect(gun, c.id).toBeDefined();
+      expect(gun.id).toBe(c.starterRangedId);
+      expect(gun.slot).toBe('ranged');
+      expect(gun.stats.range).toBeGreaterThan(0);
+      expect(gun.stats.magazine).toBeGreaterThan(0);
+      expect(gun.stats.damage).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('rangedProfile', () => {
+  it('null without a gun', () => {
+    const p = createPlayer('p', 'P', 'r', CLASS_DEFINITIONS[0].id);
+    expect(rangedProfile(p)).toBeNull();
+  });
+  it('shot damage = class base damage + gun damage (ignores melee gear and ferocity)', () => {
+    const cls = CLASS_DEFINITIONS[0];
+    const p = createPlayer('p', 'P', 'r', cls.id);
+    p.equipment.ranged = { ...CLASS_STARTER_ITEMS[cls.id].ranged };
+    p.equipment.weapon = { ...CLASS_STARTER_ITEMS[cls.id].weapon, stats: { damage: 99 } };
+    p.statAllocations.ferocity = 5;
+    const prof = rangedProfile(p)!;
+    expect(prof.shotDamage).toBe(cls.baseStats.damage + p.equipment.ranged.stats.damage!);
+    expect(prof.magazine).toBe(p.equipment.ranged.stats.magazine);
+    expect(prof.marksmanship).toBe(computePlayerStats(p).marksmanship);
+    expect(prof.range).toBe(p.equipment.ranged.stats.range! + prof.marksmanship);
+  });
+});
+
+describe('withStarterRanged (save migration)', () => {
+  const cls = CLASS_DEFINITIONS[0].id;
+  const base = { weapon: null, offhand: null, armor: null, accessory: null };
+  it('adds the class starter gun when the ranged key is absent (pre-ranged save)', () => {
+    const eq = withStarterRanged(base as never, cls);
+    expect(eq.ranged?.id).toBe(CLASS_STARTER_ITEMS[cls].ranged.id);
+    expect(eq.ranged).not.toBe(CLASS_STARTER_ITEMS[cls].ranged); // a copy, not the shared object
+  });
+  it('leaves a deliberately emptied slot (null) empty', () => {
+    expect(withStarterRanged({ ...base, ranged: null }, cls).ranged).toBeNull();
+  });
+  it('keeps an equipped gun', () => {
+    const gun = { ...CLASS_STARTER_ITEMS[cls].ranged, id: 'mine' };
+    expect(withStarterRanged({ ...base, ranged: gun }, cls).ranged?.id).toBe('mine');
+  });
+  it('unknown class: absent key becomes null', () => {
+    expect(withStarterRanged(base as never, 'nope').ranged).toBeNull();
   });
 });

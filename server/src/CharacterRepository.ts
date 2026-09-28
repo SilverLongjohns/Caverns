@@ -13,6 +13,7 @@ function starterEquipment(className: string) {
     offhand: starter ? { ...starter.offhand } : null,
     armor: null,
     accessory: null,
+    ranged: starter ? { ...starter.ranged } : null,
   };
 }
 
@@ -126,7 +127,7 @@ export class CharacterRepository {
   async wipe(id: string): Promise<void> {
     await this.db.updateTable('characters')
       .set({
-        equipment: JSON.stringify({ weapon: null, offhand: null, armor: null, accessory: null }) as never,
+        equipment: JSON.stringify({ weapon: null, offhand: null, armor: null, accessory: null, ranged: null }) as never,
         inventory: JSON.stringify(Array(7).fill(null)) as never,
         consumables: JSON.stringify(Array(6).fill(null)) as never,
         gold: 0,

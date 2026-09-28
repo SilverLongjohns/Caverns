@@ -20,7 +20,14 @@ export const STARTER_POTION = {
   stats: { healAmount: 15 },
 };
 
-export const CLASS_STARTER_ITEMS: Record<string, { weapon: Item; offhand: Item }> = {
+/** Superseded by `artificer_rebar_wrench` as the artificer's starter weapon. Kept so old saves and sandbox lookups still resolve. */
+export const LEGACY_REPEATING_CROSSBOW: Item = {
+  id: 'artificer_repeating_crossbow', name: 'Repeating Crossbow',
+  description: 'A compact crossbow with a mechanical reload mechanism.',
+  rarity: 'common', slot: 'weapon', archetype: 'ranged', stats: { damage: 3 },
+};
+
+export const CLASS_STARTER_ITEMS: Record<string, { weapon: Item; offhand: Item; ranged: Item }> = {
   vanguard: {
     weapon: {
       id: 'vanguard_iron_mace', name: 'Iron Mace',
@@ -31,6 +38,11 @@ export const CLASS_STARTER_ITEMS: Record<string, { weapon: Item; offhand: Item }
       id: 'vanguard_tower_shield', name: 'Tower Shield',
       description: 'A tall shield of banded oak and iron.',
       rarity: 'common', slot: 'offhand', archetype: 'shield', stats: { defense: 3 },
+    },
+    ranged: {
+      id: 'vanguard_censer_blunderbuss', name: 'Censer Blunderbuss',
+      description: 'A relic thurible bored into a barrel. Belches shrapnel and incense.',
+      rarity: 'common', slot: 'ranged', archetype: 'ranged', stats: { damage: 3, range: 1, magazine: 2 },
     },
   },
   shadowblade: {
@@ -44,6 +56,11 @@ export const CLASS_STARTER_ITEMS: Record<string, { weapon: Item; offhand: Item }
       description: 'A dark cloak woven with alchemical fibers.',
       rarity: 'common', slot: 'offhand', archetype: 'focus', stats: { defense: 1 },
     },
+    ranged: {
+      id: 'shadowblade_hushpistol', name: 'Hushpistol',
+      description: 'A suppressed relic sidearm for a quiet opener.',
+      rarity: 'common', slot: 'ranged', archetype: 'ranged', stats: { damage: 3, range: 2, magazine: 3 },
+    },
   },
   cleric: {
     weapon: {
@@ -56,17 +73,27 @@ export const CLASS_STARTER_ITEMS: Record<string, { weapon: Item; offhand: Item }
       description: 'A silver pendant radiating faint warmth.',
       rarity: 'common', slot: 'offhand', archetype: 'focus', stats: { defense: 2 },
     },
+    ranged: {
+      id: 'cleric_needle_rifle', name: 'Needle Rifle',
+      description: 'Fires surgical bone-needles from the back line.',
+      rarity: 'common', slot: 'ranged', archetype: 'ranged', stats: { damage: 4, range: 4, magazine: 1 },
+    },
   },
   artificer: {
     weapon: {
-      id: 'artificer_repeating_crossbow', name: 'Repeating Crossbow',
-      description: 'A compact crossbow with a mechanical reload mechanism.',
-      rarity: 'common', slot: 'weapon', archetype: 'ranged', stats: { damage: 3 },
+      id: 'artificer_rebar_wrench', name: 'Rebar Wrench',
+      description: 'A length of rebar bent into a wrench. Fixes things; breaks things.',
+      rarity: 'common', slot: 'weapon', archetype: 'blunt', stats: { damage: 3 },
     },
     offhand: {
       id: 'artificer_toolkit', name: 'Toolkit',
       description: 'A leather case of springs, gears, and small explosives.',
       rarity: 'common', slot: 'offhand', archetype: 'focus', stats: { defense: 1, initiative: 2 },
+    },
+    ranged: {
+      id: 'artificer_scrap_autogun', name: 'Scrap Autogun',
+      description: 'A crank-fed junk repeater. Many weak shots.',
+      rarity: 'common', slot: 'ranged', archetype: 'ranged', stats: { damage: 1, range: 2, magazine: 5 },
     },
   },
 };
