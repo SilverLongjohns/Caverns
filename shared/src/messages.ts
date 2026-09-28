@@ -748,6 +748,7 @@ export interface CharacterPanelView {
   defense: number;
   initiative: number;
   maxEnergy: number;
+  marksmanship: number;
 }
 
 export interface CharacterPanelOpenedMessage {

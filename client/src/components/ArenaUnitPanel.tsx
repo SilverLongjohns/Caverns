@@ -21,6 +21,7 @@ export function ArenaUnitPanel({ participants }: ArenaUnitPanelProps) {
           <div key={p.id} className="arena-unit-entry">
             <span className="arena-unit-name turn-player">{p.name}</span>
             {p.className && <span className="arena-unit-class">{p.className}</span>}
+            {p.magazine !== undefined && <span className="arena-unit-ammo">{p.ammo}/{p.magazine} rds</span>}
             <UnitHpBar hp={p.hp} maxHp={p.maxHp} />
           </div>
         ))}

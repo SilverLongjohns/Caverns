@@ -117,6 +117,7 @@ function buildCharacterPanelView(ch: CharactersTable): CharacterPanelView {
     defense: stats.defense,
     initiative: stats.initiative,
     maxEnergy: stats.maxEnergy,
+    marksmanship: stats.marksmanship,
   };
 }
 

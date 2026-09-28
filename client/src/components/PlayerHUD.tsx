@@ -1,22 +1,13 @@
 import { useGameStore } from '../store/gameStore.js';
-import type { Item, ItemStats, ItemSlot } from '@caverns/shared';
+import type { Item, ItemSlot } from '@caverns/shared';
 import { RelicPanel, RelicButton, Gauge, ItemIcon, EmptySocket } from './relic/index.js';
 import { getClassPortrait } from '../classPortraits.js';
 import { PROGRESSION_CONFIG, computePlayerStats } from '@caverns/shared';
+import { formatItemStats } from '../ui/itemStatText.js';
 
 const STAT_DISPLAY_NAMES: Record<string, string> = {};
 for (const def of PROGRESSION_CONFIG.statDefinitions) {
   STAT_DISPLAY_NAMES[def.internalStat] = def.displayName;
-}
-
-function formatStats(stats: ItemStats): string {
-  const parts: string[] = [];
-  if (stats.damage) parts.push(`+${stats.damage} ${STAT_DISPLAY_NAMES['damage'] ?? 'dmg'}`);
-  if (stats.defense) parts.push(`+${stats.defense} ${STAT_DISPLAY_NAMES['defense'] ?? 'def'}`);
-  if (stats.maxHp) parts.push(`+${stats.maxHp} ${STAT_DISPLAY_NAMES['maxHp'] ?? 'hp'}`);
-  if (stats.initiative) parts.push(`+${stats.initiative} ${STAT_DISPLAY_NAMES['initiative'] ?? 'init'}`);
-  if (stats.healAmount) parts.push(`heals ${stats.healAmount}`);
-  return parts.join(', ');
 }
 
 function ItemDisplay({ item, label, slot }: { item: Item | null; label: string; slot: ItemSlot }) {
@@ -32,7 +23,7 @@ function ItemDisplay({ item, label, slot }: { item: Item | null; label: string; 
         )}
         {item && (
           <span className="item-stats">
-            {formatStats(item.stats)}
+            {formatItemStats(item.stats)}
             {item.effect && <span className="item-effect"> [{item.effect.replace(/_/g, ' ')}]</span>}
           </span>
         )}
@@ -116,6 +107,7 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable, onAllocate
           <ItemDisplay item={player.equipment.offhand} label="Off-hand" slot="offhand" />
           <ItemDisplay item={player.equipment.armor} label="Armor" slot="armor" />
           <ItemDisplay item={player.equipment.accessory} label="Accessory" slot="accessory" />
+          <ItemDisplay item={player.equipment.ranged ?? null} label="Ranged" slot="ranged" />
         </div>
 
         <div className="consumables">
@@ -127,7 +119,7 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable, onAllocate
                 {item ? (
                   <div className="slot-body">
                     <span className={`slot-name rarity-${item.rarity}`} title={item.description}>{item.name}</span>
-                    <span className="item-stats">{formatStats(item.stats)}</span>
+                    <span className="item-stats">{formatItemStats(item.stats)}</span>
                   </div>
                 ) : (
                   <span className="empty">-</span>
@@ -149,7 +141,7 @@ export function PlayerHUD({ onEquipItem, onDropItem, onUseConsumable, onAllocate
                 {item ? (
                   <div className="slot-body">
                     <span className={`slot-name rarity-${item.rarity}`} title={item.description}>{item.name}</span>
-                    <span className="item-stats">{formatStats(item.stats)}</span>
+                    <span className="item-stats">{formatItemStats(item.stats)}</span>
                   </div>
                 ) : (
                   <span className="empty">-</span>

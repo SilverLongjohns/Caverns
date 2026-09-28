@@ -2841,6 +2841,7 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 
 .arena-unit-name { display: inline; }
 .arena-unit-class { color: #666; margin-left: 6px; }
+.arena-unit-ammo { color: #666; margin-left: 6px; }
 .arena-skull-rating { color: #666; margin-left: 4px; }
 
 .arena-hp-bar { display: block; }
