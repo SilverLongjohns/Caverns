@@ -66,6 +66,10 @@
 .closeup--strike .closeup__number { top: 30%; }
 .closeup--still.closeup--strike .closeup__band, .closeup--still.closeup--strike .closeup-fig { visibility: hidden; }
 
+/* A missed shot: the target doesn't tear (entry slide on the fig div is untouched); a dim MISS stands in for the number. */
+.closeup--miss .closeup-fig:not(.closeup-fig--actor) img { animation-name: none; }
+.closeup__number--miss { color: #8c7f6c; text-shadow: none; letter-spacing: .2em; }
+
 /* Reduced motion: a still title card for the same duration */
 .closeup--still, .closeup--still * { animation: none !important; }
 .closeup--still .closeup__dim { opacity: .9; }
