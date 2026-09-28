@@ -9,6 +9,7 @@ Cooperative text-based dungeon crawler for 1-4 players, played in a web browser.
 ### What's Working
 - Lobby: join with name, host starts game
 - Exploration: move between 10 rooms, shared fog of war, room narration
+- Exploration renders on the shared glyph grid (`client/src/components/grid/GlyphViewport.tsx`): class/mob/furnishing sprites, follow camera, tweened steps, fog-aware minimap. Interactables stay ASCII with a glow.
 - Combat: turn-based (initiative ordering), attack/defend/use item/flee, mob AI auto-resolves
 - Loot: need/greed/pass distribution (multiplayer), auto-award (solo), items go to inventory
 - Inventory: 7 slots, equip/drop from inventory, swaps old equipment back to inventory
@@ -89,6 +90,12 @@ client/src/
     MiniMap.tsx       — SVG node-graph with BFS layout, fog of war
     PlayerHUD.tsx     — HP bar, equipment (with stats), consumables, inventory with equip/drop
     PartyPanel.tsx    — Other players' status and HP
+    ExplorationGrid.tsx — Exploration on the shared glyph grid: floating units layer, camera follow, fog-aware minimap
+    grid/
+      GlyphViewport.tsx — Shared glyph-grid viewport (extracted from ArenaGrid; arena-* class names kept so glyph CSS applies to both)
+      viewportMath.ts   — Pure camera/tile math for the viewport
+  exploration/
+    explorationEntities.ts — Builds exploration entities (units, furnishings, interactables) from room state
   styles/index.css  — CRT-themed dark UI
 
 docs/superpowers/
