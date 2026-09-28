@@ -2793,6 +2793,31 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   cursor: pointer;
 }
 
+/* === Exploration on the glyph grid === */
+.room-area { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.room-view { flex: 1; min-height: 0; justify-content: flex-start; }
+.room-view > .arena-grid-container { width: 100%; }
+
+/* Players and mobs float above the terrain and slide between cells */
+.explore-units { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
+.explore-unit {
+  position: absolute; left: 0; top: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; line-height: 1; will-change: transform;
+}
+.explore-unit .entity-glyph {
+  display: block; flex: none; width: 48px; height: 48px;
+  background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated;
+}
+/* Always find yourself: a soft phosphor halo on the local player */
+.glyph-grid .entity-self .entity-glyph { filter: drop-shadow(0 0 3px #7dff9a) drop-shadow(0 0 1px #7dff9a); }
+/* Usable things glow; spent ones don't */
+.glyph-grid .entity-interactable { color: #ffd98a; text-shadow: 0 0 6px #ffb000, 0 0 2px #ffb000; }
+.glyph-grid .entity-interactable .entity-glyph { filter: drop-shadow(0 0 4px #ffb000); }
+.glyph-grid .entity-interactable-used { opacity: 0.45; text-shadow: none; }
+.explore-alert { position: absolute; z-index: 4; text-align: center; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .explore-unit { transition: none !important; } }
+
 /* === Turn Order Bar === */
 .arena-turn-order {
   background: #111;
