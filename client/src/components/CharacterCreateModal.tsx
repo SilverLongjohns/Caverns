@@ -92,6 +92,7 @@ export function CharacterCreateModal({ onCreate, onCancel }: Props) {
                   <div className="char-create-gear">
                     <div className="char-create-gear-row"><ItemIcon item={starterItems.weapon} /><span>{starterItems.weapon.name}</span></div>
                     <div className="char-create-gear-row"><ItemIcon item={starterItems.offhand} /><span>{starterItems.offhand.name}</span></div>
+                    <div className="char-create-gear-row"><ItemIcon item={starterItems.ranged} /><span>{starterItems.ranged.name}</span></div>
                   </div>
                 ) : (
                   <p>—</p>

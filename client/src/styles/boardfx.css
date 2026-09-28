@@ -25,3 +25,29 @@
   .glyph-grid .fx-lunge .entity-glyph, .glyph-grid .fx-tear .entity-glyph { animation: none; }
   .fx-number { animation-name: fx-number-still; }
 }
+
+.glyph-grid .fx-recoil .entity-glyph { animation: fx-recoil-right 180ms ease-out var(--fx-recoil-delay, 0ms) both; }
+.glyph-grid .fx-recoil-left .entity-glyph { animation-name: fx-recoil-left; }
+.glyph-grid .fx-recoil-up .entity-glyph { animation-name: fx-recoil-up; }
+.glyph-grid .fx-recoil-down .entity-glyph { animation-name: fx-recoil-down; }
+@keyframes fx-recoil-right { 30% { transform: translateX(2px) } 100% { transform: none } }
+@keyframes fx-recoil-left { 30% { transform: translateX(-2px) } 100% { transform: none } }
+@keyframes fx-recoil-up { 30% { transform: translateY(-2px) } 100% { transform: none } }
+@keyframes fx-recoil-down { 30% { transform: translateY(2px) } 100% { transform: none } }
+.fx-bolt { position: absolute; z-index: 12; width: 4px; height: 4px; margin: -2px 0 0 -2px; pointer-events: none;
+  background: #9dff6a; box-shadow: 0 0 6px 2px #5aff3c; opacity: 0;
+  animation: fx-bolt var(--fx-travel, 200ms) linear var(--fx-delay, 0ms) both; }
+@keyframes fx-bolt { 0% { opacity: 1; transform: translate(0, 0) } 99% { opacity: 1 } 100% { opacity: 0; transform: translate(var(--fx-dx), var(--fx-dy)) } }
+.fx-bolt--miss { animation-name: fx-bolt-miss; }
+@keyframes fx-bolt-miss { 0% { opacity: 1; transform: translate(0, 0) } 70% { opacity: .8 } 100% { opacity: 0; transform: translate(var(--fx-dx), var(--fx-dy)) } }
+.fx-tag { position: absolute; z-index: 12; pointer-events: none; text-align: center; font: 700 11px 'Courier New', monospace;
+  letter-spacing: .15em; opacity: 0; animation: fx-number 900ms ease-out both; }
+.fx-tag--miss { color: #8c7f6c; }
+.fx-tag--reload { color: #9dff6a; text-shadow: 0 0 4px #5aff3c; }
+.fx-hit { position: absolute; z-index: 11; pointer-events: none; text-align: center; font: 700 10px 'Courier New', monospace; color: #9dff6a; text-shadow: 0 0 3px #000; }
+@media (prefers-reduced-motion: reduce) {
+  .glyph-grid .fx-recoil .entity-glyph { animation: none; }
+  .fx-bolt { animation: fx-bolt-still 160ms steps(1) calc(var(--fx-delay, 0ms) + var(--fx-travel, 0ms)) both; transform: translate(var(--fx-dx), var(--fx-dy)); }
+  .fx-tag { animation-name: fx-number-still; }
+}
+@keyframes fx-bolt-still { 0% { opacity: 1 } 100% { opacity: 0 } }

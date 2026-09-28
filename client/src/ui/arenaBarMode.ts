@@ -8,11 +8,12 @@ export type ArenaActionMode =
   | { mode: 'items' }
   | { mode: 'target_item'; itemIndex: number }
   | { mode: 'abilities' }
-  | { mode: 'target_ability'; ability: AbilityDefinition };
+  | { mode: 'target_ability'; ability: AbilityDefinition }
+  | { mode: 'target_shoot' };
 
 // Modes where the bar is waiting on a click on the arena map. ArenaView owns the map
 // interaction and drops back to 'none' once the click is handled (or the turn moves on).
-const MAP_TARGETING = new Set<ArenaActionMode['mode']>(['move', 'target_attack', 'target_ability']);
+const MAP_TARGETING = new Set<ArenaActionMode['mode']>(['move', 'target_attack', 'target_ability', 'target_shoot']);
 
 /** What the arena action bar should show, given its own mode and whether the map is still targeting. */
 export function effectiveArenaBarMode(

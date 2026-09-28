@@ -32,6 +32,7 @@ export const VOLCANIC_PALETTE: BiomePalette = {
       offhand: ['cinder buckler', 'magma ward', 'obsidian shield', 'slag round shield', 'ember orb', 'forge-heart focus'],
       armor: ['cinder mail', 'volcanic plate', 'slag vest', 'magma hauberk', 'forge-heart cuirass', 'obsidian mantle', 'ember brigandine'],
       accessory: ['ember band', 'magma ring', 'volcanic amulet', 'cinder pendant', 'obsidian charm', 'inferno circlet', 'forge-heart brooch'],
+      ranged: ['scattergun', 'sidearm', 'long rifle', 'autogun'],
     },
   },
 };

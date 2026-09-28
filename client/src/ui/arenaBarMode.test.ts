@@ -29,4 +29,9 @@ describe('effectiveArenaBarMode', () => {
     expect(effectiveArenaBarMode({ mode: 'abilities' }, true, false)).toEqual({ mode: 'abilities' });
     expect(effectiveArenaBarMode({ mode: 'target_item', itemIndex: 0 }, true, false)).toEqual({ mode: 'target_item', itemIndex: 0 });
   });
+
+  it('target_shoot drops back to main when the map is no longer targeting', () => {
+    expect(effectiveArenaBarMode({ mode: 'target_shoot' }, true, false)).toEqual({ mode: 'main' });
+    expect(effectiveArenaBarMode({ mode: 'target_shoot' }, true, true)).toEqual({ mode: 'target_shoot' });
+  });
 });

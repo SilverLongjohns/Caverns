@@ -6,6 +6,7 @@ const SLOT_BASE: Record<ItemSlot, number> = {
   armor: 50,
   accessory: 35,
   consumable: 15,
+  ranged: 40,
 };
 
 const SKULL_MULT: Record<1 | 2 | 3, number> = {

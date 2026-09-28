@@ -38,6 +38,6 @@ describe('validateStatPoints', () => {
   it('exposes config constants', () => {
     expect(CHARACTER_CREATION_CONFIG.pointBudget).toBe(10);
     expect(CHARACTER_CREATION_CONFIG.perStatMax).toBe(5);
-    expect(CHARACTER_CREATION_CONFIG.statIds).toHaveLength(5);
+    expect(CHARACTER_CREATION_CONFIG.statIds).toHaveLength(6);
   });
 });

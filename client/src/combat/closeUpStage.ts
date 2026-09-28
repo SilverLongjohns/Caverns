@@ -13,6 +13,7 @@ export interface Stage {
   title: string; subtitle: string;
   number: { value: number; kind: 'damage' | 'heal' } | null;
   band: string; tone: 'player' | 'enemy'; sound: 'crack' | 'boom' | 'shimmer' | null; variant: 'full' | 'strike';
+  miss: boolean;
 }
 
 const MAX_TARGETS = 3;
@@ -20,7 +21,7 @@ const BAND = { crit: '#6b4a12', kill: '#5a0f0a', enemy: '#2a0808', fallback: '#4
 
 export function artChainFor(
   p: { type: 'player' | 'mob'; className?: string; templateId?: string },
-  role: 'attack' | 'hurt' | 'cast',
+  role: 'attack' | 'hurt' | 'cast' | 'shoot',
   abilityArt?: string,
 ): string[] {
   const chain: string[] = [];
@@ -28,6 +29,7 @@ export function artChainFor(
     if (p.templateId && mobCloseUps.has(p.templateId)) chain.push(`/closeups/mobs/${p.templateId}.png`);
   } else {
     if (role === 'cast' && abilityArt) chain.push(abilityArt);
+    if (role === 'shoot' && p.className) chain.push(`/closeups/classes/${p.className}-ranged.png`);
     if (p.className) chain.push(`/closeups/classes/${p.className}-${role === 'hurt' ? 'hurt' : 'attack'}.png`);
     const portrait = p.className ? getClassPortrait(p.className) : null;
     if (portrait) chain.push(portrait);
@@ -58,7 +60,7 @@ export function stageFor(active: ActiveCloseUp): Stage {
   const targetType = ability?.targetType ?? 'enemy';
 
   const downed = new Set([...(r.downedIds ?? []), ...(r.targetDowned && r.targetId ? [r.targetId] : [])]);
-  const toStage = (p: CombatParticipant | undefined, side: 'left' | 'right', isActor: boolean, role: 'attack' | 'hurt' | 'cast'): StageActor | null =>
+  const toStage = (p: CombatParticipant | undefined, side: 'left' | 'right', isActor: boolean, role: 'attack' | 'hurt' | 'cast' | 'shoot'): StageActor | null =>
     p ? { id: p.id, name: p.name, side, art: artChainFor(p, role, ability?.closeUp?.art), downed: downed.has(p.id), isActor } : null;
 
   const targetIds = r.targetIds ?? (r.targetId ? [r.targetId] : []);
@@ -72,7 +74,7 @@ export function stageFor(active: ActiveCloseUp): Stage {
     left = [toStage(byId.get(r.targetId ?? ''), 'left', false, 'hurt')].filter(Boolean) as StageActor[];
     right = [toStage(actor, 'right', true, 'attack')].filter(Boolean) as StageActor[];
   } else {
-    const casterRole = r.action === 'use_ability' ? 'cast' : 'attack';
+    const casterRole = r.action === 'use_ability' ? 'cast' : r.action === 'shoot' ? 'shoot' : 'attack';
     const caster = toStage(actor, 'left', true, casterRole);
     if (r.action === 'use_ability' && (targetType === 'ally' || targetType === 'area_ally')) {
       layout = 'allies';
@@ -89,6 +91,7 @@ export function stageFor(active: ActiveCloseUp): Stage {
     }
   }
 
+  const miss = r.action === 'shoot' && r.hit === false;
   const damage = r.damage ?? r.pendingDamage;
   const number = damage ? { value: damage, kind: 'damage' as const } : r.healing ? { value: r.healing, kind: 'heal' as const } : null;
   const anyDowned = downed.size > 0;
@@ -100,5 +103,5 @@ export function stageFor(active: ActiveCloseUp): Stage {
   const classColor = actor?.className ? getClassDefinition(actor.className)?.color : undefined;
   const band = actorIsMob ? BAND.enemy : closeUp.kind === 'kill' ? BAND.kill : closeUp.kind === 'crit' ? BAND.crit : classColor ? shade(classColor) : BAND.fallback;
 
-  return { layout, left, right, extra, title, subtitle, number, band, tone: actorIsMob ? 'enemy' : 'player', sound, variant: strike ? 'strike' : 'full' };
+  return { layout, left, right, extra, title, subtitle, number, band, tone: actorIsMob ? 'enemy' : 'player', sound, variant: strike ? 'strike' : 'full', miss };
 }

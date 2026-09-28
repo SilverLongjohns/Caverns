@@ -4,7 +4,7 @@ import { join, extname } from 'path';
 import { fileURLToPath } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
 import type { ClientMessage, ServerMessage, CharacterSummary, Item, CharacterPanelView, Equipment } from '@caverns/shared';
-import { SHOP_TEMPLATES, validateStatPoints, computePlayerStats, PROGRESSION_CONFIG, ENERGY_CONFIG } from '@caverns/shared';
+import { SHOP_TEMPLATES, validateStatPoints, computePlayerStats, PROGRESSION_CONFIG, ENERGY_CONFIG, withStarterRanged } from '@caverns/shared';
 import { GameSession } from './GameSession.js';
 import { generateProceduralDungeon } from './ProceduralGenerator.js';
 import { db } from './db/connection.js';
@@ -91,10 +91,12 @@ function buildCharacterPanelView(ch: CharactersTable): CharacterPanelView {
   const earnedPoints = (ch.level - 1) * PROGRESSION_CONFIG.statPointsPerLevel;
   const unspentStatPoints = Math.max(0, earnedPoints - totalAllocated);
 
+  const equipment = withStarterRanged(ch.equipment, ch.class);
+
   // Compute stats using a minimal Player shape
   const tempPlayer = {
     className: ch.class,
-    equipment: ch.equipment,
+    equipment,
     statAllocations: ch.stat_allocations,
   } as import('@caverns/shared').Player;
   const stats = computePlayerStats(tempPlayer);
@@ -105,7 +107,7 @@ function buildCharacterPanelView(ch: CharactersTable): CharacterPanelView {
     level: ch.level,
     xp: ch.xp,
     gold: ch.gold,
-    equipment: ch.equipment,
+    equipment,
     inventory: ch.inventory,
     consumables: ch.consumables,
     statAllocations: ch.stat_allocations,
@@ -115,6 +117,7 @@ function buildCharacterPanelView(ch: CharactersTable): CharacterPanelView {
     defense: stats.defense,
     initiative: stats.initiative,
     maxEnergy: stats.maxEnergy,
+    marksmanship: stats.marksmanship,
   };
 }
 
@@ -999,7 +1002,7 @@ wss.on('connection', (ws) => {
         if (!ch) break;
         const inventory = [...ch.inventory];
         const consumables = [...ch.consumables];
-        const equipment = { ...ch.equipment };
+        const equipment = withStarterRanged({ ...ch.equipment }, ch.class);
         const item = inventory[msg.inventoryIndex];
         if (!item) {
           sendTo(playerId, { type: 'character_panel_error', reason: 'No item in that slot.' });
@@ -1105,6 +1108,8 @@ wss.on('connection', (ws) => {
           getGameSession(playerId)?.handleUseAbility(playerId, msg.abilityId, msg.targetId, msg.targetX, msg.targetY);
         } else if (msg.action === 'use_item_effect' && msg.effectId) {
           getGameSession(playerId)?.handleItemEffectAction(playerId, msg.effectId, msg.targetId);
+        } else if (msg.action === 'shoot' || msg.action === 'reload') {
+          getGameSession(playerId)?.handleRangedAction(playerId, msg.action, msg.targetId);
         } else {
           getGameSession(playerId)?.handleCombatAction(playerId, msg.action as 'attack' | 'defend' | 'use_item' | 'flee', msg.targetId, msg.itemIndex, msg.fleeDirection, msg.critMultiplier);
         }

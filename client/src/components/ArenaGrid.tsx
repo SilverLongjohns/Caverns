@@ -2,7 +2,7 @@ import { useMemo, useRef, useEffect, useLayoutEffect, useState, useCallback } fr
 import { useGameStore } from '../store/gameStore.js';
 import { TileGridView, type EntityOverlay } from './TileGridView.js';
 import { getParticipantGlyph } from '../glyphs.js';
-import type { TileGrid, CombatParticipant } from '@caverns/shared';
+import { chebyshev, type TileGrid, type CombatParticipant } from '@caverns/shared';
 import type { CSSProperties, RefObject } from 'react';
 import { useBoardFxStore } from '../combat/boardFxStore.js';
 import type { BoardFx } from '../combat/boardFx.js';
@@ -37,6 +37,8 @@ interface ArenaGridProps {
   ghostEntity?: { x: number; y: number } | null;
   animatingId?: string | null;
   animPath?: { x: number; y: number }[] | null;
+  /** Hit % to show above each targetable enemy while shoot-targeting; always visible (not hover-only). */
+  hitLabels?: Map<string, number>;
 }
 
 function getEntityChar(participant: CombatParticipant): string {
@@ -64,7 +66,7 @@ export function ArenaGrid({
   grid, positions, participants, playerId,
   movementRange, isTargeting, onTileClick,
   onTileHover, onTileHoverEnd, tileHighlights, ghostEntity,
-  animatingId, animPath,
+  animatingId, animPath, hitLabels,
 }: ArenaGridProps) {
   const currentTurnId = useGameStore((s) => s.currentTurnId);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,15 +86,17 @@ export function ArenaGrid({
   const unitFx = useMemo(() => {
     const m = new Map<string, { cls: string; style: Record<string, string> }>();
     for (const f of fx) {
-      if (f.kind === 'number') continue;
+      if (f.kind === 'number' || f.kind === 'projectile' || f.kind === 'tag') continue;
       const cur = m.get(f.unitId) ?? { cls: '', style: {} };
       if (f.kind === 'lunge') { cur.cls += ` fx-lunge fx-lunge-${f.dir}`; cur.style['--fx-lunge-delay'] = `${f.delayMs}ms`; }
+      else if (f.kind === 'recoil') { cur.cls += ` fx-recoil fx-recoil-${f.dir}`; cur.style['--fx-recoil-delay'] = `${f.delayMs}ms`; }
       else { cur.cls += ' fx-tear'; cur.style['--fx-tear-delay'] = `${f.delayMs}ms`; }
       m.set(f.unitId, cur);
     }
     return m;
   }, [fx]);
   const numbers = useMemo(() => fx.filter((f): f is Extract<BoardFx, { kind: 'number' }> => f.kind === 'number'), [fx]);
+  const overlayFx = useMemo(() => fx.filter((f): f is Extract<BoardFx, { kind: 'projectile' | 'tag' }> => f.kind === 'projectile' || f.kind === 'tag'), [fx]);
 
   // Entities for inline rendering — exclude the currently-animating entity
   const entities: EntityOverlay[] = useMemo(() => {
@@ -290,6 +294,7 @@ export function ArenaGrid({
             style={{ display: 'none', position: 'absolute', pointerEvents: 'none' }}
           />
           <FxNumbers numbers={numbers} worldRef={worldRef} />
+          <FxOverlay fx={overlayFx} hitLabels={hitLabels} positions={positions} worldRef={worldRef} />
         </div>
         {view.x > 0 && <div className="arena-edge arena-edge-l" />}
         {view.x + cols < grid.width && <div className="arena-edge arena-edge-r" />}
@@ -330,6 +335,91 @@ function FxNumbers({ numbers, worldRef }: { numbers: Extract<BoardFx, { kind: 'n
           {n.value}
         </span>
       ))}
+    </>
+  );
+}
+
+type CellRect = { left: number; top: number; width: number; height: number };
+
+function FxOverlay({ fx, hitLabels, positions, worldRef }: {
+  fx: Extract<BoardFx, { kind: 'projectile' | 'tag' }>[];
+  hitLabels?: Map<string, number>;
+  positions: Record<string, { x: number; y: number }>;
+  worldRef: RefObject<HTMLDivElement | null>;
+}) {
+  const [rects, setRects] = useState<Record<string, CellRect>>({});
+
+  useLayoutEffect(() => {
+    const world = worldRef.current;
+    const gridEl = world?.querySelector('.room-grid') as HTMLElement | null;
+    if (!world || !gridEl) return;
+    const pr = world.getBoundingClientRect();
+    const tiles = new Map<string, { x: number; y: number }>();
+    for (const f of fx) {
+      if (f.kind === 'projectile') {
+        tiles.set(`from:${f.id}`, f.from);
+        tiles.set(`to:${f.id}`, f.to);
+      } else {
+        tiles.set(`tag:${f.id}`, f.tile);
+      }
+    }
+    if (hitLabels) {
+      for (const id of hitLabels.keys()) {
+        const p = positions[id];
+        if (p) tiles.set(`hit:${id}`, p);
+      }
+    }
+    const next: Record<string, CellRect> = {};
+    for (const [key, tile] of tiles) {
+      const r = getCellRect(gridEl, tile.x, tile.y);
+      if (r) next[key] = { left: r.left - pr.left, top: r.top - pr.top, width: r.width, height: r.height };
+    }
+    setRects(next);
+  }, [fx, hitLabels, positions, worldRef]);
+
+  return (
+    <>
+      {fx.map((f) => {
+        if (f.kind === 'tag') {
+          const r = rects[`tag:${f.id}`];
+          if (!r) return null;
+          return (
+            <span key={f.id} className={`fx-tag fx-tag--${f.text === 'MISS' ? 'miss' : 'reload'}`}
+              style={{ left: r.left, top: r.top - 14, width: r.width, animationDelay: `${f.delayMs}ms` }}>
+              {f.text}
+            </span>
+          );
+        }
+        const fromR = rects[`from:${f.id}`];
+        const toR = rects[`to:${f.id}`];
+        if (!fromR || !toR) return null;
+        const tileDist = Math.max(1, chebyshev(f.from, f.to));
+        const fromCx = fromR.left + fromR.width / 2;
+        const fromCy = fromR.top + fromR.height / 2;
+        let dx = (toR.left + toR.width / 2) - fromCx;
+        let dy = (toR.top + toR.height / 2) - fromCy;
+        if (!f.hit) {
+          dx = dx * (1 + 1.5 / tileDist);
+          dy = dy * (1 + 1.5 / tileDist);
+        }
+        const style: Record<string, string> = {
+          left: `${fromCx}px`, top: `${fromCy}px`,
+          '--fx-dx': `${dx}px`, '--fx-dy': `${dy}px`,
+          '--fx-travel': `${f.travelMs}ms`, '--fx-delay': `${f.delayMs}ms`,
+        };
+        return (
+          <span key={f.id} className={`fx-bolt${f.hit ? '' : ' fx-bolt--miss'}`} style={style as CSSProperties} />
+        );
+      })}
+      {hitLabels && [...hitLabels.entries()].map(([id, chance]) => {
+        const r = rects[`hit:${id}`];
+        if (!r) return null;
+        return (
+          <span key={`hit-${id}`} className="fx-hit" style={{ left: r.left, top: r.top - 12, width: r.width }}>
+            {Math.round(chance * 100)}%
+          </span>
+        );
+      })}
     </>
   );
 }

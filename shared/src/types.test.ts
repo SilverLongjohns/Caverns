@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computePlayerStats, createPlayer, getPlayerEquippedEffects } from './types.js';
+import { computePlayerStats, createPlayer, getPlayerEquippedEffects, CLASS_DEFINITIONS, PROGRESSION_CONFIG } from './index.js';
 import type { InteractableInstance, InteractableDefinition, OutcomeType } from './types.js';
 
 describe('createPlayer', () => {
@@ -122,5 +122,29 @@ describe('Interactable types', () => {
     };
     expect(def.actions).toHaveLength(1);
     expect(def.actions[0].outcomes.weights.loot).toBe(40);
+  });
+});
+
+describe('ranged slot and marksmanship', () => {
+  const gun = { id: 'g', name: 'Test Sidearm', description: '', rarity: 'common' as const, slot: 'ranged' as const, stats: { damage: 7, range: 2, magazine: 3 } };
+  it('a new player has an empty ranged slot', () => {
+    expect(createPlayer('p', 'P', 'r', CLASS_DEFINITIONS[0].id).equipment.ranged).toBeNull();
+  });
+  it('gun damage never adds to melee damage', () => {
+    const p = createPlayer('p', 'P', 'r', CLASS_DEFINITIONS[0].id);
+    const before = computePlayerStats(p).damage;
+    p.equipment.ranged = gun;
+    expect(computePlayerStats(p).damage).toBe(before);
+  });
+  it('marksmanship = class base + allocated points', () => {
+    const cls = CLASS_DEFINITIONS[0];
+    const p = createPlayer('p', 'P', 'r', cls.id);
+    expect(computePlayerStats(p).marksmanship).toBe(cls.baseStats.marksmanship);
+    const def = PROGRESSION_CONFIG.statDefinitions.find((d) => d.internalStat === 'marksmanship')!;
+    p.statAllocations[def.id] = 3;
+    expect(computePlayerStats(p).marksmanship).toBe(cls.baseStats.marksmanship + 3 * def.perPoint);
+  });
+  it('every class has a marksmanship base', () => {
+    for (const c of CLASS_DEFINITIONS) expect(c.baseStats.marksmanship, c.id).toBeGreaterThanOrEqual(0);
   });
 });

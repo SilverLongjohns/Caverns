@@ -4,7 +4,7 @@ import type { AbilityDefinition } from '../classTypes.js';
 import type { CombatActionResultMessage } from '../messages.js';
 import type { CombatParticipant } from '../types.js';
 
-export const CLOSE_UP_CONFIG: { abilityMs: number; critMs: number; killMs: number; strikeMs: number; impactAt: number; maxQueued: number } = closeUpConfig;
+export const CLOSE_UP_CONFIG: { abilityMs: number; critMs: number; killMs: number; strikeMs: number; shotMs: number; impactAt: number; maxQueued: number } = closeUpConfig;
 
 export type CloseUpKind = 'ability' | 'crit' | 'kill' | 'strike';
 export interface CloseUp { kind: CloseUpKind; durationMs: number }
@@ -28,6 +28,12 @@ export function closeUpFor(r: Partial<CombatActionResultMessage>, ctx: Ctx): Clo
       if (r.targetDowned) return make('kill');
       if ((r.critMultiplier ?? 1) > 1) return make('crit');
       return make('strike');
+    }
+    if (r.action === 'shoot') {
+      // A kill shot lasts at least as long as an ordinary shot, so the close-up never cuts away early.
+      return r.targetDowned
+        ? { kind: 'kill', durationMs: Math.max(CLOSE_UP_CONFIG.killMs, CLOSE_UP_CONFIG.shotMs) }
+        : { kind: 'strike', durationMs: CLOSE_UP_CONFIG.shotMs };
     }
     return null;
   }

@@ -516,6 +516,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           const participants = state.activeCombat.participants.map((p) => {
             if (p.id === msg.targetId && msg.targetHp !== undefined) return { ...p, hp: msg.targetHp };
             if (p.id === msg.actorId && msg.actorHp !== undefined) return { ...p, hp: msg.actorHp };
+            if (p.id === msg.actorId && msg.ammo !== undefined) return { ...p, ammo: msg.ammo };
             return p;
           }).filter((p) => {
             // Still remove fled actors immediately

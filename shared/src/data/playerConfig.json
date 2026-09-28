@@ -5,6 +5,7 @@
     "maxHp": 50,
     "damage": 5,
     "defense": 2,
-    "initiative": 5
+    "initiative": 5,
+    "marksmanship": 2
   }
 }

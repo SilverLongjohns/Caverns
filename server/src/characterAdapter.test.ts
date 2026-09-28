@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { CLASS_STARTER_ITEMS, CLASS_DEFINITIONS } from '@caverns/shared';
 import { playerFromCharacter, characterSnapshotFromPlayer } from './characterAdapter.js';
 import type { CharactersTable } from './db/types.js';
 
@@ -49,5 +50,17 @@ describe('characterAdapter', () => {
     expect(snap.keychain).toEqual(p.keychain);
     expect(snap.stat_allocations).toEqual(p.statAllocations);
     expect(snap.level).toBe(p.level);
+  });
+
+  it('pre-ranged save (no ranged key) gets the class starter gun', () => {
+    const cls = CLASS_DEFINITIONS[0].id;
+    const ch = { ...baseCharacter(), class: cls, equipment: { weapon: null, offhand: null, armor: null, accessory: null } };
+    expect(playerFromCharacter(ch as never, 'c1', 'r1').equipment.ranged?.id).toBe(CLASS_STARTER_ITEMS[cls].ranged.id);
+  });
+
+  it('a save with ranged: null stays empty', () => {
+    const cls = CLASS_DEFINITIONS[0].id;
+    const ch = { ...baseCharacter(), class: cls, equipment: { weapon: null, offhand: null, armor: null, accessory: null, ranged: null } };
+    expect(playerFromCharacter(ch as never, 'c1', 'r1').equipment.ranged).toBeNull();
   });
 });

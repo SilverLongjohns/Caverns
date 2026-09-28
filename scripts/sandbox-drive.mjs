@@ -11,6 +11,10 @@ Steps (run in order):
   --shot <name>                screenshot to <out>/<name>.png
   --end-turn [n]               click End Turn on my next n turns (default 1, must be a positive integer)
   --attack-nearest             click Attack, then an adjacent enemy
+  --shoot-mode                  click Shoot (enters targeting; use --shot to capture highlights/hit %)
+  --shoot-nearest               click Shoot, then the closest highlighted (in-range/LoS) enemy
+  --reload                     click Reload
+  --settle [ms]                 pause ms (default 400) — lets a server round trip / CSS animation land before a --shot
   --click x,y                  click arena cell x,y — it must be inside the visible camera window;
                                 use --wait my-turn and --pan first
   --pan left|right|up|down[,n] press an arrow key n times (n defaults to 1, must be a positive integer)
@@ -57,6 +61,16 @@ for (let i = 1; i < argv.length; i++) {
     }
     case '--wait': steps.push({ kind: 'wait', what: next() }); break;
     case '--shot': steps.push({ kind: 'shot', name: next() }); break;
+    case '--settle': {
+      let ms = 400;
+      if (argv[i + 1] && !argv[i + 1].startsWith('--')) {
+        const v = next();
+        if (!isPosInt(v)) fail(`Invalid --settle "${v}" (expected a positive integer of ms)`);
+        ms = Number(v);
+      }
+      steps.push({ kind: 'settle', ms });
+      break;
+    }
     case '--end-turn': {
       let n = 1;
       if (argv[i + 1] && !argv[i + 1].startsWith('--')) {
@@ -68,6 +82,9 @@ for (let i = 1; i < argv.length; i++) {
       break;
     }
     case '--attack-nearest': steps.push({ kind: 'attack-nearest' }); break;
+    case '--shoot-mode': steps.push({ kind: 'shoot-mode' }); break;
+    case '--shoot-nearest': steps.push({ kind: 'shoot-nearest' }); break;
+    case '--reload': steps.push({ kind: 'reload' }); break;
     case '--click': {
       const v = next();
       const m = /^(\d+),(\d+)$/.exec(v);
@@ -181,6 +198,38 @@ try {
         await cell(pos.x, pos.y).click();
         break;
       }
+      case 'settle':
+        await page.waitForTimeout(s.ms);
+        break;
+      case 'shoot-mode':
+        await waitFor((x) => x.status === 'my_turn', 'my turn', 60000);
+        await page.click('.arena-btn-shoot');
+        break;
+      case 'shoot-nearest': {
+        const h = await waitFor((x) => x.status === 'my_turn', 'my turn', 60000);
+        const me = h.positions[h.playerId];
+        if (await page.locator('.arena-btn-shoot').count()) await page.click('.arena-btn-shoot');
+        const highlighted = await page.evaluate(() => {
+          const out = [];
+          document.querySelectorAll('.room-grid > .room-row').forEach((row, y) => {
+            row.querySelectorAll(':scope > span').forEach((cellEl, x) => {
+              if (cellEl.classList.contains('arena-range-highlight')) out.push({ x, y });
+            });
+          });
+          return out;
+        });
+        if (!highlighted.length) throw new Error('No shootable target is highlighted (out of range/LoS, or no ammo)');
+        highlighted.sort((a, b) =>
+          (Math.abs(a.x - me.x) + Math.abs(a.y - me.y)) - (Math.abs(b.x - me.x) + Math.abs(b.y - me.y)));
+        const pos = highlighted[0];
+        await assertCellVisible(pos.x, pos.y);
+        await cell(pos.x, pos.y).click();
+        break;
+      }
+      case 'reload':
+        await waitFor((x) => x.status === 'my_turn', 'my turn', 60000);
+        await page.locator('button.arena-btn', { hasText: 'Reload' }).click();
+        break;
       case 'click':
         await assertCellVisible(s.x, s.y);
         await cell(s.x, s.y).click();

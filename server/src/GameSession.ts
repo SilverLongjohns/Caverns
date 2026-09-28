@@ -24,6 +24,7 @@ import {
   getPlayerEquippedEffects,
   computePlayerStats,
   closeUpForParticipants,
+  rangedProfile,
   type CombatActionResultMessage,
   type EquippedEffect,
   type EquipmentSlot,
@@ -87,7 +88,7 @@ export interface SessionTiming {
 export interface ArenaSnapshot {
   grid: TileGrid;
   positions: Record<string, { x: number; y: number }>;
-  participants: { id: string; type: 'player' | 'mob'; hp: number }[];
+  participants: { id: string; type: 'player' | 'mob'; hp: number; ranged?: { ammo: number; magazine: number; range: number; marksmanship: number } }[];
   currentTurnId: string;
   roundNumber: number;
   movementRemaining: number;
@@ -242,7 +243,11 @@ export class GameSession {
       positions: combat.getAllPositions(),
       participants: combat.getParticipantsArray()
         .filter((p) => p.alive)
-        .map((p) => ({ id: p.id, type: p.type, hp: p.hp })),
+        .map((p) => {
+          const gun = combat.getCombatManager().getRanged(p.id);
+          return { id: p.id, type: p.type, hp: p.hp,
+            ...(gun ? { ranged: { ammo: gun.ammo, magazine: gun.profile.magazine, range: gun.profile.range, marksmanship: gun.profile.marksmanship } } : {}) };
+        }),
       currentTurnId: state.currentTurnId,
       roundNumber: state.roundNumber,
       movementRemaining: combat.getTurnState(state.currentTurnId)?.movementRemaining ?? 0,
@@ -817,14 +822,21 @@ export class GameSession {
     this.startCombat(roomId, mobs);
   }
 
+  /** What a player brings into combat: computed stats plus their gun profile. */
+  private combatPlayerInfo(p: Player): CombatPlayerInfo {
+    const stats = this.playerManager.getComputedStats(p.id);
+    return {
+      id: p.id, name: p.name, hp: p.hp, maxHp: stats.maxHp,
+      damage: stats.damage, defense: stats.defense, initiative: stats.initiative,
+      className: p.className, ranged: rangedProfile(p),
+    };
+  }
+
   private startCombat(roomId: string, mobInstances: MobInstance[]): void {
     if (mobInstances.length === 0) return;
     const leaderTemplate = this.mobs.get(mobInstances[0].templateId);
     const playersInRoom = this.playerManager.getPlayersInRoom(roomId);
-    const combatPlayers: CombatPlayerInfo[] = playersInRoom.map((p) => {
-      const stats = this.playerManager.getComputedStats(p.id);
-      return { id: p.id, name: p.name, hp: p.hp, maxHp: stats.maxHp, damage: stats.damage, defense: stats.defense, initiative: stats.initiative, className: p.className };
-    });
+    const combatPlayers: CombatPlayerInfo[] = playersInRoom.map((p) => this.combatPlayerInfo(p));
     const playerEffects = new Map<string, EquippedEffect[]>();
     const usedDungeonEffects = new Map<string, string[]>();
     for (const p of playersInRoom) {
@@ -897,14 +909,9 @@ export class GameSession {
     const combat = this.combats.get(roomId);
     if (!combat) return;
     const player = this.playerManager.getPlayer(playerId)!;
-    const stats = this.playerManager.getComputedStats(playerId);
     this.playerManager.setStatus(playerId, 'in_combat');
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
-    combat.addPlayer({
-      id: playerId, name: player.name, hp: player.hp,
-      maxHp: stats.maxHp, damage: stats.damage, defense: stats.defense, initiative: stats.initiative,
-      className: player.className,
-    }, getPlayerEquippedEffects(player), [...(player.usedEffects ?? [])]);
+    combat.addPlayer(this.combatPlayerInfo(player), getPlayerEquippedEffects(player), [...(player.usedEffects ?? [])]);
     this.broadcastToRoom(roomId, { type: 'text_log', message: `${player.name} joins the fight!`, logType: 'combat' });
     // Send full combat start only to the joining player (not the intro-triggering broadcast)
     this.sendTo(playerId, {
@@ -1072,6 +1079,30 @@ export class GameSession {
     this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
     combat.advanceTurn();
     this.afterCombatTurn(combatRoomId, combat, closeUpMs);
+  }
+
+  handleRangedAction(playerId: string, action: 'shoot' | 'reload', targetId?: string): void {
+    const player = this.playerManager.getPlayer(playerId);
+    if (!player || player.status !== 'in_combat') return;
+    const combat = this.combats.get(player.roomId);
+    if (!combat || !this.canActNow(player.roomId, combat, playerId)) return;
+    const outcome = action === 'shoot'
+      ? (targetId ? combat.shoot(playerId, targetId) : { ok: false as const, reason: 'No target.' })
+      : combat.reload(playerId);
+    if (!outcome.ok) {
+      this.sendTo(playerId, { type: 'error', message: outcome.reason });
+      return;
+    }
+    combat.cancelAfkTimer();
+    const roomId = player.roomId;
+    this.broadcastToRoom(roomId, { type: 'combat_action_result', ...outcome.result } as any);
+    const closeUpMs = this.closeUpDelay(combat, outcome.result);
+    this.narrateCombatAction(roomId, outcome.result);
+    combat.markActionTaken(playerId);
+    this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
+    this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+    combat.advanceTurn();
+    this.afterCombatTurn(roomId, combat, closeUpMs);
   }
 
   handleDefendResult(playerId: string, damageReduction: number): void {
@@ -1396,6 +1427,18 @@ export class GameSession {
         message = `${result.actorName} flees ${result.fleeDirection ?? 'away'}!`;
         if (result.damage) message += ` Takes ${result.damage} opportunity damage!`;
         break;
+      case 'shoot': {
+        message = result.hit
+          ? `${result.actorName} shoots ${result.targetName} for ${result.damage} damage!`
+          : `${result.actorName}'s shot at ${result.targetName} goes wide.`;
+        if (result.targetDowned) message += ` ${result.targetName} goes down!`;
+        break;
+      }
+      case 'reload': {
+        const gun = this.playerManager.getPlayer(result.actorId)?.equipment.ranged?.name ?? 'weapon';
+        message = `${result.actorName} reloads the ${gun}.`;
+        break;
+      }
     }
     if (message) this.broadcastToRoom(roomId, { type: 'text_log', message, logType: 'combat' });
   }
@@ -2092,7 +2135,7 @@ export class GameSession {
   }
 
   private buildSecretRoomLootPool(): Item[] {
-    const slots: EquipmentSlot[] = ['weapon', 'offhand', 'armor', 'accessory'];
+    const slots: EquipmentSlot[] = ['weapon', 'offhand', 'armor', 'accessory', 'ranged'];
     const pool: Item[] = [];
     for (const slot of slots) {
       pool.push(

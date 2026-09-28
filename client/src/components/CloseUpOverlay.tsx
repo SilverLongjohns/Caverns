@@ -40,7 +40,7 @@ export function CloseUpOverlay() {
   const style = { '--closeup-dur': `${current.closeUp.durationMs}ms`, '--closeup-band': stage.band } as CSSProperties;
 
   return (
-    <div key={current.id} className={`closeup closeup--${stage.layout} closeup--${stage.tone} closeup--${stage.variant}${reduced ? ' closeup--still' : ''}`}
+    <div key={current.id} className={`closeup closeup--${stage.layout} closeup--${stage.tone} closeup--${stage.variant}${stage.miss ? ' closeup--miss' : ''}${reduced ? ' closeup--still' : ''}`}
       style={style} onPointerDown={(e) => { e.preventDefault(); skip(); }} role="presentation">
       <div className="closeup__dim" />
       <div className="closeup__band">
@@ -58,6 +58,7 @@ export function CloseUpOverlay() {
           {stage.subtitle && <span className="closeup__subtitle">{stage.subtitle}</span>}
         </div>
       )}
+      {stage.miss && <div className="closeup__number closeup__number--miss"><span>MISS</span></div>}
     </div>
   );
 }

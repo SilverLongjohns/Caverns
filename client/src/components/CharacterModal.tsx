@@ -3,21 +3,12 @@ import { getClassPortrait } from '../classPortraits.js';
 import { ScreenTransition, MenuConsole } from './menu/index.js';
 import { RelicButton, ItemIcon } from './relic/index.js';
 import { PROGRESSION_CONFIG } from '@caverns/shared';
-import type { Item, ItemStats, CharacterPanelView } from '@caverns/shared';
+import type { Item, CharacterPanelView } from '@caverns/shared';
+import { formatItemStats } from '../ui/itemStatText.js';
 
 const STAT_DISPLAY_NAMES: Record<string, string> = {};
 for (const def of PROGRESSION_CONFIG.statDefinitions) {
   STAT_DISPLAY_NAMES[def.internalStat] = def.displayName;
-}
-
-function formatStats(stats: ItemStats): string {
-  const parts: string[] = [];
-  if (stats.damage) parts.push(`+${stats.damage} ${STAT_DISPLAY_NAMES['damage'] ?? 'dmg'}`);
-  if (stats.defense) parts.push(`+${stats.defense} ${STAT_DISPLAY_NAMES['defense'] ?? 'def'}`);
-  if (stats.maxHp) parts.push(`+${stats.maxHp} ${STAT_DISPLAY_NAMES['maxHp'] ?? 'hp'}`);
-  if (stats.initiative) parts.push(`+${stats.initiative} ${STAT_DISPLAY_NAMES['initiative'] ?? 'init'}`);
-  if (stats.healAmount) parts.push(`heals ${stats.healAmount}`);
-  return parts.join(', ');
 }
 
 interface Props {
@@ -87,6 +78,7 @@ function CharacterPanelBody({ panel, onEquipItem, onDropItem, onAllocateStat }: 
             <div className="char-stat">{STAT_DISPLAY_NAMES['defense'] ?? 'Defense'}: {panel.defense}</div>
             <div className="char-stat">{STAT_DISPLAY_NAMES['initiative'] ?? 'Initiative'}: {panel.initiative}</div>
             <div className="char-stat">{STAT_DISPLAY_NAMES['maxEnergy'] ?? 'Energy'}: {panel.maxEnergy}</div>
+            <div className="char-stat">{STAT_DISPLAY_NAMES['marksmanship'] ?? 'Marksmanship'}: {panel.marksmanship}</div>
           </div>
 
           {panel.unspentStatPoints > 0 && (
@@ -111,6 +103,7 @@ function CharacterPanelBody({ panel, onEquipItem, onDropItem, onAllocateStat }: 
               <EquipSlot item={panel.equipment.offhand} label="Off-hand" />
               <EquipSlot item={panel.equipment.armor} label="Armor" />
               <EquipSlot item={panel.equipment.accessory} label="Accessory" />
+              <EquipSlot item={panel.equipment.ranged ?? null} label="Ranged" />
             </div>
           </section>
 
@@ -123,7 +116,7 @@ function CharacterPanelBody({ panel, onEquipItem, onDropItem, onAllocateStat }: 
                     <div className="char-item-row">
                       <ItemIcon item={item} />
                       <span className={`rarity-${item.rarity}`} title={item.description}>
-                        {item.name} <span className="item-stats">{formatStats(item.stats)}</span>
+                        {item.name} <span className="item-stats">{formatItemStats(item.stats)}</span>
                       </span>
                     </div>
                   ) : (
@@ -145,7 +138,7 @@ function CharacterPanelBody({ panel, onEquipItem, onDropItem, onAllocateStat }: 
                       <span className={`rarity-${item.rarity}`} title={item.description}>
                         {item.name}
                       </span>
-                      <span className="item-stats">{formatStats(item.stats)}</span>
+                      <span className="item-stats">{formatItemStats(item.stats)}</span>
                       <RelicButton size="sm" className="equip-btn" onClick={() => onEquipItem(i)}>
                         {item.slot === 'consumable' ? 'Stow' : 'Equip'}
                       </RelicButton>
@@ -169,7 +162,7 @@ function EquipSlot({ item, label }: { item: Item | null; label: string }) {
       {item && <ItemIcon item={item} />}
       {item ? (
         <span className={`rarity-${item.rarity}`} title={item.description}>
-          {item.name} <span className="item-stats">{formatStats(item.stats)}</span>
+          {item.name} <span className="item-stats">{formatItemStats(item.stats)}</span>
           {item.effect && (
             <span className="item-effect"> [{item.effect.replace(/_/g, ' ')}]</span>
           )}

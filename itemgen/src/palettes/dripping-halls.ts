@@ -32,6 +32,7 @@ export const DRIPPING_HALLS_PALETTE: BiomePalette = {
       offhand: ['buckler', 'shield', 'orb', 'lantern', 'tome', 'ward'],
       armor: ['wrap', 'vest', 'plate', 'mail', 'hauberk', 'mantle'],
       accessory: ['amulet', 'ring', 'charm', 'pendant', 'circlet', 'brooch'],
+      ranged: ['scattergun', 'sidearm', 'long rifle', 'autogun'],
     },
   },
 };

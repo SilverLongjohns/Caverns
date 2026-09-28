@@ -20,7 +20,7 @@ export function isItemArchetype(v: unknown): v is ItemArchetype {
 
 export const ARCHETYPE_SLOTS: Record<ItemArchetype, readonly ItemSlot[]> = {
   blade: ['weapon'], dagger: ['weapon', 'offhand'], blunt: ['weapon'], axe: ['weapon'],
-  polearm: ['weapon'], staff: ['weapon'], ranged: ['weapon'],
+  polearm: ['weapon'], staff: ['weapon'], ranged: ['weapon', 'ranged'],
   shield: ['offhand'], focus: ['offhand'], tome: ['offhand'],
   armor_light: ['armor'], armor_medium: ['armor'], armor_heavy: ['armor'],
   ring: ['accessory'], amulet: ['accessory'], charm: ['accessory'], circlet: ['accessory'],
@@ -30,6 +30,7 @@ export const ARCHETYPE_SLOTS: Record<ItemArchetype, readonly ItemSlot[]> = {
 
 export const SLOT_DEFAULT_ARCHETYPE: Record<ItemSlot, ItemArchetype> = {
   weapon: 'blade', offhand: 'shield', armor: 'armor_light', accessory: 'amulet', consumable: 'consumable_misc',
+  ranged: 'ranged',
 };
 
 // Whole-word keywords (lowercase; multi-word allowed). Covers every base type in itemgen's palettes.
@@ -40,7 +41,7 @@ const KEYWORDS: Record<ItemArchetype, readonly string[]> = {
   axe: ['axe', 'cleaver'],
   polearm: ['spear', 'lance', 'harpoon', 'trident'],
   staff: ['staff'],
-  ranged: ['crossbow', 'bow'],
+  ranged: ['crossbow', 'bow', 'gun', 'autogun', 'rifle', 'pistol', 'sidearm', 'scattergun', 'blunderbuss', 'repeater'],
   shield: ['shield', 'buckler', 'ward', 'bulwark', 'guard'],
   focus: ['orb', 'focus', 'lantern', 'symbol', 'horn', 'gauntlet', 'toolkit', 'cloak'],
   tome: ['tome'],

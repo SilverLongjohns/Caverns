@@ -32,6 +32,7 @@ export const STARTER_PALETTE: BiomePalette = {
       offhand: ['shield', 'buckler', 'round shield', 'kite shield', 'tower shield', 'parrying dagger'],
       armor: ['vest', 'tunic', 'mail', 'plate', 'brigandine', 'cuirass', 'hauberk', 'gambeson'],
       accessory: ['ring', 'amulet', 'pendant', 'bracelet', 'brooch', 'circlet', 'talisman'],
+      ranged: ['scattergun', 'sidearm', 'long rifle', 'autogun'],
     },
   },
 };

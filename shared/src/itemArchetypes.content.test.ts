@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import items from './data/items.json' with { type: 'json' };
 import uniqueItems from './data/uniqueItems.json' with { type: 'json' };
-import { STARTER_WEAPON, STARTER_POTION, CLASS_STARTER_ITEMS, DRIPPING_HALLS } from './content.js';
+import { STARTER_WEAPON, STARTER_POTION, CLASS_STARTER_ITEMS, LEGACY_REPEATING_CROSSBOW, DRIPPING_HALLS } from './content.js';
 import { isItemArchetype, ARCHETYPE_SLOTS } from './itemArchetypes.js';
 import type { ItemSlot } from './types.js';
 
@@ -12,7 +12,8 @@ const all: Authored[] = [
   ...(uniqueItems as Authored[]),
   STARTER_WEAPON as Authored,
   STARTER_POTION as Authored,
-  ...Object.values(CLASS_STARTER_ITEMS).flatMap((c) => [c.weapon, c.offhand] as Authored[]),
+  ...Object.values(CLASS_STARTER_ITEMS).flatMap((c) => [c.weapon, c.offhand, c.ranged] as Authored[]),
+  LEGACY_REPEATING_CROSSBOW as Authored,
   ...(DRIPPING_HALLS.items as Authored[]),
 ];
 

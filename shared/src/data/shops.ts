@@ -25,6 +25,7 @@ export const SHOP_DROP_SPECS: Record<string, DropSpec> = {
           { type: 'generated', slot: 'offhand',   skullRating: 1, weight: 2 },
           { type: 'generated', slot: 'armor',     skullRating: 1, weight: 3 },
           { type: 'generated', slot: 'accessory', skullRating: 1, weight: 2 },
+          { type: 'generated', slot: 'ranged',    skullRating: 1, weight: 2 },
         ],
       },
     ],

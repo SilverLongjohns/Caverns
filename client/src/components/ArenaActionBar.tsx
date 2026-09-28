@@ -13,6 +13,11 @@ interface ArenaActionBarProps {
   canFlee: boolean;
   /** True while ArenaView is waiting on a map click (move/attack/ability targeting). */
   mapTargeting: boolean;
+  /** Rounds left in the local player's gun; null means no gun equipped. */
+  ammo: number | null;
+  magazine: number;
+  /** Effective (Marksmanship-adjusted) range of the local player's gun; null means no gun equipped. */
+  gunRange: number | null;
   onMoveMode: () => void;
   onCancelMove: () => void;
   onAttackMode: () => void;
@@ -24,6 +29,9 @@ interface ArenaActionBarProps {
   onAbilityMode: (ability: AbilityDefinition) => void;
   onCancelAbility: () => void;
   onUseAbility: (abilityId: string, targetId?: string, targetX?: number, targetY?: number) => void;
+  onShootMode: () => void;
+  onCancelShoot: () => void;
+  onReload: () => void;
 }
 
 function formatItemStat(stats: ItemStats): string {
@@ -33,10 +41,11 @@ function formatItemStat(stats: ItemStats): string {
 }
 
 export function ArenaActionBar({
-  isMyTurn, actionTaken, movementRemaining, canFlee, mapTargeting,
+  isMyTurn, actionTaken, movementRemaining, canFlee, mapTargeting, ammo, magazine, gunRange,
   onMoveMode, onCancelMove, onAttackMode, onCancelAttack,
   onDefend, onFlee, onEndTurn, onUseItem,
   onAbilityMode, onCancelAbility, onUseAbility,
+  onShootMode, onCancelShoot, onReload,
 }: ArenaActionBarProps) {
   const player = useGameStore((s) => s.players[s.playerId]);
   const [mode, setMode] = useState<ArenaActionMode>({ mode: 'idle' });
@@ -61,6 +70,7 @@ export function ArenaActionBar({
     onCancelMove();
     onCancelAttack();
     onCancelAbility();
+    onCancelShoot();
   };
 
   const handleDefend = () => {
@@ -120,6 +130,19 @@ export function ArenaActionBar({
             disabled={actionTaken}>
             Attack
           </RelicButton>
+          {ammo !== null && (
+            <>
+              <RelicButton className="arena-btn arena-btn-shoot" icon={actionIconSrc('shoot')}
+                onClick={() => { setMode({ mode: 'target_shoot' }); onShootMode(); }}
+                disabled={actionTaken || ammo <= 0}>
+                Shoot {ammo}/{magazine}
+              </RelicButton>
+              <RelicButton className="arena-btn" icon={actionIconSrc('reload')} onClick={onReload}
+                disabled={actionTaken || ammo >= magazine}>
+                Reload
+              </RelicButton>
+            </>
+          )}
           <RelicButton className="arena-btn arena-btn-defend" icon={actionIconSrc('defend')} onClick={handleDefend}
             disabled={actionTaken}>
             Defend
@@ -154,6 +177,13 @@ export function ArenaActionBar({
       {effectiveMode.mode === 'target_attack' && (
         <>
           <span className="waiting-text">Click an adjacent enemy to attack...</span>
+          <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
+        </>
+      )}
+
+      {effectiveMode.mode === 'target_shoot' && (
+        <>
+          <span className="waiting-text">Choose a target to shoot{gunRange != null ? ` (range ${gunRange})` : ''}...</span>
           <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
         </>
       )}

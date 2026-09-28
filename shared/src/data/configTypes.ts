@@ -34,6 +34,7 @@ export interface PlayerConfig {
     damage: number;
     defense: number;
     initiative: number;
+    marksmanship: number;
   };
 }
 

@@ -6,14 +6,15 @@ import { decideTurn } from './autoPlayer.js';
 import { SANDBOX_ROOM_ID } from './sandboxContent.js';
 
 // Regression for the F1 bug: a bot's queued end_turn step (from decideTurn's trailing
-// END in [attack, END] / [move, attack, END]) fires botTurnDelayMs later regardless of
-// whose turn it now is. GameSession.handleCombatAction already advances the turn after
-// an attack, so if the turn comes back around to the same bot before the stale END
-// fires, it cuts off a turn the bot should have used to attack.
+// END in [attack, END] / [shoot, END] / [reload, END] / [move, attack, END]) fires
+// botTurnDelayMs later regardless of whose turn it now is. GameSession.handleCombatAction
+// / handleRangedAction already advance the turn after a successful attack/shoot/reload,
+// so if the turn comes back around to the same bot before the stale END fires, it cuts
+// off a turn the bot should have used to act.
 //
 // We spy on handleArenaEndTurn (the only entry point an end_turn step calls) and, for
-// each invocation, ask decideTurn what the bot *would* do right now. If it would attack,
-// applying end_turn instead is a violation.
+// each invocation, ask decideTurn what the bot *would* do right now. If it would
+// attack, shoot or reload, applying end_turn instead is a violation.
 
 function setupFor(id: string, seed: number) {
   const r = resolveSetup(id, { seed });
@@ -37,8 +38,9 @@ describe('bot end_turn does not cut off a pending attack', () => {
           const snap = this.getArenaSnapshot(SANDBOX_ROOM_ID);
           if (snap && snap.currentTurnId === playerId) {
             const actions = decideTurn(snap, playerId);
-            if (actions[0]?.type === 'attack') {
-              violations.push(`${id}/seed${seed}: end_turn applied for ${playerId} in round ${snap.roundNumber} while decideTurn would attack`);
+            const wouldAct = actions[0]?.type === 'attack' || actions[0]?.type === 'shoot' || actions[0]?.type === 'reload';
+            if (wouldAct) {
+              violations.push(`${id}/seed${seed}: end_turn applied for ${playerId} in round ${snap.roundNumber} while decideTurn would ${actions[0].type}`);
             }
           }
         }

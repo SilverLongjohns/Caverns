@@ -4,11 +4,12 @@ import { ArenaGrid } from './ArenaGrid.js';
 import { TurnOrderBar } from './TurnOrderBar.js';
 import { ArenaUnitPanel } from './ArenaUnitPanel.js';
 import { ArenaActionBar } from './ArenaActionBar.js';
-import type { AbilityDefinition } from '@caverns/shared';
+import { hasLineOfSight, rangedProfile, type AbilityDefinition } from '@caverns/shared';
+import { shotTargets, shotRangeTiles } from '../ui/shotTargets.js';
 
 interface ArenaViewProps {
   onCombatAction: (
-    action: 'attack' | 'defend' | 'use_item' | 'flee',
+    action: 'attack' | 'defend' | 'use_item' | 'flee' | 'shoot' | 'reload',
     targetId?: string,
     itemIndex?: number,
   ) => void;
@@ -17,7 +18,7 @@ interface ArenaViewProps {
   onUseAbility: (abilityId: string, targetId?: string, targetX?: number, targetY?: number) => void;
 }
 
-type InteractionMode = 'none' | 'move' | 'attack' | 'target_ability_single' | 'target_ability_area';
+type InteractionMode = 'none' | 'move' | 'attack' | 'target_ability_single' | 'target_ability_area' | 'shoot';
 
 const DIRS = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
 const TILE_COSTS: Record<string, number> = { floor: 1, water: 2, hazard: 1, bridge: 1 };
@@ -69,35 +70,6 @@ function tracePath(bfs: Map<string, { remaining: number; parent: string | null }
   return path;
 }
 
-/** Bresenham LoS — duplicated from server (same pattern as BFS duplication) */
-function hasLineOfSight(
-  grid: { width: number; height: number; tiles: string[][] },
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-  maxRange: number,
-): boolean {
-  const dx = Math.abs(to.x - from.x);
-  const dy = Math.abs(to.y - from.y);
-  if (Math.max(dx, dy) > maxRange) return false;
-  if (dx === 0 && dy === 0) return true;
-
-  const sx = from.x < to.x ? 1 : -1;
-  const sy = from.y < to.y ? 1 : -1;
-  let err = dx - dy;
-  let x = from.x;
-  let y = from.y;
-
-  while (true) {
-    const e2 = 2 * err;
-    if (e2 > -dy) { err -= dy; x += sx; }
-    if (e2 < dx) { err += dx; y += sy; }
-    if (x === to.x && y === to.y) break;
-    const tile = grid.tiles[y]?.[x];
-    if (!tile || tile === 'wall' || tile === 'chasm') return false;
-  }
-  return true;
-}
-
 export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAbility }: ArenaViewProps) {
   const playerId = useGameStore((s) => s.playerId);
   const activeCombat = useGameStore((s) => s.activeCombat);
@@ -108,6 +80,9 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
   const arenaMovePath = useGameStore((s) => s.arenaMovePath);
   const textLog = useGameStore((s) => s.textLog);
   const currentTurnId = useGameStore((s) => s.currentTurnId);
+  const me = useGameStore((s) => s.players[s.playerId]);
+  const gun = useMemo(() => (me ? rangedProfile(me) : null), [me]);
+  const myPart = activeCombat?.participants.find((p) => p.id === playerId);
 
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('none');
   const [combatLogStart] = useState(() => textLog.length);
@@ -119,6 +94,19 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
   const [animPath, setAnimPath] = useState<{ x: number; y: number }[] | null>(null);
 
   const isMyTurn = currentTurnId === playerId;
+
+  const shootable = useMemo(() => {
+    const myPos = arenaPositions[playerId];
+    if (interactionMode !== 'shoot' || !gun || !arenaGrid || !myPos || !activeCombat) return new Map<string, number>();
+    const enemies = activeCombat.participants.filter((p) => p.type === 'mob' && p.hp > 0 && arenaPositions[p.id]).map((p) => ({ id: p.id, pos: arenaPositions[p.id] }));
+    return shotTargets(arenaGrid, myPos, gun.range, gun.marksmanship, enemies);
+  }, [interactionMode, gun, arenaGrid, arenaPositions, playerId, activeCombat]);
+
+  const shootRange = useMemo(() => {
+    const myPos = arenaPositions[playerId];
+    if (interactionMode !== 'shoot' || !gun || !arenaGrid || !myPos) return new Set<string>();
+    return shotRangeTiles(arenaGrid, myPos, gun.range);
+  }, [interactionMode, gun, arenaGrid, arenaPositions, playerId]);
 
   const combatLogLines = useMemo(() => {
     return textLog
@@ -249,8 +237,17 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
       }
     }
 
+    if (interactionMode === 'shoot') {
+      for (const key of shootRange) {
+        highlights.set(key, 'arena-shoot-range');
+      }
+      for (const [id, pos] of Object.entries(arenaPositions)) {
+        if (shootable.has(id)) highlights.set(`${pos.x},${pos.y}`, 'arena-range-highlight');
+      }
+    }
+
     return highlights;
-  }, [movementRange, interactionMode, hoverPath, targetingAbility, arenaGrid, arenaPositions, playerId, activeCombat, hoverTile]);
+  }, [movementRange, interactionMode, hoverPath, targetingAbility, arenaGrid, arenaPositions, playerId, activeCombat, hoverTile, shootable, shootRange]);
 
   // When arenaMovePath arrives from server, set animation state.
   // ArenaGrid handles the DOM animation; we just track start/end for the entity exclusion.
@@ -325,6 +322,17 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
       }
     }
 
+    if (interactionMode === 'shoot') {
+      for (const [id, pos] of Object.entries(arenaPositions)) {
+        if (pos.x === x && pos.y === y && shootable.has(id)) {
+          onCombatAction('shoot', id);
+          useGameStore.setState({ arenaActionTaken: true });
+          setInteractionMode('none');
+          return;
+        }
+      }
+    }
+
     if (interactionMode === 'target_ability_single' && targetingAbility && arenaGrid) {
       const myPos = arenaPositions[playerId];
       if (!myPos) return;
@@ -365,7 +373,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
         setTargetingAbility(null);
       }
     }
-  }, [isMyTurn, interactionMode, ghostPos, arenaPositions, adjacentEnemies, onArenaMove, onCombatAction, targetingAbility, arenaGrid, playerId, activeCombat, onUseAbility]);
+  }, [isMyTurn, interactionMode, ghostPos, arenaPositions, adjacentEnemies, onArenaMove, onCombatAction, targetingAbility, arenaGrid, playerId, activeCombat, onUseAbility, shootable]);
 
   const handleTileHover = useCallback((x: number, y: number) => {
     setHoverTile((prev) => (prev?.x === x && prev?.y === y) ? prev : { x, y });
@@ -392,7 +400,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
           participants={activeCombat.participants}
           playerId={playerId}
           movementRange={interactionMode === 'move' ? movementRange : null}
-          isTargeting={interactionMode === 'attack' || interactionMode === 'target_ability_single' || interactionMode === 'target_ability_area'}
+          isTargeting={interactionMode === 'attack' || interactionMode === 'target_ability_single' || interactionMode === 'target_ability_area' || interactionMode === 'shoot'}
           onTileClick={handleTileClick}
           onTileHover={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHover : undefined}
           onTileHoverEnd={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHoverEnd : undefined}
@@ -400,6 +408,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
           ghostEntity={interactionMode === 'move' ? ghostPos : null}
           animatingId={animatingId}
           animPath={animPath}
+          hitLabels={interactionMode === 'shoot' ? shootable : undefined}
         />
         <ArenaUnitPanel participants={activeCombat.participants} />
       </div>
@@ -409,10 +418,16 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
         movementRemaining={arenaMovementRemaining}
         canFlee={canFlee}
         mapTargeting={interactionMode !== 'none'}
+        ammo={myPart?.ammo ?? (gun ? gun.magazine : null)}
+        magazine={gun?.magazine ?? 0}
+        gunRange={gun?.range ?? null}
         onMoveMode={() => setInteractionMode('move')}
         onCancelMove={() => setInteractionMode('none')}
         onAttackMode={() => setInteractionMode('attack')}
         onCancelAttack={() => setInteractionMode('none')}
+        onShootMode={() => setInteractionMode('shoot')}
+        onCancelShoot={() => setInteractionMode('none')}
+        onReload={() => { onCombatAction('reload'); useGameStore.setState({ arenaActionTaken: true }); }}
         onDefend={() => { onCombatAction('defend'); useGameStore.setState({ arenaActionTaken: true }); }}
         onFlee={() => onCombatAction('flee')}
         onEndTurn={onArenaEndTurn}

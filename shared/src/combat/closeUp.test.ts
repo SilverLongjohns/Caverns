@@ -42,6 +42,18 @@ describe('closeUpFor', () => {
     expect(closeUpFor({ action: 'attack', defendQte: true, targetDowned: true }, mobHit)).toBeNull();
     expect(closeUpFor({ action: 'attack', targetDowned: true }, { ...mobHit, targetType: 'mob' })).toBeNull();
   });
+  it('player shots: kill if it downs, otherwise strike lasting the ability-length shotMs (hit or miss); reload never', () => {
+    // A kill shot lasts at least as long as an ordinary shot (kind stays 'kill').
+    expect(closeUpFor({ action: 'shoot', hit: true, targetDowned: true }, player))
+      .toEqual({ kind: 'kill', durationMs: Math.max(CLOSE_UP_CONFIG.killMs, CLOSE_UP_CONFIG.shotMs) });
+    expect(closeUpFor({ action: 'shoot', hit: true }, player)).toEqual({ kind: 'strike', durationMs: CLOSE_UP_CONFIG.shotMs });
+    expect(closeUpFor({ action: 'shoot', hit: false, damage: 0 }, player)).toEqual({ kind: 'strike', durationMs: CLOSE_UP_CONFIG.shotMs });
+    expect(closeUpFor({ action: 'reload' }, player)).toBeNull();
+  });
+  it('melee strikes still last the short strikeMs, unaffected by shotMs', () => {
+    expect(closeUpFor({ action: 'attack' }, player)).toEqual({ kind: 'strike', durationMs: CLOSE_UP_CONFIG.strikeMs });
+    expect(CLOSE_UP_CONFIG.strikeMs).not.toBe(CLOSE_UP_CONFIG.shotMs);
+  });
 });
 
 describe('closeUpForParticipants', () => {

@@ -16,6 +16,7 @@ Cooperative text-based dungeon crawler for 1-4 players, played in a web browser.
 - Consumables: 6 pouch slots, usable in combat (healing potions)
 - Boss: The Mycelium King in the final room, victory screen on defeat
 - Wipe detection: game over when all players downed
+- Ranged combat (trial): guns in a 5th `ranged` slot; Shoot (Marksmanship → range + hit chance) and Reload actions; tuning in `shared/src/data/rangedConfig.json`. Sandbox bots melee when they can reach it, otherwise close in and shoot/reload.
 - CRT-styled dark UI with scanlines, vignette, phosphor glow, and flicker
 
 ### What's Not Built Yet
@@ -52,6 +53,7 @@ npm run dev:client   # starts Vite dev server with WS proxy
 - **Loot flow**: items go to inventory (not auto-equipped). Players equip manually outside combat. Equipping swaps old gear into the inventory slot.
 - **Solo loot**: auto-awarded without showing need/greed/pass prompt
 - **Session cleanup**: game session is cleared when all clients disconnect
+- **Gun damage**: shot damage = class base damage + gun damage, flat — never mixes with melee (no weapon, Ferocity, crits or item effects). `hasLineOfSight` lives in shared. Old saves: absent `ranged` key → class starter gun; `null` → stays empty.
 - **No git commands**: user manages git themselves
 
 ## Project Structure
@@ -100,7 +102,7 @@ trailer/            — Standalone pure-JS cinematic trailer (Canvas + synthesiz
 ## Message Protocol
 
 ### Client → Server
-`join_lobby`, `start_game`, `move`, `combat_action`, `loot_choice`, `revive`, `equip_item`, `drop_item`
+`join_lobby`, `start_game`, `move`, `combat_action` (incl. `shoot`/`reload`), `loot_choice`, `revive`, `equip_item`, `drop_item`
 
 ### Server → Client
 `lobby_state`, `game_start`, `room_reveal`, `player_moved`, `combat_start`, `combat_turn`, `combat_action_result`, `combat_end`, `loot_prompt`, `loot_result`, `player_update`, `game_over`, `text_log`, `error`

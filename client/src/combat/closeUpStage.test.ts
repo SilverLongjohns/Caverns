@@ -104,6 +104,39 @@ describe('strikes', () => {
   });
 });
 
+describe('ranged close-ups', () => {
+  const rangedCls = CLASS_DEFINITIONS[0].id;
+  const rangedParts = [
+    { id: 'p1', type: 'player' as const, name: 'P', hp: 10, maxHp: 10, initiative: 1, className: rangedCls },
+    { id: 'm1', type: 'mob' as const, name: 'M', hp: 10, maxHp: 10, initiative: 1, templateId: 'x' },
+  ];
+  const rangedActive = (r: Record<string, unknown>, kind: 'strike' | 'kill' = 'strike') => ({
+    id: 1, result: { actorId: 'p1', actorName: 'P', targetId: 'm1', ...r }, participants: rangedParts,
+    closeUp: { kind, durationMs: kind === 'kill' ? CLOSE_UP_CONFIG.killMs : CLOSE_UP_CONFIG.strikeMs },
+  }) as never;
+
+  it('shoot role: ranged pose first, then the attack pose, portrait, glyph', () => {
+    const chain = artChainFor({ type: 'player', className: rangedCls }, 'shoot');
+    expect(chain[0]).toBe(`/closeups/classes/${rangedCls}-ranged.png`);
+    expect(chain[1]).toBe(`/closeups/classes/${rangedCls}-attack.png`);
+  });
+  it('a shot stages the shooter with the shoot chain (strike and kill)', () => {
+    expect(stageFor(rangedActive({ action: 'shoot', hit: true, damage: 4 })).left[0].art[0]).toBe(`/closeups/classes/${rangedCls}-ranged.png`);
+    expect(stageFor(rangedActive({ action: 'shoot', hit: true, damage: 4, targetDowned: true }, 'kill')).left[0].art[0]).toBe(`/closeups/classes/${rangedCls}-ranged.png`);
+  });
+  it('a miss: miss flag, no damage number, target not downed', () => {
+    const st = stageFor(rangedActive({ action: 'shoot', hit: false, damage: 0 }));
+    expect(st.miss).toBe(true);
+    expect(st.number).toBeNull();
+    expect(st.right[0].downed).toBe(false);
+  });
+  it('melee attacks are unchanged (attack pose, no miss)', () => {
+    const st = stageFor(rangedActive({ action: 'attack', damage: 4 }));
+    expect(st.left[0].art[0]).toBe(`/closeups/classes/${rangedCls}-attack.png`);
+    expect(st.miss).toBe(false);
+  });
+});
+
 describe('mirrorArt', () => {
   it('only mirrors stand-in art on the right; close-up art is authored facing the right way', () => {
     expect(mirrorArt('right', '/sprites/glyphs/mobs/x.png')).toBe(true);

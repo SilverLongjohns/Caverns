@@ -21,7 +21,7 @@ describe('iconPaths', () => {
   });
 
   it('has a glyph for every slot', () => {
-    for (const s of ['weapon', 'offhand', 'armor', 'accessory', 'consumable'] as const) {
+    for (const s of ['weapon', 'offhand', 'armor', 'accessory', 'ranged', 'consumable'] as const) {
       expect(slotGlyph(s)).toHaveLength(1);
     }
   });

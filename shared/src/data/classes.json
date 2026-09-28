@@ -3,9 +3,10 @@
     "id": "vanguard",
     "displayName": "Templar",
     "description": "A plated bulwark who pulls fire and holds the line.",
-    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
+    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5, "marksmanship": 2 },
     "starterWeaponId": "vanguard_iron_mace",
     "starterOffhandId": "vanguard_tower_shield",
+    "starterRangedId": "vanguard_censer_blunderbuss",
     "abilities": [
       {
         "id": "shield_wall",
@@ -38,9 +39,10 @@
     "id": "shadowblade",
     "displayName": "Phaseknife",
     "description": "A blink-footed killer who slips in, opens a throat, and is gone.",
-    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
+    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5, "marksmanship": 2 },
     "starterWeaponId": "shadowblade_twin_daggers",
     "starterOffhandId": "shadowblade_smoke_cloak",
+    "starterRangedId": "shadowblade_hushpistol",
     "abilities": [
       {
         "id": "backstab",
@@ -73,9 +75,10 @@
     "id": "cleric",
     "displayName": "Suturist",
     "description": "A field surgeon who knits flesh and keeps the dying upright.",
-    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
+    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5, "marksmanship": 2 },
     "starterWeaponId": "cleric_blessed_staff",
     "starterOffhandId": "cleric_holy_symbol",
+    "starterRangedId": "cleric_needle_rifle",
     "abilities": [
       {
         "id": "heal",
@@ -120,9 +123,10 @@
     "id": "artificer",
     "displayName": "Junk Prophet",
     "description": "A ragged tinkerer whose scrap tools break enemy nerve.",
-    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5 },
-    "starterWeaponId": "artificer_repeating_crossbow",
+    "baseStats": { "maxHp": 50, "damage": 5, "defense": 2, "initiative": 5, "marksmanship": 2 },
+    "starterWeaponId": "artificer_rebar_wrench",
     "starterOffhandId": "artificer_toolkit",
+    "starterRangedId": "artificer_scrap_autogun",
     "abilities": [
       {
         "id": "smoke_bomb",
