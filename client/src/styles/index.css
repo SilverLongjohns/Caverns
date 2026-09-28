@@ -2816,6 +2816,9 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
 }
 /* Always find yourself: a soft phosphor halo on the local player */
 .glyph-grid .entity-self .entity-glyph { filter: drop-shadow(0 0 3px #7dff9a) drop-shadow(0 0 1px #7dff9a); }
+/* Same halo for the ASCII fallback (no sprite: unit.char renders directly in .explore-unit).
+   .entity-player only sets `color` (!important) elsewhere, so it can't shadow this text-shadow. */
+.glyph-grid .explore-unit.entity-self { text-shadow: 0 0 6px #7dff9a, 0 0 2px #7dff9a; }
 /* Usable things glow; spent ones don't */
 .glyph-grid .entity-interactable { color: #ffd98a; text-shadow: 0 0 6px #ffb000, 0 0 2px #ffb000; }
 .glyph-grid .entity-interactable .entity-glyph { filter: drop-shadow(0 0 4px #ffb000); }
