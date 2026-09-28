@@ -52,3 +52,6 @@ export const CLASS_GLYPHS: readonly string[] = [
   'cleric',
   'artificer',
 ];
+
+// Furnishing definition ids (server/src/data/furnishingData.json) with a glyph PNG in client/public/sprites/glyphs/furnishings/.
+export const FURNISHING_GLYPHS: readonly string[] = [];
