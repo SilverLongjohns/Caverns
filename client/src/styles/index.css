@@ -2700,7 +2700,13 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
    become translucent overlays here. Tuned from screenshots to stay readable on both rock and
    floor (see Task 5 report). */
 .glyph-grid.terrain .room-row .tile-unseen { background: #000; }
-.glyph-grid.terrain .room-row .tile-explored { background: rgba(0, 0, 0, 0.62); opacity: 1; }
+/* opacity:1 overrides the base .tile-explored dimming (which would also fade the terrain art
+   drawn behind this transparent-background span); filter:brightness dims the ASCII fallback
+   CHARACTER instead (hazard/exit/torch/bridge with missingStamp, or a cell with no terrain art at
+   all) so explored fog still reads uniformly. Safe to combine with the overlay: its RGB is (0,0,0)
+   already, so brightness scaling is a no-op on it (0 * anything = 0) -- only the character's own
+   colour dims, not the overlay or the art showing through its alpha. */
+.glyph-grid.terrain .room-row .tile-explored { background: rgba(0, 0, 0, 0.62); opacity: 1; filter: brightness(0.4); }
 
 .glyph-grid.terrain .arena-move-highlight { background: rgba(60, 200, 90, 0.22) !important; }
 .glyph-grid.terrain .arena-path-trace { background: rgba(90, 230, 120, 0.38) !important; }

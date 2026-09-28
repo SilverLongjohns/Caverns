@@ -14,7 +14,6 @@
     "art/tiles/starter/work/graded/floor_variants/amberlight.png"
   ],
   "stamps": {
-    "hazard": "art/tiles/starter/work/stamps_cutout/hazard.png",
     "bridge_h": "art/tiles/starter/work/stamps_cutout/bridge_h.png",
     "bridge_v": "art/tiles/starter/work/stamps_cutout/bridge_v.png",
     "exit": "art/tiles/starter/work/stamps_cutout/exit.png",
