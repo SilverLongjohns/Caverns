@@ -100,7 +100,7 @@ export interface GameStore {
       usedBy?: string;
     }[];
   } | null;
-  mobPositions: Record<string, { mobId: string; mobName: string; x: number; y: number }[]>;
+  mobPositions: Record<string, { mobId: string; mobName: string; templateId?: string; x: number; y: number }[]>;
   mobAlert: { roomId: string; x: number; y: number } | null;
   playerPositions: Record<string, { x: number; y: number }>;
   levelUpGlow: boolean;
@@ -723,7 +723,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           return {
             mobPositions: {
               ...state.mobPositions,
-              [msg.roomId]: [...existing, { mobId: msg.mobId, mobName: msg.mobName, x: msg.x, y: msg.y }],
+              [msg.roomId]: [...existing, { mobId: msg.mobId, mobName: msg.mobName, templateId: msg.templateId, x: msg.x, y: msg.y }],
             },
           };
         });

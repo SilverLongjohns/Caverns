@@ -149,6 +149,25 @@ describe('placeFurnishings', () => {
     expect(foundInteractable).toBe(true);
   });
 
+  it('every placed furnishing carries its definition id', () => {
+    const tiles = buildTiles([
+      '##########',
+      '#........#',
+      '#........#',
+      '#........#',
+      '#........#',
+      '#........#',
+      '#........#',
+      '##########',
+    ]);
+    const result = placeFurnishings(tiles, 10, 8, 'chamber', 'starter', new Set());
+    expect(result.furnishings.length).toBeGreaterThan(0);
+    for (const f of result.furnishings) {
+      expect(typeof f.id).toBe('string');
+      expect(f.id!.length).toBeGreaterThan(0);
+    }
+  });
+
   it('places wall-constrained furniture adjacent to walls', () => {
     const tiles = buildTiles([
       '###############',

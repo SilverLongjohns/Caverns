@@ -56,6 +56,7 @@ export class MobAIManager {
         roomId,
         mobId: mob.instanceId,
         mobName: mob.name,
+        templateId: mob.templateId,
         x: spawnPos.x,
         y: spawnPos.y,
       });
@@ -125,6 +126,7 @@ export class MobAIManager {
         roomId,
         mobId: entry.mob.instanceId,
         mobName: entry.mob.name,
+        templateId: entry.mob.templateId,
         x: entry.position.x,
         y: entry.position.y,
       });

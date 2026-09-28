@@ -184,6 +184,7 @@ export function placeFurnishings(
       char: def.asciiChar,
       name: def.name,
       interactable: def.interactable,
+      id: def.id,
     });
 
     if (def.interactable) {

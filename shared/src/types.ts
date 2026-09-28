@@ -163,6 +163,8 @@ export interface Furnishing {
   char: string;
   name: string;
   interactable: boolean;
+  /** Furnishing definition id (server/src/data/furnishingData.json); optional for rooms serialised before it existed. */
+  id?: string;
 }
 
 export interface TileGrid {

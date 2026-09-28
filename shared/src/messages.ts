@@ -613,6 +613,7 @@ export interface MobSpawnMessage {
   roomId: string;
   mobId: string;
   mobName: string;
+  templateId: string;
   x: number;
   y: number;
 }
