@@ -3,7 +3,7 @@ import type { Item, ItemSlot } from '@caverns/shared';
 
 export const RELIC_FRAME_SRC = '/ui/relic_frame.png';
 
-export type ActionIcon = 'move' | 'attack' | 'defend' | 'abilities' | 'items' | 'flee' | 'end_turn';
+export type ActionIcon = 'move' | 'attack' | 'defend' | 'abilities' | 'items' | 'flee' | 'end_turn' | 'shoot' | 'reload';
 
 export function itemIconSrc(item: Pick<Item, 'slot' | 'name' | 'archetype'>): string {
   return `/ui/icons/items/${archetypeFor(item)}.png`;
