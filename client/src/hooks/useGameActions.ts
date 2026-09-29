@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { ClientMessage, Direction, GridDirection, SandboxOverrides } from '@caverns/shared';
+import type { ClientMessage, Direction, GridDirection, SandboxOverrides, LeaveRunToll } from '@caverns/shared';
 import { useGameStore } from '../store/gameStore';
 import { audioEngine } from '../audio/audioEngine.js';
 
@@ -98,6 +98,8 @@ export function useGameActions(wsRef: React.RefObject<WebSocket | null>) {
         selectedCharacterId: null,
       });
     },
+    parkRun: () => send({ type: 'park_run' }),
+    leaveRun: (toll: LeaveRunToll) => send({ type: 'leave_run', toll }),
     arenaMove: (targetX: number, targetY: number) => send({ type: 'arena_move', targetX, targetY }),
     arenaEndTurn: () => send({ type: 'arena_end_turn' }),
     sandboxStart: (preset: string, overrides?: SandboxOverrides) => send({ type: 'sandbox_start', preset, overrides }),

@@ -104,6 +104,25 @@ export class ItemEffectResolver {
     };
   }
 
+  /** Reconnect: move every per-player entry from the old connection id to the new one. */
+  replacePlayerId(oldId: string, newId: string): void {
+    const maps: Map<string, unknown>[] = [
+      this.playerEffects, this.usedDungeonEffects,
+      this.state.momentumStacks, this.state.lastAction, this.state.rampageTotalDamage,
+      this.state.predatorKills, this.state.siphonStacks, this.state.undyingTurns,
+      this.state.poisoned, this.state.overwhelmDebuffs,
+    ];
+    for (const m of maps) {
+      if (m.has(oldId)) { m.set(newId, m.get(oldId)); m.delete(oldId); }
+    }
+    for (const s of [this.state.deathwardTriggered, this.state.overcharged]) {
+      if (s.delete(oldId)) s.add(newId);
+    }
+    for (const stacks of this.state.poisoned.values()) {
+      for (const p of stacks) if (p.sourceId === oldId) p.sourceId = newId;
+    }
+  }
+
   registerPlayer(playerId: string, effects: EquippedEffect[], usedEffects: string[]): void {
     this.playerEffects.set(playerId, effects);
     if (usedEffects.length > 0) {

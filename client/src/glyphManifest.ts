@@ -52,3 +52,30 @@ export const CLASS_GLYPHS: readonly string[] = [
   'cleric',
   'artificer',
 ];
+
+// Furnishing definition ids (server/src/data/furnishingData.json) mapped to their installed variant
+// count. Each id with N variants has PNGs at client/public/sprites/glyphs/furnishings/<id>-0.png..<id>-(N-1).png.
+export const FURNISHING_GLYPHS: Readonly<Record<string, number>> = {
+  starter_rubble: 4,
+  starter_bones: 5,
+  starter_collapsed_cart: 3,
+  starter_table: 4,
+  starter_chair: 5,
+  starter_barrel: 6,
+  starter_rotting_shelf: 5,
+  starter_locked_chest: 5,
+  starter_stalagmite: 7,
+  starter_mushroom_cluster: 7,
+  starter_puddle: 2,
+  starter_glowing_fungus: 3,
+  starter_strange_fossil: 4,
+  starter_crate: 5,
+  starter_cobwebs: 1,
+  starter_shrine: 4,
+  starter_old_skeleton: 4,
+  starter_pillar: 4,
+  starter_throne: 5,
+  starter_brazier: 5,
+  starter_altar: 4,
+  starter_weapon_rack: 3,
+};

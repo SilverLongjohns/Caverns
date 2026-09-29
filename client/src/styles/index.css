@@ -1631,6 +1631,10 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   50% { text-shadow: 0 0 8px #ff4400, 0 0 16px #cc2200; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .tile-hazard.tile-theme-lava { animation: none !important; }
+}
+
 /* Pillars — standing stone */
 .tile-pillar { color: #8a8070; text-shadow: 0 0 3px rgba(138, 128, 112, 0.4); }
 .tile-pillar.tile-theme-rock { color: #9a8a78; text-shadow: 0 0 4px rgba(154, 138, 120, 0.5); }
@@ -2696,12 +2700,70 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   opacity: 0.4;
 }
 
+/* Terrain mode: fog and highlights sit over pixel art, so the opaque ASCII-era colors above
+   become translucent overlays here. Tuned from screenshots to stay readable on both rock and
+   floor (see Task 5 report). */
+/* Unseen must stay fully opaque over the canvas, but #000 flat is a giveaway of the room's exact
+   rectangular extent on a panel whose own background isn't pure black (the arena screen's
+   .arena-view is #0a0a0a, not #000) -- match each panel's real background instead. Exploration's
+   .room-view IS #000000, so #000 there is already correct/invisible. */
+.room-view .glyph-grid.terrain .room-row .tile-unseen { background: #000; }
+.arena-view .glyph-grid.terrain .room-row .tile-unseen { background: #0a0a0a; }
+/* opacity:1 overrides the base .tile-explored dimming (which would also fade the terrain art
+   drawn behind this transparent-background span); filter:brightness dims the ASCII fallback
+   CHARACTER instead (hazard/exit/torch/bridge with missingStamp, or a cell with no terrain art at
+   all) so explored fog still reads uniformly. Safe to combine with the overlay: its RGB is (0,0,0)
+   already, so brightness scaling is a no-op on it (0 * anything = 0) -- only the character's own
+   colour dims, not the overlay or the art showing through its alpha. */
+.glyph-grid.terrain .room-row .tile-explored { background: rgba(0, 0, 0, 0.62); opacity: 1; filter: brightness(0.4); }
+
+.glyph-grid.terrain .arena-move-highlight { background: rgba(60, 200, 90, 0.22) !important; }
+.glyph-grid.terrain .arena-path-trace { background: rgba(90, 230, 120, 0.38) !important; }
+.glyph-grid.terrain .arena-range-highlight { background: rgba(80, 140, 230, 0.28) !important; }
+.glyph-grid.terrain .arena-area-highlight { background: rgba(220, 50, 50, 0.32) !important; }
+.glyph-grid.terrain .arena-shoot-range { background: rgba(230, 120, 40, 0.24) !important; }
+.glyph-grid.terrain .arena-target-highlight { background: rgba(220, 30, 30, 0.4) !important; }
+.glyph-grid.terrain .entity-ghost { opacity: 0.55; filter: drop-shadow(0 0 3px #4488ff); }
+
+/* Hazard/exit/torch ASCII fallback drawn over terrain art (autotile's `missingStamp`, wired in
+   GlyphViewport): the existing colours stay, but their glow-only text-shadow doesn't stand out
+   against a busy background, so a hard black outline (4-direction offset trick) is layered under
+   it here for contrast. This 3-class selector (.glyph-grid.terrain .tile-hazard) is intentionally
+   HIGHER specificity than a 2-class biome theme override (e.g. .tile-hazard.tile-theme-lava), so
+   the plain outline below would otherwise beat a lava biome's own colour/animation -- the volcanic
+   override just below adds `.tile-theme-lava` to match it back up to 4 classes and win instead.
+   Volcanic IS an active biome pairing hazard with terrain art (falls back to the 'default' set;
+   see art/tiles/default.json) -- confirmed in-game, e.g. .sandbox/terrain-art/shot-11.png. */
+.glyph-grid.terrain .tile-hazard {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px rgba(221, 34, 34, 0.6);
+}
+.glyph-grid.terrain .tile-exit {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px rgba(68, 255, 68, 0.6);
+}
+.glyph-grid.terrain .tile-wall.tile-theme-torch {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px rgba(255, 170, 51, 0.7);
+}
+/* Volcanic biome's lava-hazard keeps its pulse animation over terrain art too (higher
+   specificity than the plain .tile-hazard override above so it wins). */
+.glyph-grid.terrain .tile-hazard.tile-theme-lava {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #ff2200, 0 0 8px #aa0000;
+  animation: lava-pulse-outlined 2s ease-in-out infinite;
+}
+@keyframes lava-pulse-outlined {
+  0%, 100% { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #ff2200, 0 0 8px #aa0000; }
+  50% { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 8px #ff4400, 0 0 16px #cc2200; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph-grid.terrain .tile-hazard.tile-theme-lava { animation: none !important; }
+}
+
 .arena-target-highlight {
   background: #2a0b0b !important;
   cursor: crosshair !important;
 }
 
-/* --- Glyph grid: fixed 34x50 cells, camera viewport --- */
+/* --- Glyph grid: fixed 48x48 cells, camera viewport --- */
 .arena-grid-container.glyph-grid {
   flex-direction: column;
   gap: 8px;
@@ -2724,23 +2786,28 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   will-change: transform;
 }
 
-.glyph-grid .room-grid { overflow: visible; }
+/* Square 48x48 glyph-grid cells: no cell border (tiles join seamlessly, ASCII fallback or not) —
+   `.glyph-grid .room-grid` (below) has the SAME specificity as `.arena-grid-container .room-grid`
+   / `.room-row span` (both are two plain-class selectors), so it wins by appearing later in this
+   file, not by outranking it; other screens that use TileGridView directly (e.g. WorldMapView) are
+   unaffected and keep theirs. */
+.glyph-grid .room-grid { overflow: visible; border: none; }
 .glyph-grid .room-row { display: flex; }
 
 .arena-grid-container.glyph-grid .room-row > span {
+  border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 34px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   min-width: 0;
   font-size: 30px;
   line-height: 1;
 }
 
-/* Glyphs are 24x24 art drawn at 2x: 48px tall fits the cell, and wide sprites spill
-   ~7px into the neighbouring cells, drawn above their backgrounds */
+/* Glyphs are 24x24 art drawn at 2x: 48px exactly fills the square cell now (no sideways spill). */
 .arena-grid-container .room-row span.entity-glyph,
 .arena-anim-entity .entity-glyph {
   display: block;
@@ -2792,6 +2859,45 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   image-rendering: pixelated;
   cursor: pointer;
 }
+
+/* === Exploration on the glyph grid === */
+.room-area { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.room-view { flex: 1; min-height: 0; justify-content: flex-start; }
+.room-view > .arena-grid-container { width: 100%; }
+
+/* Players and mobs float above the terrain and slide between cells */
+.explore-units { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
+.explore-unit {
+  position: absolute; left: 0; top: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; line-height: 1; will-change: transform;
+}
+.explore-unit .entity-glyph {
+  display: block; flex: none; width: 48px; height: 48px;
+  background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated;
+}
+/* Always find yourself: a soft phosphor halo on the local player */
+.glyph-grid .entity-self .entity-glyph { filter: drop-shadow(0 0 3px #7dff9a) drop-shadow(0 0 1px #7dff9a); }
+/* Same halo for the ASCII fallback (no sprite: unit.char renders directly in .explore-unit).
+   .entity-player only sets `color` (!important) elsewhere, so it can't shadow this text-shadow. */
+.glyph-grid .explore-unit.entity-self { text-shadow: 0 0 6px #7dff9a, 0 0 2px #7dff9a; }
+/* Usable things glow; spent ones don't */
+.glyph-grid .entity-interactable { color: #ffd98a; text-shadow: 0 0 6px #ffb000, 0 0 2px #ffb000; }
+.glyph-grid .entity-interactable .entity-glyph { filter: drop-shadow(0 0 4px #ffb000); }
+.glyph-grid .entity-interactable-used { opacity: 0.45; text-shadow: none; }
+/* Readable size matching the 48x48 cell's glyph font, and its own float so the offset suits
+   the cell instead of the small text-log ".mob-alert" reach (2ch/-2em). Full shorthand here
+   beats .mob-alert on source order (equal specificity). */
+.explore-alert {
+  position: absolute; z-index: 4; text-align: center; pointer-events: none;
+  font-size: 30px; font-weight: 900;
+  animation: explore-alert-float 0.8s cubic-bezier(0.12, 0, 0.39, 0) forwards;
+}
+@keyframes explore-alert-float {
+  0% { transform: translate(0, 0); opacity: 1; }
+  100% { transform: translate(0, -28px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .explore-unit { transition: none !important; } }
 
 /* === Turn Order Bar === */
 .arena-turn-order {
@@ -3065,3 +3171,13 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   color: #4a4238; font-family: inherit; font-size: 0.75rem; letter-spacing: 0.1em; cursor: pointer;
 }
 .intro-replay:hover { color: #7a6e5a; }
+
+/* Park / leave run */
+.explore-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.run-controls { display: flex; gap: 8px; margin-left: auto; }
+.leave-run-copy { color: var(--relic-dim); margin: 0 0 12px; }
+.leave-run-label { color: var(--relic-dim); margin: 12px 0 6px; }
+.leave-run-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.char-slot-parked { color: #d8b25a; }
+.party-member--away { opacity: 0.55; }
+.party-away { color: #d8b25a; font-size: 0.8em; margin-left: 6px; text-transform: uppercase; letter-spacing: 0.08em; }

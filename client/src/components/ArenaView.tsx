@@ -399,8 +399,6 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
           positions={arenaPositions}
           participants={activeCombat.participants}
           playerId={playerId}
-          movementRange={interactionMode === 'move' ? movementRange : null}
-          isTargeting={interactionMode === 'attack' || interactionMode === 'target_ability_single' || interactionMode === 'target_ability_area' || interactionMode === 'shoot'}
           onTileClick={handleTileClick}
           onTileHover={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHover : undefined}
           onTileHoverEnd={interactionMode === 'move' || interactionMode === 'target_ability_area' ? handleTileHoverEnd : undefined}

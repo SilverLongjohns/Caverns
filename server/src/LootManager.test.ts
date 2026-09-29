@@ -72,3 +72,20 @@ describe('LootManager', () => {
     vi.useRealTimers();
   });
 });
+
+describe('LootManager seat helpers', () => {
+  it('reports who a pending round waits on and follows a re-keyed seat', () => {
+    const awarded: [string, string][] = [];
+    const lm = new LootManager((item, winner) => awarded.push([item.id, winner]));
+    const item = { id: 'i1', name: 'Rock', slot: 'weapon', rarity: 'common', stats: {} } as any;
+    lm.startLootRound('r1', [item], ['p1', 'p2']);
+    expect(lm.hasPendingFor('p1')).toBe(true);
+    expect(lm.hasPendingFor('p3')).toBe(false);
+    lm.submitChoice('p1', 'i1', 'need');
+    lm.replacePlayerId('p1', 'p1b');
+    expect(lm.hasPendingFor('p1')).toBe(false);
+    expect(lm.hasPendingFor('p1b')).toBe(true);
+    lm.submitChoice('p2', 'i1', 'pass'); // completes the round: p1b's earlier 'need' still counts
+    expect(awarded).toEqual([['i1', 'p1b']]);
+  });
+});

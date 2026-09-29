@@ -2,9 +2,9 @@ import { useEffect, useMemo } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import { getInteractableDefinition } from '@caverns/shared';
 import type { InteractableInstance } from '@caverns/shared';
-import { TileGridView } from './TileGridView.js';
+import { ExplorationGrid } from './ExplorationGrid.js';
 import { TorchHUD } from './TorchHUD.js';
-import type { EntityOverlay } from './TileGridView.js';
+import { buildExplorationEntities } from '../exploration/explorationEntities.js';
 import { getVisibleTiles } from '@caverns/roomgrid';
 import type { Tile } from '@caverns/roomgrid';
 
@@ -98,85 +98,24 @@ export function RoomView() {
     }
   }, [visibleTiles]);
 
-  const entities = useMemo<EntityOverlay[]>(() => {
-    if (!room || !tileGrid) return [];
-    const overlays: EntityOverlay[] = [];
-
-    // Interactables
-    if (room.interactables) {
-      for (const inst of room.interactables) {
+  const { props, units } = useMemo(() => {
+    if (!room || !tileGrid) return { props: [], units: [] };
+    const inCombatHere = !!activeCombat && activeCombat.roomId === currentRoomId;
+    return buildExplorationEntities({
+      interactables: (room.interactables ?? []).flatMap((inst) => {
         const def = getInteractableDefinition(inst.definitionId);
-        if (!def) continue;
-        const used = isFullyUsed(inst);
-        overlays.push({
-          x: inst.position.x,
-          y: inst.position.y,
-          char: def.asciiChar,
-          className: used ? 'entity-interactable-used' : 'entity-interactable',
-        });
-      }
-    }
-
-    // Furnishings
-    if (tileGrid.furnishings) {
-      for (const f of tileGrid.furnishings) {
-        overlays.push({
-          x: f.x,
-          y: f.y,
-          char: f.char,
-          className: f.interactable ? 'entity-interactable' : 'entity-furnishing',
-        });
-      }
-    }
-
-    // Mob (pre-combat wandering) — from mobPositions store
-    if (!activeCombat || activeCombat.roomId !== currentRoomId) {
-      const mobDataList = mobPositions[currentRoomId];
-      if (mobDataList) {
-        for (const mobData of mobDataList) {
-          overlays.push({
-            x: mobData.x,
-            y: mobData.y,
-            char: mobData.mobName[0] ?? '?',
-            className: 'entity-mob',
-          });
-        }
-      }
-    }
-
-    // Players at their real grid positions — from playerPositions store
-    const CLASS_COLORS: Record<string, string> = {
-      vanguard: '#5599dd',
-      shadowblade: '#bb66ee',
-      cleric: '#ddbb44',
-      artificer: '#dd8833',
-    };
-    const CLASS_COLORS_DIM: Record<string, string> = {
-      vanguard: '#3a6699',
-      shadowblade: '#7744aa',
-      cleric: '#998833',
-      artificer: '#995522',
-    };
-    const playersInRoom = Object.values(players).filter((p) => p.roomId === currentRoomId);
-    for (const player of playersInRoom) {
-      const pos = playerPositions[player.id];
-      if (!pos) continue;
-      const isMe = player.id === playerId;
-      const colors = isMe ? CLASS_COLORS : CLASS_COLORS_DIM;
-      overlays.push({
-        x: pos.x,
-        y: pos.y,
-        char: '@',
-        className: 'entity-player',
-        style: { color: colors[player.className] ?? (isMe ? '#44ff44' : '#88cc88') },
-      });
-    }
-
-    // Filter out entities not in visible tiles (undefined = show all)
-    if (visibleTiles) {
-      return overlays.filter((e) => visibleTiles.has(`${e.x},${e.y}`));
-    }
-    return overlays;
+        return def ? [{ x: inst.position.x, y: inst.position.y, char: def.asciiChar, used: isFullyUsed(inst) }] : [];
+      }),
+      furnishings: tileGrid.furnishings ?? [],
+      mobs: inCombatHere ? [] : (mobPositions[currentRoomId] ?? []),
+      players: Object.values(players).flatMap((p) => {
+        const pos = p.roomId === currentRoomId ? playerPositions[p.id] : undefined;
+        return pos ? [{ id: p.id, className: p.className, x: pos.x, y: pos.y }] : [];
+      }),
+      localPlayerId: playerId,
+      roomId: currentRoomId,
+      visibleTiles,
+    });
   }, [room, tileGrid, activeCombat, players, currentRoomId, playerId, mobPositions, playerPositions, visibleTiles]);
 
   if (!room || !tileGrid) return null;
@@ -185,13 +124,9 @@ export function RoomView() {
     <div className="room-view">
       <div className="room-title">{room.name}</div>
       <TorchHUD />
-      <TileGridView
-        tileGrid={tileGrid}
-        entities={entities}
-        alert={mobAlert && mobAlert.roomId === currentRoomId && visibleTiles?.has(`${mobAlert.x},${mobAlert.y}`) ? { x: mobAlert.x, y: mobAlert.y } : null}
-        visibleTiles={visibleTiles}
-        exploredTiles={exploredTiles}
-      />
+      <ExplorationGrid roomId={currentRoomId} grid={tileGrid} props={props} units={units} localPlayerId={playerId}
+        visibleTiles={visibleTiles} exploredTiles={exploredTiles}
+        alert={mobAlert && mobAlert.roomId === currentRoomId && visibleTiles?.has(`${mobAlert.x},${mobAlert.y}`) ? { x: mobAlert.x, y: mobAlert.y } : null} />
     </div>
   );
 }

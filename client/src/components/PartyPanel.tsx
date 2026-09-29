@@ -23,7 +23,7 @@ export function PartyPanel() {
           const room = rooms[player.roomId];
           const glyph = getParticipantGlyph({ type: 'player', className: player.className });
           return (
-            <div key={player.id} className="party-member">
+            <div key={player.id} className={`party-member${player.away ? ' party-member--away' : ''}`}>
               <IconSocket size={24} title={player.className}>
                 {glyph
                   ? <img className="relic-socket__img" src={glyph} alt="" />
@@ -32,6 +32,7 @@ export function PartyPanel() {
               <div className="party-member-body">
                 <div className="party-member-header">
                   <span>{STATUS_ICONS[player.status] ?? ''} {player.name}</span>
+                  {player.away && <span className="party-away">away</span>}
                   <span className="party-room">{room?.name ?? '???'}</span>
                 </div>
                 <Gauge kind="hp" size="sm" value={player.hp} max={player.maxHp} text={`${player.hp}/${player.maxHp}`} />

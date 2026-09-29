@@ -100,7 +100,7 @@ export interface GameStore {
       usedBy?: string;
     }[];
   } | null;
-  mobPositions: Record<string, { mobId: string; mobName: string; x: number; y: number }[]>;
+  mobPositions: Record<string, { mobId: string; mobName: string; templateId?: string; x: number; y: number }[]>;
   mobAlert: { roomId: string; x: number; y: number } | null;
   playerPositions: Record<string, { x: number; y: number }>;
   levelUpGlow: boolean;
@@ -409,6 +409,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'character_panel_error':
+        // Visible even when no panel is open (a failed open would otherwise show nothing).
+        console.warn('[character] panel error:', msg.reason);
         set({ characterPanelError: msg.reason });
         break;
 
@@ -422,6 +424,52 @@ export const useGameStore = create<GameStore>((set, get) => ({
           activeCombat: null,
           gameOver: null,
           textLog: [],
+        });
+        break;
+
+      case 'run_parked':
+        // Seat parked in the run; the character list that follows shows character select.
+        set({
+          currentDungeonSessionId: null,
+          connectionStatus: 'connected',
+          currentWorld: null,
+          worldMap: null,
+          players: {},
+          rooms: {},
+          currentRoomId: '',
+          playerPositions: {},
+          mobPositions: {},
+          exploredTiles: new Set<string>(),
+          activeCombat: null,
+          pendingLoot: null,
+          gameOver: null,
+          textLog: [],
+          generationStatus: 'idle',
+          generationError: null,
+        });
+        break;
+
+      case 'party_member_left':
+        set((state) => {
+          // Our own leave: dungeon_returned (which follows) takes us out of the run.
+          if (msg.playerId === state.playerId) return {};
+          const players = { ...state.players };
+          const playerPositions = { ...state.playerPositions };
+          delete players[msg.playerId];
+          delete playerPositions[msg.playerId];
+          return { players, playerPositions };
+        });
+        break;
+
+      case 'seat_rekeyed':
+        set((state) => {
+          const players = { ...state.players };
+          const playerPositions = { ...state.playerPositions };
+          const seat = players[msg.oldId];
+          if (seat) { delete players[msg.oldId]; players[msg.newId] = { ...seat, id: msg.newId }; }
+          const pos = playerPositions[msg.oldId];
+          if (pos) { delete playerPositions[msg.oldId]; playerPositions[msg.newId] = pos; }
+          return { players, playerPositions };
         });
         break;
 
@@ -723,7 +771,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           return {
             mobPositions: {
               ...state.mobPositions,
-              [msg.roomId]: [...existing, { mobId: msg.mobId, mobName: msg.mobName, x: msg.x, y: msg.y }],
+              [msg.roomId]: [...existing, { mobId: msg.mobId, mobName: msg.mobName, templateId: msg.templateId, x: msg.x, y: msg.y }],
             },
           };
         });

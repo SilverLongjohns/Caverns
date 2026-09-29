@@ -114,6 +114,7 @@ describe('MobAIManager', () => {
       roomId: 'room-1',
       mobId: mob.instanceId,
       mobName: mob.name,
+      templateId: mob.templateId,
     }));
   });
 
@@ -272,6 +273,18 @@ describe('MobAIManager', () => {
     const spawnMessages = broadcast.mock.calls
       .filter(([, msg]: [string, ServerMessage]) => msg.type === 'mob_spawn');
     expect(spawnMessages.length).toBe(2);
+  });
+
+  it('reactivated mobs re-broadcast mob_spawn with templateId', () => {
+    const grid = makeGrid();
+    const mob = makeMob();
+    manager.registerRoom('room-1', grid, [mob]);
+    manager.pauseMob('room-1');
+    broadcast.mockClear();
+    manager.reactivateMob('room-1');
+    expect(broadcast).toHaveBeenCalledWith('room-1', expect.objectContaining({
+      type: 'mob_spawn', mobId: mob.instanceId, templateId: mob.templateId,
+    }));
   });
 
   // --- checkDetection ---

@@ -41,18 +41,26 @@ export function CharacterSlotCard({ slotIndex, character, onCreate, onResume, on
       <div className="char-slot-name">{character.name}</div>
       <div className="char-slot-meta">Lv {character.level} · {character.className}</div>
       <div className="char-slot-meta">{character.gold}g · last {relative(character.lastPlayedAt)}</div>
+      {character.parkedRun && <div className="char-slot-meta char-slot-parked">Parked in {character.parkedRun.roomName}</div>}
       <div className="char-slot-actions">
-        <RelicButton hot={!character.inUse} onClick={() => onResume(character.id)} disabled={character.inUse}>
-          {character.inUse ? 'In use' : 'Resume'}
-        </RelicButton>
-        <RelicButton
-          size="sm"
-          tone="danger"
-          className="char-slot-delete"
-          onClick={() => { if (confirm(`Delete ${character.name}?`)) onDelete(character.id); }}
-        >
-          Delete
-        </RelicButton>
+        {character.parkedRun ? (
+          <RelicButton hot onClick={() => onResume(character.id)}>In run: Resume</RelicButton>
+        ) : (
+          <RelicButton hot={!character.inUse} onClick={() => onResume(character.id)} disabled={character.inUse}>
+            {character.inUse ? 'In use' : 'Resume'}
+          </RelicButton>
+        )}
+        {/* A character seated in a run can't be deleted (the server refuses too). */}
+        {!character.parkedRun && (
+          <RelicButton
+            size="sm"
+            tone="danger"
+            className="char-slot-delete"
+            onClick={() => { if (confirm(`Delete ${character.name}?`)) onDelete(character.id); }}
+          >
+            Delete
+          </RelicButton>
+        )}
       </div>
     </div>
   );

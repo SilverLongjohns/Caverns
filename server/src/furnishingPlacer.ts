@@ -130,6 +130,8 @@ export function placeFurnishings(
   roomType: string,
   biomeId: string,
   occupied: Set<string>,
+  /** Prefixed to instance ids so they are unique across a dungeon (e.g. `${room.id}_`). */
+  idPrefix = '',
 ): PlaceFurnishingsResult {
   // Filter definitions to those matching room type and biome
   const candidates = furnishingDefs.filter(
@@ -184,6 +186,7 @@ export function placeFurnishings(
       char: def.asciiChar,
       name: def.name,
       interactable: def.interactable,
+      id: def.id,
     });
 
     if (def.interactable) {
@@ -191,7 +194,7 @@ export function placeFurnishings(
       instanceCounter++;
       interactableInstances.push({
         definitionId: `furn_${def.id}`,
-        instanceId: `furn_${String(instanceCounter).padStart(3, '0')}`,
+        instanceId: `${idPrefix}furn_${String(instanceCounter).padStart(3, '0')}`,
         position: { x: pos.x, y: pos.y },
         usedActions: {},
       });

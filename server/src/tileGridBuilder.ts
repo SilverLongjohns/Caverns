@@ -152,6 +152,7 @@ export function buildTileGrid(room: Room, biomeId: string): TileGrid {
     room.type,
     biomeId,
     occupiedPositions,
+    `${room.id}_`,
   );
 
   // Merge furniture interactables into room's interactables array
@@ -166,5 +167,6 @@ export function buildTileGrid(room: Room, biomeId: string): TileGrid {
     tiles: config.tiles as string[][],
     themes: finalThemes,
     furnishings: furnishings.length > 0 ? furnishings : undefined,
+    biomeId,
   };
 }

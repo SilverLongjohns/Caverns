@@ -182,6 +182,8 @@ export function App() {
                     onRevive={actions.revive}
                     onPuzzleAnswer={actions.puzzleAnswer}
                     onInteractAction={actions.interactAction}
+                    onParkRun={actions.parkRun}
+                    onLeaveRun={actions.leaveRun}
                   />
                 </>
               )}

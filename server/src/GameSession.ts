@@ -28,6 +28,7 @@ import {
   type CombatActionResultMessage,
   type EquippedEffect,
   type EquipmentSlot,
+  type LeaveRunToll,
 } from '@caverns/shared';
 import { resolveDrops, type DropResult } from './DropResolver.js';
 import { generateItem } from '@caverns/itemgen';
@@ -69,6 +70,14 @@ const allUniqueItemsList: Item[] = JSON.parse(
 const allItemsById = new Map<string, Item>(
   [...allItemsList, ...allUniqueItemsList].map(i => [i.id, i])
 );
+
+type SeatPresence = 'disconnected' | 'parked';
+
+function moveKey<V>(m: Map<string, V>, from: string, to: string): void {
+  if (!m.has(from)) return;
+  m.set(to, m.get(from)!);
+  m.delete(from);
+}
 
 export interface GameSessionOrigin {
   worldId: string;
@@ -117,8 +126,8 @@ export class GameSession {
   private connectionContexts = new Map<string, { accountId: string; characterId: string }>();
   // Pre-hydrated players (from DB) staged before startGame runs.
   private hydratedPlayers = new Map<string, Player>();
-  // Tracks which connections are currently disconnected (for AFK auto-skip).
-  private disconnectedConnections = new Set<string>();
+  // Seats that are not connected: dropped sockets, or players who parked the character.
+  private presence = new Map<string, SeatPresence>();
   // Debounced gold snapshot timers.
   private goldWriteTimers = new Map<string, ReturnType<typeof setTimeout>>();
   /** Close-up-delayed turn prompts, by room; the turn is locked until its prompt is sent. */
@@ -281,11 +290,42 @@ export class GameSession {
   }
 
   markDisconnected(connectionId: string): void {
-    this.disconnectedConnections.add(connectionId);
+    this.presence.set(connectionId, 'disconnected');
+    this.applyAway(connectionId);
   }
 
   markConnected(connectionId: string): void {
-    this.disconnectedConnections.delete(connectionId);
+    this.presence.delete(connectionId);
+    this.applyAway(connectionId);
+  }
+
+  isDisconnected(connectionId: string): boolean {
+    return this.presence.get(connectionId) === 'disconnected';
+  }
+
+  /** Parked, or dropped outside a fight: mobs ignore the seat and new fights/loot rolls leave it out. */
+  isAway(connectionId: string): boolean {
+    const p = this.presence.get(connectionId);
+    if (p === 'parked') return true;
+    if (p !== 'disconnected') return false;
+    return this.playerManager.getPlayer(connectionId)?.status !== 'in_combat';
+  }
+
+  /** Sync the away flag, mob-AI visibility and party view with presence. */
+  private applyAway(connectionId: string): void {
+    const player = this.playerManager.getPlayer(connectionId);
+    if (!player) return;
+    const away = this.isAway(connectionId);
+    if (!!player.away === away) return;
+    if (away) {
+      player.away = true;
+      this.mobAIManager.removePlayer(player.roomId, connectionId);
+    } else {
+      delete player.away;
+      const pos = this.playerGridPositions.get(connectionId);
+      if (pos) this.mobAIManager.addPlayer(player.roomId, connectionId, pos);
+    }
+    this.broadcast({ type: 'player_update', player });
   }
 
   hasPlayer(connectionId: string): boolean {
@@ -320,7 +360,7 @@ export class GameSession {
     const player = playerFromCharacter(row, connectionId, this.content.entranceRoomId);
     this.hydratedPlayers.set(connectionId, player);
     this.connectionContexts.set(connectionId, { accountId, characterId });
-    this.activeSessions?.attach(accountId, this.sessionId);
+    this.activeSessions?.attach(characterId, accountId, this.sessionId);
     return true;
   }
 
@@ -335,14 +375,152 @@ export class GameSession {
     return this.connectionContexts.get(connectionId)?.characterId;
   }
 
+  findSeatByCharacter(characterId: string): string | undefined {
+    for (const [seat, ctx] of this.connectionContexts) {
+      if (ctx.characterId === characterId) return seat;
+    }
+    return undefined;
+  }
+
+  /** Why this seat can't park or leave right now, or null if it can. Exploring only. */
+  stepAwayBlocker(connectionId: string): string | null {
+    const player = this.playerManager.getPlayer(connectionId);
+    if (!player) return 'You are not in this run.';
+    if (player.status === 'in_combat') return "You can't do that during a fight.";
+    if (player.status === 'downed') return "You can't do that while downed.";
+    if (this.lootManager.hasPendingFor(connectionId)) return 'Finish the loot roll first.';
+    return null;
+  }
+
+  /**
+   * Park the seat: it stays in the run, re-keyed to a placeholder so nothing the run
+   * sends reaches the player's connection (which goes back to character select).
+   */
+  park(connectionId: string): { ok: true; characterId: string; seatId: string } | { ok: false; reason: string } {
+    const blocker = this.stepAwayBlocker(connectionId);
+    if (blocker) return { ok: false, reason: blocker };
+    const characterId = this.connectionContexts.get(connectionId)?.characterId;
+    if (!characterId) return { ok: false, reason: 'This seat has no character.' };
+    const seatId = `parked:${characterId}`;
+    const player = this.rekeySeat(connectionId, seatId)!;
+    this.releasePuzzleSolver(seatId);
+    this.presence.set(seatId, 'parked');
+    player.away = true;
+    this.broadcast({ type: 'text_log', message: `${player.name} steps back into the shadows.`, logType: 'system' });
+    this.broadcast({ type: 'player_update', player });
+    return { ok: true, characterId, seatId };
+  }
+
+  /** Logout when parking is refused (mid-fight): keep the seat as dropped, off this connection. */
+  releaseConnection(connectionId: string): string | undefined {
+    const characterId = this.connectionContexts.get(connectionId)?.characterId;
+    if (!characterId) return undefined;
+    const seatId = `dropped:${characterId}`;
+    if (!this.rekeySeat(connectionId, seatId)) return undefined;
+    this.markDisconnected(seatId);
+    return seatId;
+  }
+
+  isParked(characterId: string): boolean {
+    return this.presence.get(`parked:${characterId}`) === 'parked';
+  }
+
+  getParkedRoomName(characterId: string): string | null {
+    if (!this.isParked(characterId)) return null;
+    const player = this.playerManager.getPlayer(`parked:${characterId}`);
+    return player ? this.rooms.get(player.roomId)?.name ?? null : null;
+  }
+
+  resumeParked(characterId: string, newConnectionId: string): boolean {
+    if (!this.isParked(characterId)) return false;
+    return this.reattachConnection(`parked:${characterId}`, newConnectionId);
+  }
+
+  /** Escape the run while exploring, paying the toll. The caller returns the player to the world. */
+  async leaveRun(
+    connectionId: string,
+    toll: LeaveRunToll,
+  ): Promise<{ ok: true; characterId: string; remainingSeats: number } | { ok: false; reason: string }> {
+    const blocker = this.stepAwayBlocker(connectionId);
+    if (blocker) return { ok: false, reason: blocker };
+    const player = this.playerManager.getPlayer(connectionId)!;
+    const characterId = this.connectionContexts.get(connectionId)?.characterId;
+    if (!characterId) return { ok: false, reason: 'This seat has no character.' };
+    const tollGold = LOOT_CONFIG.leaveRunTollGold;
+    const canPayGold = player.gold >= tollGold;
+    const hasItem = player.inventory.some(Boolean) || player.consumables.some(Boolean);
+    let paid: string;
+    switch (toll.kind) {
+      case 'gold':
+        if (!canPayGold) return { ok: false, reason: `You need ${tollGold} gold.` };
+        this.playerManager.addGold(connectionId, -tollGold);
+        paid = `${tollGold} gold`;
+        break;
+      case 'item': {
+        const slots = toll.source === 'inventory' ? player.inventory : player.consumables;
+        const item = Number.isInteger(toll.index) ? slots[toll.index] : undefined;
+        if (!item) return { ok: false, reason: 'There is no item in that slot.' };
+        slots[toll.index] = null;
+        paid = item.name;
+        break;
+      }
+      case 'free':
+        if (canPayGold || hasItem) return { ok: false, reason: 'You can still pay the toll.' };
+        paid = 'nothing';
+        break;
+      default:
+        return { ok: false, reason: 'Unknown toll.' };
+    }
+    // Every in-memory change happens before the DB await, so the seat is already gone
+    // (no second leave, no park, no mob pulling it into a fight) while the save is pending.
+    const saved = structuredClone(player);
+    this.broadcast({ type: 'text_log', message: `${player.name} slips away through the portal, leaving ${paid} behind.`, logType: 'system' });
+    this.broadcast({ type: 'party_member_left', playerId: connectionId });
+    this.removeSeat(connectionId);
+    const remainingSeats = this.playerIds.length;
+    await this.persistPlayerSnapshot(characterId, saved);
+    return { ok: true, characterId, remainingSeats };
+  }
+
+  /** Drop a seat from the run entirely (escape). Its character is already saved. */
+  private removeSeat(connectionId: string): void {
+    const player = this.playerManager.getPlayer(connectionId);
+    if (!player) return;
+    this.roomGrids.get(player.roomId)?.removeEntity(connectionId);
+    this.mobAIManager.removePlayer(player.roomId, connectionId);
+    this.releasePuzzleSolver(connectionId);
+    const goldTimer = this.goldWriteTimers.get(connectionId);
+    if (goldTimer) clearTimeout(goldTimer);
+    const characterId = this.connectionContexts.get(connectionId)?.characterId;
+    if (characterId) this.activeSessions?.detachCharacter(characterId);
+    for (const m of [this.connectionContexts, this.playerGridPositions, this.playerNames, this.playerClasses,
+      this.presence, this.goldWriteTimers, this.lastGridMove, this.hydratedPlayers] as Map<string, unknown>[]) {
+      m.delete(connectionId);
+    }
+    this.playerIds = this.playerIds.filter((id) => id !== connectionId);
+    this.playerManager.removePlayer(connectionId);
+  }
+
+  /** Free any puzzle this seat was solving, so a present player can be prompted instead. */
+  private releasePuzzleSolver(seatId: string): void {
+    for (const [roomId, solver] of this.activePuzzleSolver) {
+      if (solver === seatId) this.activePuzzleSolver.delete(roomId);
+    }
+  }
+
   private async snapshotPlayer(playerId: string): Promise<void> {
-    if (!this.characters) return;
     const player = this.playerManager.getPlayer(playerId);
     if (!player) return;
     const ctx = this.connectionContexts.get(playerId);
     if (!ctx?.characterId) return;
+    await this.persistPlayerSnapshot(ctx.characterId, player);
+  }
+
+  /** Save a Player object (live or a captured copy) to its character row. */
+  private async persistPlayerSnapshot(characterId: string, player: Player): Promise<void> {
+    if (!this.characters) return;
     try {
-      await this.characters.snapshot(ctx.characterId, characterSnapshotFromPlayer(player));
+      await this.characters.snapshot(characterId, characterSnapshotFromPlayer(player));
     } catch (err) {
       console.error('[GameSession] snapshotPlayer failed', err);
     }
@@ -359,48 +537,92 @@ export class GameSession {
   }
 
   /**
-   * Rekey a player slot from an old connection id to a new one and send a
-   * catch-up snapshot to the new socket. Used by the resume_session flow.
+   * Move a seat to a new id (reconnect, park, resume). Every id-keyed map follows,
+   * including the running fight; clients rename it via seat_rekeyed. Mob-AI tracking
+   * is dropped here and re-added by the caller once it is safe to run detection.
    */
+  private rekeySeat(oldId: string, newId: string): Player | undefined {
+    const player = this.playerManager.getPlayer(oldId);
+    if (!player) return undefined;
+    this.playerManager.replacePlayerId(oldId, newId);
+    moveKey(this.connectionContexts, oldId, newId);
+    moveKey(this.playerGridPositions, oldId, newId);
+    moveKey(this.playerNames, oldId, newId);
+    moveKey(this.playerClasses, oldId, newId);
+    moveKey(this.presence, oldId, newId);
+    moveKey(this.goldWriteTimers, oldId, newId);
+    moveKey(this.lastGridMove, oldId, newId);
+    const idx = this.playerIds.indexOf(oldId);
+    if (idx >= 0) this.playerIds[idx] = newId;
+    for (const [roomId, solver] of this.activePuzzleSolver) {
+      if (solver === oldId) this.activePuzzleSolver.set(roomId, newId);
+    }
+    this.lootManager.replacePlayerId(oldId, newId);
+    const grid = this.roomGrids.get(player.roomId);
+    const entity = grid?.getEntity(oldId);
+    if (grid && entity) {
+      grid.removeEntity(oldId);
+      grid.addEntity({ ...entity, id: newId });
+    }
+    this.mobAIManager.removePlayer(player.roomId, oldId);
+    this.combats.get(player.roomId)?.replaceParticipantId(oldId, newId);
+    this.broadcast({ type: 'seat_rekeyed', oldId, newId });
+    return player;
+  }
+
   reattachConnection(oldConnectionId: string, newConnectionId: string): boolean {
-    const player = this.playerManager.getPlayer(oldConnectionId);
+    const player = this.rekeySeat(oldConnectionId, newConnectionId);
     if (!player) return false;
-    this.playerManager.replacePlayerId(oldConnectionId, newConnectionId);
-    // Transfer our internal tracking.
-    const ctx = this.connectionContexts.get(oldConnectionId);
-    if (ctx) {
-      this.connectionContexts.set(newConnectionId, ctx);
-      this.connectionContexts.delete(oldConnectionId);
-    }
-    const gridPos = this.playerGridPositions.get(oldConnectionId);
-    if (gridPos) {
-      this.playerGridPositions.set(newConnectionId, gridPos);
-      this.playerGridPositions.delete(oldConnectionId);
-    }
-    const name = this.playerNames.get(oldConnectionId);
-    if (name !== undefined) {
-      this.playerNames.set(newConnectionId, name);
-      this.playerNames.delete(oldConnectionId);
-    }
-    const cls = this.playerClasses.get(oldConnectionId);
-    if (cls !== undefined) {
-      this.playerClasses.set(newConnectionId, cls);
-      this.playerClasses.delete(oldConnectionId);
-    }
-    const idx = this.playerIds.indexOf(oldConnectionId);
-    if (idx >= 0) this.playerIds[idx] = newConnectionId;
     // Cancel any AFK timer — the player is back.
-    for (const combat of this.combats.values()) {
-      combat.cancelAfkTimer();
+    for (const combat of this.combats.values()) combat.cancelAfkTimer();
+    this.presence.delete(newConnectionId);
+    // The seat is present again before its own snapshot is built, so game_start doesn't show it away.
+    const wasAway = !!player.away;
+    delete player.away;
+    // The client only enters the dungeon view on game_start, so resend a full snapshot.
+    this.sendTo(newConnectionId, this.buildResumeSnapshot(newConnectionId, player.roomId));
+    // Only a fight this seat is in: a parked seat resuming beside someone else's fight stays out of it.
+    const combat = this.combats.get(player.roomId);
+    if (combat?.getParticipant(newConnectionId)) {
+      this.sendTo(newConnectionId, {
+        type: 'arena_combat_start',
+        tileGrid: combat.getGrid(),
+        positions: combat.getAllPositions(),
+        combat: combat.getCombatState(),
+      } as any);
+      // Their turn may have been waiting on them (the AFK skip was cancelled above): prompt them again.
+      const state = combat.getState();
+      if (state.currentTurnId === newConnectionId) {
+        this.sendTo(newConnectionId, { type: 'combat_turn', currentTurnId: newConnectionId, roundNumber: state.roundNumber });
+        const turnState = combat.getTurnState(newConnectionId);
+        if (turnState) {
+          this.sendTo(newConnectionId, {
+            type: 'arena_positions_update',
+            positions: combat.getAllPositions(),
+            movementRemaining: turnState.movementRemaining,
+            moverId: newConnectionId,
+          } as any);
+        }
+      }
     }
-    // Send catch-up state.
-    const refreshed = this.playerManager.getPlayer(newConnectionId);
-    if (refreshed) {
-      const room = this.rooms.get(refreshed.roomId);
-      if (room) this.sendTo(newConnectionId, { type: 'room_reveal', room });
-      this.sendTo(newConnectionId, { type: 'player_update', player: refreshed });
-    }
+    // Last: addPlayer runs detection, which may open a fight the client must see after game_start.
+    const gridPos = this.playerGridPositions.get(newConnectionId);
+    if (gridPos) this.mobAIManager.addPlayer(player.roomId, newConnectionId, gridPos);
+    if (wasAway) this.broadcast({ type: 'player_update', player });
     return true;
+  }
+
+  private buildResumeSnapshot(connectionId: string, currentRoomId: string): ServerMessage {
+    const players: Record<string, Player> = {};
+    for (const p of this.playerManager.getAllPlayers()) players[p.id] = p;
+    const rooms: Record<string, Room> = {};
+    for (const id of this.revealedRooms) {
+      const room = this.rooms.get(id);
+      if (room) rooms[id] = room;
+    }
+    const playerPositions: Record<string, { x: number; y: number }> = {};
+    for (const [pid, pos] of this.playerGridPositions) playerPositions[pid] = { ...pos };
+    return { type: 'game_start', playerId: connectionId, players, rooms, currentRoomId, playerPositions };
   }
 
   startGame(): void {
@@ -489,6 +711,7 @@ export class GameSession {
     for (const p of this.playerManager.getPlayersInRoom(roomId)) {
       if (p.status === 'in_combat') {
         this.playerManager.setStatus(p.id, 'exploring');
+        this.applyAway(p.id);
       }
     }
   }
@@ -819,6 +1042,9 @@ export class GameSession {
     const room = this.rooms.get(roomId);
     if (!room?.encounter) return;
 
+    // Away seats can't be detected: no fight opens unless someone present is in the room.
+    if (!this.playerManager.getPlayersInRoom(roomId).some((p) => !this.isAway(p.id))) return;
+
     this.mobAIManager.pauseMob(roomId);
     const mobs = this.roomMobInstances.get(roomId) ?? [];
     if (mobs.length === 0) return;
@@ -838,7 +1064,8 @@ export class GameSession {
   private startCombat(roomId: string, mobInstances: MobInstance[]): void {
     if (mobInstances.length === 0) return;
     const leaderTemplate = this.mobs.get(mobInstances[0].templateId);
-    const playersInRoom = this.playerManager.getPlayersInRoom(roomId);
+    const playersInRoom = this.playerManager.getPlayersInRoom(roomId).filter((p) => !this.isAway(p.id));
+    if (playersInRoom.length === 0) return;
     const combatPlayers: CombatPlayerInfo[] = playersInRoom.map((p) => this.combatPlayerInfo(p));
     const playerEffects = new Map<string, EquippedEffect[]>();
     const usedDungeonEffects = new Map<string, string[]>();
@@ -1015,6 +1242,7 @@ export class GameSession {
     combat.markActionTaken(playerId);
     if (action === 'flee' && result?.fled) {
       this.playerManager.setStatus(playerId, 'exploring');
+      this.applyAway(playerId);
       // Send combat_end to the fleeing player before moving them out of the room,
       // since broadcastToRoom in afterCombatTurn won't reach them after the move.
       this.sendTo(playerId, { type: 'combat_end', result: 'flee' });
@@ -1203,6 +1431,7 @@ export class GameSession {
     for (const p of this.playerManager.getPlayersInRoom(roomId)) {
       if (p.status === 'in_combat') {
         this.playerManager.setStatus(p.id, 'exploring');
+        this.applyAway(p.id);
         this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(p.id)! });
       }
     }
@@ -1267,7 +1496,7 @@ export class GameSession {
       if (ctx?.characterId && this.characters) {
         try { await this.characters.markInUse(ctx.characterId, false); } catch (e) { console.error(e); }
       }
-      if (ctx?.accountId) this.activeSessions?.detach(ctx.accountId);
+      if (ctx?.characterId) this.activeSessions?.detachCharacter(ctx.characterId);
     }
   }
 
@@ -1279,7 +1508,7 @@ export class GameSession {
       if (ctx?.characterId && this.characters) {
         try { await this.characters.wipe(ctx.characterId); } catch (e) { console.error(e); }
       }
-      if (ctx?.accountId) this.activeSessions?.detach(ctx.accountId);
+      if (ctx?.characterId) this.activeSessions?.detachCharacter(ctx.characterId);
     }
   }
 
@@ -1299,7 +1528,7 @@ export class GameSession {
       if (ctx?.characterId && this.characters) {
         try { await this.characters.markInUse(ctx.characterId, false); } catch (e) { console.error(e); }
       }
-      if (ctx?.accountId) this.activeSessions?.detach(ctx.accountId);
+      if (ctx?.characterId) this.activeSessions?.detachCharacter(ctx.characterId);
     }
   }
 
@@ -1379,11 +1608,11 @@ export class GameSession {
     }
     // If this turn belongs to a disconnected player, arm the AFK auto-skip.
     const turnId = state.currentTurnId;
-    if (turnId && this.playerManager.getPlayer(turnId) && this.disconnectedConnections.has(turnId)) {
+    if (turnId && this.playerManager.getPlayer(turnId) && this.isDisconnected(turnId)) {
       const roomId = state.roomId;
       combat.armAfkTimer(
         turnId,
-        () => this.disconnectedConnections.has(turnId),
+        () => this.isDisconnected(turnId),
         () => {
           combat.advanceTurn();
           this.broadcastToRoom(roomId, { type: 'text_log', message: `${this.playerNames.get(turnId) ?? 'Player'} is AFK — turn skipped.`, logType: 'system' });
@@ -1574,7 +1803,7 @@ export class GameSession {
   private runLootFlow(roomId: string, regularItems: Item[]): void {
     if (regularItems.length === 0) return;
     const playerIds = this.playerManager.getPlayersInRoom(roomId)
-      .filter((p) => p.status !== 'downed').map((p) => p.id);
+      .filter((p) => p.status !== 'downed').filter((p) => !this.isAway(p.id)).map((p) => p.id);
     if (playerIds.length === 0) return;
 
     const room = this.rooms.get(roomId);

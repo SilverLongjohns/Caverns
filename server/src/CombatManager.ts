@@ -99,6 +99,20 @@ export class CombatManager {
     this.turnIndex = 0;
   }
 
+  /** Reconnect: the player keeps their seat, HP, buffs and turn under the new connection id. */
+  replaceParticipantId(oldId: string, newId: string): void {
+    const p = this.participants.get(oldId);
+    if (!p) return;
+    this.participants.delete(oldId);
+    p.id = newId;
+    this.participants.set(newId, p);
+    for (const other of this.participants.values()) {
+      for (const b of other.buffs) if (b.sourcePlayerId === oldId) b.sourcePlayerId = newId;
+    }
+    this.turnOrder = this.turnOrder.map((id) => (id === oldId ? newId : id));
+    this.effectResolver.replacePlayerId(oldId, newId);
+  }
+
   getEffectResolver(): ItemEffectResolver { return this.effectResolver; }
   getConsumedEffects(): Map<string, string[]> { return this.effectResolver.getConsumedEffects(); }
 

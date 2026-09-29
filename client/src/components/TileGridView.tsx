@@ -32,6 +32,12 @@ interface TileGridViewProps {
   onTileHoverEnd?: () => void;
   /** Extra CSS classes to apply to specific tiles, keyed by "x,y". */
   tileHighlights?: Map<string, string>;
+  /** When true, a terrain sheet is drawn under this view (GlyphViewport's TerrainCanvas): cells
+   * suppress their ASCII character except where `asciiCells` says the terrain resolved to nothing. */
+  terrainMode?: boolean;
+  /** "x,y" keys (from the same autotile pass GlyphViewport feeds TerrainCanvas) whose quads are
+   * all null, so this view must still draw their ASCII character. Ignored unless `terrainMode`. */
+  asciiCells?: Set<string>;
 }
 
 const WATER_CHARS: Record<string, [string, string]> = {
@@ -54,8 +60,11 @@ const WaterChar = memo(function WaterChar({ theme }: { theme?: string | null }) 
   return <>{char}</>;
 });
 
-export const TileGridView = memo(function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles, charLookup, onTileClick, onTileHover, onTileHoverEnd, tileHighlights }: TileGridViewProps) {
+export const TileGridView = memo(function TileGridView({ tileGrid, entities, alert, visibleTiles, exploredTiles, charLookup, onTileClick, onTileHover, onTileHoverEnd, tileHighlights, terrainMode, asciiCells }: TileGridViewProps) {
   const { width, height, tiles, themes } = tileGrid;
+  // In terrain mode, a cell keeps its ASCII character only where the terrain canvas drew nothing
+  // for it (asciiCells); otherwise the char is suppressed so the pixel art shows through the span.
+  const showChar = (x: number, y: number) => !terrainMode || (asciiCells?.has(`${x},${y}`) ?? true);
 
   // Build entity lookup: "x,y" -> EntityOverlay
   const entityMap = new Map<string, EntityOverlay>();
@@ -85,7 +94,9 @@ export const TileGridView = memo(function TileGridView({ tileGrid, entities, ale
           ? `tile-${tileType} tile-theme-${theme} tile-explored`
           : `tile-${tileType} tile-explored`;
 
-        if (tileType === 'water') {
+        if (!showChar(x, y)) {
+          cells.push(<span key={x} className={tileClass} />);
+        } else if (tileType === 'water') {
           cells.push(
             <span key={x} className={tileClass}>
               <WaterChar theme={theme} />
@@ -125,7 +136,9 @@ export const TileGridView = memo(function TileGridView({ tileGrid, entities, ale
           : `tile-${tileType}`;
         const cls = highlightClass ? `${tileClass} ${highlightClass}` : tileClass;
 
-        if (tileType === 'water') {
+        if (!showChar(x, y)) {
+          cells.push(<span key={x} className={cls} />);
+        } else if (tileType === 'water') {
           cells.push(
             <span key={x} className={cls}>
               <WaterChar theme={theme} />

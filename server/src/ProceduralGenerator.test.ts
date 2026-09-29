@@ -363,3 +363,42 @@ describe('ProceduralGenerator', () => {
     });
   });
 });
+
+describe('ProceduralGenerator interactables', () => {
+  // Every glowing prop must be triggerable: walking onto its tile opens the interaction.
+  it('keeps an interaction for every interactable furnishing, on a walkable in-bounds tile', () => {
+    const walkable = new Set(['floor', 'water', 'hazard', 'bridge']);
+    for (let run = 0; run < 20; run++) {
+      const dungeon = generateProceduralDungeon(3);
+      for (const room of dungeon.rooms) {
+        const grid = room.tileGrid;
+        if (!grid) continue;
+        const instances = room.interactables ?? [];
+        for (const f of grid.furnishings ?? []) {
+          if (!f.interactable) continue;
+          expect(instances.some((i) => i.position.x === f.x && i.position.y === f.y),
+            `${room.id}: interactable furnishing ${f.id} at ${f.x},${f.y} has no interaction`).toBe(true);
+        }
+        const seen = new Set<string>();
+        for (const i of instances) {
+          const { x, y } = i.position;
+          const where = `${room.id}: ${i.instanceId} (${i.definitionId}) at ${x},${y}`;
+          expect(x >= 0 && y >= 0 && x < grid.width && y < grid.height, `${where} is out of bounds`).toBe(true);
+          expect(walkable.has(grid.tiles[y][x]), `${where} is on ${grid.tiles[y][x]}`).toBe(true);
+          expect(seen.has(`${x},${y}`), `${where} shares a tile with another interactable`).toBe(false);
+          seen.add(`${x},${y}`);
+        }
+      }
+    }
+  });
+
+  // Secret passages are tracked by instance id across the whole dungeon, so ids must not repeat between rooms.
+  it('gives every interactable a dungeon-unique instance id', () => {
+    for (let run = 0; run < 10; run++) {
+      const dungeon = generateProceduralDungeon(3);
+      const ids = dungeon.rooms.flatMap((r) => (r.interactables ?? []).map((i) => i.instanceId));
+      const dupes = ids.filter((id, n) => ids.indexOf(id) !== n);
+      expect(dupes, `duplicate instance ids: ${[...new Set(dupes)].join(', ')}`).toEqual([]);
+    }
+  });
+});

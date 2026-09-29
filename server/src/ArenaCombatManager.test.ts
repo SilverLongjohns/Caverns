@@ -290,3 +290,28 @@ describe('ArenaCombatManager ranged', () => {
     expect(a.reload('p1')).toMatchObject({ ok: true, result: { action: 'reload', ammo: prof.magazine } });
   });
 });
+
+describe('ArenaCombatManager.replaceParticipantId (reconnect)', () => {
+  it('moves the participant, position, turn and effects to the new id', () => {
+    const grid = makeGrid();
+    const arena = new ArenaCombatManager('room1', grid, [makePlayer('p1')], [makeMob()],
+      { p1: { x: 1, y: 2 }, mob1: { x: 6, y: 2 } },
+      new Map([['p1', []]]));
+    const cm = arena.getCombatManager();
+    const firstTurn = cm.getCurrentTurnId();
+    arena.startTurn('p1');
+    cm.getParticipant('p1')!.buffs.push({ type: 'taunt', turnsRemaining: 2, sourcePlayerId: 'p1' });
+
+    arena.replaceParticipantId('p1', 'p1b');
+
+    expect(arena.getPosition('p1b')).toEqual({ x: 1, y: 2 });
+    expect(arena.getPosition('p1')).toBeUndefined();
+    expect(arena.getTurnState('p1b')).toBeDefined();
+    const p = cm.getParticipant('p1b')!;
+    expect(p.id).toBe('p1b');
+    expect(p.buffs[0].sourcePlayerId).toBe('p1b');
+    expect(cm.getParticipant('p1')).toBeFalsy();
+    expect(cm.getCurrentTurnId()).toBe(firstTurn === 'p1' ? 'p1b' : firstTurn);
+    expect(cm.getState().participants.some((x) => x.id === 'p1b')).toBe(true);
+  });
+});

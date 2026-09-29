@@ -1,0 +1,189 @@
+{
+  "note": "Task 7 steps 2-4 (generate/post-process/mockup) for the starter biome terrain tileset. PixelLab job ids, placement rules and the bit convention actually observed from each get_tiles_pro result.",
+  "bit_convention": {
+    "rule": "corner (arity 4), mask = NW<<3 | NE<<2 | SW<<1 | SE",
+    "pixellab_placement_rules_say": "a set bit means the FIRST listed terrain (item 1 in the numbered description) occupies that corner",
+    "since_item_1_is_always_the_floor_description": "bit=1 in the raw PixelLab tile index means FLOOR at that corner -- same as the spike (maskBit: 'lower')",
+    "pack.py_maskBit_used": "lower",
+    "pack.py_stores_upper_mask": "15 - fileIndex, so file tile_0 (0000, no floor corners) -> stored key '15' (all four corners upper/rock), file tile_15 (1111, all floor) -> stored key '0' (no upper corners, pure floor)",
+    "verified_visually": "cropped art/tiles/starter/pack/terrain.png at manifest positions for rock mask '0' (pure dusty floor), mask '15' (solid dark rock), mask '8' (rock in NW corner only), mask '1' (rock in SE corner only) -- all matched the NW<<3|NE<<2|SW<<1|SE convention exactly"
+  },
+  "jobs": {
+    "rock_tileset": {
+      "tool": "create_tiles_pro (tile_feature=tileset)",
+      "id": "e2b05a30-9c36-43e8-9e42-7edca02000a7",
+      "description": "1). dark dusty cave floor, umber and charcoal grit, small gravel 2). deep charcoal-umber rough cave rock mass, near-black in shadow, subtle darker rim where it meets the floor, a few barely visible rusted relic-tech cables",
+      "params": { "tile_type": "square_topdown", "tile_view": "top-down", "tile_size": 24, "outline_mode": "segmentation" },
+      "raw_dir": "art/tiles/starter/raw/rock"
+    },
+    "water_tileset": {
+      "tool": "create_tiles_pro (tile_feature=tileset)",
+      "id": "c460bd1d-76e5-494e-9e97-e2c9951bc5ca",
+      "description": "1). dark dusty cave floor, umber and charcoal grit, small gravel 2). still dark cave water, murky teal-black, faint reflections",
+      "params": { "tile_type": "square_topdown", "tile_view": "top-down", "tile_size": 24, "outline_mode": "segmentation" },
+      "raw_dir": "art/tiles/starter/raw/water"
+    },
+    "chasm_tileset": {
+      "tool": "create_tiles_pro (tile_feature=tileset)",
+      "id": "9b5ab556-a3bd-4b06-823e-3ad992ea2fc4",
+      "description": "1). dark dusty cave floor, umber and charcoal grit, small gravel 2). bottomless black chasm, jagged dark rock lip",
+      "params": { "tile_type": "square_topdown", "tile_view": "top-down", "tile_size": 24, "outline_mode": "segmentation" },
+      "raw_dir": "art/tiles/starter/raw/chasm"
+    },
+    "stamps_batch": {
+      "tool": "create_tiles_pro (shape mode, no tile_feature -- 5 numbered items)",
+      "id": "6d5ba948-c5fd-4b14-a24e-fced10afa61f",
+      "description": "1). glowing sickly-green toxic seep on cave floor 2). rickety horizontal plank-and-cable bridge 3). rickety vertical plank-and-cable bridge 4). worn stone archway threshold with a faint arrow scratched into the floor 5). small wall-mounted relic torch, warm amber flame",
+      "params": { "tile_type": "square_topdown", "tile_view": "top-down", "tile_size": 24, "outline_mode": "segmentation" },
+      "raw_dir": "art/tiles/starter/raw/stamps",
+      "note": "get_tiles_pro returned NO placement_rules for this job (kind: 'tiles', not 'tileset') -- the 16-tile canvas did NOT cleanly map 4/5/3/4 tiles per numbered item in file-index order the way the floor-variant style-mode spike did. Visual grouping by row (4 tiles/row) roughly tracked hazard/bridge/bridge/archway content but bled between adjacent cells (shared background motifs), so tiles were hand-picked by inspection rather than assumed from index order. Picked: tile_2 -> hazard, tile_5 -> bridge_h, tile_8 -> bridge_v, tile_14 -> exit. No candidate read as a clean standalone wall torch (all archway-adjacent), so torch was regenerated separately (see torch_supp)."
+    },
+    "torch_supplemental": {
+      "tool": "create_tiles_pro (shape mode, single item)",
+      "id": "6d954ab6-ccf9-491a-8654-433d8c804355",
+      "description": "1). small wall-mounted relic torch bracket, warm amber flame, mounted on dark charcoal-umber cave rock wall, moody dim lighting",
+      "params": { "tile_type": "square_topdown", "tile_view": "top-down", "tile_size": 24, "outline_mode": "segmentation" },
+      "raw_dir": "art/tiles/starter/raw/torch_supp",
+      "picked": "tile_2.png (all 16 near-identical clean standalone torches; any would do)"
+    },
+    "floor_variants_style_mode_attempt1_FAILED": {
+      "tool": "create_tiles_pro (style_images, outline_mode='segmentation')",
+      "id": "d545afac-8c55-4fc6-bc8a-58f6556107a0",
+      "note": "BROKEN: output was almost entirely transparent/black with a stray white pill-shaped artifact in the first column of every row. outline_mode is a shape-mode control; passing it alongside style_images (which the tool docs say makes shape controls ignored) apparently still perturbed rendering. Discarded, not used."
+    },
+    "floor_variants_style_mode_attempt2_FAILED": {
+      "tool": "create_tiles_pro (style_images, no outline_mode)",
+      "id": "1c4d706a-56a8-4038-a1e6-6403d2fed038",
+      "note": "Still broken even without outline_mode: near-transparent output, only scattered debris flecks on a black/transparent background, no floor base rendered at all. The reference tile (rock tile_15, the pure-floor tile) is itself very low-contrast/low-detail at 24x24, which likely starved the style-transfer of enough signal to reconstruct a full floor base. Discarded, not used."
+    },
+    "floor_variants_shape_mode_4of5": {
+      "tool": "create_tiles_pro (shape mode, no style_images, 5 numbered items)",
+      "id": "c1cf223d-5eb5-4acc-a820-ca1e7b177333",
+      "description": "1). cracked dusty cave floor with hairline fractures in the stone... 2). ...gravel and rubble debris... 3). ...damp dark stain patch... 4). ...half-buried rusted relic-tech cable... 5). ...one tiny dim amber relic-tech light glinting faintly...",
+      "raw_dir": "art/tiles/starter/raw/floor_variants",
+      "note": "Abandoned style mode entirely; described each variant as a full floor tile instead (shape mode, like rock/water/chasm/stamps) and relied on postprocess.py match to palette-lock it to the real floor afterward. This worked. Only 4 distinct motifs came out of the 16-tile canvas (crack, gravel, damp-patch, amber-glint) -- 'cable' either merged into damp-patch or was silently dropped; not present as its own look. Picked tile_0=cracked, tile_1=gravel, tile_2=damp, tile_3=amberlight.",
+      "cable_supplemental": {
+        "tool": "create_tiles_pro (shape mode, single item)",
+        "id": "5861e8ac-0727-46b1-9ea6-b6e1040a162f",
+        "description": "1). dusty dark cave floor with a thin half-buried rusted relic-tech cable running diagonally across it, dark charcoal-umber palette, barely visible",
+        "raw_dir": "art/tiles/starter/raw/cable_supp",
+        "picked": "tile_0.png"
+      }
+    }
+  },
+  "spend": {
+    "balance_before": 16.89,
+    "balance_after_round1_8_jobs": 16.03,
+    "round1_spent": 0.86,
+    "balance_after_round2_bridge_rerolls": 15.84,
+    "round2_spent": 0.19,
+    "total_spent": 1.05,
+    "ceiling": 1.50,
+    "note": "Round 1: 2 of the 8 jobs (both floor-variant style-mode attempts) were unusable failures; still within budget. Round 2 (user-requested fixes): 2 more jobs (bridge_h, bridge_v standalone rerolls), ~$0.19, within the ~$0.20 approved."
+  },
+  "round2_user_fixes": {
+    "bridge_h_reroll": {
+      "tool": "create_tiles_pro (shape mode, single item, standalone -- no batch)",
+      "id": "95b6be98-a64b-4055-ac85-baf21170c5bd",
+      "description": "1). rickety wooden plank-and-cable bridge spanning horizontally, seen from directly above, planks and rope only, no moss, no ground, isolated",
+      "raw_dir": "art/tiles/starter/raw/bridge_h_reroll",
+      "picked": "tile_5.png -- clean vertical plank fence pattern (planks perpendicular to travel direction, correct for a horizontally-spanning bridge), no green moss fringe this time.",
+      "cutout": "sides=top,bottom only (tolerance 12, default) -- the plank subject is DESIGNED to reach the left/right edges (so it tiles along its span axis); trusting all 4 border sides as background would (and initially did) eat the planks themselves, since their colour touches the left/right border ring. Result: 26.7% of the tile made transparent (the sky sliver at top, gravel sliver at bottom)."
+    },
+    "bridge_v_reroll": {
+      "tool": "create_tiles_pro (shape mode, single item, standalone)",
+      "id": "1f31d715-8e43-4283-b6a2-ab91392fe742",
+      "description": "1). rickety wooden plank-and-cable bridge spanning vertically, seen from directly above, planks and rope only, no moss, no ground, isolated",
+      "raw_dir": "art/tiles/starter/raw/bridge_v_reroll",
+      "note": "Inconsistent job: most of the 16 tiles came out with the SAME vertical-plank orientation as the bridge_h job (wrong), only a few (tile_9, tile_10, tile_14, tile_3) showed the correct perpendicular horizontal-rung look. Tried tile_3 with cutout sides=left,right, but its background was too close in colour to gaps between the planks and ~87.5% of the tile (most of the subject) was eaten.",
+      "final_choice": "Abandoned the generated bridge_v tiles entirely. bridge_v is conceptually bridge_h rotated 90 degrees, so the ALREADY-CUTOUT bridge_h.png was rotated 90 degrees with PIL (Image.ROTATE_90) to produce bridge_v.png -- same clean art, guaranteed-consistent quality, no extra spend."
+    },
+    "cutout_tool": {
+      "added": "scripts/tiles/postprocess.py `cutout` command + selftest fixture",
+      "algorithm": "samples the outer border ring (default all 4 sides, overridable via --sides), clusters its colours in Lab space, flood-fills border-connected pixels within a Lab-distance tolerance of those clusters to alpha=0, then feathers a small bounded ramp (default 1px) at the cut boundary on the KEPT side only (no whole-image blur -- that was tried first and ate too far into small subjects).",
+      "per_tile_tuning": {
+        "hazard": "tolerance=12 (default), sides=all -- 62.0% of tile made transparent",
+        "exit": "tolerance=4 (lowered from default 12) -- the stone archway frame is close in Lab tone to the floor background at tolerance=12 and was getting eaten along with the true background; at tolerance=4 the frame survives and only the genuine floor-coloured corners are cut. 47.2% of tile made transparent",
+        "torch": "tolerance=12 (default), sides=all -- 66.5% of tile made transparent",
+        "bridge_h": "tolerance=12 (default), sides=top,bottom only -- see above",
+        "bridge_v": "derived by rotating the cutout bridge_h.png -- no separate cutout run needed"
+      }
+    },
+    "grade_tool": {
+      "added": "scripts/tiles/postprocess.py `grade`/`compute_grade`/`apply_grade` + CLI",
+      "reference": "art/tiles/starter/work/mockA2_floor_ref.png -- a stitched strip of 6 clean, low-texture-variance 24x24 floor patches manually sampled from art/mockups/tileset-spike/mock-A2.png (picking floor-only regions, not its near-black rock border, since the ask was specifically to darken our FLOOR toward the spike's floor)",
+      "sample": "art/tiles/starter/work/floor_repaired.png (the round-1 seam-repaired plain floor tile)",
+      "transform": {
+        "sample_L": 27.12, "sample_chroma": 12.79,
+        "ref_L": 21.66, "ref_chroma": 6.43,
+        "l_offset": -5.46, "chroma_scale": 0.503
+      },
+      "applied_to": "ALL 16 rock + 16 water + 16 chasm corner-set tiles, and all 5 floor variants (53 tiles total) -- the SAME single transform on every one, so relative hue/identity between terrain types is preserved (water stays teal, chasm stays near-black) while the whole family shifts darker/less saturated together. NOT applied to stamps (hazard/bridge/exit/torch keep their own accent colours per the earlier R3 ruling).",
+      "seam_recheck_after_grading": {
+        "before_grade_repaired_floor": "band_score col=0.160 row=0.265",
+        "after_grade": "band_score col=0.160 row=0.267",
+        "conclusion": "unchanged within noise -- grading is a uniform Lab transform and did not reintroduce banding; no second repair pass was needed"
+      }
+    }
+  },
+  "round3_user_fix_exit_reroll": {
+    "reason": "User feedback on round 2: the exit archway's INTERIOR (the black doorway opening) was transparent after cutout because it touched the tile border (bottom/left edges), so the floor/wall art behind the stamp showed through the hole -- read as a free-floating arch outline, not a doorway.",
+    "root_cause_confirmed": "inspected the round-2 stamps_cutout/exit.png alpha channel directly (ASCII alpha map): the curved top arch frame was opaque, but the entire lower interior/threshold region was alpha=0 -- exactly the reported bug, not a misdiagnosis.",
+    "jobs": {
+      "variant_1_rectangular": {
+        "tool": "create_tiles_pro (shape mode, single item, standalone)",
+        "id": "b8a6c1cd-3503-41bb-af66-a0ec90ade0f5",
+        "description": "1). top-down view of a dark cave passage doorway: a worn stone threshold framing a deep black opening that recedes into darkness, the opening fully filled with black/near-black void, isolated, no surrounding ground",
+        "raw_dir": "art/tiles/starter/raw/exit_reroll_v1",
+        "verdict": "rejected -- a plain rectangular stone block with a black window, reads as 'a wall segment', not distinctly as a doorway/exit marker at 48px."
+      },
+      "variant_2_archway": {
+        "tool": "create_tiles_pro (shape mode, single item, standalone)",
+        "id": "1ad98541-42f6-489a-a772-014d9bda79f6",
+        "description": "1). top-down view of a stone archway tunnel exit, a worn stone doorframe with a faint arrow scratched into its threshold, the doorway itself completely filled with solid black void leading into the tunnel beyond, isolated, no floor or ground around it",
+        "raw_dir": "art/tiles/starter/raw/exit_reroll_v2",
+        "verdict": "picked -- gothic-arch silhouette reads immediately as a doorway/tunnel mouth. Picked tile_4 (warm umber-grey stone tone, matches the palette better than the cooler tile_0/1, clean render, no artifacts)."
+      }
+    },
+    "void_border_check": "for BOTH new jobs, scanned every border-ring pixel of several candidate tiles for Lab L < 8 (near-black): 0 hits in all of them. Unlike the round-2 tile, this prompt's 'isolated, no surrounding ground' framing made the model paint the void fully enclosed within the frame (never reaching the tile edge) -- so this specific reroll doesn't even reproduce the original failure mode. keep_dark_l was still applied as a deliberate safety net per the brief (defence in depth, not load-bearing for this particular tile).",
+    "background_removal_finding": "the border ring for the picked tile is 100% frame/stone material (L ranges smoothly 15-59 across the ring, one continuous shaded surface, no separate flat 'background' cluster at all) -- the 'isolated, no surrounding ground' prompt made the model fill the WHOLE 24x24 canvas with stone, not just an inset archway on a plain backdrop. Tried tolerance 12/6/3 with cutout: every setting ate progressively more of the frame itself (natural stone-shading variance lets the flood fill step from shade to shade across the whole material), down to unrecognizable fragments at tolerance>=3. There is no tolerance that removes 'background' here without also removing the frame, because there is no separate background in this art to find. Settled on tolerance=1 (near-inert -- only the few most extreme corner-noise pixels get cut, ~4% of the tile) + keep_dark_l=10: frame fully intact, arch silhouette clean, void solid opaque black, only cosmetic corner speckle removed.",
+    "cutout_params_final": "cutout(exit_reroll_v2/tile_4.png, tolerance=1, keep_dark_l=10) -> art/tiles/starter/work/stamps_cutout/exit.png",
+    "keep_dark_option": {
+      "added": "scripts/tiles/postprocess.py cutout(..., keep_dark_l=None) + CLI --keep-dark <L>",
+      "behaviour": "a pixel with Lab L at or below keep_dark_l is NEVER classified as background, regardless of its Lab distance to a border colour cluster and regardless of whether it touches the border -- overrides the normal distance test.",
+      "selftest": "new fixture: light-grey background (L~60) with a near-black void (L~6) that intentionally touches the bottom border, mirroring the exact doorway-to-darkness case. Without keep_dark_l: void probe alpha = 0 (bug reproduced). With keep_dark_l=15: void probe alpha = 255 (fixed). Background probe alpha with keep_dark_l active = 0 (confirms real background is still cut normally, not over-protected). All existing selftest checks still pass; full `SELFTEST PASSED`."
+    },
+    "mockup_context": "exit sits at grid (x=10, y=6) in the unchanged 12x9 hand-authored room, one cell in from the east wall column (x=11) -- already 'a floor cell at the room's edge next to wall' per the brief; no grid change was needed. Cropped and re-inspected in the rebuilt _mock.png: reads clearly as a stone archway with a solid black tunnel mouth set into the room's edge next to the rock border."
+  },
+  "spend_round3": {
+    "balance_before": 15.84,
+    "balance_after": 15.65,
+    "round3_spent": 0.19,
+    "total_spent_all_rounds": 1.24,
+    "ceiling": 1.50
+  },
+  "round4_user_fix_cleanalpha": {
+    "reason": "User feedback on round 3: exit reads better, but sloppy/flakey cutout edges on the stamps -- caused by the tolerance=1 cutout nibbling stray edge pixels, and the (then-default) 1px feather ramp leaving semi-transparent fringe pixels, which reads as anti-aliased blur rather than a clean pixel-art cut.",
+    "spend": "$0 -- pure post-processing, no PixelLab generation calls this round.",
+    "cleanalpha_tool": {
+      "added": "scripts/tiles/postprocess.py cleanalpha() (+ CLI subcommand `cleanalpha`), plus a `_connected_components` 4-connected flood-fill labeller it shares with nothing else (kept private/local to this pass).",
+      "steps": [
+        "1. binarize alpha at threshold 128 -> every pixel becomes 0 or 255, no partial values survive",
+        "2. remove stray opaque specks: 4-connected opaque components smaller than min_speck=3px, other than the single largest opaque component (always kept as the main subject regardless of its own size), are cut to transparent",
+        "3. fill small enclosed transparent pinholes: 4-connected transparent components smaller than min_hole=3px that do NOT touch the tile border (interior holes, not real surrounding background) are filled opaque, coloured by the mean RGB of their immediately-adjacent opaque rim pixels"
+      ],
+      "cutout_integration": "cutout() now calls cleanalpha() at the end by default (clean=True param, opt-out via --no-clean on the CLI). DEFAULT_CUTOUT_FEATHER changed from 1 to 0 -- the feather ramp is what produced the semi-transparent fringe pixels the user flagged; it's now off by default and purely opt-in, with cleanalpha as the intended way to tidy an edge.",
+      "selftest": "new fixture: a 16x16 subject square with (a) a feathered ramp just outside its edge in BOTH directions of the threshold (alpha 64 and alpha 180 on opposite sides), (b) 3 isolated 1-2px opaque specks in the background, (c) a 2px enclosed pinhole inside the subject. After cleanalpha: 0 non-binary alpha pixels remaining (PASS), all 3 specks removed (PASS), pinhole filled (PASS), every other subject pixel unchanged (PASS). Full suite still `SELFTEST PASSED` (all round 1-3 cutout/grade/match checks unaffected)."
+    },
+    "stamps_reprocessed": {
+      "hazard": "re-ran cutout(raw/stamps/tile_2.png) with the new defaults (feather=0, clean=True) -- 0.0% partial-alpha pixels remaining (was nonzero under the old feather=1 default)",
+      "torch": "re-ran cutout(raw/torch_supp/tile_2.png) with new defaults -- 0.0% partial-alpha remaining",
+      "bridge_h": "re-ran cutout(raw/bridge_h_reroll/tile_5.png, sides=top,bottom) with new defaults -- 0.0% partial-alpha remaining",
+      "bridge_v": "re-derived as the freshly-cleaned bridge_h.png rotated 90 degrees (PIL Image.ROTATE_90, an exact pixel permutation, no interpolation) -- 0 non-binary alpha pixels confirmed directly"
+    },
+    "exit_no_cutout": {
+      "change": "per the brief: exit is a structural doorway filling the cell, so it now gets NO flood-fill cutout at all -- just the raw exit_reroll_v2/tile_4.png with every pixel's alpha clamped to 255 (checked: the raw source already had 0 non-opaque pixels, so this was a no-op clamp, not a visible change from the raw art). This removes the tolerance=1 nibbling from round 3 entirely -- crisp, unnibbled rectangular edges, meeting the neighbouring rock/floor art cleanly (confirmed in the rebuilt mockup crop)."
+    },
+    "verification": "rendered a 4x nearest-neighbour crop of each of the 4 post-processed stamps (hazard, torch, bridge_h, exit) IN CONTEXT from the rebuilt mockup: art/tiles/starter/_stamp-crops.png. Read it directly -- all four show crisp, hard pixel edges against the surrounding floor/wall/chasm art, no visible fringe halo, no stray specks, no lost detail (hazard's small splash droplets, torch's flame, bridge's plank grain, exit's arch curve are all intact)."
+  }
+}

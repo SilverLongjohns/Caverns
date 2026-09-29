@@ -64,23 +64,29 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-const NON_WALKABLE_TILES = new Set(['wall', 'chasm']);
+// Tiles a slot interactable may stand on: walkable, and not an exit (walking there would leave the room).
+const INTERACTABLE_TILES = new Set(['floor', 'water', 'hazard', 'bridge']);
 
-function findWalkablePosition(room: Room, x: number, y: number): { x: number; y: number } | null {
+/**
+ * Nearest free tile to a chit slot where an interactable can stand. Slots are authored per chit and
+ * can fall outside a room's generated grid, so the search starts from the clamped point.
+ */
+function findWalkablePosition(room: Room, x: number, y: number, occupied: Set<string>): { x: number; y: number } | null {
   const grid = room.tileGrid;
   if (!grid) return { x, y };
-  if (!NON_WALKABLE_TILES.has(grid.tiles[y]?.[x])) return { x, y };
+  const cx = Math.min(Math.max(x, 0), grid.width - 1);
+  const cy = Math.min(Math.max(y, 0), grid.height - 1);
+  const ok = (nx: number, ny: number) =>
+    nx >= 0 && ny >= 0 && nx < grid.width && ny < grid.height &&
+    INTERACTABLE_TILES.has(grid.tiles[ny][nx]) && !occupied.has(`${nx},${ny}`);
+  if (ok(cx, cy)) return { x: cx, y: cy };
 
-  // Spiral search for nearest walkable tile
+  // Spiral search for nearest free tile
   for (let r = 1; r < Math.max(grid.width, grid.height); r++) {
     for (let dy = -r; dy <= r; dy++) {
       for (let dx = -r; dx <= r; dx++) {
         if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
-        const nx = x + dx;
-        const ny = y + dy;
-        if (nx < 0 || ny < 0 || nx >= grid.width || ny >= grid.height) continue;
-        const tile = grid.tiles[ny][nx];
-        if (tile && !NON_WALKABLE_TILES.has(tile) && tile !== 'exit') return { x: nx, y: ny };
+        if (ok(cx + dx, cy + dy)) return { x: cx + dx, y: cy + dy };
       }
     }
   }
@@ -634,8 +640,14 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
     const biomeInteractables = allInteractables.filter(d => d.biomes.includes(biome.id));
     if (biomeInteractables.length === 0) continue;
 
-    const usedDefIds = new Set<string>();
+    // Skip definitions the room's interactable furniture already uses.
+    const usedDefIds = new Set<string>((room.interactables ?? []).map(i => i.definitionId));
     const instances: InteractableInstance[] = [];
+    // The tile grid already placed furniture (some of it interactable); slots must not stack on it.
+    const occupied = new Set<string>([
+      ...(room.interactables ?? []).map(i => `${i.position.x},${i.position.y}`),
+      ...(room.tileGrid?.furnishings ?? []).map(f => `${f.x},${f.y}`),
+    ]);
 
     for (const slot of chitForRoom.interactableSlots) {
       const candidates = biomeInteractables.filter(
@@ -647,8 +659,9 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
       usedDefIds.add(def.id);
       intCounter++;
 
-      const pos = findWalkablePosition(room, slot.position.x, slot.position.y);
+      const pos = findWalkablePosition(room, slot.position.x, slot.position.y, occupied);
       if (!pos) continue;
+      occupied.add(`${pos.x},${pos.y}`);
 
       instances.push({
         definitionId: def.id,
@@ -659,7 +672,8 @@ function attemptGenerateDungeon(zoneCount: number): DungeonContent {
     }
 
     if (instances.length > 0) {
-      room.interactables = instances;
+      // Append: the tile grid already registered interactable furniture here.
+      room.interactables = [...(room.interactables ?? []), ...instances];
     }
   }
 

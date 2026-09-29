@@ -1,0 +1,8 @@
+{ "starter": {
+  "palette": "dark charcoal-umber rock, dark dusty floor, low saturation, faint cold-green and dim amber relic-tech glints",
+  "rock":  { "lower": "dark dusty cave floor, umber and charcoal grit, small gravel", "upper": "deep charcoal-umber rough cave rock mass, near-black in shadow, subtle darker rim where it meets the floor, a few barely visible rusted relic-tech cables" },
+  "water": { "lower": "dark dusty cave floor, umber and charcoal grit, small gravel", "upper": "still dark cave water, murky teal-black, faint reflections" },
+  "chasm": { "lower": "dark dusty cave floor, umber and charcoal grit, small gravel", "upper": "bottomless black chasm, jagged dark rock lip" },
+  "variants": ["hairline cracks", "scattered gravel and rubble", "damp dark stain", "half-buried rusted relic-tech cable", "one tiny dim amber relic light"],
+  "stamps": { "hazard": "glowing sickly-green toxic seep on cave floor", "bridge_h": "rickety horizontal plank-and-cable bridge", "bridge_v": "rickety vertical plank-and-cable bridge", "exit": "worn stone archway threshold with a faint arrow scratched into the floor", "torch": "small wall-mounted relic torch, warm amber flame" }
+} }

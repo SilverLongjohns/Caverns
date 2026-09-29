@@ -1,0 +1,23 @@
+{
+  "_comment": "default is the fallback biome terrain set (client/src/terrain/terrainManifest.ts falls back here when a biome's own set fails to load). Built from the SAME final starter sources as art/tiles/starter/pack-spec.json, desaturated so it reads as a generic/unthemed placeholder rather than duplicating starter's identity. Regenerate with: python3 scripts/tiles/pack.py art/tiles/default.json client/public/tiles/default",
+  "tileSize": 24,
+  "sets": {
+    "rock": { "dir": "art/tiles/starter/work/graded/rock", "pattern": "tile_{i}.png", "maskBit": "lower" },
+    "water": { "dir": "art/tiles/starter/work/graded/water", "pattern": "tile_{i}.png", "maskBit": "lower" },
+    "chasm": { "dir": "art/tiles/starter/work/graded/chasm", "pattern": "tile_{i}.png", "maskBit": "lower" }
+  },
+  "floorVariants": [
+    "art/tiles/starter/work/graded/floor_variants/cracked.png",
+    "art/tiles/starter/work/graded/floor_variants/gravel.png",
+    "art/tiles/starter/work/graded/floor_variants/damp.png",
+    "art/tiles/starter/work/graded/floor_variants/cable.png",
+    "art/tiles/starter/work/graded/floor_variants/amberlight.png"
+  ],
+  "stamps": {
+    "bridge_h": "art/tiles/starter/work/stamps_cutout/bridge_h.png",
+    "bridge_v": "art/tiles/starter/work/stamps_cutout/bridge_v.png",
+    "exit": "art/tiles/starter/work/stamps_cutout/exit.png",
+    "torch": "art/tiles/starter/work/stamps_cutout/torch.png"
+  },
+  "desaturate": 0.6
+}

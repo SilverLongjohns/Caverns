@@ -60,6 +60,25 @@ export class LootManager {
     }
   }
 
+  /** True while a need/greed round is waiting on this player. */
+  hasPendingFor(playerId: string): boolean {
+    return !!this.pendingRound?.playerIds.includes(playerId);
+  }
+
+  /** Reconnect/park: the seat keeps its place (and any choice made) in a pending round. */
+  replacePlayerId(oldId: string, newId: string): void {
+    const round = this.pendingRound;
+    if (!round) return;
+    round.playerIds = round.playerIds.map((id) => (id === oldId ? newId : id));
+    for (const itemChoices of round.choices.values()) {
+      const choice = itemChoices.get(oldId);
+      if (choice !== undefined) {
+        itemChoices.delete(oldId);
+        itemChoices.set(newId, choice);
+      }
+    }
+  }
+
   private resolveRound(): void {
     if (!this.pendingRound) return;
     const { items, playerIds, choices } = this.pendingRound;

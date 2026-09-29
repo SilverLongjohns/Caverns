@@ -163,6 +163,8 @@ export interface Furnishing {
   char: string;
   name: string;
   interactable: boolean;
+  /** Furnishing definition id (server/src/data/furnishingData.json); optional for rooms serialised before it existed. */
+  id?: string;
 }
 
 export interface TileGrid {
@@ -171,6 +173,8 @@ export interface TileGrid {
   tiles: string[][];
   themes?: (string | null)[][];
   furnishings?: Furnishing[];
+  /** Biome this grid was built for; selects its terrain tileset on the client. */
+  biomeId?: string;
 }
 
 export interface Room {
@@ -242,6 +246,8 @@ export interface Player {
   consumables: (Item | null)[];
   inventory: (Item | null)[];
   status: PlayerStatus;
+  /** Parked, or disconnected outside a fight: mobs ignore the seat and the party sees it as away. */
+  away?: boolean;
   keychain: string[];
   energy: number;
   usedEffects: string[];

@@ -46,6 +46,11 @@ describe('buildArenaGrid', () => {
     const result = buildArenaGrid('chamber', 'fungal');
     expect(result.themes).toBeDefined();
   });
+
+  it('the built grid records its biome', () => {
+    const result = buildArenaGrid('chamber', 'starter');
+    expect(result.biomeId).toBe('starter');
+  });
 });
 
 describe('placeStartingPositions', () => {
