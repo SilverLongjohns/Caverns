@@ -393,14 +393,46 @@ export class GameSession {
     for (const combat of this.combats.values()) {
       combat.cancelAfkTimer();
     }
-    // Send catch-up state.
     const refreshed = this.playerManager.getPlayer(newConnectionId);
     if (refreshed) {
-      const room = this.rooms.get(refreshed.roomId);
-      if (room) this.sendTo(newConnectionId, { type: 'room_reveal', room });
-      this.sendTo(newConnectionId, { type: 'player_update', player: refreshed });
+      // Re-key the room grid entity so movement keeps working.
+      const grid = this.roomGrids.get(refreshed.roomId);
+      const entity = grid?.getEntity(oldConnectionId);
+      if (grid && entity) {
+        grid.removeEntity(oldConnectionId);
+        grid.addEntity({ ...entity, id: newConnectionId });
+      }
+      // The client only enters the dungeon view on game_start, so resend a full snapshot.
+      this.sendTo(newConnectionId, this.buildResumeSnapshot(newConnectionId, refreshed.roomId));
+      const combat = this.combats.get(refreshed.roomId);
+      if (combat) {
+        this.sendTo(newConnectionId, {
+          type: 'arena_combat_start',
+          tileGrid: combat.getGrid(),
+          positions: combat.getAllPositions(),
+          combat: combat.getCombatState(),
+        } as any);
+      }
+      // Last: addPlayer runs detection, which may open a fight the client must see after game_start.
+      if (gridPos) {
+        this.mobAIManager.removePlayer(refreshed.roomId, oldConnectionId);
+        this.mobAIManager.addPlayer(refreshed.roomId, newConnectionId, gridPos);
+      }
     }
     return true;
+  }
+
+  private buildResumeSnapshot(connectionId: string, currentRoomId: string): ServerMessage {
+    const players: Record<string, Player> = {};
+    for (const p of this.playerManager.getAllPlayers()) players[p.id] = p;
+    const rooms: Record<string, Room> = {};
+    for (const id of this.revealedRooms) {
+      const room = this.rooms.get(id);
+      if (room) rooms[id] = room;
+    }
+    const playerPositions: Record<string, { x: number; y: number }> = {};
+    for (const [pid, pos] of this.playerGridPositions) playerPositions[pid] = { ...pos };
+    return { type: 'game_start', playerId: connectionId, players, rooms, currentRoomId, playerPositions };
   }
 
   startGame(): void {

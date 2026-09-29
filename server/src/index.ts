@@ -545,6 +545,11 @@ wss.on('connection', (ws) => {
       case 'select_character': {
         const ctx = connectionAccounts.get(playerId);
         if (!ctx || !characterRepo) break;
+        // A reconnect reattaches this connection to its run; joining a world on top would leave it in both.
+        if (dungeonConnections.has(playerId)) {
+          sendTo(playerId, { type: 'error', message: 'You are still in a dungeon run. Finish or leave it first.' });
+          break;
+        }
         const ch = await characterRepo.getById(msg.characterId);
         if (!ch || ch.account_id !== ctx.accountId) {
           sendTo(playerId, { type: 'error', message: 'Character not found' });
@@ -979,11 +984,17 @@ wss.on('connection', (ws) => {
       }
 
       case 'open_character_panel': {
+        // Never fail silently: the client shows nothing unless it gets a panel or a reason.
+        const refuse = (reason: string) => {
+          console.warn(`[character_panel] refused for ${playerId}: ${reason}`);
+          sendTo(playerId, { type: 'character_panel_error', reason });
+        };
         const ctx = connectionAccounts.get(playerId);
-        if (!ctx?.characterId || !characterRepo) break;
-        if (dungeonConnections.has(playerId)) break;
+        if (!characterRepo) { refuse('Character storage is unavailable.'); break; }
+        if (!ctx?.characterId) { refuse('No character is selected on this connection.'); break; }
+        if (dungeonConnections.has(playerId)) { refuse(`This connection is still attached to dungeon ${dungeonConnections.get(playerId)}.`); break; }
         const ch = await characterRepo.getById(ctx.characterId);
-        if (!ch) break;
+        if (!ch) { refuse(`Character ${ctx.characterId} was not found.`); break; }
         sendTo(playerId, {
           type: 'character_panel_opened',
           character: buildCharacterPanelView(ch),

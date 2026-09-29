@@ -409,6 +409,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'character_panel_error':
+        // Visible even when no panel is open (a failed open would otherwise show nothing).
+        console.warn('[character] panel error:', msg.reason);
         set({ characterPanelError: msg.reason });
         break;
 
