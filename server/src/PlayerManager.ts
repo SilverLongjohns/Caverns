@@ -58,6 +58,10 @@ export class PlayerManager {
     return true;
   }
 
+  removePlayer(id: string): void {
+    this.players.delete(id);
+  }
+
   getAllPlayers(): Player[] {
     return Array.from(this.players.values());
   }

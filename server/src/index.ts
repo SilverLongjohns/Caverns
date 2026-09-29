@@ -18,6 +18,7 @@ import { WorldRepository } from './WorldRepository.js';
 import { WorldSession } from './WorldSession.js';
 import * as worldSessionManager from './worldSessionManager.js';
 import { ActiveSessionMap } from './ActiveSessionMap.js';
+import { seatIsReconnectable, releaseSupersededConnection, lockReleasedOnClose, characterDeleteBlocker } from './runSeats.js';
 import type { CharactersTable } from './db/types.js';
 import {
   generateRotating,
@@ -171,7 +172,7 @@ async function sendCharacterListForWorld(
 ): Promise<void> {
   if (!characterRepo) return;
   const list = worldId ? await characterRepo.listForWorld(accountId, worldId) : [];
-  sendToWs(ws, { type: 'character_list', characters: list.map(toSummary) });
+  sendToWs(ws, { type: 'character_list', characters: list.map((row) => ({ ...toSummary(row), parkedRun: parkedRunFor(row.id) })) });
 }
 
 function sendToWs(ws: WebSocket, msg: ServerMessage): void {
@@ -282,6 +283,48 @@ function getGameSession(connectionId: string): GameSession | undefined {
   return getDungeonInstance(connectionId)?.gameSession;
 }
 
+/** Move a run seat onto this connection: reconnect after a drop, or resume a parked character. */
+function attachToRun(inst: DungeonInstance, seatId: string, connId: string, characterId: string): boolean {
+  if (!inst.gameSession.reattachConnection(seatId, connId)) return false;
+  inst.connections.delete(seatId);
+  inst.connections.add(connId);
+  dungeonConnections.delete(seatId);
+  dungeonConnections.set(connId, inst.sessionId);
+  if (!seatId.includes(':')) clients.delete(seatId); // a dropped socket; placeholders were never clients
+  releaseSupersededConnection(connectionAccounts, seatId);
+  const ctx = connectionAccounts.get(connId);
+  if (ctx) ctx.characterId = characterId;
+  worldSessionManager.getSession(inst.worldId)?.updateOutboundConnection(inst.sessionId, characterId, connId);
+  sendTo(connId, { type: 'dungeon_entered', dungeonSessionId: inst.sessionId });
+  return true;
+}
+
+/** Reconnect this connection to a dropped seat in any run this account has a character seated in. */
+async function reconnectToDroppedRun(accountId: string, connId: string): Promise<boolean> {
+  for (const run of activeSessions.listForAccount(accountId)) {
+    const inst = dungeonInstances.get(run.sessionId);
+    const seat = inst?.gameSession.findSeatByCharacter(run.characterId);
+    if (!inst || !seat) continue;
+    const hasLiveSocket = clients.get(seat)?.readyState === WebSocket.OPEN;
+    if (!seatIsReconnectable(seat, inst.gameSession.isDisconnected(seat), hasLiveSocket)) continue;
+    if (attachToRun(inst, seat, connId, run.characterId)) return true;
+  }
+  return false;
+}
+
+/** Take this connection out of its run's routing (park / logout); the seat itself stays in the run. */
+function detachConnectionFromRun(inst: DungeonInstance, connId: string, characterId: string, seatId: string): void {
+  inst.connections.delete(connId);
+  dungeonConnections.delete(connId);
+  worldSessionManager.getSession(inst.worldId)?.updateOutboundConnection(inst.sessionId, characterId, seatId);
+}
+
+function parkedRunFor(characterId: string): { roomName: string } | null {
+  const sessionId = activeSessions.getByCharacter(characterId);
+  const roomName = sessionId ? dungeonInstances.get(sessionId)?.gameSession.getParkedRoomName(characterId) : null;
+  return roomName ? { roomName } : null;
+}
+
 function dungeonBroadcast(sessionId: string): (msg: ServerMessage) => void {
   return (msg: ServerMessage) => {
     const inst = dungeonInstances.get(sessionId);
@@ -358,6 +401,9 @@ wss.on('connection', (ws) => {
           if (ctx) ctx.selectedWorldId = defaultWorld.id;
         }
         await sendAuthResult(ws, result.accountId, token, selectedWorldId, selectedWorldInviteCode);
+        // Reconnection: go back into a run whose seat dropped (e.g. logout happened mid-fight).
+        // Before the character list, so game_start follows auth_result with no character-select flash.
+        await reconnectToDroppedRun(result.accountId, playerId);
         if (selectedWorldId) {
           await sendCharacterListForWorld(ws, result.accountId, selectedWorldId);
         }
@@ -375,14 +421,9 @@ wss.on('connection', (ws) => {
           break;
         }
         connectionAccounts.set(playerId, { accountId: info.accountId, sessionToken: info.token, selectedWorldId: null });
-        // If there's no active game session owning any character for this
-        // account, any lingering in_use flag is stranded from a dead
-        // connection (e.g. browser refresh race). Clear before sending the
-        // character list so the client doesn't see stale "In use" buttons.
-        const existingSessionId = activeSessions.get(info.accountId);
-        if (!existingSessionId) {
-          try { await characterRepo.clearInUseForAccount(info.accountId); } catch (e) { console.error(e); }
-        }
+        // Release stranded in_use locks, except characters still seated in a run.
+        const runs = activeSessions.listForAccount(info.accountId);
+        try { await characterRepo.clearInUseForAccount(info.accountId, runs.map((r) => r.characterId)); } catch (e) { console.error(e); }
         let resumeSelectedWorldId: string | null = null;
         let resumeSelectedInviteCode: string | null = null;
         if (worldRepo) {
@@ -393,37 +434,27 @@ wss.on('connection', (ws) => {
           if (ctx) ctx.selectedWorldId = defaultWorld.id;
         }
         await sendAuthResult(ws, info.accountId, info.token, resumeSelectedWorldId, resumeSelectedInviteCode);
+        // Reconnection: go back into a run whose seat dropped. Parked seats wait for character select.
+        // Before the character list, so game_start follows auth_result with no character-select flash.
+        await reconnectToDroppedRun(info.accountId, playerId);
         if (resumeSelectedWorldId) {
           await sendCharacterListForWorld(ws, info.accountId, resumeSelectedWorldId);
-        }
-        // Reconnection reattach to an active run.
-        if (existingSessionId) {
-          const dungeonInst = dungeonInstances.get(existingSessionId);
-          if (dungeonInst) {
-            const oldConn = dungeonInst.gameSession.findConnectionByAccount(info.accountId);
-            if (oldConn && oldConn !== playerId) {
-              dungeonInst.gameSession.reattachConnection(oldConn, playerId);
-              dungeonInst.connections.delete(oldConn);
-              dungeonInst.connections.add(playerId);
-              dungeonConnections.delete(oldConn);
-              dungeonConnections.set(playerId, dungeonInst.sessionId);
-              clients.delete(oldConn);
-              dungeonInst.gameSession.markConnected(playerId);
-              const charId = dungeonInst.gameSession.getCharacterIdFor(playerId);
-              const ctx = connectionAccounts.get(playerId);
-              if (ctx) ctx.characterId = charId;
-              sendTo(playerId, { type: 'dungeon_entered', dungeonSessionId: dungeonInst.sessionId });
-            }
-          }
         }
         break;
       }
 
       case 'logout': {
         const ctx = connectionAccounts.get(playerId);
+        const inst = getDungeonInstance(playerId);
+        if (ctx?.characterId && inst) {
+          // The run keeps the seat: parked if possible, otherwise dropped (mid-fight) until reconnect.
+          const parked = inst.gameSession.park(playerId);
+          const seatId = parked.ok ? parked.seatId : inst.gameSession.releaseConnection(playerId);
+          if (seatId) detachConnectionFromRun(inst, playerId, ctx.characterId, seatId);
+          ctx.characterId = undefined; // the run keeps the character's in_use lock
+        }
         await detachFromWorldSession(playerId);
         if (ctx) {
-          activeSessions.detach(ctx.accountId);
           if (ctx.characterId && characterRepo) {
             try { await characterRepo.markInUse(ctx.characterId, false); } catch (e) { console.error(e); }
           }
@@ -537,6 +568,11 @@ wss.on('connection', (ws) => {
       case 'delete_character': {
         const ctx = connectionAccounts.get(playerId);
         if (!ctx || !characterRepo) break;
+        const deleteBlocker = characterDeleteBlocker(activeSessions, msg.characterId);
+        if (deleteBlocker) {
+          sendTo(playerId, { type: 'error', message: deleteBlocker });
+          break;
+        }
         await characterRepo.delete(ctx.accountId, msg.characterId);
         await sendCharacterListForWorld(ws, ctx.accountId, ctx.selectedWorldId);
         break;
@@ -557,6 +593,18 @@ wss.on('connection', (ws) => {
         }
         if (!ctx.selectedWorldId || ch.world_id !== ctx.selectedWorldId) {
           sendTo(playerId, { type: 'world_error', reason: 'Character is not in the selected world' });
+          break;
+        }
+        // Resume a parked character straight into its run.
+        const runInst = dungeonInstances.get(activeSessions.getByCharacter(ch.id) ?? '');
+        if (runInst?.gameSession.isParked(ch.id)) {
+          if (ctx.characterId) {
+            sendTo(playerId, { type: 'error', message: 'Leave the world before resuming another character.' });
+            break;
+          }
+          if (!attachToRun(runInst, `parked:${ch.id}`, playerId, ch.id)) {
+            sendTo(playerId, { type: 'error', message: 'Could not resume that character.' });
+          }
           break;
         }
         if (ch.in_use) {
@@ -722,6 +770,45 @@ wss.on('connection', (ws) => {
         }
         if (ctx?.selectedWorldId) {
           await sendCharacterListForWorld(ws, ctx.accountId, ctx.selectedWorldId);
+        }
+        break;
+      }
+
+      case 'park_run': {
+        const ctx = connectionAccounts.get(playerId);
+        const inst = getDungeonInstance(playerId);
+        if (!ctx || !inst) break;
+        const res = inst.gameSession.park(playerId);
+        if (!res.ok) {
+          sendTo(playerId, { type: 'error', message: res.reason });
+          break;
+        }
+        detachConnectionFromRun(inst, playerId, res.characterId, res.seatId);
+        ctx.characterId = undefined; // the run keeps the character's in_use lock
+        sendTo(playerId, { type: 'run_parked' });
+        await sendCharacterListForWorld(ws, ctx.accountId, ctx.selectedWorldId);
+        break;
+      }
+
+      case 'leave_run': {
+        const inst = getDungeonInstance(playerId);
+        if (!inst) break;
+        const res = await inst.gameSession.leaveRun(playerId, msg.toll);
+        if (!res.ok) {
+          sendTo(playerId, { type: 'error', message: res.reason });
+          break;
+        }
+        inst.connections.delete(playerId);
+        dungeonConnections.delete(playerId);
+        const worldSession = worldSessionManager.getSession(inst.worldId);
+        if (worldSession) {
+          await worldSession.returnMemberFromDungeon(inst.sessionId, res.characterId, playerId);
+          worldConnections.set(playerId, inst.worldId);
+        }
+        if (res.remainingSeats === 0) {
+          inst.gameSession.dispose();
+          activeSessions.detachSession(inst.sessionId);
+          dungeonInstances.delete(inst.sessionId);
         }
         break;
       }
@@ -1229,9 +1316,9 @@ wss.on('connection', (ws) => {
     // Release the character lock. Portal-spawned dungeons handle their own
     // in_use lifecycle via GameSession finalize and return above.
     {
-      const ctx = connectionAccounts.get(playerId);
-      if (ctx?.characterId && characterRepo) {
-        try { await characterRepo.markInUse(ctx.characterId, false); } catch (e) { console.error(e); }
+      const lockedCharacterId = lockReleasedOnClose(connectionAccounts.get(playerId), false);
+      if (lockedCharacterId && characterRepo) {
+        try { await characterRepo.markInUse(lockedCharacterId, false); } catch (e) { console.error(e); }
       }
     }
     connectionAccounts.delete(playerId);

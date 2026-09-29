@@ -246,6 +246,8 @@ export interface Player {
   consumables: (Item | null)[];
   inventory: (Item | null)[];
   status: PlayerStatus;
+  /** Parked, or disconnected outside a fight: mobs ignore the seat and the party sees it as away. */
+  away?: boolean;
   keychain: string[];
   energy: number;
   usedEffects: string[];

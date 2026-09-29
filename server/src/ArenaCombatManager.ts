@@ -40,6 +40,14 @@ export class ArenaCombatManager {
   }
 
   getCombatManager(): CombatManager { return this.combatManager; }
+
+  /** Reconnect: re-key position and turn state as well as the combat participant. */
+  replaceParticipantId(oldId: string, newId: string): void {
+    for (const m of [this.positions, this.turnStates] as Map<string, unknown>[]) {
+      if (m.has(oldId)) { m.set(newId, m.get(oldId)); m.delete(oldId); }
+    }
+    this.combatManager.replaceParticipantId(oldId, newId);
+  }
   getGrid(): TileGrid { return this.grid; }
 
   getPosition(id: string): { x: number; y: number } | undefined {

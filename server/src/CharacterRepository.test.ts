@@ -102,6 +102,16 @@ describe.skipIf(!process.env.DATABASE_URL)('CharacterRepository', () => {
     expect((await repo.getById(c.id))?.in_use).toBe(false);
   });
 
+  it('clearInUseForAccount keeps the listed characters locked', async () => {
+    const a = await repo.create(accountId, worldId, { name: 'A', class: 'vanguard', statAllocations: {} });
+    const b = await repo.create(accountId, worldId, { name: 'B', class: 'vanguard', statAllocations: {} });
+    await repo.markInUse(a.id, true);
+    await repo.markInUse(b.id, true);
+    await repo.clearInUseForAccount(accountId, [a.id]);
+    expect((await repo.getById(a.id))!.in_use).toBe(true);
+    expect((await repo.getById(b.id))!.in_use).toBe(false);
+  });
+
   it('persists statAllocations from create input', async () => {
     const ch = await repo.create(accountId, worldId, {
       name: 'Hero',

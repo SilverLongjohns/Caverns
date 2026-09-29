@@ -1,25 +1,42 @@
-export class ActiveSessionMap {
-  private accountToSession = new Map<string, string>();
+export interface CharacterRun {
+  characterId: string;
+  sessionId: string;
+}
 
-  attach(accountId: string, sessionId: string): void {
-    this.accountToSession.set(accountId, sessionId);
+/**
+ * Which dungeon run each character is seated in. Keyed by character, not account,
+ * so one account can have a character parked in a run while playing another.
+ */
+export class ActiveSessionMap {
+  private byCharacter = new Map<string, { accountId: string; sessionId: string }>();
+
+  attach(characterId: string, accountId: string, sessionId: string): void {
+    this.byCharacter.set(characterId, { accountId, sessionId });
   }
 
-  detach(accountId: string): void {
-    this.accountToSession.delete(accountId);
+  detachCharacter(characterId: string): void {
+    this.byCharacter.delete(characterId);
   }
 
   detachSession(sessionId: string): void {
-    for (const [accountId, sid] of this.accountToSession) {
-      if (sid === sessionId) this.accountToSession.delete(accountId);
+    for (const [characterId, run] of this.byCharacter) {
+      if (run.sessionId === sessionId) this.byCharacter.delete(characterId);
     }
   }
 
-  get(accountId: string): string | undefined {
-    return this.accountToSession.get(accountId);
+  getByCharacter(characterId: string): string | undefined {
+    return this.byCharacter.get(characterId)?.sessionId;
+  }
+
+  listForAccount(accountId: string): CharacterRun[] {
+    const out: CharacterRun[] = [];
+    for (const [characterId, run] of this.byCharacter) {
+      if (run.accountId === accountId) out.push({ characterId, sessionId: run.sessionId });
+    }
+    return out;
   }
 
   clear(): void {
-    this.accountToSession.clear();
+    this.byCharacter.clear();
   }
 }

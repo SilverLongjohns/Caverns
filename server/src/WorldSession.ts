@@ -344,32 +344,59 @@ export class WorldSession {
 
     for (const p of handle.party) {
       if (!activeConnIds.has(p.connectionId)) continue;
-      const member: WorldSessionMember = {
-        connectionId: p.connectionId,
-        accountId: p.accountId,
-        characterId: p.characterId,
-        displayName: p.displayName,
-        characterName: p.characterName,
-        className: p.className,
-        level: p.level,
-        pos: { ...pos },
-        path: [],
-      };
-      this.members.set(p.connectionId, member);
-      this.sendTo(p.connectionId, { type: 'dungeon_returned' });
-      this.sendTo(p.connectionId, {
-        type: 'world_state',
-        worldId: this.worldId,
-        worldName: this.worldName,
-        map: this.map,
-        members: this.getMembers(),
-      });
-      this.broadcast(
-        { type: 'world_member_joined', member: this.toSummary(member) },
-        p.connectionId,
-      );
+      this.admitFromDungeon(p, pos);
     }
     if (this.members.size > 0 && this.tickHandle === undefined) this.startTickLoop();
+  }
+
+  /** A member's seat moved to a new connection (reconnect, park, resume); return that one at run end. */
+  updateOutboundConnection(sessionId: string, characterId: string, connectionId: string): void {
+    const member = this.outboundDungeons.get(sessionId)?.party.find((p) => p.characterId === characterId);
+    if (member) member.connectionId = connectionId;
+  }
+
+  /** One member leaves the run early (escape); the rest stay out until the run ends. */
+  async returnMemberFromDungeon(sessionId: string, characterId: string, connectionId: string): Promise<void> {
+    const handle = this.outboundDungeons.get(sessionId);
+    if (!handle) return;
+    const idx = handle.party.findIndex((p) => p.characterId === characterId);
+    if (idx < 0) return;
+    const [p] = handle.party.splice(idx, 1);
+    if (handle.party.length === 0) this.outboundDungeons.delete(sessionId);
+    try {
+      await this.characterRepo.snapshotOverworldPos(characterId, handle.portalPos);
+    } catch (e) {
+      console.error('[WorldSession] snapshot on member return failed', e);
+    }
+    this.admitFromDungeon({ ...p, connectionId }, handle.portalPos);
+    if (this.members.size > 0 && this.tickHandle === undefined) this.startTickLoop();
+  }
+
+  private admitFromDungeon(p: DungeonPartyMember, pos: { x: number; y: number }): void {
+    const member: WorldSessionMember = {
+      connectionId: p.connectionId,
+      accountId: p.accountId,
+      characterId: p.characterId,
+      displayName: p.displayName,
+      characterName: p.characterName,
+      className: p.className,
+      level: p.level,
+      pos: { ...pos },
+      path: [],
+    };
+    this.members.set(p.connectionId, member);
+    this.sendTo(p.connectionId, { type: 'dungeon_returned' });
+    this.sendTo(p.connectionId, {
+      type: 'world_state',
+      worldId: this.worldId,
+      worldName: this.worldName,
+      map: this.map,
+      members: this.getMembers(),
+    });
+    this.broadcast(
+      { type: 'world_member_joined', member: this.toSummary(member) },
+      p.connectionId,
+    );
   }
 
   /** Test-only hook for deterministic tick-driving. */

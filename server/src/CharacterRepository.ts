@@ -146,12 +146,14 @@ export class CharacterRepository {
     return Number(result.numUpdatedRows ?? 0);
   }
 
-  async clearInUseForAccount(accountId: string): Promise<number> {
-    const result = await this.db.updateTable('characters')
+  /** Release stranded in_use locks for an account, except characters still seated in a run. */
+  async clearInUseForAccount(accountId: string, keepIds: string[] = []): Promise<number> {
+    let q = this.db.updateTable('characters')
       .set({ in_use: false })
       .where('account_id', '=', accountId)
-      .where('in_use', '=', true)
-      .executeTakeFirst();
+      .where('in_use', '=', true);
+    if (keepIds.length > 0) q = q.where('id', 'not in', keepIds);
+    const result = await q.executeTakeFirst();
     return Number(result.numUpdatedRows ?? 0);
   }
 

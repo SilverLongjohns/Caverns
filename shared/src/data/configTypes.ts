@@ -23,6 +23,7 @@ export interface RarityWeights {
 
 export interface LootConfig {
   timeoutMs: number;
+  leaveRunTollGold: number;
   skullRarityWeights: Record<string, RarityWeights>;
 }
 

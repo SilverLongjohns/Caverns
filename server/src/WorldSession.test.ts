@@ -257,4 +257,30 @@ describe('WorldSession', () => {
       }
     });
   });
+
+  describe('per-member dungeon return', () => {
+    const member = (c: string) => ({
+      connectionId: c, accountId: `acc_${c}`, characterId: `char_${c}`, displayName: c,
+      characterName: `Char${c}`, className: 'vanguard', level: 1,
+    });
+
+    it('returns only the leaving member and keeps the handle for the rest', async () => {
+      session.registerOutboundDungeon({ sessionId: 'd1', portalId: 'p', portalPos: { x: 3, y: 4 }, party: [member('c1'), member('c2')] });
+      await session.returnMemberFromDungeon('d1', 'char_c1', 'c1');
+      expect(session.getMembers().map((m) => m.connectionId)).toEqual(['c1']);
+      expect(session.getMembers()[0].pos).toEqual({ x: 3, y: 4 });
+      expect(snapshotOverworldPos).toHaveBeenCalledWith('char_c1', { x: 3, y: 4 });
+      expect(session.outboundDungeonCount()).toBe(1);
+      await session.returnMemberFromDungeon('d1', 'char_c2', 'c2');
+      expect(session.outboundDungeonCount()).toBe(0);
+    });
+
+    it('updateOutboundConnection makes a reconnected member return on run end', async () => {
+      session.registerOutboundDungeon({ sessionId: 'd1', portalId: 'p', portalPos: { x: 3, y: 4 }, party: [member('c1')] });
+      session.updateOutboundConnection('d1', 'char_c1', 'c9');
+      await session.returnFromDungeon('d1', new Set(['c9']));
+      expect(session.getMembers().map((m) => m.connectionId)).toEqual(['c9']);
+      expect(sendTo).toHaveBeenCalledWith('c9', { type: 'dungeon_returned' });
+    });
+  });
 });

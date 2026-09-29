@@ -1,5 +1,6 @@
 {
   "timeoutMs": 15000,
+  "leaveRunTollGold": 25,
   "skullRarityWeights": {
     "1": { "common": 5, "uncommon": 2, "rare": 0.5, "legendary": 0.1, "unique": 0 },
     "2": { "common": 3, "uncommon": 3, "rare": 1.5, "legendary": 0.5, "unique": 0.1 },

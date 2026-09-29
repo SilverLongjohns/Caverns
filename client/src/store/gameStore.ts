@@ -427,6 +427,52 @@ export const useGameStore = create<GameStore>((set, get) => ({
         });
         break;
 
+      case 'run_parked':
+        // Seat parked in the run; the character list that follows shows character select.
+        set({
+          currentDungeonSessionId: null,
+          connectionStatus: 'connected',
+          currentWorld: null,
+          worldMap: null,
+          players: {},
+          rooms: {},
+          currentRoomId: '',
+          playerPositions: {},
+          mobPositions: {},
+          exploredTiles: new Set<string>(),
+          activeCombat: null,
+          pendingLoot: null,
+          gameOver: null,
+          textLog: [],
+          generationStatus: 'idle',
+          generationError: null,
+        });
+        break;
+
+      case 'party_member_left':
+        set((state) => {
+          // Our own leave: dungeon_returned (which follows) takes us out of the run.
+          if (msg.playerId === state.playerId) return {};
+          const players = { ...state.players };
+          const playerPositions = { ...state.playerPositions };
+          delete players[msg.playerId];
+          delete playerPositions[msg.playerId];
+          return { players, playerPositions };
+        });
+        break;
+
+      case 'seat_rekeyed':
+        set((state) => {
+          const players = { ...state.players };
+          const playerPositions = { ...state.playerPositions };
+          const seat = players[msg.oldId];
+          if (seat) { delete players[msg.oldId]; players[msg.newId] = { ...seat, id: msg.newId }; }
+          const pos = playerPositions[msg.oldId];
+          if (pos) { delete playerPositions[msg.oldId]; playerPositions[msg.newId] = pos; }
+          return { players, playerPositions };
+        });
+        break;
+
       case 'game_start':
         set({
           connectionStatus: 'in_game',

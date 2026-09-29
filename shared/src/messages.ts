@@ -174,6 +174,20 @@ export interface LeaveWorldMessage {
   type: 'leave_world';
 }
 
+export interface ParkRunMessage {
+  type: 'park_run';
+}
+
+export type LeaveRunToll =
+  | { kind: 'gold' }
+  | { kind: 'item'; source: 'inventory' | 'consumables'; index: number }
+  | { kind: 'free' };
+
+export interface LeaveRunMessage {
+  type: 'leave_run';
+  toll: LeaveRunToll;
+}
+
 export interface OverworldMoveMessage {
   type: 'overworld_move';
   targetX: number;
@@ -276,6 +290,8 @@ export type ClientMessage =
   | JoinWorldMessage
   | SelectWorldMessage
   | LeaveWorldMessage
+  | ParkRunMessage
+  | LeaveRunMessage
   | OverworldMoveMessage
   | PortalReadyMessage
   | PortalUnreadyMessage
@@ -303,6 +319,8 @@ export interface CharacterSummary {
   gold: number;
   lastPlayedAt: string | null;
   inUse: boolean;
+  /** Set when this character is parked in a dungeon run it can resume. */
+  parkedRun?: { roomName: string } | null;
 }
 
 export interface AccountSummary {
@@ -419,6 +437,24 @@ export interface GenerationStatusMessage {
   type: 'generation_status';
   status: 'generating' | 'failed';
   reason?: string;
+}
+
+/** Your seat was parked; the client leaves the dungeon view for character select. */
+export interface RunParkedMessage {
+  type: 'run_parked';
+}
+
+/** A party member left the run for good (escape); drop their seat. */
+export interface PartyMemberLeftMessage {
+  type: 'party_member_left';
+  playerId: string;
+}
+
+/** A seat changed id (park, resume, reconnect); rename it in client state. */
+export interface SeatRekeyedMessage {
+  type: 'seat_rekeyed';
+  oldId: string;
+  newId: string;
 }
 
 export interface GameStartMessage {
@@ -826,4 +862,7 @@ export type ServerMessage =
   | CharacterPanelOpenedMessage
   | CharacterPanelUpdatedMessage
   | CharacterPanelErrorMessage
+  | RunParkedMessage
+  | PartyMemberLeftMessage
+  | SeatRekeyedMessage
   | SandboxErrorMessage;

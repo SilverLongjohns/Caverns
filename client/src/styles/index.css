@@ -3171,3 +3171,13 @@ button:disabled { opacity: 0.35; cursor: not-allowed; text-shadow: none; }
   color: #4a4238; font-family: inherit; font-size: 0.75rem; letter-spacing: 0.1em; cursor: pointer;
 }
 .intro-replay:hover { color: #7a6e5a; }
+
+/* Park / leave run */
+.explore-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.run-controls { display: flex; gap: 8px; margin-left: auto; }
+.leave-run-copy { color: var(--relic-dim); margin: 0 0 12px; }
+.leave-run-label { color: var(--relic-dim); margin: 12px 0 6px; }
+.leave-run-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.char-slot-parked { color: #d8b25a; }
+.party-member--away { opacity: 0.55; }
+.party-away { color: #d8b25a; font-size: 0.8em; margin-left: 6px; text-transform: uppercase; letter-spacing: 0.08em; }

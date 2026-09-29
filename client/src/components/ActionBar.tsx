@@ -1,15 +1,19 @@
 import { useGameStore } from '../store/gameStore.js';
 import { RelicButton, ItemIcon } from './relic/index.js';
 import { formatItemStats } from '../ui/itemStatText.js';
+import { RunControls } from './RunControls.js';
+import type { LeaveRunToll } from '@caverns/shared';
 
 interface ActionBarProps {
   onLootChoice: (itemId: string, choice: 'need' | 'greed' | 'pass') => void;
   onRevive: (targetPlayerId: string) => void;
   onPuzzleAnswer: (roomId: string, answerIndex: number) => void;
   onInteractAction: (interactableId: string, actionId: string) => void;
+  onParkRun: () => void;
+  onLeaveRun: (toll: LeaveRunToll) => void;
 }
 
-export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAction }: ActionBarProps) {
+export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAction, onParkRun, onLeaveRun }: ActionBarProps) {
   const playerId = useGameStore((s) => s.playerId);
   const players = useGameStore((s) => s.players);
   const rooms = useGameStore((s) => s.rooms);
@@ -128,17 +132,18 @@ export function ActionBar({ onLootChoice, onRevive, onPuzzleAnswer, onInteractAc
     (p) => p.id !== playerId && p.status === 'downed' && p.roomId === currentRoomId
   );
 
-  if (downedInRoom.length === 0) return null;
-
   return (
     <div className="action-bar explore-bar">
-      <div className="revive-actions">
-        {downedInRoom.map((ally) => (
-          <RelicButton key={ally.id} onClick={() => onRevive(ally.id)}>
-            Revive {ally.name}
-          </RelicButton>
-        ))}
-      </div>
+      {downedInRoom.length > 0 && (
+        <div className="revive-actions">
+          {downedInRoom.map((ally) => (
+            <RelicButton key={ally.id} onClick={() => onRevive(ally.id)}>
+              Revive {ally.name}
+            </RelicButton>
+          ))}
+        </div>
+      )}
+      <RunControls player={player} onPark={onParkRun} onLeave={onLeaveRun} />
     </div>
   );
 }
