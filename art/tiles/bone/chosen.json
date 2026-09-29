@@ -1,0 +1,221 @@
+{
+  "biome": "bone",
+  "displayName": "Ossuary Halls",
+  "tileSize": 24,
+  "approved": "2026-09-29, approved by user as-is and installed to client/public/tiles/bone",
+  "generation": "structured (built halls, sub-rooms) -- no water/chasm/hazard-terrain themes; rock set only generated, per dispatch. Bridges and hazard stamp were still generated (cheap in the same batch, keeps the fallback consistent) but the mockup grid omits water/chasm/bridge placements since bone has no such areas.",
+  "buildSpec": "art/tiles/bone/pack-spec.json (run: python3 scripts/tiles/pack.py art/tiles/bone/pack-spec.json art/tiles/bone/pack)",
+  "bitConvention": {
+    "rule": "corner (arity 4), stored manifest key = UPPER-terrain mask = NW<<3|NE<<2|SW<<1|SE, bit=1 means upper (rock) occupies that corner",
+    "pixellabRawFileIndex": "bit=1 in the raw PixelLab tile_N index means the FIRST-listed terrain (always the floor description) occupies that corner -- i.e. opposite of the stored key (verified via get_tiles_pro placement_rules on the rock job, same convention as starter)",
+    "packPyMaskBit": "lower",
+    "packPyFormula": "storedMask = 15 - fileIndex",
+    "verifiedVisually": "cropped the packed sheet at rock mask 0 (pure floor), 15 (solid wall), 8 (rock NW corner only), 1 (rock SE corner only) -- all matched NW<<3|NE<<2|SW<<1|SE exactly"
+  },
+  "sets": {
+    "rock": {
+      "jobId": "e03aba33-6ad2-4888-9a89-72cbc967f68e",
+      "prompt": "1). worn catacomb flagstone floor dusted with pale bone dust, dark ash-grey and bone-yellow 2). ossuary wall mass of packed skulls and long bones set in dark mortar, near-black in shadow, a few rusted relic-tech brackets",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/bone/raw/rock",
+      "postProcess": "tile_15 (the pure-floor tile) only: seam-repaired, then graded (see grade.transform below); all 16 tiles graded identically, then a uniform highlight-compression pass (see highlightCompress below), then unifyfloor (see reviewRound2.floorHaloFix below) once the tool existed, then tile_15 re-seam-repaired after each pass that touched it (compression and, if needed, unifyfloor)"
+    }
+  },
+  "floorVariants": {
+    "jobId": "c926c8e5-15d9-4859-a5a5-8e04620419bf",
+    "prompt": "1). worn catacomb flagstone floor with scattered small bones, dark ash-grey and bone-yellow palette 2). worn catacomb flagstone floor with cracked flagstone hairline fractures, dark ash-grey and bone-yellow palette 3). worn catacomb flagstone floor with a pale bone-dust drift, dark ash-grey and bone-yellow palette 4). worn catacomb flagstone floor with a half-buried rusted relic-tech plate, dark ash-grey and bone-yellow palette 5). worn catacomb flagstone floor with one tiny dim amber relic candle-light glinting faintly, dark ash-grey and bone-yellow palette",
+    "note": "shape mode, single job, all 5 motifs found among the 16-tile canvas (no supplemental needed, unlike starter's floor variants which needed a cable supplemental). 'dust' was re-picked once: the first pick (tile_10) had a single large near-white cloud covering ~40% of the tile that read too strong once matched/graded; tile_11 (several smaller pale scattered patches) reads much more like a subtle 'drift'.",
+    "picks": {
+      "bones": "tile_1",
+      "cracked": "tile_5",
+      "dust": "tile_11 (re-picked from tile_10, see note)",
+      "plate": "tile_12",
+      "candle": "tile_15"
+    },
+    "postProcess": "each variant: postprocess.py match against the round-1 seam-repaired floor tile (palette_match, hue-preserving), THEN graded identically to the corner set (same l_offset/chroma_scale). Floor variants were NOT put through the highlight-compression pass (their accent brightness -- dust drift, candle glow -- is the intentional point of the variant, already picked for restraint).",
+    "matchScores": {
+      "bones": {
+        "meanDiffVsRefPct": 0.66,
+        "stdRetainedPct": 98.0
+      },
+      "cracked": {
+        "meanDiffVsRefPct": 0.1,
+        "stdRetainedPct": 100.1
+      },
+      "dust": {
+        "meanDiffVsRefPct": 0.31,
+        "stdRetainedPct": 100.1
+      },
+      "plate": {
+        "meanDiffVsRefPct": 0.17,
+        "stdRetainedPct": 100.9
+      },
+      "candle": {
+        "meanDiffVsRefPct": 0.16,
+        "stdRetainedPct": 99.6
+      }
+    }
+  },
+  "seam": {
+    "tile": "rock tile_15 (the universal pure-floor tile)",
+    "beforeRepair": {
+      "band_score_col": 10.301,
+      "band_score_row": 10.83
+    },
+    "afterRepair_round1": {
+      "band_score_col": 0.119,
+      "band_score_row": 0.2
+    },
+    "afterGrade_recheck": {
+      "band_score_col": 0.198,
+      "band_score_row": 0.197,
+      "conclusion": "unchanged within noise, as expected for a uniform Lab transform"
+    },
+    "afterHighlightCompress_regression": {
+      "band_score_col": 1.77,
+      "band_score_row": 1.422,
+      "note": "the highlight-compression knee reintroduced a discontinuity at the tile edge (some edge pixels crossed the knee threshold non-uniformly) -- re-ran seam --repair after compression"
+    },
+    "afterRepair_round2": {
+      "band_score_col": 0.215,
+      "band_score_row": 0.2
+    },
+    "threshold": 1.0,
+    "command": "python3 scripts/tiles/postprocess.py seam <floor.png> --repair <out.png>"
+  },
+  "grade": {
+    "reason": "brief instruction: match starter's darkness (graded floor L ~21.7) while keeping bone's own hue/chroma readable (not flattened toward starter's umber)",
+    "tool": "postprocess.py grade -- ONE (l_offset, chroma_scale) transform in CIE Lab derived from ONE sample-vs-reference comparison, applied identically to every tile in the family",
+    "sample": "art/tiles/bone/work/floor_repaired.png (the seam-repaired rock tile_15)",
+    "referenceConstruction": "no bone-specific approved spike existed to sample a reference crop from (unlike starter, which had mock-A2.png), so the reference was constructed synthetically: measured the sample's own mean Lab (L=47.75, mean a=1.23, mean b=7.26, hue ~80.4deg, chroma magnitude 7.365 -- the floor's hue is very consistent pixel-to-pixel, so the vector-mean hue ~= the scalar-mean chroma direction), then built an 8x8 solid-colour swatch at Lab(L=21.7, same chroma magnitude 7.365, same hue angle) and used that as --ref. Because apply_grade scales each pixel's own (a,b) by a uniform chroma_scale (hue-preserving per pixel, not remapped to the reference's hue), this reference choice makes the transform match starter's TARGET DARKNESS while leaving the transform's own resulting chroma_scale close to 1.0 (own saturation preserved, not flattened) -- directly matching the brief's instruction to keep the biome's own hue/chroma read able.",
+    "transform": {
+      "sample_L": 47.75,
+      "sample_chroma": 7.37,
+      "ref_L": 21.68,
+      "ref_chroma": 7.59,
+      "l_offset": -26.07,
+      "chroma_scale": 1.03
+    },
+    "appliedTo": "all 16 rock tiles and all 5 floor variants (21 tiles) -- not applied to stamps (they keep their own accent colours, per controller ruling R3 in starter's chosen.json)"
+  },
+  "highlightCompress": {
+    "reason": "the raw rock corner-set tiles baked in an uneven, fairly bright dust-cloud/highlight artifact on several (not all) of the 16 masks' floor portions -- literal fallout of the floor prompt ('dusted with pale bone dust') but distributed inconsistently across masks (raw p95 luma as high as L=90 on some tiles, as low as L=55 on others), so tiling several different masks next to each other in a room made the highlight read as a patchy, semi-random glowing-cloud artifact rather than a deliberate accent. A full reroll was considered but rejected (stochastic, not guaranteed to fix, and the underlying 'dusted floor' concept is correct per the recipe) in favour of a zero-spend, pipeline-only fix, the same category as starter's 'fill' step.",
+    "tool": "ad hoc script (not a postprocess.py subcommand) using postprocess.py's own _rgb_to_lab_one/_lab_to_rgb_one: for every pixel with Lab L above a knee, compress the excess above the knee by a fixed ratio, alpha and a/b untouched (hue-preserving, only tames how bright the brightest highlights get)",
+    "params": {
+      "knee": 25.0,
+      "ratio": 0.4
+    },
+    "appliedTo": "all 16 graded rock tiles only (not floor variants or stamps) -- e.g. a raw graded pixel that would have landed at L=64 lands at L=25+(64-25)*0.4=40.6; pixels at or below the base floor's own L (~21.7) are untouched",
+    "verification": "room mockup before/after: before, pale near-white cloud shapes appeared repeatedly around every straight wall edge and around both pillars, reading as a lighting/glow artifact; after, the same areas read as a subtle rubble/dust scatter at the wall base, consistent with the recipe's 'dusted with pale bone dust' floor description -- no longer looks like a defect"
+  },
+  "reviewRound2": {
+    "floorHaloFix": {
+      "reason": "user review: 'Pale bone-dust blotches ring every wall and pillar edge because the floor half of the rock corner tiles doesn't match the plain floor tile.' Requested waiting for the crystal agent's new `postprocess.py unifyfloor` subcommand rather than writing a competing fix.",
+      "waitedFor": "python3 scripts/tiles/postprocess.py unifyfloor --help -- already existed on first check (no polling wait needed).",
+      "tool": "postprocess.py unifyfloor -- classifies each rock-corner-tile pixel by Lab colour distance to a small palette built from the floor-ref tile; pixels within tolerance get replaced pixel-for-pixel with the SAME-POSITION floor-ref pixel (not palette_match/recolour), pixels outside tolerance (presumed rock/edge) are left untouched; a morphology pass protects small isolated same-colour flecks (e.g. bone-yellow skull highlights that happen to be Lab-close to the floor palette) from being swept even though their raw distance passes",
+      "pipelineOrder": "re-derived the pre-highlight-compress graded rock tiles from raw (deterministic, same grade transform, zero spend), re-applied the SAME highlight-compress pass documented above (so the approved look is the starting point, not a fresh generation), re-repaired the seam on the compressed pure-floor tile, THEN ran unifyfloor on all 16 compressed tiles using that same compressed+repaired tile_15 as --floor-ref, THEN re-checked the seam on the unifyfloor'd tile_15 (a no-op there: unifyfloor replaced 0/576 of tile_15's own pixels since it IS the floor-ref, so no discontinuity was introduced and no further repair was needed).",
+      "toleranceChoice": "the tool's default --tolerance 9 barely changed the visible halo (e.g. mask 3/raw tile_3: 66.8% of floor-region pixels replaced by count, but the specific pale outlier pixels causing the visible blotch were UNTOUCHED -- their Lab distance from the floor palette, ~10-14 at the brightest sampled points, was close to but under the classification boundary only for the least-bright halo pixels). Diagnosed the actual Lab-distance-to-floor-palette gap directly: the rock's own darkest mortar pixels sit at distance ~16.4-16.8 from the floor palette, while the brightest halo pixels sampled were at ~14.4 -- i.e. the halo is CLOSER to the floor palette than genuine rock mortar is, but both are close enough together that there's a narrow safe window. Binary-searched it: tolerance 16 removes nearly all of the visible halo (checked per-tile replaced-pixel counts, all comfortably under the danger zone) while tolerance 18 crosses the cliff and starts replacing genuine dark rock/mortar pixels too (one test tile jumped from 66% to 98.8% replaced and visually lost all its skull/mortar texture, becoming indistinguishable from floor). Shipped with --tolerance 16 (all other params left at default: --palette-colors 12, --min-speck 3, --min-hole 3).",
+      "verification": "room mockup before/after, by eye: before, pale cloud shapes rang every straight wall edge and both pillars; after, floor reads uniformly right up to the rock edge everywhere in the mockup room, no visible halo. Re-ran postprocess.py seam on the final tile_15 (unchanged from the pre-unifyfloor check, since unifyfloor made no change to that specific tile): band_score col=0.215 row=0.200, both under the 1.0 threshold."
+    }
+  },
+  "stamps": {
+    "hazard": {
+      "jobId": "abb70887-5810-4e48-813c-c491596efb96 (round-2 reroll, replaces the round-1 pick below)",
+      "prompt": "1). sickly green grave-rot seep welling up between cracked flagstones, glistening, with scattered small bones, top-down, worn catacomb floor, dark ash-grey and bone-yellow palette",
+      "pick": "tile_0 (organic radiating form -- not a flat round blob -- with lighter-green glistening highlights, cracked-flagstone lines radiating out from it, and a distinct small white bone at the lower edge; fills a clearly bigger, more textured area than the round-1 pick)",
+      "rawSource": "art/tiles/bone/raw/hazard_reroll/tile_0.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      },
+      "reason": "round-2 user review: the round-1 pick read as 'a flat green blob' with no form; asked for a reroll emphasising a seep welling up between cracked flagstones, glistening, with scattered small bones, filling most of the tile",
+      "round1Rejected": {
+        "jobId": "284538f1-8778-444b-9dd9-3408700b9665 (batch stamps job)",
+        "prompt": "1). sickly green grave-rot seep between flagstones, top-down 2). narrow horizontal bridge of lashed long bones, seen from directly above, isolated, no ground 3). narrow vertical bridge of lashed long bones, seen from directly above, isolated, no ground 4). ossuary archway of stacked skulls, threshold with a faint arrow scratched into the floor, top-down 5). small wall-mounted bone candle sconce, warm amber flame, top-down",
+        "pick": "tile_0 (hand-picked by inspection, clean round green seep, no artifacts, but too flat/formless per round-2 review)",
+        "rawSource": "art/tiles/bone/raw/stamps/tile_0.png"
+      }
+    },
+    "bridge_h": {
+      "jobId": "284538f1-8778-444b-9dd9-3408700b9665 (same batch job)",
+      "pick": "tile_4 (re-picked from the first pass's tile_7 -- both fine, tile_4 has a small skull ornament at centre that reads well against the ossuary theme)",
+      "rawSource": "art/tiles/bone/raw/stamps/tile_4.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "top,bottom",
+        "feather": 0,
+        "clean": true
+      },
+      "sidesReason": "same as starter: the plank/bone subject reaches the left/right edges by design (removed_fraction with all 4 sides trusted as background: 0.902 vs 1.000 with only top/bottom -- confirms left/right ring pixels are subject, not background)"
+    },
+    "bridge_v": {
+      "jobId": "284538f1-8778-444b-9dd9-3408700b9665 (same batch job)",
+      "pick": "tile_9 (independently generated vertical candidate, NOT a rotation of bridge_h -- unlike starter, this batch produced clean vertical ladder candidates directly: tile_8/9/11 all cut cleanly with sides=left,right, ~51-53% opaque remaining)",
+      "rawSource": "art/tiles/bone/raw/stamps/tile_9.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "left,right",
+        "feather": 0,
+        "clean": true
+      },
+      "rejectedFirstPick": "tile_10 -- cutout at tolerance 12 with default (all) sides removed ~97.6% of the subject (the bone/rope colour was too close in Lab distance to the checkerboard placeholder background), leaving only scattered fragments, not a recognisable bridge. Diagnosed via cutout_removed_fraction before/after and confirmed visually. Switched to tile_9 with sides=left,right instead of falling back to starter's rotate-bridge_h hack, since tile_9 cut cleanly on its own."
+    },
+    "exit": {
+      "jobId": "ba577939-2922-47ba-b546-bdea85194f8b (standalone reroll)",
+      "prompt": "1). top-down view of an ossuary archway tunnel exit, a threshold of stacked skulls and long bones with a faint arrow scratched into the floor, the doorway itself completely filled with solid black void leading into the tunnel beyond, isolated, no floor or ground around it, dark ash-grey and bone-yellow palette",
+      "pick": "tile_10 (clean symmetric arch, well-formed skull piles at both base corners, solid black void interior, faint threshold line visible at the bottom)",
+      "rawSource": "art/tiles/bone/raw/exit_reroll/tile_10.png",
+      "cutout": "NONE -- shipped as the raw generated tile verbatim. Unlike a typical stamp, this one came out of generation already alpha-clean: only the four corners outside the arch's silhouette are transparent (alpha 0), the void interior is solid opaque black, and the frame is solid opaque stone -- no separate cutout pass was needed or attempted.",
+      "history": "the FIRST batch job's exit candidates (tile_12/13/14/15, 'ossuary archway...threshold' without the 'filled with solid black void' framing) all had the doorway interior filled with ordinary floor-toned pixels, which cutout then flood-removed (since it read as border-connected background through the open bottom of the arch), leaving a thin, sparse dotted skull-chain outline -- readable as decoration but too faint to find at 48px. Rerolled with the void-fill framing (same wording pattern as starter's approved exit prompt) to get a solid, clearly-readable doorway instead."
+    },
+    "torch": {
+      "jobId": "0ff99d67-396e-4f44-b1bf-ada77633633b (standalone supplemental -- the batch job's item 5 only produced archway-adjacent candles, no standalone wall sconce, same gap starter hit)",
+      "prompt": "1). small wall-mounted bone candle sconce, warm amber flame, mounted on dark packed-skull ossuary wall, dark ash-grey and bone-yellow palette, moody dim lighting, top-down",
+      "pick": "tile_10 (clean vertical candle with a sconce base, symmetric, no border artifacts -- several of the 16 had a stray white vertical-stripe render artifact at one edge; tile_10 was clean)",
+      "rawSource": "art/tiles/bone/raw/torch_supp/tile_10.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      }
+    }
+  },
+  "spend": {
+    "jobs": [
+      "rock tileset",
+      "floor variants batch",
+      "stamps batch",
+      "torch supplemental",
+      "exit reroll supplemental",
+      "hazard reroll (round 2)"
+    ],
+    "jobCount": 6,
+    "note": "the PixelLab account/credit pool is shared with other concurrent biome-generation agents (crystal, volcanic, flooded, fungal and possibly others editing art/tiles/recipes.json in parallel during this session), so balance deltas over the session are NOT a clean measure of this biome's own spend. Round-1 (initial generation): balanceStart $15.65 -> balanceEnd $13.37 (raw delta $2.28, contaminated). Round-2 (this review pass, hazard reroll only -- the floor-halo fix used the already-built unifyfloor tool and cost nothing): balanceStart $13.09 -> balanceEnd $12.42 (raw delta $0.67, also contaminated, against the ~$0.40 round-2 budget). This biome's own job list -- 1 sixteen-tile tileset, 2 five-item shape batches, 3 single-item supplementals/rerolls (torch, exit, hazard) -- is structurally the same shape as starter's (which totalled $1.24 for a comparable-or-larger job count including water+chasm sets bone doesn't have), so this biome's own attributable spend across both rounds is estimated at roughly $1.0-1.4, within budget for both the round-1 ~$1.60 ceiling and the round-2 ~$0.40 addition.",
+    "ceiling": 1.6,
+    "round2Ceiling": 0.4,
+    "balanceStart": 15.65,
+    "balanceEnd": 13.37,
+    "round2BalanceStart": 13.09,
+    "round2BalanceEnd": 12.42
+  },
+  "weakPieces": [
+    "bridge_h/bridge_v are independently generated (not a rotated pair like starter's), so their plank/rung spacing and centre ornament differ slightly between the two orientations -- acceptable, not identical geometry, but both read cleanly as 'lashed bone bridge' at 48px. Not currently used in any mockup room (bone has no water/chasm), so this has not been checked in an actual bridge-over-hazard placement.",
+    "the rock corner set's floor-region colour is now fixed by unifyfloor (round 2) on top of the round-1 highlight-compress pass -- both are pipeline-only tames of a baked-in generation artifact, not a change to the underlying raw tileset, which still has uneven per-mask brightness under the hood (raw p95 luma ranges from L=55 to L=90 across the 16 masks). It reads clean in the room mockup now (no visible halo). unifyfloor was run at --tolerance 16 rather than the tool's default 9, chosen by directly measuring the Lab-distance gap between the halo and genuine rock/mortar pixels and binary-searching for the largest safe value before rock texture itself started getting eaten (confirmed unsafe at tolerance 18)."
+  ],
+  "fullReport": "art/tiles/bone/REPORT.md",
+  "rawMetadata": "art/tiles/bone/raw/ (per-job subdirectories; no consolidated meta.json was written)"
+}

@@ -1,0 +1,243 @@
+{
+  "biome": "flooded",
+  "tileSize": 24,
+  "approved": "2026-09-29, approved by user as-is and installed to client/public/tiles/flooded",
+  "buildSpec": "art/tiles/flooded/pack-spec.json (run: python3 scripts/tiles/pack.py art/tiles/flooded/pack-spec.json art/tiles/flooded/pack)",
+  "bitConvention": "same as starter (art/tiles/starter/chosen.json): stored manifest key = UPPER-terrain mask (NW<<3|NE<<2|SW<<1|SE, 1=upper/rock or water). get_tiles_pro's own placement_rules for both jobs reported 'tile_i: mask=i' with 'a set bit means the first terrain (always floor, item 1) occupies that corner' -- i.e. bit=1 in the raw file index means FLOOR, same as starter. pack.py maskBit 'lower', storedMask = 15 - fileIndex. Verified visually via the room mockup (correct wall/floor/water shapes, no inversion).",
+  "sets": {
+    "rock": {
+      "jobId": "a227dc45-8007-49d3-8b34-d6b6abb333c9",
+      "prompt": "1). wet puddled flagstone cave floor, dark slate grey with teal sheen 2). slick wet black cave rock mass with dark green algae streaks, near-black in shadow, a few corroded relic-tech pipes",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/flooded/raw/rock",
+      "postProcess": "tile_15 (fileIndex 15, the pure-floor tile) seam-repaired, then all 16 tiles graded identically (see grade below)"
+    },
+    "water": {
+      "jobId": "f406c797-c87d-4bfb-bcbd-e97c2d3c2f15",
+      "prompt": "1). wet puddled flagstone cave floor, dark slate grey with teal sheen 2). deep dark black-teal water, slow ripples, faint reflections",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/flooded/raw/water",
+      "postProcess": "all 16 tiles graded identically; fileIndex 0 (mask-15, fully-surrounded pure water) additionally `fill`-treated after grading to break up a rim/pit repeat pattern (see fill below)"
+    }
+  },
+  "floorVariants": {
+    "jobId": "23594b17-47bc-43a2-b6d0-fdcf7987fb70",
+    "prompt": "1). wet puddled flagstone cave floor with a shallow puddle, dark slate grey with teal sheen 2). wet puddled flagstone cave floor with an algae slick patch, dark slate grey with teal sheen 3). wet puddled flagstone cave floor with scattered wet pebbles, dark slate grey with teal sheen 4). wet puddled flagstone cave floor with a half-submerged corroded relic-tech cable across it, dark slate grey with teal sheen 5). wet puddled flagstone cave floor with one tiny dim teal relic light under a film of water, dark slate grey with teal sheen",
+    "note": "shape mode, one job, all 5 motifs came out clearly in the 16-tile canvas (no supplemental needed, unlike starter's cable).",
+    "picks": {
+      "puddle": "tile_0",
+      "algae": "tile_6",
+      "pebbles": "tile_8",
+      "cable": "tile_13"
+    },
+    "postProcess": "each variant: postprocess.py match against the round-1 seam-repaired floor tile (palette_match, hue-preserving), THEN graded identically to the corner sets (same l_scale/chroma_scale)",
+    "removed": {
+      "relic_light": "tile_7 -- DROPPED from pack-spec.json (zero-spend, user-approved, coordinator follow-up round 3). Cause: a light-grey vertical-bar generation artifact baked into the raw tile, shared by every same-motif candidate in this job (see diagnosedNotFixed below) -- not a pipeline bug, so it was removed rather than patched. Only 4 floor variants ship for this biome (puddle, algae, pebbles, cable); the graded source file art/tiles/flooded/work/graded/floor_variants/relic_light.png is left on disk (unreferenced by pack-spec.json) for provenance. Re-packed (41 tiles, was 42) and re-rendered -- the two grey boxes with a vertical line are gone from _mock.png."
+    }
+  },
+  "seam": {
+    "tile": "rock tile_15 (fileIndex 15, the universal pure-floor tile)",
+    "beforeRepair": {
+      "band_score_col": 12.61,
+      "band_score_row": 21.466
+    },
+    "afterRepair": {
+      "band_score_col": 0.222,
+      "band_score_row": 0.136
+    },
+    "afterGrade_recheck": {
+      "band_score_col": 0.21,
+      "band_score_row": 0.173
+    },
+    "threshold": 1.0,
+    "command": "python3 scripts/tiles/postprocess.py seam <floor.png> --repair <out.png>"
+  },
+  "grade": {
+    "reason": "match starter's darkness (floor L~21.7) while keeping the flooded biome's teal hue readable",
+    "sample": "art/tiles/flooded/work/floor_repaired.png (the seam-repaired rock tile_15)",
+    "reference": "art/tiles/starter/work/mockA2_floor_ref.png (reused starter's own reference -- 'similar darkness to starter' per the brief)",
+    "history_round1_additive_rejected": "starter used postprocess.py's built-in ADDITIVE grade (L_new = L_old + l_offset). Reproducing that here with l_offset=-12.85 (derived from this biome's sample) CLIPPED the darkest rock/water tiles (raw L 5.5-14) to a hard L=0 -- confirmed both numerically and visually (a lone pillar and 2x2 pillar block rendered as flat solid-black squares).",
+    "history_round2_single_multiplicative_still_too_dark": "fixed round 1's hard clip with a single MULTIPLICATIVE Lab transform (L_new = L_old * l_scale) instead of additive, calibrated from the same sample/ref pair (l_scale=0.6277, chroma_scale=0.6525), applied uniformly to the whole rock+water+floor-variant family. This removed the hard clip (darkest rock tile L=3.5, not 0) but the coordinator/user's review of the delivered gate artifacts still called the pillars out as reading like 'flat black squares' -- correct: L=3.5 with proportionally-compressed contrast is still perceptually near-invisible at thumbnail scale, well below starter's own accepted deep-rock benchmark (starter shipped rock mask-15 at L=6.84, c=1.94; shipped water mask-15 at L=5.75, c=3.38, post-fill). A single transform calibrated to the FLOOR sample cannot simultaneously hit the floor's target darkness AND a readable rock/water darkness when the raw upper-terrain art starts this much darker than starter's did -- the two targets pull in opposite directions (floor needs L_old*0.63, rock needs L_old*1.24 to reach a readable target); no single scalar satisfies both.",
+    "round3_final_two_tier_grade": "once `unifyfloor` (see below) existed, the floor and upper-terrain calibration problems could be decoupled, because unifyfloor REPLACES every floor-classified pixel of a corner tile with the exact reference-floor pixel regardless of what grade produced it beforehand -- so only the genuinely-kept 'upper' pixels need to look good on their own terms. Final pipeline per corner-set tile: (1) grade the RAW tile with `floorGrade` (the round-2 multiplicative transform, l_scale=0.6277/chroma_scale=0.6525) purely so its floor-coloured pixels land close enough to the true floor reference for unifyfloor's Lab-distance classifier to recognise and replace them correctly -- this input is discarded for any pixel unifyfloor keeps; (2) run unifyfloor against the repaired+floorGrade'd rock tile_15 to get the corrected floor pixels + an implicit keep/replace mask (diffed against step 1's input); (3) separately grade the SAME raw tile with a per-set `rockUpperGrade`/`waterUpperGrade` transform calibrated directly toward starter's own accepted deep-rock/deep-water benchmarks (not the floor's); (4) composite: floor-classified pixels from step 2 (correct, halo-free), everything else from step 3 (readable, non-crushed upper texture). Re-verified: darkest rock tile now L=6.90/c=2.01 (target was L=6.84/c=1.94), darkest water tile L=5.60/c=3.30 (target L=5.75/c=3.38) -- both match starter's own shipped darkness almost exactly, and the room mockup shows clearly textured (not flat) pillars with visible algae-streak detail.",
+    "transforms": {
+      "floorGrade": {
+        "method": "multiplicative L, same chroma_scale formula as starter",
+        "sample_L": 34.51,
+        "sample_chroma": 9.86,
+        "ref_L": 21.66,
+        "ref_chroma": 6.43,
+        "l_scale": 0.6277,
+        "chroma_scale": 0.6525,
+        "appliedTo": "rock tile_15 (the canonical floor reference) and all 5 floor variants directly; also used as the classification-accuracy pre-pass on every other rock/water tile before unifyfloor (see round3 note)"
+      },
+      "rockUpperGrade": {
+        "method": "multiplicative L/chroma, calibrated against starter's own shipped rock mask-15",
+        "sample_L": 5.5,
+        "sample_chroma": 1.01,
+        "ref": "art/tiles/starter/work/graded/rock/tile_0.png",
+        "ref_L": 6.84,
+        "ref_chroma": 1.94,
+        "l_scale": 1.2431,
+        "chroma_scale": 1.9251,
+        "appliedTo": "the raw-sourced 'kept' (non-floor-classified) pixels of rock tile_0-14"
+      },
+      "waterUpperGrade": {
+        "method": "multiplicative L/chroma, calibrated against starter's own shipped water mask-15 (post-fill)",
+        "sample_L": 10.74,
+        "sample_chroma": 9.34,
+        "ref": "art/tiles/starter/work/graded/water/tile_0.png",
+        "ref_L": 5.75,
+        "ref_chroma": 3.38,
+        "l_scale": 0.5349,
+        "chroma_scale": 0.3613,
+        "appliedTo": "the raw-sourced 'kept' (non-floor-classified) pixels of water tile_0-15"
+      }
+    },
+    "appliedTo": "all 16 rock + 16 water corner-set tiles (via the round3 composite), and all 5 floor variants (via floorGrade + palette_match) -- NOT applied to stamps (they keep their own accent colours, per starter's controller ruling R3)"
+  },
+  "unifyfloor": {
+    "reason": "user-approved fix (coordinator follow-up): every pool, and to a lesser extent every rock edge, was surrounded by a grey band a tile wide, because each corner-set tile's own independently-generated floor-region pixels never quite matched the canonical pure-floor tile's grain/tone. Added by a concurrent agent as a new `unifyfloor` subcommand in scripts/tiles/postprocess.py (already present when checked -- no wait needed): classifies each tile's pixels by Lab-colour distance to a palette built from the floor reference, and REPLACES only the classified-floor pixels with the same-position pixel from the reference, leaving upper-terrain (rock/water) pixels -- including their edge/transition pixels -- untouched.",
+    "command": "python3 scripts/tiles/postprocess.py unifyfloor <graded_tile.png> --floor-ref <graded_repaired_rock_tile15.png> <out.png>  (defaults used: tolerance=9.0, palette_colors=12, min_speck=3, min_hole=3)",
+    "floorRef": "art/tiles/flooded/work/graded/rock/tile_15.png (the seam-repaired, floorGrade'd pure-floor tile -- the SAME reference used for both the rock and water sets, since both share one canonical floor look)",
+    "appliedTo": "rock tile_0-14 (tile_15 IS the reference, left untouched) and water tile_0-15",
+    "floorPixelsReplaced": "scales with each mask's actual floor area, e.g. rock 1-rock-corner tiles (fileIndex 7/11/13/14) ~74%, 2-rock-corner tiles ~50%, 3-rock-corner tiles ~24%, all-rock tile_0 0% (no floor area) -- matches the corner geometry, confirming the classifier is behaving correctly rather than over- or under-firing",
+    "verification": "re-rendered room mockup: the grey halo band around every water pool and rock wall edge is gone -- floor blends smoothly right up to the rock/water boundary with only the intended transition texture (algae fringe, darker water rim) visible. Before/after crops kept at art/tiles/flooded/work/corner_check1.png and water_check2.png."
+  },
+  "fill": {
+    "reason": "same class of problem as starter's I2 fix: water fileIndex 0 (mask-15 stored, the fully-surrounded/deep-pool tile) is the one corner-set tile placed edge-to-edge against copies of itself in any water body 2+ cells wide, so any baked rim/pit or flat-crush artifact repeats at the tile period and reads as a lattice. Zero PixelLab spend -- pipeline-only, run AFTER grading.",
+    "command": "python3 scripts/tiles/postprocess.py fill <graded_tile0.png> --amplitude 6 --inset 8 --seed 0 --repair <out.png>",
+    "appliedTo": {
+      "water": {
+        "file": "art/tiles/flooded/work/graded/water/tile_0.png (fileIndex 0, storedMask 15)",
+        "band_score_after": {
+          "col": 0.081,
+          "row": 0.167
+        }
+      }
+    },
+    "threshold": 1.0,
+    "verification": "a 2-wide x 5-tall water block with a horizontal bridge crossing it, rendered via client/scripts/terrain-mockup.mts + a one-off Pillow compositor (art/tiles/flooded/work/composite_mock.py) using the real autotile.ts/terrainDrawOps.ts -- the deep-interior water tile reads as a subtle dark teal texture, no visible lattice/grate."
+  },
+  "stamps": {
+    "hazard": {
+      "jobId": "2d9335b9-04e2-40e4-8160-bd3b53e209b7 (standalone reroll)",
+      "reason": "the original batch job's item 1 (hazard, 4 candidates tile_0-3) rendered clean coiled cables sitting in a blue puddle but with NO visible spark accent -- the 'electric blue sparks' read as just the water's own blue tone, not a distinct hazard marker. Rerolled standalone with the spark burst called out explicitly and 'no moss' to keep it isolated.",
+      "prompt": "1). sparking drowned relic-tech cable lying in a shallow puddle on wet stone floor, bright electric-blue spark bursts clearly visible, isolated, no moss",
+      "pick": "tile_0 (diagonal cable with two clean spark bursts, reads clearly as a hazard at 48px)",
+      "rawSource": "art/tiles/flooded/raw/hazard_reroll/tile_0.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "top,bottom,left,right",
+        "feather": 0,
+        "clean": true,
+        "min_speck": 3,
+        "min_hole": 3
+      },
+      "notPaletteMatched": "stamps keep their own accent colours by design -- no palette match applied"
+    },
+    "bridge_h": {
+      "jobId": "fc2aad55-b227-4a2f-a43e-9b51d653769b (batch stamps job, item 2)",
+      "prompt": "(batch) 2). rickety horizontal plank bridge on rusted pontoons, seen from directly above, isolated",
+      "pick": "tile_5 (clean horizontal plank bridge, rust pontoon caps at all 4 corners, no reroll needed)",
+      "rawSource": "art/tiles/flooded/raw/stamps/tile_5.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "top,bottom",
+        "feather": 0,
+        "clean": true,
+        "min_speck": 3,
+        "min_hole": 3
+      },
+      "sidesReason": "the plank subject is designed to reach the left/right edges (tiles along its span axis) -- same reasoning as starter's bridge_h"
+    },
+    "bridge_v": {
+      "jobId": "fc2aad55-b227-4a2f-a43e-9b51d653769b (batch stamps job, item 3 -- SAME job as bridge_h)",
+      "prompt": "(batch) 3). rickety vertical plank bridge on rusted pontoons, seen from directly above, isolated",
+      "pick": "tile_9 (clean vertical plank bridge, correctly oriented, pontoon caps at all 4 corners)",
+      "rawSource": "art/tiles/flooded/raw/stamps/tile_9.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "left,right",
+        "feather": 0,
+        "clean": true,
+        "min_speck": 3,
+        "min_hole": 3
+      },
+      "note": "unlike starter (whose dedicated bridge_v reroll came out unusable and had to be derived by rotating bridge_h), this biome's single batch job produced BOTH orientations cleanly -- no rotation-derivation or extra spend needed."
+    },
+    "exit": {
+      "jobId": "fc2aad55-b227-4a2f-a43e-9b51d653769b (batch stamps job, item 4)",
+      "prompt": "(batch) 4). dripping stone archway threshold with a faint arrow scratched into the floor",
+      "pick": "tile_12 (clean dark archway with a faint yellow scratch-mark accent near the threshold)",
+      "rawSource": "art/tiles/flooded/raw/stamps/tile_12.png",
+      "cutout": "NONE -- deliberately skipped, same reasoning as starter's exit. Sampled the border ring in Lab space: 4 distinct clusters spanning L 11.7-66.9, no single dominant flat background at any usable tolerance -- the border is a continuous shaded stone/rubble surface, not a separable background. Shipped as the raw generated tile (alpha already 255 everywhere, no clamp needed)."
+    },
+    "torch": {
+      "jobId": "1011e23e-0f42-4f4a-89bd-a9f23310e87a (standalone supplemental -- the batch job's item 5 produced no standalone wall lantern, same pattern as starter's torch)",
+      "prompt": "1). small wall-mounted relic lantern bracket, pale sodium-yellow light, mounted on slick wet black cave rock wall, moody dim lighting",
+      "pick": "tile_1 (clean centred lantern, warm glow halo, no stray artifacts)",
+      "rawSource": "art/tiles/flooded/raw/torch_supp/tile_1.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "top,bottom,left,right",
+        "feather": 0,
+        "clean": true,
+        "min_speck": 3,
+        "min_hole": 3
+      }
+    }
+  },
+  "gateArtifacts": {
+    "sheet": "art/tiles/flooded/_sheet.png (postprocess.py sheet over the packed art/tiles/flooded/pack/ dir)",
+    "mockupGrid": "art/tiles/flooded/mockup-grid.json (16x11: rock walls with a lone pillar + 2x2 pillar block, a 2-wide vertical water block crossed by a horizontal bridge, a 2-tall horizontal water block crossed by a vertical bridge, a hazard, an exit, a torch wall)",
+    "mock": "art/tiles/flooded/_mock.png (rendered at 48px cells via client/scripts/terrain-mockup.mts + a one-off Pillow compositor, art/tiles/flooded/work/composite_mock.py, using the real autotile.ts/terrainDrawOps.ts)",
+    "reviewFixes": "round 1 (this agent's initial pass): the first render showed the lone pillar and 2x2 pillar block as flat solid-black squares (the additive-grade clipping bug) -- fixed with a single multiplicative grade transform, re-packed/re-rendered before first reporting. Round 2 (this coordinator follow-up, user-approved): (a) added the `unifyfloor` halo fix once the tool existed, (b) replaced the round-1 single multiplicative grade with the two-tier floorGrade/rockUpperGrade/waterUpperGrade composite described above, since the round-1 fix stopped the hard clip but the pillars still read as flat black at normal viewing scale. Both re-verified visually and re-packed/re-rendered before this report."
+  },
+  "diagnosedNotFixed": {
+    "symptom": "two translucent grey boxes with a thin vertical line, on plain floor cells on the right side of _mock.png",
+    "diagnosis": "raw-art defect, not a pipeline bug -- reported per instructions, NOT rerolled, zero spend. The 'relic_light' floor variant (picked as tile_7 from job 23594b17-...) has a light grey vertical stripe baked into its raw generated pixels, present before any matching/grading (confirmed by inspecting art/tiles/flooded/work/floor_variants_picked/relic_light.png directly). Checked all 16 raw floor-variant tiles: EVERY candidate showing the 'tiny teal light' motif (tile_3, tile_7, tile_11, tile_15 -- the entire rightmost column of the job's internal 4x4 generation canvas) carries the same vertical-bar artifact, and several neighbouring tiles (tile_9, tile_12, tile_14) show a matching bar on a different edge. This reads as a canvas-tiling/grid-divider bleed from the generation itself, not something post-processing introduced -- there is no clean alternative among the already-generated candidates to substitute in its place. The two occurrences in the mockup are simply this one defective source tile being placed twice by the deterministic per-room floor-variant hash. A reroll of the floor-variant job (with the light motif isolated to its own single-item job, away from the canvas edge) would likely fix it, but that requires new PixelLab spend, which this follow-up explicitly ruled out -- reporting only, per instructions.",
+    "evidence": "art/tiles/flooded/work/all16_variants_recheck.png (all 16 raw candidates), art/tiles/flooded/work/relic_light_raw.png (the picked tile zoomed, showing the bar pre-grade)",
+    "resolution": "round 4 (coordinator follow-up, user-approved, zero spend): dropped relic_light from art/tiles/flooded/pack-spec.json entirely rather than patching it -- pack.py re-run (41 tiles, was 42; 4 floor variants, was 5), mockup-grid re-rendered via terrain-mockup.mts + composite_mock.py, and _sheet.png/_mock.png regenerated. The two grey boxes with a vertical line are confirmed gone from the re-rendered _mock.png (that floor cell now just shows plain floor, occasionally another variant per the room's deterministic hash)."
+  },
+  "spend": {
+    "note": "credits are a SHARED pool -- multiple agents generated other biomes concurrently in the same PixelLab account, so the raw balance delta is not solely this biome's spend. Rounds 2-4 of this coordinator follow-up (unifyfloor halo fix, two-tier grade revision, grey-box diagnosis, and the relic_light removal) made ZERO new PixelLab calls between them -- pipeline-only, as instructed throughout.",
+    "jobs": [
+      "rock tileset",
+      "water tileset",
+      "floor-variant batch (5 items)",
+      "stamp batch (5 items)",
+      "torch supplemental (1 item)",
+      "hazard-reroll supplemental (1 item)"
+    ],
+    "estimatedSpend": 1.24,
+    "ceiling": 1.6,
+    "balanceStart": 15.65,
+    "balanceAfterFirstReport": 13.47,
+    "balanceAfterRound2_3": 12.42,
+    "balanceAfterRound4_relicLightRemoval": 12.42,
+    "round2_3_4_ownSpend": 0.0,
+    "poolDeltaAllAgents": 3.23
+  },
+  "weakPieces": [
+    "exit: only one candidate (tile_12) was inspected closely and used; tile_13/14/15 from the same batch looked equivalent on the contact sheet but weren't cross-checked pixel-for-pixel -- low risk, all 4 read the same at a glance.",
+    "hazard: the round-1 batch job's hazard candidates (tile_0-3) lacked visible sparks and were discarded for a reroll (see stamps.hazard above) -- the reroll fixed it, no further reroll needed."
+  ]
+}

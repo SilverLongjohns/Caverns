@@ -1,0 +1,177 @@
+{
+  "biome": "fungal",
+  "tileSize": 24,
+  "approved": "2026-09-29, approved by user as-is and installed to client/public/tiles/fungal",
+  "buildSpec": "art/tiles/fungal/pack-spec.json (run: python3 scripts/tiles/pack.py art/tiles/fungal/pack-spec.json art/tiles/fungal/pack)",
+  "bitConvention": "same as art/tiles/starter/chosen.json: PixelLab's create_tiles_pro placement_rules gave tile_N: mask=N directly (bit=1 means the first-listed terrain -- always floor -- occupies that corner); pack.py maskBit:\"lower\" converts to the manifest's UPPER-terrain storedMask = 15 - fileIndex.",
+  "revision": {
+    "reason": "user review of round-1 art (\"palette is alright, but it's not really fungal enough, looks more like a sewer\"): rerolled rock/water/floor-variants/hazard with unmistakably fungal prompts (bracket fungi, shelf mushrooms, glowing spore pool, bulbous vent), kept the same muddy olive-umber palette and grade target, and fixed a floor-region halo artifact (pale lacy band on rock edges, dark crosshatch on water edges) with a new postprocessing pass. bridge_h/bridge_v/exit/torch stamps were NOT rerolled (not part of the feedback) and are unchanged from round 1.",
+    "round1Sources": "raw/rock, raw/water, raw/floor_variants, raw/stamps/tile_0 (old hazard pick), work/graded, work/floor_repaired.png -- kept on disk for provenance, no longer referenced by pack-spec.json",
+    "round2Sources": "raw/rock_v2, raw/water_v2, raw/floor_variants_v2, raw/hazard_v2, work/graded_v2, work/floor_repaired_v2.png -- what pack-spec.json now builds from"
+  },
+  "sets": {
+    "rock": {
+      "jobId": "f906d125-6bd6-41de-88ca-0e8c145f5cbb",
+      "prompt": "1). dark loam cave floor covered in a thin mycelium mat with tiny mushroom sprouts, dim olive and umber 2). cave rock mass smothered in overlapping bracket fungi and shelf mushrooms with pale gills, spongy fungal crust, a few faintly glowing caps, dark olive-brown, near-black in shadow",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/fungal/raw/rock_v2",
+      "postProcess": "tile_15 (pure-floor, storedMask 0) seam-repaired -> work/floor_repaired_v2.png, then all 16 tiles graded identically, then unify_floor (geometry-constrained, see unifyFloor below) against the graded floor reference, then tile_0 (storedMask 15, solid rock) additionally got the fill treatment (repeat lattice fix)."
+    },
+    "water": {
+      "jobId": "ccead9f7-e9ea-484c-85ad-efb1b76bc563",
+      "prompt": "1). dark loam cave floor covered in a thin mycelium mat with tiny mushroom sprouts, dim olive and umber 2). glowing bioluminescent spore pool, murky green-teal liquid with drifting luminous spores and a rim of tiny mushrooms",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/fungal/raw/water_v2",
+      "postProcess": "same floor text as rock_v2 (per the instruction to reuse it); all 16 tiles graded identically, then unify_floor, then tile_0 (storedMask 15, solid water) got the fill treatment."
+    }
+  },
+  "chasm": "not generated for this biome (out of scope per the original dispatch: rock, water only). The client falls back to the default set's chasm for any chasm-themed room.",
+  "floorVariants": {
+    "jobId": "1d52c364-2da9-4591-9db1-ae0bf175fdf5",
+    "prompt": "1). dark loam cave floor covered in a thin mycelium mat with tiny mushroom sprouts, dim olive and umber, with a small mushroom cluster 2). ...with a bracket-fungus stump 3). ...with a mycelium web strand 4). ...with one glowing mushroom cap 5). ...with a small puffball",
+    "note": "replaces round-1's picks entirely (mushroom/web/damp/pipe/specks -> mushroom/bracket/web/glowcap/puffball), per the user's explicit variant list. 'damp' and 'pipe' (relic-tech) are dropped -- not in the requested list.",
+    "picks": {
+      "mushroom": "tile_8 (clear white cap on a green stem, clean mushroom silhouette)",
+      "bracket": "tile_1 (rounded shelf/bracket stump with pale gill edges, sits in shadow)",
+      "web": "tile_7 (clearest branching pale mycelium threads of the 16 candidates)",
+      "glowcap": "tile_3 (single glowing pale mushroom cap with a soft radiant halo -- kept singular/distinct from the 'mushroom' cluster pick)",
+      "puffball": "tile_9 (clean single round tan puffball)"
+    },
+    "postProcess": "each pick: palette_match against work/floor_repaired_v2.png (seam-repaired, ungraded floor), then graded identically to the corner sets (same l_offset/chroma_scale)"
+  },
+  "seam": {
+    "tile": "rock_v2 tile_15 (the universal pure-floor tile)",
+    "beforeRepair": {
+      "band_score_col": 3.549,
+      "band_score_row": 3.294
+    },
+    "afterRepair": {
+      "band_score_col": 0.128,
+      "band_score_row": 0.134
+    },
+    "threshold": 1.0,
+    "command": "python3 scripts/tiles/postprocess.py seam art/tiles/fungal/raw/rock_v2/tile_15.png --repair art/tiles/fungal/work/floor_repaired_v2.png --threshold 1.0"
+  },
+  "grade": {
+    "reason": "keep the same darkness/identity target as round 1 (match starter's L~21.7, keep fungal's own olive-green chroma) -- the user's feedback was about subject matter (\"not fungal enough\"), not the palette (\"palette is alright\"), so the grade approach carried over unchanged",
+    "tool": "postprocess.py's compute_grade/apply_grade math, invoked directly via .sandbox/tiles-biomes/grade_fungal_v2.py",
+    "sample": "art/tiles/fungal/work/floor_repaired_v2.png: L=28.46, chroma=13.95",
+    "target": "L_ref=21.7, chroma_scale=0.78 (same values as round 1)",
+    "transform": {
+      "l_offset": -6.76,
+      "chroma_scale": 0.78
+    },
+    "appliedTo": "all 16 rock_v2 + 16 water_v2 corner-set tiles, and all 5 floor variants -- before unify_floor and fill"
+  },
+  "unifyFloor": {
+    "reason": "user-reported defect: every rock edge had a pale lacy band and every pool a dark crosshatch band, because each corner tile's own floor-region pixels are independently generated by the AI alongside its upper terrain, so they never quite match the canonical floor tile's grain -- reads as a halo once the sheet is tiled.",
+    "tool": "scripts/tiles/postprocess.py's unifyfloor subcommand/unify_floor() function -- already added by a sibling agent (crystal biome) by the time this agent first checked, per the dispatch's re-check instruction, so it was reused rather than re-implemented from scratch.",
+    "problem found": "unify_floor's colour-only classification, run at its own default tolerance (9), incorrectly replaced ~58% of the SOLID rock tile (storedMask 15, no floor corners at all) with floor pixels -- fungal's pale bracket-fungus crust sits close enough to the dark-loam floor's palette in Lab space that colour distance alone isn't a reliable discriminator for this biome's overlapping muddy palette.",
+    "fix": "originally patched around with a one-off wrapper (.sandbox/tiles-biomes/unify_geo.py) that post-filtered unify_floor's output by a bilinear corner-geometry 'floor-ness' weight. Per a later housekeeping request, this was upstreamed into the shared tool itself as an OPT-IN `corner_mask`/`mask_bit`/`min_floor_weight` parameter set on `unify_floor()` (and matching `--corner-mask`/`--mask-bit`/`--min-floor-weight` CLI flags on the `unifyfloor` subcommand) -- see scripts/tiles/postprocess.py's `_corner_floor_weight()` helper and the `unify_floor` docstring. Omitting `--corner-mask` reproduces the exact prior behaviour (verified byte-identical for callers that don't pass it, e.g. crystal/bone/flooded/volcanic's existing usage); passing it intersects the geometric weight (>= `--min-floor-weight`) with the colour classification BEFORE the morphology cleanup pass, so a tile with zero floor corners is provably untouched regardless of colour overlap. A `selftest` case (solid-upper tile, full colour overlap with the floor palette, `corner_mask=0`) covers this in the shared script.",
+    "params": {
+      "tolerance": 9,
+      "mask_bit": "lower",
+      "min_floor_weight": 0.3
+    },
+    "command": "python3 scripts/tiles/postprocess.py unifyfloor <graded_tile_i.png> --floor-ref art/tiles/fungal/work/graded_v2/floor_ref.png --corner-mask <i> --mask-bit lower --min-floor-weight 0.3 --tolerance 9 <out.png> (run once per tile 0-14 for rock, 0-15 for water, <i> = the tile's own PixelLab file index, which IS a valid --corner-mask value directly in the 'lower' convention)",
+    "verifiedResult": "solid rock tile (corner_mask=0, no floor corners): 0/576 px changed (was 336/576 at colour-distance-only, pre-guard). Partial tiles (masks 3/5/7/10/12 sampled): 74-210/576 px replaced, visibly smoothing the floor-side grain without eating into the fungal rock/spore-pool silhouette. Confirmed in the room mockup: no pale/dark banding around the 2x2 pillar block, the lone pillar, or the water pool edges.",
+    "appliedTo": "rock_v2 tiles 0-14 and water_v2 tiles 0-15 (rock tile_15 is the floor reference itself, skipped) -- applied AFTER grading, so the floor reference it unifies against is already at the target darkness/chroma",
+    "upstreamRebuild": "rock_v2 and water_v2 were regenerated end-to-end through the shared `unify_floor()` call (same params as the wrapper) and diffed pixel-for-pixel against the wrapper-produced tiles already packed. water: all 16 tiles byte-identical. rock: 8 of 16 tiles (masks 1,4,5,8,9,10,11,12) differ by 2-5 px out of 576 each (<1%) -- all isolated boundary pixels a few px from the floor/upper transition edge, a consequence of the shared implementation intersecting the geometry mask with the colour mask BEFORE the small-hole/speck morphology pass, vs the wrapper's coarser post-hoc revert-after-morphology approach. No structural difference (no missing chunks/holes), confirmed by eye in a full pixel-value dump of every differing pixel. The shared-command output was adopted as the new canonical source and repacked; the wrapper (.sandbox/tiles-biomes/unify_geo.py) is no longer used."
+  },
+  "fill": {
+    "reason": "same repeating-lattice issue as round 1 and starter's chasm/water fix: the ONE corner-set tile placed edge-to-edge against copies of itself (mask 15 solid rock, mask 15 solid water) showed a self-tiling artifact after grading.",
+    "tool": "postprocess.py fill --amplitude 6 --inset 8 --seed 0 --repair, applied AFTER grading (unify_floor is a no-op on these solid tiles per the geometry constraint, so order vs unify_floor doesn't matter here)",
+    "appliedTo": {
+      "rock": {
+        "file": "art/tiles/fungal/work/graded_v2/rock/tile_0.png",
+        "band_score_after": {
+          "col": 0.107,
+          "row": 0.139
+        }
+      },
+      "water": {
+        "file": "art/tiles/fungal/work/graded_v2/water/tile_0.png",
+        "band_score_after": {
+          "col": 0.078,
+          "row": 0.148
+        }
+      }
+    },
+    "threshold": 1.0,
+    "verification": "4x4 tiled preview of each fill tile -- no repeat visible either time"
+  },
+  "stamps": {
+    "hazard": {
+      "jobId": "4ba419f7-dcee-4653-a6a5-6d181aa541ba",
+      "prompt": "1). a bulbous fungal vent erupting with a pale yellow-green spore cloud, fills most of the tile",
+      "pick": "tile_0 (cleanest coiled bulbous vent with a rising pale spore cloud, largest/clearest of the 16 near-identical candidates)",
+      "rawSource": "art/tiles/fungal/raw/hazard_v2/tile_0.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "keep_dark_l": null,
+        "feather": 0,
+        "clean": true,
+        "min_speck": 3,
+        "min_hole": 3
+      },
+      "note": "replaces round-1's hazard (a small vent mound easily mistaken for a generic stain) -- this one fills roughly half the tile and reads unmistakably as a fungal growth, per the user's explicit ask for a 'clearly visible' hazard"
+    },
+    "bridge_h": "UNCHANGED from round 1 -- not part of the feedback. See art/tiles/starter/chosen.json-style history in the round-1 section of this file's git history / REPORT for original provenance (job bf090d98..., tile_9 pick).",
+    "bridge_v": "UNCHANGED from round 1 (90-degree rotation of bridge_h).",
+    "exit": "UNCHANGED from round 1 (job bf090d98..., tile_13 pick).",
+    "torch": "UNCHANGED from round 1 (standalone supplemental job 5c4e6327..., tile_0 pick)."
+  },
+  "pack": "art/tiles/fungal/pack-spec.json -> python3 scripts/tiles/pack.py art/tiles/fungal/pack-spec.json art/tiles/fungal/pack (desaturate 0.0). rock/water/floorVariants now source from work/graded_v2/*; stamps source hazard from work/stamps_cutout/hazard.png (overwritten with the v2 pick) and bridge_h/bridge_v/exit/torch from the same v1 files, untouched. 42 tiles packed into an 8x6 sheet.",
+  "gateArtifacts": {
+    "contactSheet": "art/tiles/fungal/_sheet.png (rebuilt from a fresh work/_sheet_src of the v2 tiles)",
+    "mockupGrid": "art/tiles/fungal/mockup-grid.json (unchanged from round 1: 16x11, border walls, a lone pillar, a 2x2 pillar block, a floor area, a 3x2 water pool, a vertical water channel crossed by bridge_h, a horizontal water channel crossed by bridge_v, a hazard, an exit, a torch wall)",
+    "mockupRender": "art/tiles/fungal/_mock.png -- re-rendered via client/scripts/terrain-mockup.mts + .sandbox/tiles-biomes/render_mockup.py against the repacked sheet. Reviewed visually and in crops: bracket fungi clearly visible on every rock edge/pillar/wall, the water pool reads as a vivid teal-green bioluminescent spore pool, the hazard vent is large and unmistakable, no pale/dark banding at any rock or water edge (the reported halo defect), bridge orientations and exit/torch stamps unchanged and still correct."
+  },
+  "knownGaps": [
+    "no chasm set for this biome (out of scope, unchanged from round 1); chasm-themed rooms in fungal areas use the default set's chasm.",
+    "bridge_v is still a 90-degree rotation of bridge_h, not independently art-directed (unchanged from round 1, not part of this revision's scope).",
+    "unify_floor's --min-floor-weight (0.3) is a judgement call, not derived from a measurement -- it trades off 'fixes more of the halo' against 'risks eating genuine upper-terrain detail near the transition edge'. Chosen by visual inspection of a handful of sample tiles plus the final room mockup, not an exhaustive check of all 16x2 corner tiles individually.",
+    "torch glow is still subtle at 24px/48px scale (unchanged from round 1, not part of this revision's scope)."
+  ],
+  "spend": {
+    "revisionJobs": [
+      "rock reroll",
+      "water reroll",
+      "floor_variants reroll",
+      "hazard reroll"
+    ],
+    "balanceBefore": 13.37,
+    "balanceAfter": 12.42,
+    "delta": 0.95,
+    "ceiling": 0.8,
+    "note": "shared PixelLab credit pool across concurrent biome agents (same caveat as round 1's spend note) -- this delta is not an isolated measurement of just this revision's cost. 4 generation jobs were launched for this revision (rock, water, floor variants, hazard); no additional supplemental/reroll was spent beyond the one round for each.",
+    "round1": {
+      "balanceBefore": 15.37,
+      "balanceAfter": 13.47,
+      "delta": 1.9,
+      "ceiling": 1.6
+    },
+    "totalAcrossBothRounds": {
+      "balanceBefore": 15.37,
+      "balanceAfter": 12.42,
+      "delta": 2.95
+    }
+  },
+  "rawMetadata": "art/tiles/fungal/raw (round 1: rock/, water/, floor_variants/, stamps/, torch_supp/; round 2: rock_v2/, water_v2/, floor_variants_v2/, hazard_v2/), each with tile_0..15.png from their respective PixelLab job"
+}

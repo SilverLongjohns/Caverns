@@ -1,0 +1,22 @@
+{
+  "tileSize": 24,
+  "sets": {
+    "rock": { "dir": "art/tiles/volcanic/work/graded/rock", "pattern": "tile_{i}.png", "maskBit": "lower" },
+    "chasm": { "dir": "art/tiles/volcanic/work/graded/chasm", "pattern": "tile_{i}.png", "maskBit": "lower" }
+  },
+  "floorVariants": [
+    "art/tiles/volcanic/work/graded/floor_variants/crack.png",
+    "art/tiles/volcanic/work/graded/floor_variants/cinders.png",
+    "art/tiles/volcanic/work/graded/floor_variants/ripple.png",
+    "art/tiles/volcanic/work/graded/floor_variants/girder.png",
+    "art/tiles/volcanic/work/graded/floor_variants/ember.png"
+  ],
+  "stamps": {
+    "hazard": "art/tiles/volcanic/work/stamps_cutout/hazard.png",
+    "bridge_h": "art/tiles/volcanic/work/stamps_cutout/bridge_h.png",
+    "bridge_v": "art/tiles/volcanic/work/stamps_cutout/bridge_v.png",
+    "exit": "art/tiles/volcanic/work/stamps_cutout/exit.png",
+    "torch": "art/tiles/volcanic/work/stamps_cutout/torch.png"
+  },
+  "desaturate": 0.0
+}

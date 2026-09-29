@@ -1,0 +1,239 @@
+{
+  "biome": "crystal",
+  "tileSize": 24,
+  "approved": "2026-09-29, approved by user as-is and installed to client/public/tiles/crystal",
+  "revision": 2,
+  "revision2Reason": "user review of revision 1 flagged: (a) rock corner set had large crystal clusters clipping at tile edges, (b) mask-15 rock read as an obviously repeated sprig once tiled, (c) water/rock floor-region pixels didn't match the canonical floor tile (a dark speckled halo/band around every pool or wall), (d) water read too pale/washed-out ('milky' to the point of looking icy), (e) torch was too small/subtle. This record describes what changed for revision 2; revision 1's job ids/prompts/picks for water/floor-variants/hazard/bridge_h/bridge_v/exit are unchanged and kept below for provenance.",
+  "buildSpec": "art/tiles/crystal/pack-spec.json (run: python3 scripts/tiles/pack.py art/tiles/crystal/pack-spec.json art/tiles/crystal/pack)",
+  "bitConvention": "same as starter (art/tiles/starter/chosen.json.bitConvention): pack.py maskBit \"lower\", storedMask = 15 - fileIndex. Verified in the packed terrain.json: rock/water fileIndex 15 (pure floor) landed at stored mask \"0\", fileIndex 0 (pure upper) at stored mask \"15\".",
+  "setsGenerated": [
+    "rock",
+    "water"
+  ],
+  "setsOmitted": [
+    "chasm (not in this biome's brief; client falls back to the default set)"
+  ],
+  "sets": {
+    "rock": {
+      "revision": "2 -- REROLLED. Revision 1's rock (job 50b36d79-cdd8-44a0-b8d5-81de3c689da3, 'dark cave rock mass split by angular violet and cyan crystal clusters... faint embedded relic-tech wiring') had large crystal spike clusters that crossed tile edges and clipped. Revision 2's prompt asks for small, whole, edge-avoiding inclusions instead; came out clean on the FIRST try (see raw/rock_reroll/), so the planned sparser-veins-only alternative was not needed.",
+      "jobId": "e4fc2caf-2642-4437-93fb-fe099da80523",
+      "prompt": "1). dark glassy grit cave floor with tiny crystal shard glints, slate and violet-grey 2). dark cave rock mass with a few small complete violet and cyan crystal inclusions fully inside the rock, fine hairline crystal veins, no large clusters touching the edges, near-black in shadow",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/crystal/raw/rock_reroll",
+      "clippingCheck": "inspected tile_0/4/8/12 at 10x zoom: every crystal inclusion is a small 1-2px dot or a thin hairline vein fully inside the tile, none touch or cross a tile edge -- confirms the reroll fixed the clipping complaint",
+      "postProcess": "tile_15 (fileIndex 15, the pure-floor tile) seam-repaired (band_score col=11.229->0.184->0.471 pre/post-repair/post-grade, threshold 1.0), all 16 tiles graded (grade.rock below), then EVERY tile's own floor-region pixels replaced with the canonical graded floor via unify_floor (see unifyFloor below), then fileIndex 0 (stored mask 15, the fully-surrounded 'all rock' tile) additionally passed through fill (amplitude 6, inset 8, seed 0, --repair) -- this biome's mask-15 rock fix, since the user specifically called out mask-15 repeating as a visible sprig"
+    },
+    "water": {
+      "revision": "1 (unchanged generation) -- only its post-processing changed for revision 2: a separate, deeper/darker grade, plus unify_floor to fix its floor-region halo",
+      "jobId": "d542b47b-9a2e-43e3-ace8-e7c0a8e8a048",
+      "prompt": "1). dark glassy grit cave floor with tiny crystal shard glints, slate and violet-grey 2). still milky cyan mineral pool with pale crystalline crust at the edges",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/crystal/raw/water",
+      "postProcess": "all 16 RAW tiles graded with a water-only transform (grade.water below, darker/more saturated than revision 1's shared transform), then EVERY tile's own floor-region pixels replaced with the canonical graded rock floor via unify_floor, then fileIndex 0 (stored mask 15, the fully-surrounded 'middle of a big pool' tile) additionally passed through fill (amplitude 6, inset 8, seed 0, --repair) to avoid the rim/pit lattice-at-tile-period issue"
+    }
+  },
+  "unifyFloor": {
+    "reason": "user review: 'the floor half of the water tiles (and of the rock tiles, if it shows) doesn't match the plain floor tile, so each pool gets a dark speckled band around it' -- confirmed on rock too once looked for (every mixed-mask rock tile's own floor sub-area was independently AI-generated alongside its rock, so it never quite matched the canonical floor tile's exact grain/tone).",
+    "tool": "NEW reusable postprocess.py subcommand `unifyfloor` (with a selftest case) -- added to scripts/tiles/postprocess.py rather than a one-off script, per the request. Classifies each tile's pixels by Lab colour distance to a small palette (postprocess.py's existing build_palette, median-cut) built from a floor reference, replaces classified pixels with the SAME-POSITION pixel from the canonical (graded) floor tile, and cleans the classification mask with a small 4-connected morphology pass (reusing the existing _connected_components helper: drops floor-classified components smaller than min_speck as stray specks, fills non-floor components smaller than min_hole that don't touch the tile border as stray pinholes). Position is NOT used for classification (each tile's floor grain is independently generated) but IS used for replacement (so the floor region becomes pixel-identical to the canonical floor tile, which is what removes the halo).",
+    "classifyVsPaletteRefDecoupling": "unify_floor also takes optional classify_img/classify_ref params (and the CLI has --classify-img/--classify-palette-ref) so classification can be done against a DIFFERENT, tonally-matched image than the one being edited/replaced -- needed here because the water tiles were graded with a strong, water-only darkening transform BEFORE unify_floor ran, which also dragged their own floor pixels out of any floor-palette tolerance (and, on a first attempt, coincidentally INTO the graded rock floor's tolerance band, since both are similarly dark in this palette -- see selftestNote below). The fix: classify against the RAW (pre-grade) water tile using a palette built from RAW water's own pure-floor tile (fileIndex 15), then replace in the GRADED water tile with the FINAL canonical (graded rock) floor pixels. Same two-reference approach for rock: classify against the RAW rock tiles using a palette built from the RAW (seam-repaired, ungraded) floor sample, replace with the GRADED canonical floor.",
+    "selftestNote": "an intermediate attempt classified the (already fully-graded, deliberately darkened) water/rock tiles directly against a palette built from the FINAL graded floor -- this coincidentally misclassified most of a nearly-all-rock tile (fileIndex 0) as 'floor' (563/576px), because this biome's graded floor (L~21.7) and its graded rock's own near-black shadow tone turned out close in Lab space. Caught by inspecting the replaced-pixel-count per tile (fileIndex 0/15, which should be ~0, were 550+); fixed by decoupling classification onto the tonally-matched pre-grade images (see above). Final counts: rock fileIndex 0 and 15 both replaced 0px (correct -- no floor in a pure-rock tile, no-op on the floor tile itself); water fileIndex 0 replaced 0px, fileIndex 15 (water's own 'pure floor', never looked up in-game) replaced ~all of it; intermediate masks replaced ~144/288/427px matching their geometric floor fraction (1/4, 1/2, 3/4 of 576px) almost exactly.",
+    "command": "python3 scripts/tiles/postprocess.py unifyfloor <in.png> --floor-ref <canonical_graded_floor.png> --classify-img <raw_pregrade_tile.png> --classify-palette-ref <raw_pregrade_floor.png> --tolerance 9 <out.png>",
+    "selftest": "python3 scripts/tiles/postprocess.py selftest -- 6 new assertions: floor region replaced pixel-identical to floor_ref; upper-terrain region untouched; a 1px hole inside the floor region gets filled+replaced; a 1px stray speck inside the upper region gets dropped (left unreplaced); image size preserved; and the classify_img/classify_ref override correctly finds+replaces the floor region of an already-graded tile using a tonally-matched pre-grade classification pair. All pass."
+  },
+  "floorVariants": {
+    "revision": "1 (unchanged generation and picks) -- re-matched and re-graded against the revision-2 rock floor sample so they stay tonally identical to the new canonical floor",
+    "jobId": "54ce8071-29fd-4267-b639-6eb24ab582ca",
+    "prompt": "1). cracked dark glassy grit cave floor with hairline glowing violet fractures, slate and violet-grey palette 2). dark glassy grit cave floor with scattered small crystal shards, slate and violet-grey palette 3). dark glassy grit cave floor with a pale mineral crust patch, slate and violet-grey palette 4). dark glassy grit cave floor with a half-buried relic-tech conduit with crystal growth, slate and violet-grey palette 5). dark glassy grit cave floor with one tiny cyan crystal glint, slate and violet-grey palette",
+    "picks": {
+      "fracture": "tile_1",
+      "shards": "tile_6",
+      "crust": "tile_9",
+      "conduit": "tile_12",
+      "glint": "tile_13"
+    },
+    "postProcess": "each variant: postprocess.py palette_match against the revision-2 seam-repaired (ungraded) rock floor tile, hue-preserving, THEN graded with the revision-2 rock grade transform"
+  },
+  "seam": {
+    "tile": "rock fileIndex 15 (the universal pure-floor tile), revision 2",
+    "beforeRepair": {
+      "band_score_col": 11.229,
+      "band_score_row": 13.393
+    },
+    "afterRepair": {
+      "band_score_col": 0.137,
+      "band_score_row": 0.195
+    },
+    "afterGrade_recheck": {
+      "band_score_col": 0.471,
+      "band_score_row": 0.327,
+      "conclusion": "still comfortably under threshold"
+    },
+    "threshold": 1.0,
+    "command": "python3 scripts/tiles/postprocess.py seam <floor.png> --repair --threshold 1.0 <out.png>"
+  },
+  "grade": {
+    "rock": {
+      "reason": "same methodology as revision 1: match starter's darkness (L~=21.7) while keeping crystal's own hue via a moderate chroma_scale, recomputed from the revision-2 (rerolled) floor sample",
+      "sample": "art/tiles/crystal/work/v2/floor_repaired.png: L=32.16, chroma=13.83",
+      "targetL": 21.7,
+      "chromaScale": 0.85,
+      "transform": {
+        "l_offset": -10.46,
+        "chroma_scale": 0.85
+      },
+      "appliedTo": "all 16 rock corner-set tiles and all 5 floor variants (21 tiles) -- NOT stamps"
+    },
+    "water": {
+      "reason": "user review: 'make the water a bit darker and deeper-toned'. A SEPARATE grade from rock's, computed directly on water's own raw pure-water tile (fileIndex 0, stored mask 15) rather than reusing rock's transform, chosen to move water meaningfully off its very pale/high-key raw value (L~87, borderline icy-white) toward a legible 'deep pool' tone while staying clearly lighter than the graded floor (L~21.7), so it still reads as water rather than rock.",
+      "sample": "art/tiles/crystal/raw/water/tile_0.png (raw, ungraded pure water): L=87.19, chroma=15.85",
+      "targetL": 55.0,
+      "targetChroma": 20.0,
+      "transform": {
+        "l_offset": -32.19,
+        "chroma_scale": 1.26
+      },
+      "appliedTo": "all 16 water corner-set tiles -- NOT floor variants or stamps"
+    }
+  },
+  "fill": {
+    "reason": "a corner-set's fully-surrounded (stored mask 15) tile is the ONE tile placed edge-to-edge against copies of itself many times in a row/column, so any baked rim/centre value difference reads as a lattice/grate once tiled -- or, per this round's user review, a visibly repeated sprig. Zero PixelLab spend, pipeline-only. Revision 2 applies this to BOTH water's and rock's mask-15 tile (revision 1 only did water's; the user asked for rock's mask-15 to be fixed too).",
+    "tool": "postprocess.py fill -- samples the tile's own deep-interior colour (8px inset), lays deterministic low-amplitude (+/-6) per-pixel luma jitter (hue preserved), then repair_seam as a final guard",
+    "command": "python3 scripts/tiles/postprocess.py fill <mask15.png> --amplitude 6 --inset 8 --seed 0 --repair <out.png>",
+    "appliedTo": {
+      "rock": {
+        "file": "art/tiles/crystal/work/v2/graded/rock/tile_0.png (stored mask 15, fileIndex 0), applied AFTER grading + unify_floor",
+        "band_score_after": {
+          "col": 0.091,
+          "row": 0.145
+        }
+      },
+      "water": {
+        "file": "art/tiles/crystal/work/v2/graded/water/tile_0.png (stored mask 15, fileIndex 0), applied AFTER grading + unify_floor",
+        "band_score_after": {
+          "col": 0.127,
+          "row": 0.15
+        }
+      }
+    },
+    "threshold": 1.0,
+    "verification": "the 3x3 water pool and both pillar blocks in art/tiles/crystal/_mock.png (revision 2) read as smooth textured surfaces with no visible lattice/grate/repeated-sprig pattern"
+  },
+  "stamps": {
+    "hazard": {
+      "revision": "1 (unchanged)",
+      "jobId": "381a777a-3583-44a8-bfde-130d9bba39b1 (batch stamps job)",
+      "pick": "tile_0",
+      "rawSource": "art/tiles/crystal/raw/stamps/tile_0.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      }
+    },
+    "bridge_h": {
+      "revision": "1 (unchanged)",
+      "pick": "tile_4",
+      "rawSource": "art/tiles/crystal/raw/stamps/tile_4.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      }
+    },
+    "bridge_v": {
+      "revision": "1 (unchanged)",
+      "pick": "tile_8",
+      "rawSource": "art/tiles/crystal/raw/stamps/tile_8.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      }
+    },
+    "exit": {
+      "revision": "1 (unchanged)",
+      "pick": "tile_13",
+      "rawSource": "art/tiles/crystal/raw/stamps/tile_13.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      }
+    },
+    "torch": {
+      "revision": "2 -- REROLLED (standalone supplemental). User review: too small/subtle. New prompt asks explicitly for a large, bright, dramatic glow halo.",
+      "jobId": "6874cac0-d790-4261-8b69-018fbf8a062f",
+      "prompt": "1). small wall-mounted glowing crystal lamp with a large bright violet-cyan glow halo, cold intense violet light, mounted on dark cave rock wall, dramatic strong lighting",
+      "pick": "tile_8 (clean glow, no stray white edge artifacts -- several other tiles in this batch, e.g. tile_10/11/12/13/14, had a stray white fleck/line near one edge)",
+      "rawSource": "art/tiles/crystal/raw/torch_supp/tile_8.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      },
+      "note": "glow halo is now roughly 3x the visual footprint of revision 1's torch -- clearly visible in the room mock from across the room"
+    }
+  },
+  "pack": {
+    "spec": "art/tiles/crystal/pack-spec.json",
+    "command": "python3 scripts/tiles/pack.py art/tiles/crystal/pack-spec.json art/tiles/crystal/pack",
+    "output": "art/tiles/crystal/pack/{terrain.png,terrain.json} -- 8x6 sheet (192x144px), 42 tiles (16 rock + 16 water + 5 floorVariants + 5 stamps)",
+    "sources": "rock/water/floorVariants now read from art/tiles/crystal/work/v2/graded/; hazard/bridge_h/bridge_v/exit stamps still read from art/tiles/crystal/work/stamps_cutout/ (revision 1, unchanged); torch now reads from art/tiles/crystal/work/v2/stamps_cutout/ (revision 2)",
+    "desaturate": 0.0
+  },
+  "gateArtifacts": {
+    "sheet": "art/tiles/crystal/_sheet.png (rebuilt for revision 2, via postprocess.py sheet against art/tiles/crystal/_sheet_src/, a merged directory of every packed tile/stamp individually named by its final stored mask/role)",
+    "mockupGrid": "art/tiles/crystal/mockup-grid.json (unchanged from revision 1 -- 13x11 room exercising every set/stamp)",
+    "mock": "art/tiles/crystal/_mock.png (rebuilt for revision 2 via client/scripts/terrain-mockup.mts + the same Pillow compositor)",
+    "visualCheck": "read the revision-2 _sheet.png and _mock.png: rock now shows small isolated crystal dots and hairline veins with no clipping at any tile edge; the water pool and both pillar blocks show a clean, seamless floor boundary with no dark halo/band (unify_floor fix); water is now a distinctly deeper/darker teal-cyan rather than near-white; torch is a large, clearly-visible glow on the top wall; mask-15 rock and water no longer show an obvious repeated sprig/lattice when tiled (checked in the pool and both pillar crops)"
+  },
+  "spend": {
+    "revision2Jobs": 2,
+    "revision2JobDescriptions": [
+      "rock corner set reroll",
+      "torch standalone supplemental"
+    ],
+    "revision2Rerolls": 0,
+    "note_unifyFloorAndGradeAreFree": "the unify_floor fix, both grade transforms (rock re-grade, water's new darker grade), and both mask-15 fills are pipeline-only (postprocess.py), zero additional PixelLab spend",
+    "balanceStartRevision2": 13.09,
+    "balanceEndRevision2": 12.42,
+    "revision2Delta": 0.67,
+    "note": "PixelLab credits are a SHARED account balance across concurrent agents (other biomes were generating in the same dispatch round), so this delta is not perfectly isolated to this biome's 2 jobs, but it is close to the requested ~$0.60 budget and both jobs came out usable on the first try (no rerolls needed).",
+    "ceilingRevision2": 0.6,
+    "revision1Spend": {
+      "balanceStart": 15.65,
+      "balanceEnd": 13.47,
+      "jobs": 4,
+      "note": "see git history of this file / the revision-1 report for detail; unchanged here"
+    }
+  },
+  "weakPieces": [
+    "none carried over from revision 1 are still open: torch was rerolled larger/stronger, rock was rerolled to remove edge clipping, water was darkened, and the floor halo was fixed via unify_floor.",
+    "water's grade target (L=55, chroma=20) was chosen by judgement (no user-approved reference crop exists for this biome, unlike starter's mock-A2.png spike) -- if the user wants it darker/lighter still, it's a single re-run of the water-only grade step, zero additional PixelLab spend."
+  ],
+  "rawMetadata": "no separate meta.json written; job ids/prompts/picks are recorded above and are sufficient to re-derive every raw source path (art/tiles/crystal/raw/<set>/tile_<fileIndex>.png, or raw/rock_reroll, raw/torch_supp for revision 2)"
+}
