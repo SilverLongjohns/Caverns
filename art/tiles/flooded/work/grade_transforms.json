@@ -1,0 +1,14 @@
+{
+  "floorGrade": {
+    "l_scale": 0.6276923720101484,
+    "chroma_scale": 0.6525020778887455
+  },
+  "rockUpperGrade": {
+    "l_scale": 1.243119418168144,
+    "chroma_scale": 1.9250995536821969
+  },
+  "waterUpperGrade": {
+    "l_scale": 0.5349390792443688,
+    "chroma_scale": 0.36131098619846774
+  }
+}

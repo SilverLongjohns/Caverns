@@ -10,6 +10,7 @@ Usage:
   python3 scripts/tiles/postprocess.py cleanalpha <in.png> [--threshold 128] [--min-speck 3] [--min-hole 3] <out.png>
   python3 scripts/tiles/postprocess.py grade <in.png> --sample <sample.png> --ref <ref.png> <out.png>
   python3 scripts/tiles/postprocess.py fill <in.png> [--amplitude 6] [--inset 8] [--seed 0] [--repair] <out.png>
+  python3 scripts/tiles/postprocess.py unifyfloor <in.png> --floor-ref <floor.png> [--classify-img <pre_grade.png> --classify-palette-ref <pre_grade_floor.png>] [--tolerance 9] [--min-speck 3] [--min-hole 3] [--corner-mask <0-15> --mask-bit lower|upper --min-floor-weight 0.3] <out.png>
   python3 scripts/tiles/postprocess.py sheet <dir> <out.png>
   python3 scripts/tiles/postprocess.py preview <in.png> [--reps 4] [--scale 8] <out.png>
   python3 scripts/tiles/postprocess.py selftest
@@ -44,6 +45,17 @@ DEFAULT_GRADE_L_OFFSET_CLAMP = 40.0  # sanity clamp (abs) on the derived L offse
 DEFAULT_FILL_AMPLITUDE = 6.0  # +/- per-pixel luma jitter (deterministic) layered over the flat base
 DEFAULT_FILL_INSET = 8  # px inset defining the centre sample box used as the flat base colour
 DEFAULT_FILL_SEED = 0  # seed for the deterministic per-pixel noise (same seed -> same output)
+DEFAULT_UNIFYFLOOR_TOLERANCE = 9.0  # Lab distance from the floor-ref palette, at/under which a
+                                     # corner-set tile's pixel is classified as floor (not upper terrain)
+DEFAULT_UNIFYFLOOR_PALETTE_COLORS = 12  # median-cut colours sampled from the floor-ref tile
+DEFAULT_UNIFYFLOOR_MIN_SPECK = 3  # floor-classified components smaller than this (px) are stray
+                                   # misclassifications inside the upper terrain -- left unreplaced
+DEFAULT_UNIFYFLOOR_MIN_HOLE = 3  # non-floor-classified components smaller than this (px), that don't
+                                  # touch the tile border, are stray pinholes inside the floor region
+                                  # -- reclassified as floor so they get replaced too
+DEFAULT_UNIFYFLOOR_MIN_FLOOR_WEIGHT = 0.3  # only used when --corner-mask is given: minimum bilinear
+                                            # corner-geometry "floor-ness" weight (0..1) a pixel needs,
+                                            # in ADDITION to the colour classification, to be replaced
 
 
 def _smoothstep(t: float) -> float:
@@ -866,6 +878,166 @@ def cutout_removed_fraction(img: Image.Image, tolerance: float = DEFAULT_CUTOUT_
 
 
 # ---------------------------------------------------------------------------
+# Floor unification (replace a corner-set tile's own drifted floor pixels with the canonical
+# pure-floor tile's pixels, eliminating the halo/seam a pool or wall edge otherwise bakes in)
+# ---------------------------------------------------------------------------
+
+def _clean_binary_mask(mask, w: int, h: int, min_speck: int = 3, min_hole: int = 3):
+    """A small 4-connected morphology pass on a boolean mask (list-of-lists, mutated in place and
+    returned): drops True components smaller than `min_speck` (stray misclassified specks --
+    treated as False, i.e. left as the ORIGINAL tile pixel, not replaced) and fills False
+    components smaller than `min_hole` that don't touch the mask border (stray pinholes fully
+    enclosed by True -- treated as True, i.e. replaced too). Unlike `cleanalpha`'s speck removal,
+    this does NOT protect a single "largest" True component: a Wang corner tile can legitimately
+    have several disjoint floor regions (e.g. a diagonal mask has floor in two opposite corners),
+    so every small-enough component is treated purely by size, not by rank."""
+    for comp in _connected_components(mask, w, h):
+        if len(comp) < min_speck:
+            for x, y in comp:
+                mask[y][x] = False
+
+    inverse = [[not mask[y][x] for x in range(w)] for y in range(h)]
+    for comp in _connected_components(inverse, w, h):
+        touches_border = any(x == 0 or x == w - 1 or y == 0 or y == h - 1 for x, y in comp)
+        if touches_border or len(comp) >= min_hole:
+            continue
+        for x, y in comp:
+            mask[y][x] = True
+
+    return mask
+
+
+def _corner_floor_weight(corner_mask: int, mask_bit: str, w: int, h: int):
+    """Bilinear per-pixel floor-occupancy weight (0..1) for a corner-set tile, derived from its
+    OWN known 4-bit corner mask (NW<<3 | NE<<2 | SW<<1 | SE). `mask_bit` says which convention
+    `corner_mask`'s bits are in:
+      - "lower": bit=1 means the FLOOR (first-listed / lower terrain) occupies that corner -- this
+        is PixelLab's own raw placement_rules convention for a tile_N's file index, and what
+        pack.py's maskBit:"lower" reads straight off it.
+      - "upper": bit=1 means the UPPER terrain occupies that corner -- the packed manifest's
+        stored convention (storedMask = 15 - the "lower" value).
+
+    A pixel deep inside the tile's actual floor corners gets a weight near 1; a pixel deep inside
+    an upper-terrain corner gets a weight near 0; the organic transition band in between gets
+    something in between. A tile with NO floor corners at all (corner_mask's floor-bits all 0)
+    gets weight 0 EVERYWHERE, regardless of `w`/`h` -- this is what lets a caller (see
+    `unify_floor`'s `corner_mask` param) guarantee a solid upper-terrain tile is never touched by
+    colour-distance misclassification, even if its own palette happens to overlap the floor's."""
+    if not 0 <= corner_mask <= 15:
+        raise ValueError(f"corner_mask must be 0-15, got {corner_mask}")
+    if mask_bit == "lower":
+        floor_bits = corner_mask
+    elif mask_bit == "upper":
+        floor_bits = (~corner_mask) & 0b1111
+    else:
+        raise ValueError(f"mask_bit must be 'lower' or 'upper', got {mask_bit!r}")
+    nw = (floor_bits >> 3) & 1
+    ne = (floor_bits >> 2) & 1
+    sw = (floor_bits >> 1) & 1
+    se = floor_bits & 1
+    weight = [[0.0] * w for _ in range(h)]
+    for y in range(h):
+        v = y / (h - 1) if h > 1 else 0.0
+        for x in range(w):
+            u = x / (w - 1) if w > 1 else 0.0
+            weight[y][x] = nw * (1 - u) * (1 - v) + ne * u * (1 - v) + sw * (1 - u) * v + se * u * v
+    return weight
+
+
+def unify_floor(img: Image.Image, floor_ref: Image.Image,
+                 tolerance: float = DEFAULT_UNIFYFLOOR_TOLERANCE,
+                 palette_colors: int = DEFAULT_UNIFYFLOOR_PALETTE_COLORS,
+                 min_speck: int = DEFAULT_UNIFYFLOOR_MIN_SPECK,
+                 min_hole: int = DEFAULT_UNIFYFLOOR_MIN_HOLE,
+                 classify_img: Image.Image = None,
+                 classify_ref: Image.Image = None,
+                 corner_mask: int = None,
+                 mask_bit: str = "lower",
+                 min_floor_weight: float = DEFAULT_UNIFYFLOOR_MIN_FLOOR_WEIGHT) -> Image.Image:
+    """Replaces the floor-region pixels of a corner-set tile `img` with the SAME-POSITION pixel
+    from `floor_ref` (the repaired, graded pure-floor/mask-0 tile), leaving upper-terrain pixels
+    (rock/water/chasm, including their edge/transition pixels bordering the floor) untouched.
+
+    Each corner-set tile's exposed floor area is independently re-generated by the AI alongside
+    its own upper terrain, so it never quite matches the canonical floor tile's grain/tone -- this
+    reads as a dark speckled halo/band around every rock or water shape once the sheet is actually
+    tiled. Fixing it with a per-tile `palette_match` would remap the WHOLE tile (including the
+    upper terrain we want to keep); this instead classifies and replaces only the floor pixels.
+
+    Classification is by Lab colour distance to a small palette (position is not used for
+    classification: each tile's own floor grain is independently generated, so a pixel's (x, y)
+    position doesn't predict its colour the way it would for two crops of the same photo).
+    REPLACEMENT is by position: a classified floor pixel becomes pixel-identical to `floor_ref` at
+    that same (x, y), which is what actually removes the halo. A small morphology pass
+    (`_clean_binary_mask`) drops stray misclassified specks/pinholes before replacing.
+
+    `classify_img` / `classify_ref`, if given, decouple classification from replacement -- both
+    default to `img` / `floor_ref` (today's simple case: classify and replace from the same tonal
+    family). Pass them when `img` was already pushed through an upper-terrain-only grade (e.g. a
+    deliberately strong water-darkening pass) that ALSO dragged its own floor pixels out of
+    `floor_ref`'s tolerance (or, worse, coincidentally INTO a completely different reference's
+    tolerance, e.g. a dark upper terrain colliding with a dark floor_ref): pass the tonally-
+    matched PRE-grade tile as `classify_img` and the PRE-grade floor reference as `classify_ref`,
+    so the palette and the per-pixel colours being tested are drawn from the same (pre-grade)
+    tonal family, while `floor_ref` still supplies the FINAL (post-grade) replacement pixels.
+
+    `corner_mask` (0-15), if given, is an OPT-IN geometric guard on top of the colour
+    classification: `img` is `img`'s own known corner-set mask (see `_corner_floor_weight`;
+    `mask_bit` picks which bit convention it's given in, default "lower"). A pixel is only ever
+    replaced if BOTH the colour classification says "floor" AND `_corner_floor_weight` says its
+    bilinear floor-geometry weight is >= `min_floor_weight` -- so a tile with zero floor corners
+    (e.g. a solid rock or solid water tile) can never have any pixel replaced, no matter how much
+    its own palette happens to overlap the floor reference's. This matters for a biome whose
+    upper-terrain and floor palettes aren't cleanly separable by colour alone (e.g. a pale
+    fungal crust on rock sitting close, in Lab space, to a dark loam floor) -- plain colour-
+    distance classification can otherwise erode well over half of a SOLID upper-terrain tile.
+    Leaving `corner_mask` as `None` (the default) skips this entirely and reproduces the exact
+    prior behaviour byte-for-byte -- existing callers that don't pass it are unaffected."""
+    tile = img.convert("RGBA")
+    ref = floor_ref.convert("RGBA")
+    classify_src = classify_img.convert("RGBA") if classify_img is not None else tile
+    palette_ref = classify_ref.convert("RGBA") if classify_ref is not None else ref
+    if tile.size != ref.size or classify_src.size != tile.size or palette_ref.size != tile.size:
+        raise ValueError(f"unify_floor: size mismatch {tile.size} vs ref {ref.size} vs "
+                          f"classify {classify_src.size} vs classify_ref {palette_ref.size}")
+    w, h = tile.size
+    tile_px = tile.load()
+    ref_px = ref.load()
+    classify_px = classify_src.load()
+
+    palette = build_palette(palette_ref, max_colors=palette_colors)
+    palette_labs = [_rgb_to_lab_one(c) for c in palette]
+
+    mask = [[False] * w for _ in range(h)]
+    for y in range(h):
+        for x in range(w):
+            lab = _rgb_to_lab_one(classify_px[x, y][:3])
+            d = min(_lab_dist(lab, pl) for pl in palette_labs)
+            mask[y][x] = d <= tolerance
+
+    if corner_mask is not None:
+        geo_weight = _corner_floor_weight(corner_mask, mask_bit, w, h)
+        for y in range(h):
+            for x in range(w):
+                if mask[y][x] and geo_weight[y][x] < min_floor_weight:
+                    mask[y][x] = False
+
+    mask = _clean_binary_mask(mask, w, h, min_speck=min_speck, min_hole=min_hole)
+
+    out = Image.new("RGBA", (w, h))
+    out_px = out.load()
+    for y in range(h):
+        for x in range(w):
+            if mask[y][x]:
+                rr, rg, rb, _ra = ref_px[x, y]
+                _tr, _tg, _tb, ta = tile_px[x, y]
+                out_px[x, y] = (rr, rg, rb, ta)
+            else:
+                out_px[x, y] = tile_px[x, y]
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Global grade (uniform Lab luminance offset + chroma scale vs a reference)
 # ---------------------------------------------------------------------------
 
@@ -1516,6 +1688,166 @@ def selftest() -> bool:
     else:
         print("  OK: fill_tile preserves hue exactly (equal jitter on all three channels)")
 
+    # --- unify_floor: replace a corner-tile's drifted floor pixels with the canonical floor ----
+    uf_size = 16
+    floor_base = (200, 195, 210)
+    floor_ref_img = Image.new("RGBA", (uf_size, uf_size), floor_base + (255,))
+    frpx = floor_ref_img.load()
+    for y in range(uf_size):
+        for x in range(uf_size):
+            n = ((x * 7 + y * 13) % 5) - 2  # deterministic +/-2 texture noise, no RNG needed
+            r, g, b = floor_base
+            frpx[x, y] = (r + n, g + n, b + n, 255)
+
+    upper_color = (30, 25, 40)  # far from the floor palette -- clearly "upper terrain"
+    halo_color = (190, 187, 204)  # floor-ish but drifted from floor_ref -- the halo this fixes
+    uf_tile = Image.new("RGBA", (uf_size, uf_size), upper_color + (255,))
+    utpx = uf_tile.load()
+    for y in range(uf_size):
+        for x in range(8):
+            utpx[x, y] = halo_color + (255,)
+    utpx[2, 2] = upper_color + (255,)  # a 1px hole inside the floor region (should be filled + replaced)
+    utpx[12, 12] = halo_color + (255,)  # a 1px stray speck inside the upper region (should be dropped)
+
+    unified = unify_floor(uf_tile, floor_ref_img, tolerance=9.0, min_speck=3, min_hole=3)
+    up = unified.load()
+
+    floor_matches = all(up[x, y][:3] == frpx[x, y][:3]
+                         for y in range(uf_size) for x in range(8) if (x, y) != (2, 2))
+    print(f"[selftest] unify_floor: floor region now matches floor_ref exactly: {floor_matches}")
+    if not floor_matches:
+        print("  FAIL: floor-classified pixels were not replaced with the floor_ref pixel at the same position")
+        ok = False
+    else:
+        print("  OK: floor region pixel-identical to floor_ref after replacement")
+
+    upper_unchanged = all(up[x, y][:3] == upper_color
+                           for y in range(uf_size) for x in range(8, uf_size) if (x, y) != (12, 12))
+    print(f"[selftest] unify_floor: upper-terrain region left untouched: {upper_unchanged}")
+    if not upper_unchanged:
+        print("  FAIL: unify_floor modified upper-terrain pixels it should have left alone")
+        ok = False
+    else:
+        print("  OK: upper-terrain region untouched")
+
+    hole_replaced = up[2, 2][:3] == frpx[2, 2][:3]
+    print(f"[selftest] unify_floor: 1px hole inside floor region filled+replaced: {hole_replaced}")
+    if not hole_replaced:
+        print("  FAIL: the morphology pass did not fill the small hole inside the floor region")
+        ok = False
+    else:
+        print("  OK: small hole inside the floor region filled and replaced")
+
+    speck_untouched = up[12, 12][:3] == halo_color
+    print(f"[selftest] unify_floor: 1px stray speck inside upper region left unreplaced: {speck_untouched}")
+    if not speck_untouched:
+        print("  FAIL: the morphology pass did not drop the stray speck (it got replaced like real floor)")
+        ok = False
+    else:
+        print("  OK: stray speck inside upper region correctly dropped, not replaced")
+
+    if unified.size != uf_tile.size:
+        print("  FAIL: unify_floor changed the image size")
+        ok = False
+    else:
+        print("  OK: unify_floor preserved image size")
+
+    # unify_floor with classify_img: the tile was already pushed through an upper-terrain-only
+    # grade that also dragged its OWN floor pixels far outside floor_ref's palette tolerance (so
+    # classifying `img` itself would find nothing) -- classifying a pre-grade version instead
+    # should still find the right mask and replace with floor_ref in the post-grade image.
+    drifted_floor_color = (80, 60, 120)  # far from floor_ref's palette -- would NOT self-classify
+    drifted_upper_color = (10, 8, 15)
+    pre_grade_tile = uf_tile  # halo_color floor region / upper_color upper region, from above
+    post_grade_tile = Image.new("RGBA", (uf_size, uf_size), drifted_upper_color + (255,))
+    pgpx = post_grade_tile.load()
+    for y in range(uf_size):
+        for x in range(8):
+            pgpx[x, y] = drifted_floor_color + (255,)
+
+    unified_cr = unify_floor(post_grade_tile, floor_ref_img, tolerance=9.0, min_speck=3, min_hole=3,
+                              classify_img=pre_grade_tile)
+    ucrp = unified_cr.load()
+
+    cr_floor_matches = all(ucrp[x, y][:3] == frpx[x, y][:3] for y in range(uf_size) for x in range(8))
+    print(f"[selftest] unify_floor classify_img: floor region (classified pre-grade) replaced with floor_ref "
+          f"in the post-grade image: {cr_floor_matches}")
+    if not cr_floor_matches:
+        print("  FAIL: classify_img override did not find/replace the floor region in the post-grade tile")
+        ok = False
+    else:
+        print("  OK: classify_img override correctly located and replaced the floor region")
+
+    cr_upper_unchanged = all(ucrp[x, y][:3] == drifted_upper_color
+                              for y in range(uf_size) for x in range(8, uf_size))
+    print(f"[selftest] unify_floor classify_img: upper region kept the post-grade tile's own colour: "
+          f"{cr_upper_unchanged}")
+    if not cr_upper_unchanged:
+        print("  FAIL: classify_img override touched upper-terrain pixels it should have left alone")
+        ok = False
+    else:
+        print("  OK: upper region kept the post-grade tile's own colour, untouched")
+
+    # unify_floor's corner_mask guard: a SOLID upper-terrain tile (no floor corners at all) must
+    # stay completely untouched even when its own colours fully overlap the floor palette -- the
+    # exact failure mode a biome with a non-separable floor/upper palette hits (e.g. a pale fungal
+    # crust on rock sitting close, in Lab space, to a dark loam floor).
+    overlap_tile = Image.new("RGBA", (uf_size, uf_size), halo_color + (255,))  # entirely floor-
+                                                                                 # palette-coloured,
+                                                                                 # but this tile is
+                                                                                 # SUPPOSED to be
+                                                                                 # solid upper terrain
+
+    unguarded = unify_floor(overlap_tile, floor_ref_img, tolerance=9.0, min_speck=3, min_hole=3)
+    ugp = unguarded.load()
+    unguarded_changed = sum(1 for y in range(uf_size) for x in range(uf_size)
+                             if ugp[x, y][:3] != halo_color)
+    print(f"[selftest] unify_floor corner_mask guard: WITHOUT the guard, a colour-overlapping solid-upper "
+          f"tile gets {unguarded_changed}/{uf_size * uf_size} px wrongly replaced (reproduces the bug)")
+    if unguarded_changed == 0:
+        print("  WARN: the unguarded call didn't reproduce the overlap bug on this fixture -- "
+              "the guard checks below are less meaningful")
+
+    guarded = unify_floor(overlap_tile, floor_ref_img, tolerance=9.0, min_speck=3, min_hole=3,
+                           corner_mask=0, mask_bit="lower", min_floor_weight=0.3)
+    gp = guarded.load()
+    guarded_changed = sum(1 for y in range(uf_size) for x in range(uf_size)
+                           if gp[x, y][:3] != halo_color)
+    print(f"[selftest] unify_floor corner_mask guard: WITH corner_mask=0 mask_bit='lower' (solid upper, "
+          f"no floor corners), {guarded_changed}/{uf_size * uf_size} px replaced")
+    if guarded_changed != 0:
+        print("  FAIL: the corner_mask guard did not protect a solid-upper tile from colour-overlap "
+              "misclassification")
+        ok = False
+    else:
+        print("  OK: corner_mask guard kept a fully colour-overlapping solid-upper tile completely untouched")
+
+    guarded_upper_conv = unify_floor(overlap_tile, floor_ref_img, tolerance=9.0, min_speck=3, min_hole=3,
+                                      corner_mask=15, mask_bit="upper", min_floor_weight=0.3)
+    gucp = guarded_upper_conv.load()
+    guarded_upper_conv_changed = sum(1 for y in range(uf_size) for x in range(uf_size)
+                                      if gucp[x, y][:3] != halo_color)
+    print(f"[selftest] unify_floor corner_mask guard: mask_bit='upper' convention (corner_mask=15, same "
+          f"solid-upper geometry) also protects: {guarded_upper_conv_changed}/{uf_size * uf_size} px replaced")
+    if guarded_upper_conv_changed != 0:
+        print("  FAIL: mask_bit='upper' convention did not correctly identify the solid-upper corner mask")
+        ok = False
+    else:
+        print("  OK: mask_bit='upper' convention correctly protected the solid-upper tile too")
+
+    # sanity check: the guard must not block LEGITIMATE replacement on a genuine all-floor tile
+    guarded_floor = unify_floor(overlap_tile, floor_ref_img, tolerance=9.0, min_speck=3, min_hole=3,
+                                 corner_mask=15, mask_bit="lower", min_floor_weight=0.3)
+    gfp = guarded_floor.load()
+    guarded_floor_matches = all(gfp[x, y][:3] == frpx[x, y][:3] for y in range(uf_size) for x in range(uf_size))
+    print(f"[selftest] unify_floor corner_mask guard: a genuine all-floor tile (corner_mask=15, 'lower') "
+          f"still gets fully replaced: {guarded_floor_matches}")
+    if not guarded_floor_matches:
+        print("  FAIL: the corner_mask guard incorrectly blocked replacement on a genuine all-floor tile")
+        ok = False
+    else:
+        print("  OK: guard does not block legitimate replacement on an all-floor tile")
+
     print()
     print("SELFTEST " + ("PASSED" if ok else "FAILED"))
     return ok
@@ -1579,6 +1911,39 @@ def main(argv=None):
     p_fill.add_argument("--band", type=int, default=DEFAULT_BAND)
     p_fill.add_argument("--ratio-threshold", type=float, default=DEFAULT_EDGE_RATIO_THRESHOLD)
     p_fill.add_argument("--threshold", type=float, default=DEFAULT_BAND_THRESHOLD)
+
+    p_unify = sub.add_parser("unifyfloor")
+    p_unify.add_argument("input")
+    p_unify.add_argument("output")
+    p_unify.add_argument("--floor-ref", required=True, help="the repaired, graded pure-floor/mask-0 tile "
+                                                              "(supplies the FINAL replacement pixels)")
+    p_unify.add_argument("--classify-img", default=None,
+                          help="scan THIS image's per-pixel colours instead of <input>'s own (same size) -- "
+                               "for when <input> was already pushed through an upper-terrain-only grade that "
+                               "also moved its floor pixels out of any floor-palette tolerance; pass the "
+                               "pre-grade version of <input> here")
+    p_unify.add_argument("--classify-palette-ref", default=None,
+                          help="build the classification palette from THIS image instead of --floor-ref (same "
+                               "size) -- pair with --classify-img: pass the pre-grade floor reference here so "
+                               "the palette is tonally matched to --classify-img")
+    p_unify.add_argument("--tolerance", type=float, default=DEFAULT_UNIFYFLOOR_TOLERANCE)
+    p_unify.add_argument("--palette-colors", type=int, default=DEFAULT_UNIFYFLOOR_PALETTE_COLORS)
+    p_unify.add_argument("--min-speck", type=int, default=DEFAULT_UNIFYFLOOR_MIN_SPECK)
+    p_unify.add_argument("--min-hole", type=int, default=DEFAULT_UNIFYFLOOR_MIN_HOLE)
+    p_unify.add_argument("--corner-mask", type=int, default=None, choices=range(16), metavar="0-15",
+                          help="OPT-IN geometric guard: <input>'s own known corner-set mask. Omit this "
+                               "(the default) to reproduce prior unifyfloor behaviour exactly -- with it, "
+                               "a pixel is only replaced if it's ALSO within --min-floor-weight of the "
+                               "tile's geometric floor region, so a solid upper-terrain tile (no floor "
+                               "corners) can never be touched even if its palette overlaps the floor's")
+    p_unify.add_argument("--mask-bit", choices=["lower", "upper"], default="lower",
+                          help="bit convention of --corner-mask: 'lower' (bit=1 -> floor corner, "
+                               "PixelLab's raw placement_rules/tile_N convention, default) or 'upper' "
+                               "(bit=1 -> upper-terrain corner, the packed manifest's stored convention)")
+    p_unify.add_argument("--min-floor-weight", type=float, default=DEFAULT_UNIFYFLOOR_MIN_FLOOR_WEIGHT,
+                          help="only used with --corner-mask: minimum bilinear corner-geometry floor "
+                               "weight (0..1) a pixel needs, in addition to the colour classification, "
+                               "to be replaced")
 
     p_sheet = sub.add_parser("sheet")
     p_sheet.add_argument("input_dir")
@@ -1704,6 +2069,22 @@ def main(argv=None):
         print(f"edge/interior ratio: col={grad['col_ratio']:.2f} row={grad['row_ratio']:.2f}")
         status = "OK" if max(band) <= args.threshold else "WARN"
         print(f"{status}: band_score (max axis) {max(band):.3f} vs threshold {args.threshold}")
+
+    elif args.cmd == "unifyfloor":
+        img = Image.open(args.input)
+        floor_ref = Image.open(args.floor_ref)
+        classify_img = Image.open(args.classify_img) if args.classify_img else None
+        classify_ref = Image.open(args.classify_palette_ref) if args.classify_palette_ref else None
+        out_img = unify_floor(img, floor_ref, tolerance=args.tolerance, palette_colors=args.palette_colors,
+                               min_speck=args.min_speck, min_hole=args.min_hole,
+                               classify_img=classify_img, classify_ref=classify_ref,
+                               corner_mask=args.corner_mask, mask_bit=args.mask_bit,
+                               min_floor_weight=args.min_floor_weight)
+        out_img.save(args.output)
+        before_rgb = [p[:3] for p in img.convert("RGBA").getdata()]
+        after_rgb = [p[:3] for p in out_img.getdata()]
+        changed = sum(1 for a, b in zip(before_rgb, after_rgb) if a != b)
+        print(f"floor pixels replaced: {changed}/{len(before_rgb)} ({changed / len(before_rgb) * 100:.1f}%)")
 
     elif args.cmd == "sheet":
         sheet = build_contact_sheet(args.input_dir)

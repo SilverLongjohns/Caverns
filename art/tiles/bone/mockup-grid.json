@@ -1,0 +1,26 @@
+{
+  "width": 12,
+  "height": 9,
+  "tiles": [
+    ["wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"],
+    ["wall","floor","floor","floor","floor","floor","floor","floor","floor","floor","floor","wall"],
+    ["wall","floor","floor","pillar","floor","floor","floor","floor","floor","floor","floor","wall"],
+    ["wall","floor","floor","floor","floor","floor","floor","floor","floor","floor","floor","wall"],
+    ["wall","floor","floor","floor","floor","hazard","floor","pillar","pillar","floor","floor","wall"],
+    ["wall","floor","floor","floor","floor","floor","floor","pillar","pillar","floor","floor","wall"],
+    ["wall","floor","floor","floor","floor","floor","floor","floor","floor","floor","exit","wall"],
+    ["wall","floor","floor","floor","floor","floor","floor","floor","floor","floor","floor","wall"],
+    ["wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"]
+  ],
+  "themes": [
+    [null,null,null,null,null,null,"torch",null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null,null,null]
+  ]
+}

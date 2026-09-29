@@ -1,0 +1,22 @@
+{
+  "tileSize": 24,
+  "sets": {
+    "rock": { "dir": "art/tiles/crystal/work/v2/graded/rock", "pattern": "tile_{i}.png", "maskBit": "lower" },
+    "water": { "dir": "art/tiles/crystal/work/v2/graded/water", "pattern": "tile_{i}.png", "maskBit": "lower" }
+  },
+  "floorVariants": [
+    "art/tiles/crystal/work/v2/graded/floor_variants/fracture.png",
+    "art/tiles/crystal/work/v2/graded/floor_variants/shards.png",
+    "art/tiles/crystal/work/v2/graded/floor_variants/crust.png",
+    "art/tiles/crystal/work/v2/graded/floor_variants/conduit.png",
+    "art/tiles/crystal/work/v2/graded/floor_variants/glint.png"
+  ],
+  "stamps": {
+    "hazard": "art/tiles/crystal/work/stamps_cutout/hazard.png",
+    "bridge_h": "art/tiles/crystal/work/stamps_cutout/bridge_h.png",
+    "bridge_v": "art/tiles/crystal/work/stamps_cutout/bridge_v.png",
+    "exit": "art/tiles/crystal/work/stamps_cutout/exit.png",
+    "torch": "art/tiles/crystal/work/v2/stamps_cutout/torch.png"
+  },
+  "desaturate": 0.0
+}

@@ -113,6 +113,8 @@ export class GameSession {
   private solvedPuzzles = new Set<string>();
   private activePuzzleSolver = new Map<string, string>(); // roomId -> playerId
   private combats = new Map<string, ArenaCombatManager>();
+  // Fights whose end is already scheduled: a completed fight can reach afterCombatTurn again (a stale mob-turn timer).
+  private endingCombats = new WeakSet<ArenaCombatManager>();
   private playerManager = new PlayerManager();
   private lootManager: LootManager;
   private content: DungeonContent;
@@ -1383,8 +1385,10 @@ export class GameSession {
     if (combat.isComplete()) {
       const result = combat.getResult();
       // Delay combat end on victory so the client disintegration animation plays
+      if (this.endingCombats.has(combat)) return;
+      this.endingCombats.add(combat);
       const delay = (result === 'victory' ? this.timing.victoryDelayMs : 0) + extraDelayMs;
-      setTimeout(() => this.finishCombat(roomId, result as 'victory' | 'flee' | 'wipe'), delay);
+      setTimeout(() => this.finishCombat(roomId, result as 'victory' | 'flee' | 'wipe', combat), delay);
       return;
     }
     const currentId = combat.getCurrentTurnId();
@@ -1407,9 +1411,11 @@ export class GameSession {
     }
   }
 
-  private finishCombat(roomId: string, result: 'victory' | 'flee' | 'wipe'): void {
+  private finishCombat(roomId: string, result: 'victory' | 'flee' | 'wipe', ending?: ArenaCombatManager): void {
     if (this.disposed) return;
     const combat = this.combats.get(roomId);
+    // A late timer for a fight that already ended (or was replaced) must not end the room's current state.
+    if (ending && combat !== ending) return;
     if (combat) {
       const consumed = combat.getConsumedEffects();
       for (const [playerId, effects] of consumed) {
@@ -1445,7 +1451,7 @@ export class GameSession {
       const room = this.rooms.get(roomId);
       const skullRating = room?.encounter?.skullRating ?? 1;
       const baseXp = PROGRESSION_CONFIG.xpPerSkull[String(skullRating)] ?? PROGRESSION_CONFIG.xpPerSkull['1'] ?? 0;
-      const allParticipants = combat!.getParticipantsArray();
+      const allParticipants = combat?.getParticipantsArray() ?? [];
       const combatMobCount = allParticipants.filter(p => p.type === 'mob').length;
       const addCount = Math.max(0, combatMobCount - 1);
       const xpAmount = baseXp + (addCount * ENCOUNTER_CONFIG.addXpBonus);

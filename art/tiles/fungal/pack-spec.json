@@ -1,0 +1,22 @@
+{
+  "tileSize": 24,
+  "sets": {
+    "rock": { "dir": "art/tiles/fungal/work/graded_v2/rock", "pattern": "tile_{i}.png", "maskBit": "lower" },
+    "water": { "dir": "art/tiles/fungal/work/graded_v2/water", "pattern": "tile_{i}.png", "maskBit": "lower" }
+  },
+  "floorVariants": [
+    "art/tiles/fungal/work/graded_v2/floor_variants/mushroom.png",
+    "art/tiles/fungal/work/graded_v2/floor_variants/bracket.png",
+    "art/tiles/fungal/work/graded_v2/floor_variants/web.png",
+    "art/tiles/fungal/work/graded_v2/floor_variants/glowcap.png",
+    "art/tiles/fungal/work/graded_v2/floor_variants/puffball.png"
+  ],
+  "stamps": {
+    "hazard": "art/tiles/fungal/work/stamps_cutout/hazard.png",
+    "bridge_h": "art/tiles/fungal/work/stamps_cutout/bridge_h.png",
+    "bridge_v": "art/tiles/fungal/work/stamps_cutout/bridge_v.png",
+    "exit": "art/tiles/fungal/work/stamps_cutout/exit.png",
+    "torch": "art/tiles/fungal/work/stamps_cutout/torch.png"
+  },
+  "desaturate": 0.0
+}

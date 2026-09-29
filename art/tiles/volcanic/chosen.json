@@ -1,0 +1,384 @@
+{
+  "biome": "volcanic",
+  "tileSize": 24,
+  "approved": "2026-09-29, approved by user as-is and installed to client/public/tiles/volcanic",
+  "buildSpec": "art/tiles/volcanic/pack-spec.json (run: python3 scripts/tiles/pack.py art/tiles/volcanic/pack-spec.json art/tiles/volcanic/pack)",
+  "bitConvention": "same as starter (art/tiles/starter/chosen.json): storedMask = 15 - fileIndex, maskBit=lower, verified against the rock set: raw tile_15 (all corners = first-listed/floor terrain) -> stored mask 0 (pure floor); raw tile_0 -> stored mask 15 (pure rock/upper). Confirmed visually via art/tiles/volcanic/_sheet.png (rock_m0 = floor, rock_m15 = solid obsidian; chasm_m0 = floor, chasm_m15 = solid lava).",
+  "sets": {
+    "rock": {
+      "jobId": "abc07da4-d934-4ac8-97c1-41d2d28544c1",
+      "prompt": "1). cracked dark basalt cave floor with faint glowing ember seams, charcoal and dull red 2). glossy black obsidian and basalt rock mass, sharp facets, near-black in shadow, a few scorched relic-tech girders",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/volcanic/raw/rock",
+      "postProcess": "tile_15 (pure-floor tile) seam-repaired -> work/floor_repaired.png, then graded; all 16 tiles graded identically with the family transform below"
+    },
+    "chasm": {
+      "jobId": "c0ff1921-37f9-47e9-a95a-f780cc4e5d06 (REROLL 1 -- supersedes the original 43fb4426 job; see reroll1 below)",
+      "prompt": "1). cracked dark basalt cave floor with faint glowing ember seams, charcoal and dull red 2). deep rift chasm, jagged dark basalt lip falling away into darkness, dim molten orange glow far below",
+      "params": {
+        "tool": "create_tiles_pro",
+        "tile_feature": "tileset",
+        "tile_type": "square_topdown",
+        "tile_view": "top-down",
+        "tile_size": 24,
+        "outline_mode": "segmentation"
+      },
+      "rawDir": "art/tiles/volcanic/raw/chasm_reroll",
+      "postProcess": "all 16 tiles graded identically with the family transform (no seam repair -- chasm's own mask-0/pure-floor tile is never looked up by autotile.ts, which always routes an all-floor vertex to rock, same as starter); 7 of the 16 raw tiles had a corner-geometry defect and were reconstructed by direct compositing (see reroll1.chasmGeometryFix); unifyfloor applied to all 16 (see reroll1.unifyFloor); tile_0 (pure chasm, stored mask 15) additionally got the 'fill' treatment (see below, re-run after the reroll)"
+    }
+  },
+  "floorVariants": {
+    "jobId": "43b05573-7787-42d0-9d21-4cbce8f10b3f",
+    "prompt": "1). cracked dark basalt cave floor with a bright glowing ember crack running through it, charcoal and dull red palette 2). cracked dark basalt cave floor scattered with fine cinders and ash, charcoal and dull red palette 3). cracked dark basalt cave floor with a ripple of cooled dark lava rock, charcoal and dull red palette 4). cracked dark basalt cave floor with a half-buried scorched relic-tech girder across it, charcoal and dull red palette 5). cracked dark basalt cave floor with one tiny glowing ember, charcoal and dull red palette",
+    "note": "shape mode, single job, all 5 picks came from this one 16-tile canvas -- no supplemental needed",
+    "picks": {
+      "crack (ember-glowing crack)": "tile_1",
+      "cinders (scattered cinders and ash)": "tile_6",
+      "ripple (cooled lava ripple)": "tile_14",
+      "girder (half-buried scorched relic-tech girder)": "tile_9",
+      "ember (one tiny glowing ember)": "tile_5"
+    },
+    "postProcess": "each variant: postprocess.py match against work/floor_repaired.png (palette_match, hue-preserving) -> work/matched_variants/<name>.png, THEN graded identically to the corner sets -> work/graded/floor_variants/<name>.png",
+    "matchScores": {
+      "crack": {
+        "meanDiffVsRefPct": 0.22,
+        "stdRetainedPct": 73.5
+      },
+      "cinders": {
+        "meanDiffVsRefPct": 0.17,
+        "stdRetainedPct": 99.9
+      },
+      "ripple": {
+        "meanDiffVsRefPct": 0.15,
+        "stdRetainedPct": 80.1
+      },
+      "girder": {
+        "meanDiffVsRefPct": 1.01,
+        "stdRetainedPct": 100.6
+      },
+      "ember": {
+        "meanDiffVsRefPct": 0.53,
+        "stdRetainedPct": 95.1
+      }
+    }
+  },
+  "seam": {
+    "tile": "rock tile_15 (raw file index 15, the pure-floor tile)",
+    "beforeRepair": {
+      "band_score_col": 3.945,
+      "band_score_row": 3.514
+    },
+    "afterRepair": {
+      "band_score_col": 0.137,
+      "band_score_row": 0.32
+    },
+    "threshold": 1.0,
+    "command": "python3 scripts/tiles/postprocess.py seam art/tiles/volcanic/raw/rock/tile_15.png --repair art/tiles/volcanic/work/floor_repaired.png"
+  },
+  "grade": {
+    "reason": "brief instruction: 'the biome sits at a similar darkness to starter (starter's graded floor L~=21.7; keep your biome's own hue -- use a chroma scale that keeps the biome's identity readable, don't flatten it to grey)'. Since volcanic has no approved spike mockup to sample a reference crop from (unlike starter's mock-A2 round-2 fix), the reference was a synthetic Lab target instead of a reference image crop: a solid swatch (art/tiles/volcanic/work/grade_ref.png) constructed to have mean L=21.65, mean chroma=6.72 (matching starter's darkness target almost exactly, at chroma similar to starter's OWN reference chroma of 6.43 -- deliberately not scaled down further, since our raw floor sample chroma (5.00) was already much lower than starter's raw sample chroma (12.79), so crushing it further would flatten the ember-red identity to grey).",
+    "tool": "postprocess.py grade / compute_grade / apply_grade -- ONE (l_offset, chroma_scale) transform in CIE Lab, applied identically to every tile in the family",
+    "sample": "art/tiles/volcanic/work/floor_repaired.png (the seam-repaired rock tile_15)",
+    "reference": "art/tiles/volcanic/work/grade_ref.png (synthetic 8x8 solid swatch, RGB (62,49,46), constructed to hit target L/chroma -- see reason above; only its aggregate mean L/chroma are used by compute_grade, not its color/hue, since apply_grade scales the SAMPLE's own a/b channels, preserving the biome's own red-orange hue)",
+    "transform": {
+      "sample_L": 12.51,
+      "sample_chroma": 5.0,
+      "ref_L": 21.65,
+      "ref_chroma": 6.72,
+      "l_offset": 9.14,
+      "chroma_scale": 1.345
+    },
+    "appliedTo": "all 16 rock + 16 chasm corner-set tiles, and all 5 floor variants (37 tiles) -- NOT applied to stamps (they keep their own accent colours, matching starter's ruling)",
+    "note": "the raw generation came out darker than starter's raw sample (L 12.51 vs starter's 27.12) and less saturated (chroma 5.00 vs starter's 12.79), so unlike starter (which DARKENED and desaturated toward its target), volcanic's transform LIGHTENS (+9.14 L) and BOOSTS chroma (x1.345) to reach the same ~21.7 darkness target while keeping the ember-red identity readable rather than crushing it further."
+  },
+  "fill": {
+    "reason": "same lattice risk as starter's water/chasm fix (see art/tiles/starter/chosen.json fill.reason): chasm's fully-surrounded tile (raw tile_0, stored mask 15) is the ONE corner-set tile placed edge-to-edge against copies of itself many times in a wide chasm band -- checked visually in a 4x4 tiled preview and the room mockup (a 2-cell-tall chasm column either side of the bridge), no lattice/banding visible.",
+    "command": "python3 scripts/tiles/postprocess.py fill art/tiles/volcanic/work/graded/chasm/tile_0.png --amplitude 6 --inset 8 --seed 0 --repair art/tiles/volcanic/work/graded/chasm/tile_0.png",
+    "appliedTo": {
+      "chasm": {
+        "file": "art/tiles/volcanic/work/graded/chasm/tile_0.png (stored mask 15, maskBit=lower so fileIndex 0)",
+        "band_score_after": {
+          "col": 0.151,
+          "row": 0.13
+        }
+      }
+    },
+    "threshold": 1.0,
+    "verification": "4x4 tiled preview (postprocess.py preview --reps 4 --scale 10 -> art/tiles/volcanic/work/chasm_fill_tiled_preview.png) and the real room mockup (_mock.png) -- no lattice visible in either.",
+    "note": "re-run identically after reroll1's chasm regeneration/regrade -- tile_0 itself was one of the 9 raw tiles that generated correctly (not one of the 7 reconstructed masks), so fill still runs on genuine AI-generated pure-chasm art, not a synthetic tile. band_score after re-run: col=0.127, row=0.150 -- unchanged within noise."
+  },
+  "reroll1": {
+    "date": "user review after the initial gate: walls/floor/torch/bridges approved, chasm/hazard/exit sent back",
+    "instructions": "chasm read as a flat bright lava river (wanted a darker, less saturated 'deep rift' with a visible dark lip); hazard was a small blob (wanted 'fills most of the tile'); exit was an opaque grey box that didn't blend with the floor (wanted starter's framing prompt, cut out so it sits in the scene); also check for/fix any floor halo around the chasm using the new postprocess.py unifyfloor subcommand if it exists",
+    "chasmGeometryFix": {
+      "problem": "the reroll's raw 16-tile chasm canvas had a real generation defect, not a cosmetic issue: 7 of the 16 mask tiles (raw file indices 2, 3, 4, 8, 10, 12, 14) rendered with the WRONG corner geometry -- masks 2/3/4 came out 100% floor (should have been 50-75% chasm), and masks 8/10/12/14 had chasm bleeding into or missing from the wrong quadrant (confirmed by sampling each quadrant's Lab-space redness against the expected NW/NE/SW/SE floor-or-chasm bit pattern from the job's own placement_rules -- see the per-tile verdict table run during this session). The other 9 tiles (0, 1, 5, 6, 7, 9, 11, 13, 15) matched their mask's expected geometry correctly.",
+      "whyNotRerolled": "a second full reroll of the chasm job risked the same defect recurring on a different subset of masks, and the ~$0.80 budget for this whole reroll (chasm + hazard + exit, already 3 jobs in) had too little headroom left for a 4th generation job after the first 3 (balance already at $12.42 of the ~$0.67 spent).",
+      "fix": "reconstructed the 7 broken mask tiles by direct quadrant compositing instead of a 4th generation call: verified (via the correctly-generated tiles, e.g. raw tile_8's own boundary) that this style's corner transitions fall almost exactly on the 12x12 quadrant grid the autotiler itself uses (each cell quadrant is a clean 12x12 quarter-crop of a vertex tile, per client/src/terrain/autotile.ts), so a geometrically-correct tile can be built by pasting the graded pure-floor tile (work/graded/rock/tile_15.png) and the graded+filled pure-chasm tile (work/graded/chasm/tile_0.png) into the correct quadrants for that mask's bit pattern, with a small +/-1px random dither along the two seam lines (deterministic per-tile seed) so the join isn't a razor-straight cut. Zero PixelLab spend. Re-verified afterwards: all 16 graded chasm tiles now match their expected mask geometry (checked per-quadrant against both the floor and chasm reference colours in Lab space).",
+      "affectedMasks": [
+        2,
+        3,
+        4,
+        8,
+        10,
+        12,
+        14
+      ],
+      "unaffectedMasks": [
+        0,
+        1,
+        5,
+        6,
+        7,
+        9,
+        11,
+        13,
+        15
+      ]
+    },
+    "unifyFloor": {
+      "toolAvailability": "scripts/tiles/postprocess.py unifyfloor existed by the time this reroll started (added by the crystal biome's agent in the same session, per the coordinator's instruction) -- used as-is, not reimplemented.",
+      "haloFound": "yes, clearly visible in the first re-rendered _mock.png: a rectangular grey-purple halo bounding the whole chasm column/band, distinct from the surrounding basalt floor -- the floor-region pixels baked into each organically-generated chasm corner tile didn't match work/graded/rock/tile_15.png's exact grain/tone.",
+      "tuning": "the documented default tolerance (9) was too aggressive for this palette pair -- at tolerance>=5 the Lab distance between the graded chasm colour and the graded floor colour is small enough that whole chasm masses got misclassified as 'floor' and replaced outright on several tiles (confirmed on a throwaway test: tile_2 at tolerance 5 replaced 98.6% of the tile, erasing all chasm content). Settled on --tolerance 5 as the highest value that still left tile_0 (pure chasm) at 0% replaced across every tile tested, while correctly picking up 27-75% of each mixed tile (matching each mask's actual floor proportion) -- verified individually per tile before the batch run, not just trusted at face value.",
+      "command": "python3 scripts/tiles/postprocess.py unifyfloor <tile> --floor-ref art/tiles/volcanic/work/graded/rock/tile_15.png --tolerance 5 <tile> (run on all 16 graded chasm tiles, in place, after the geometry fix and before the fill re-run)",
+      "verification": "re-rendered _mock.png -- halo is gone, chasm column/band now reads flush against the surrounding floor with no rectangular tint mismatch."
+    },
+    "hazard": {
+      "jobId": "23dbe918-373f-4447-8339-e0103776b2c8",
+      "prompt": "1). bubbling pool of molten lava with a dark crust rim, fills most of the tile, on basalt floor",
+      "pick": "tile_1 (dark crust rim visible on all four sides, bright bubbling orange interior, fills ~74% of the tile after cutout -- picked from a batch where all 16 tiles were similarly large/usable, unlike the original job where most candidates were full-bleed lava with no separable rim)",
+      "rawSource": "art/tiles/volcanic/raw/hazard_reroll/tile_1.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      },
+      "result": "26.4% of the tile cut to transparent (the crust-rim corners), 73.6% opaque lava -- reads as a large, unambiguous hazard, not a small blob."
+    },
+    "exit": {
+      "jobId": "38bd68de-90a1-40aa-8727-8a49e05502d7",
+      "prompt": "1). basalt archway, doorway filled with solid black void, threshold with a faint arrow scratched into the floor",
+      "pick": "tile_12 (symmetric archway, dark void centred, visible floor threshold with a clear arrow scratch mark at the bottom)",
+      "rawSource": "art/tiles/volcanic/raw/exit_reroll/tile_12.png",
+      "cutoutAttempted": "yes, extensively -- tried tolerance 1 through 12, sides=all/top/bottom/top+bottom/left, with and without --keep-dark. Every setting either removed near-nothing (<5%) or collapsed catastrophically (51-100% removed, eating large asymmetric chunks of the frame, confirmed with alpha-map dumps). Root cause, confirmed by a full luma-map scan of the raw tile: the stone frame is a continuous shaded material that reaches all four tile edges with no separable flat background anywhere (same finding starter documented for its own exit art, despite this being a different/newer generation). A postprocess.py bug was also hit along the way (cutout_removed_fraction throws IndexError at several low tolerances on this tile when --keep-dark is set) and worked around by avoiding that parameter combination, not by patching the shared script.",
+      "cutoutOutcome": "NOT achieved as literal alpha transparency -- shipped fully opaque, same as starter's own final exit and the original volcanic gate. What WAS fixed: the raw tile's colour (cold stone grey-purple, RGB ~(38,30,50)) badly mismatched our basalt/obsidian palette, which is almost certainly why it read as 'an opaque grey box' -- palette_match'd the whole tile against work/graded/rock/tile_15.png (our basalt floor) to pull it into the biome's warm brown-grey range (mean diff vs ref 1.23%, std retained 92.2%, so archway/void contrast and the arrow mark stayed legible), then clamped alpha to 255. Visually confirmed in the re-rendered _mock.png: the archway now blends into the basalt floor/obsidian wall around it instead of reading as a mismatched box.",
+      "flagForUser": "the literal 'cut it out' instruction could not be satisfied for this stamp -- see cutoutAttempted above. If true transparency at the corners is a hard requirement, it needs either a differently-composed prompt (an archway with the frame NOT reaching all four edges, e.g. explicitly asking for basalt floor visible in the corners) or a manual/geometric alpha mask rather than colour-distance cutout."
+    },
+    "repack": "python3 scripts/tiles/pack.py art/tiles/volcanic/pack-spec.json art/tiles/volcanic/pack (paths unchanged, contents updated in place)",
+    "regate": "_sheet.png and _mock.png both re-rendered after the fixes (same commands as the original gate); _mock.png re-inspected close-up on the chasm column/band, the exit, and the hazard.",
+    "spend": {
+      "balanceBeforeReroll": 13.09,
+      "balanceAfterReroll": 12.42,
+      "spent": 0.67,
+      "ceiling": 0.8,
+      "jobs": [
+        "chasm reroll c0ff1921",
+        "hazard reroll 23dbe918",
+        "exit reroll 38bd68de"
+      ],
+      "rerolls": 0
+    }
+  },
+  "revert1": {
+    "date": "user review after reroll1: walls/floor/torch/bridges/exit approved (exit specifically: 'keep it as is'); chasm and hazard sent back a second time",
+    "instructions": "reroll1's chasm read as flat dull maroon strips ('like red carpet or a floor stain'), no depth/lip/glow; reroll1's hazard was a hard-edged orange square, not a pool. User approved these fixes with ZERO new PixelLab spend: (1) revert chasm to the ROUND-1 raw generation (job 43fb4426, art/tiles/volcanic/raw/chasm -- the original, pre-reroll1 raw tiles, which had real shape and a strong glow, just too bright/flat/loud), then fix purely with post-processing: tone down the lava (darken+desaturate, chasm-classified pixels only, floor half stays matched to plain floor), add a dark basalt lip near the floor boundary (consistent across all 16 masks), keep mask-15 lattice-free (fill) and keep the unifyfloor halo fix; (2) give the hazard stamp a rounded organic alpha mask (irregular blob, ~60-70% coverage, darker crust ring, transparent corners), deterministic, no new generation; (3) exit unchanged.",
+    "chasmRevert": {
+      "rawDirRestored": "art/tiles/volcanic/raw/chasm (round-1's original raw tiles, job 43fb4426-ec76-4058-be0e-3740c1605700 -- untouched on disk the whole time, reroll1 had generated into a SEPARATE raw/chasm_reroll dir, so no PixelLab call was needed to go back to round-1's art). reroll1's raw/chasm_reroll and its now-superseded graded output are left on disk for provenance but no longer referenced by pack-spec.json.",
+      "geometryNote": "unlike reroll1's raw set, all 16 of round-1's raw tiles have correct, distinct corner geometry (verified visually against each mask's expected floor/chasm quadrant split before starting) -- no reconstruction needed this time, only colour post-processing."
+    },
+    "chasmToneDown": {
+      "reason": "round-1's graded chasm (base family transform l_offset=+9.14, chroma_scale=1.345, same as rock/floor) measured L=49.17, chroma=93.77 on the pure-chasm tile -- versus the graded floor's L=21.66, chroma=6.57. That ~28 L and ~87 chroma gap is exactly why it read as 'the loudest thing on screen': applying the SAME family transform used for floor to chasm's own already-vivid raw colour just amplified it further.",
+      "approach": "classified every pixel of each base-graded tile as floor-or-chasm via Lab distance to a floor reference (work/graded/rock/tile_15.png centre) vs a chasm reference (round-1's own base-graded tile_0 centre) -- NOT the family transform's blanket ref, a dedicated per-pixel classifier so floor pixels are left exactly as already graded (matched to the plain floor) and only chasm-classified pixels get the extra tone-down.",
+      "chasmOnlyTransform": {
+        "l_offset": -19.0,
+        "chroma_scale": 0.32,
+        "appliedTo": "chasm-classified pixels only, relative to their OWN current (already family-graded) Lab value",
+        "status": "SUPERSEDED -- see chasmToneDownCorrection. User review: this went too far, reading as 'a rusty-brown dirt trench, not magma far below' -- the orange glow was almost gone."
+      },
+      "result": "pure-chasm tile mean dropped from L=49.17/chroma=93.77 to roughly L=30/chroma=30 -- in hindsight too aggressive (see correction below)."
+    },
+    "chasmToneDownCorrection": {
+      "reason": "user review of chasmToneDown (l_offset -19, chroma_scale 0.32): too dark/desaturated, read as dirt/rust rather than molten glow. Asked to ease to about half the original strength, e.g. chroma_scale ~0.55-0.6 and l_offset ~-10, try two settings and pick.",
+      "approach": "re-ran the exact same classify-then-tone-down script from work/graded_r1_base (the round-1 base-graded tiles, untouched since chasmToneDown/chasmRevert -- no re-classification or re-grading needed, just a different chasm-only transform), with the lip script's LIP_* constants completely unchanged (as instructed: 'keep the lip exactly as it is').",
+      "candidatesTried": {
+        "A": {
+          "l_offset": -10,
+          "chroma_scale": 0.55,
+          "pureChasmResult": {
+            "L": 39.15,
+            "chroma": 51.62
+          }
+        },
+        "B": {
+          "l_offset": -10,
+          "chroma_scale": 0.6,
+          "pureChasmResult": {
+            "L": 39.15,
+            "chroma": 56.14
+          }
+        }
+      },
+      "comparison": "packed both candidates into scratch sheets, rendered the real room mockup for each (client/scripts/terrain-mockup.mts, unmodified), and viewed the vertical/horizontal chasm channels side by side plus the full room. Both read as a clearly molten orange-red glow (nowhere near round-1's original L=49.17/chroma=93.77 loudness, nowhere near chasmToneDown's over-darkened rust). B was slightly more vivid/saturated than A while still clearly toned down -- picked B for reading more unambiguously as 'glowing magma' rather than 'muted ember'.",
+      "chosen": {
+        "l_offset": -10,
+        "chroma_scale": 0.6,
+        "pureChasmResult": {
+          "L": 39.53,
+          "chroma": 56.34
+        },
+        "forComparison": {
+          "roundOneOriginal": {
+            "L": 49.17,
+            "chroma": 93.77
+          },
+          "flooor": {
+            "L": 21.66,
+            "chroma": 6.57
+          },
+          "chasmToneDownTooAggressive": {
+            "L": "~30",
+            "chroma": "~30"
+          }
+        }
+      },
+      "reappliedFillAndUnifyfloor": "fill re-run on the new tile_0 (band_score after: col=0.077, row=0.171, threshold 1.0); unifyfloor re-run on all 16 tiles at the same tolerance 5 (no change needed to the tolerance)."
+    },
+    "chasmLip": {
+      "reason": "'a dark basalt lip ... near-black basalt falling toward the glow, so the edge reads as a drop', consistent across all 16 masks.",
+      "approach": "per tile, after classification: multi-source BFS pixel-distance transform from every floor-classified pixel to every chasm-classified pixel (grid distance, not just straight-line, so it follows each mask's actual boundary shape). Chasm pixels within 4px of the nearest floor pixel get a SECOND, additive darken/desaturate on top of the tone-down transform, linearly falling off with distance (strongest right at the boundary, none beyond 4px): l_offset up to -14 at distance 1, chroma_scale down to 0.55 (multiplicative) at distance 1.",
+      "consistency": "same fixed algorithm and parameters applied identically to all 16 tiles (deterministic, no per-tile tuning), so the lip reads the same wherever two tiles meet at a shared vertex.",
+      "verification": "bucketed the resulting L by distance-to-floor on a sample tile: dist=1 meanL=14.7, dist=2 meanL=18.0, dist=3 meanL=24.6, dist=4 meanL=30.2, dist>=5 meanL~29-32 (flat baseline) -- a clean monotonic darkening toward the boundary, not a hard ring. Confirmed visually in the room mockup close-up crops: a clear darker rim before the glow, reading as a drop-off.",
+      "tool": "one-off script (not a postprocess.py subcommand -- the brief's 'don't write your own' restriction was specifically about the unifyfloor subcommand, which was used as-is; this is bespoke per-biome art tooling like the mockup compositor)."
+    },
+    "chasmFillAndHalo": {
+      "fill": "re-ran fill on the new tile_0 (pure chasm, stored mask 15) after tone-down+lip: python3 scripts/tiles/postprocess.py fill ... --amplitude 6 --inset 8 --seed 0 --repair. band_score after: col=0.087, row=0.157 (threshold 1.0). Confirmed no lattice in a 4x4 tiled preview (work/chasm_fill_tiled_preview.png).",
+      "unifyfloor": "re-ran on all 16 tiles at the same tuned --tolerance 5 established in reroll1 (against work/graded/rock/tile_15.png). Re-checked seam band_score on tile_0 afterward: unchanged (col=0.087, row=0.157, tile_0 has 0% floor pixels so unifyfloor is a no-op there, as expected)."
+    },
+    "hazardBlobMask": {
+      "reason": "the reroll1 hazard (colour-distance cutout of hazard_reroll/tile_1.png) had a hard, roughly rectangular silhouette that read as a tile, not a pool.",
+      "approach": "deterministic geometric blob, no new generation: colour sampled from hazard_reroll/tile_1.png's OWN interior (inset-mapped so the raw tile's baked-in dark crust rim at ITS edges is never sampled, avoiding a double/misaligned crust), alpha decided by an irregular polar boundary r(theta) = 11.0 + fixed-coefficient sine harmonics (3 terms, hard-coded frequency/amplitude/phase, centre offset slightly off-tile-centre) -- an organic rounded blob, not a circle. A darker crust ring is painted (Lab darken+desaturate, falling off over ~2.6px) for pixels near the INSIDE of that same boundary, so the ring follows the blob's own irregular edge rather than a separate shape.",
+      "coverage": "66.5% of the 24x24 tile opaque (383/576px) -- inside the requested 60-70% range.",
+      "cleanalpha": "run for consistency (threshold 128, min_speck 3, min_hole 3) -- 0 pixels changed, the constructed mask was already clean binary alpha with no stray specks/holes.",
+      "tool": "one-off script, same rationale as the chasm lip script above -- not a postprocess.py subcommand."
+    },
+    "exit": "left untouched, per 'keep it as is' -- still reroll1's palette-matched, fully-opaque archway.",
+    "repack": "python3 scripts/tiles/pack.py art/tiles/volcanic/pack-spec.json art/tiles/volcanic/pack (paths unchanged, contents updated in place)",
+    "regate": "_sheet.png and _mock.png both re-rendered; _mock.png viewed in full and in close-up crops of the vertical/horizontal chasm channels and the hazard pool before reporting back.",
+    "spend": {
+      "balanceBefore": 12.42,
+      "balanceAfter": 12.42,
+      "spent": 0.0,
+      "pixelLabCalls": 0,
+      "note": "purely post-processing + one-off deterministic compositing scripts, as required -- no create_tiles_pro or other generation calls this round (including the chasmToneDownCorrection sub-round: balance still 12.42 -> 12.42)."
+    }
+  },
+  "stamps": {
+    "jobId": "502acf82-c163-4cf1-a92b-272ec17bec47 (single batch job for all 5 stamps)",
+    "prompt": "1). bubbling pool of bright molten lava on basalt floor 2). horizontal rusted iron grate bridge, seen from directly above, isolated 3). vertical rusted iron grate bridge, seen from directly above, isolated 4). basalt archway threshold with a faint arrow scratched into the floor 5). small wall-mounted brazier bracket, hot orange flame",
+    "note": "all 5 stamps picked from this ONE 16-tile canvas by inspection (items don't map to file-index order, same as starter) -- no rerolls or supplementals needed",
+    "hazard": {
+      "pick": "SUPERSEDED by reroll1.hazard -- the original tile_4 pick read as too small ('a small blob') per user review. See reroll1.hazard for the current pick (hazard_reroll/tile_1, new prompt emphasizing 'fills most of the tile').",
+      "rawSource": "art/tiles/volcanic/raw/stamps/tile_4.png (superseded)",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      }
+    },
+    "torch": {
+      "pick": "tile_14 (simple round wall-mounted brazier bowl with orange flame, clean render -- chosen over tile_15, whose bracket read as an odd face-like shape at 48px)",
+      "rawSource": "art/tiles/volcanic/raw/stamps/tile_14.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "all",
+        "feather": 0,
+        "clean": true
+      }
+    },
+    "bridge_h": {
+      "pick": "tile_8 (grate reaches the left/right/bottom edges, open basalt floor visible only at the top -- the correct orientation for a bridge spanning a chasm that runs north-south, crossed by walking east-west)",
+      "rawSource": "art/tiles/volcanic/raw/stamps/tile_8.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "top",
+        "feather": 0,
+        "clean": true
+      },
+      "sidesReason": "the grate is designed to reach the bottom/left/right edges (tiles along its span axis and its neighbours); trusting any side but 'top' as background risked the flood fill eating grate pixels that happen to match the background cluster"
+    },
+    "bridge_v": {
+      "pick": "tile_10 (grate reaches the top/right/bottom edges, open basalt floor visible only at the left -- the correct orientation for a bridge spanning a chasm that runs east-west, crossed by walking north-south). This is an independent generation, not a rotation of bridge_h -- unlike starter, this batch produced both orientations cleanly on the first try, confirmed by inspecting the raw tiles' background-strip position before cutout (see art/tiles/volcanic/raw/bridge_compare.png).",
+      "rawSource": "art/tiles/volcanic/raw/stamps/tile_10.png",
+      "cutout": {
+        "tolerance": 12,
+        "border": 1,
+        "sides": "left",
+        "feather": 0,
+        "clean": true
+      }
+    },
+    "exit": {
+      "pick": "SUPERSEDED by reroll1.exit -- the original tile_13 pick read as 'an opaque grey box' that didn't blend with the floor per user review. See reroll1.exit for the current pick (exit_reroll/tile_12, new prompt matching starter's exact framing, palette-matched to the basalt floor).",
+      "rawSource": "art/tiles/volcanic/raw/stamps/tile_13.png (superseded)",
+      "cutout": "NONE -- deliberately skipped, matching starter's ruling: the frame material has no separable flat background (a continuous shaded stone surface touching the tile edges), and the exit is a structural doorway meant to fill the cell. Shipped as the raw generated tile with every pixel's alpha clamped to 255."
+    },
+    "cleanalpha": {
+      "threshold": 128,
+      "min_speck": 3,
+      "min_hole": 3,
+      "appliedTo": [
+        "hazard",
+        "torch",
+        "bridge_h",
+        "bridge_v"
+      ]
+    }
+  },
+  "gate": {
+    "sheet": "art/tiles/volcanic/_sheet.png",
+    "sheetSource": "labeled crops sliced from the packed art/tiles/volcanic/pack/terrain.png via its terrain.json (rock_m<mask>, chasm_m<mask>, floorvar_<i>, stamp_<name>) into a scratch dir, then postprocess.py sheet -- same layout as starter's _sheet.png",
+    "mockupGrid": "art/tiles/volcanic/mockup-grid.json (14x12): obsidian rock border with a lone 1x1 pillar and a 2x2 pillar block, a floor-variant playground, a north-south chasm column crossed by a bridge_h (grate spans east-west), an east-west chasm band crossed by a bridge_v (grate spans north-south), a hazard pool, a basalt archway exit near the right wall, and a torch on the north wall",
+    "mock": "art/tiles/volcanic/_mock.png, rendered at 48px/cell via client/scripts/terrain-mockup.mts (the real autotile.ts/terrainDrawOps.ts, unmodified) -> art/tiles/volcanic/work/mock-ops.json, composited with .sandbox/tiles-biomes/composite_mock.py (plain PIL alpha_composite of the sx/sy/sw/sh -> dx/dy/dw/dh ops, per the mts file's own header-comment recipe)",
+    "reviewed": "read _sheet.png and _mock.png plus close-up crops of the bridge_h/bridge_v/exit stamps in the mockup -- no seams, no lattice on the pure-chasm tile, both bridge orientations read correctly against their respective chasm channels, torch/hazard/exit all read clearly at 48px",
+    "reroll1Reviewed": "re-rendered both gate artifacts after the reroll1 fixes and re-inspected close-up: chasm column/band reads as a dark maroon deep rift with no floor halo, hazard is a large clearly-visible pool, exit blends into the basalt palette (still fully opaque -- see reroll1.exit.flagForUser)."
+  },
+  "spend": {
+    "note": "the PixelLab account and credit balance are SHARED with other agents generating other biomes concurrently in this same session (crystal, bone), so a simple balance-delta does not isolate this biome's spend. Reporting job-cost estimates instead.",
+    "jobs": [
+      {
+        "job": "rock corner set",
+        "id": "abc07da4-d934-4ac8-97c1-41d2d28544c1"
+      },
+      {
+        "job": "chasm corner set",
+        "id": "43fb4426-ec76-4058-be0e-3740c1605700"
+      },
+      {
+        "job": "floor variants",
+        "id": "43b05573-7787-42d0-9d21-4cbce8f10b3f"
+      },
+      {
+        "job": "stamps batch",
+        "id": "502acf82-c163-4cf1-a92b-272ec17bec47"
+      }
+    ],
+    "rerolls": 0,
+    "balanceAtDispatchStart": 15.65,
+    "balanceAfterAllVolcanicJobsSubmitted": 14.13,
+    "ceiling": 1.6,
+    "estimateNote": "4 create_tiles_pro jobs at tile_size 24 (1K canvas, ~20 generations each per the tool's own cost estimate) with zero rerolls -- well within budget; starter's comparable round-1 generate (3 corner-set jobs) cost $0.86, so 4 jobs of the same class is plausibly ~$1.0-1.2, consistent with this session's total shared-account drop of $1.52 across all concurrently-running biome agents' jobs in the same window."
+  },
+  "rawMetadata": "job ids and full get_tiles_pro placement_rules recorded above; raw PNGs in art/tiles/volcanic/raw/{rock,chasm,floor_variants,stamps}/tile_0..15.png"
+}

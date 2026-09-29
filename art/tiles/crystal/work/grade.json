@@ -1,0 +1,19 @@
+{
+  "grade": {
+    "l_offset": -5.193853815193076,
+    "chroma_scale": 0.85,
+    "l_cur": 26.893853815193076,
+    "c_cur": 11.005532946204427
+  },
+  "sample_L": 26.893853815193076,
+  "sample_chroma": 11.005532946204427,
+  "target_L": 21.7,
+  "chroma_scale": 0.85,
+  "floorVariantPicks": {
+    "fracture": 1,
+    "shards": 6,
+    "crust": 9,
+    "conduit": 12,
+    "glint": 13
+  }
+}

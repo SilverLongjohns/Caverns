@@ -1,0 +1,21 @@
+{
+  "tileSize": 24,
+  "sets": {
+    "rock": { "dir": "art/tiles/bone/work/graded/rock", "pattern": "tile_{i}.png", "maskBit": "lower" }
+  },
+  "floorVariants": [
+    "art/tiles/bone/work/graded/floor_variants/bones.png",
+    "art/tiles/bone/work/graded/floor_variants/cracked.png",
+    "art/tiles/bone/work/graded/floor_variants/dust.png",
+    "art/tiles/bone/work/graded/floor_variants/plate.png",
+    "art/tiles/bone/work/graded/floor_variants/candle.png"
+  ],
+  "stamps": {
+    "hazard": "art/tiles/bone/work/stamps_cutout/hazard.png",
+    "bridge_h": "art/tiles/bone/work/stamps_cutout/bridge_h.png",
+    "bridge_v": "art/tiles/bone/work/stamps_cutout/bridge_v.png",
+    "exit": "art/tiles/bone/work/stamps_cutout/exit.png",
+    "torch": "art/tiles/bone/work/stamps_cutout/torch.png"
+  },
+  "desaturate": 0.0
+}

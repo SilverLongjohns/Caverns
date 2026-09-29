@@ -1,0 +1,21 @@
+{
+  "tileSize": 24,
+  "sets": {
+    "rock": { "dir": "art/tiles/flooded/work/graded/rock", "pattern": "tile_{i}.png", "maskBit": "lower" },
+    "water": { "dir": "art/tiles/flooded/work/graded/water", "pattern": "tile_{i}.png", "maskBit": "lower" }
+  },
+  "floorVariants": [
+    "art/tiles/flooded/work/graded/floor_variants/puddle.png",
+    "art/tiles/flooded/work/graded/floor_variants/algae.png",
+    "art/tiles/flooded/work/graded/floor_variants/pebbles.png",
+    "art/tiles/flooded/work/graded/floor_variants/cable.png"
+  ],
+  "stamps": {
+    "hazard": "art/tiles/flooded/work/stamps_cutout/hazard.png",
+    "bridge_h": "art/tiles/flooded/work/stamps_cutout/bridge_h.png",
+    "bridge_v": "art/tiles/flooded/work/stamps_cutout/bridge_v.png",
+    "exit": "art/tiles/flooded/work/stamps_cutout/exit.png",
+    "torch": "art/tiles/flooded/work/stamps_cutout/torch.png"
+  },
+  "desaturate": 0.0
+}

@@ -5,4 +5,40 @@
   "chasm": { "lower": "dark dusty cave floor, umber and charcoal grit, small gravel", "upper": "bottomless black chasm, jagged dark rock lip" },
   "variants": ["hairline cracks", "scattered gravel and rubble", "damp dark stain", "half-buried rusted relic-tech cable", "one tiny dim amber relic light"],
   "stamps": { "hazard": "glowing sickly-green toxic seep on cave floor", "bridge_h": "rickety horizontal plank-and-cable bridge", "bridge_v": "rickety vertical plank-and-cable bridge", "exit": "worn stone archway threshold with a faint arrow scratched into the floor", "torch": "small wall-mounted relic torch, warm amber flame" }
+},
+"crystal": {
+  "palette": "dark glassy slate and violet-grey cave floor, near-black violet-cyan crystal rock, low saturation with cold cyan/violet crystal glints and faint relic-tech wiring",
+  "rock":  { "lower": "dark glassy grit cave floor with tiny crystal shard glints, slate and violet-grey", "upper": "dark cave rock mass split by angular violet and cyan crystal clusters, near-black in shadow, faint embedded relic-tech wiring" },
+  "water": { "lower": "dark glassy grit cave floor with tiny crystal shard glints, slate and violet-grey", "upper": "still milky cyan mineral pool with pale crystalline crust at the edges" },
+  "variants": ["scattered small crystal shards", "hairline glowing violet fracture", "pale mineral crust patch", "half-buried relic-tech conduit with crystal growth", "one tiny cyan crystal glint"],
+  "stamps": { "hazard": "jagged crackling crystal shard spikes erupting from floor, cold cyan glow", "bridge_h": "narrow horizontal crystal-and-metal walkway bridge", "bridge_v": "narrow vertical crystal-and-metal walkway bridge", "exit": "crystal-framed stone archway threshold with a faint arrow scratched into the floor", "torch": "small wall-mounted glowing crystal lamp, cold violet light" }
+},
+"bone": {
+  "palette": "dark ash-grey and bone-yellow catacomb floor, near-black packed-bone wall, low saturation, faint sickly-green and dim amber relic-tech accents",
+  "generation": "structured (built halls, sub-rooms) -- no water/chasm/hazard-terrain themes; rock set only",
+  "rock":  { "lower": "worn catacomb flagstone floor dusted with pale bone dust, dark ash-grey and bone-yellow", "upper": "ossuary wall mass of packed skulls and long bones set in dark mortar, near-black in shadow, a few rusted relic-tech brackets" },
+  "variants": ["scattered small bones", "cracked flagstone", "pale bone-dust drift", "half-buried rusted relic-tech plate", "one tiny dim amber relic candle-light"],
+  "stamps": { "hazard": "sickly green grave-rot seep between flagstones", "bridge_h": "narrow horizontal bridge of lashed long bones", "bridge_v": "narrow vertical bridge of lashed long bones", "exit": "ossuary archway of stacked skulls, threshold with a faint arrow scratched into the floor", "torch": "small wall-mounted bone candle sconce, warm amber flame" }
+},
+"volcanic": {
+  "palette": "charcoal and near-black obsidian rock, cracked dark basalt floor, dull red and orange ember accents, molten magma-orange glow at hazards and chasm",
+  "rock":  { "lower": "cracked dark basalt cave floor with faint glowing ember seams, charcoal and dull red", "upper": "glossy black obsidian and basalt rock mass, sharp facets, near-black in shadow, a few scorched relic-tech girders" },
+  "chasm": { "lower": "cracked dark basalt cave floor with faint glowing ember seams, charcoal and dull red", "upper": "deep rift chasm glowing molten magma-orange far below, jagged basalt lip" },
+  "variants": ["ember-glowing crack", "scattered cinders and ash", "cooled lava ripple", "half-buried scorched relic-tech girder", "one tiny glowing ember"],
+  "stamps": { "hazard": "bubbling pool of bright molten lava on basalt floor", "bridge_h": "horizontal rusted iron grate bridge", "bridge_v": "vertical rusted iron grate bridge", "exit": "basalt archway threshold with a faint arrow scratched into the floor", "torch": "small wall-mounted brazier bracket, hot orange flame" }
+},
+"flooded": {
+  "palette": "dark slate-grey wet flagstone floor with teal sheen, near-black slick rock with algae streaks, low saturation with cold teal water and faint electric-blue/sodium-yellow relic-tech accents",
+  "rock":  { "lower": "wet puddled flagstone cave floor, dark slate grey with teal sheen", "upper": "slick wet black cave rock mass with dark green algae streaks, near-black in shadow, a few corroded relic-tech pipes" },
+  "water": { "lower": "wet puddled flagstone cave floor, dark slate grey with teal sheen", "upper": "deep dark black-teal water, slow ripples, faint reflections" },
+  "variants": ["shallow puddle", "algae slick patch", "scattered wet pebbles", "half-submerged corroded relic-tech cable", "one tiny dim teal relic light under a film of water"],
+  "stamps": { "hazard": "sparking drowned relic-tech cable in a shallow puddle, electric blue sparks", "bridge_h": "rickety horizontal plank bridge on rusted pontoons", "bridge_v": "rickety vertical plank bridge on rusted pontoons", "exit": "dripping stone archway threshold with a faint arrow scratched into the floor", "torch": "small wall-mounted relic lantern, pale sodium-yellow light" }
+},
+"fungal": {
+  "palette": "dim olive and umber loam cave floor, dark olive-brown rock smothered in bracket fungi and shelf mushrooms near-black in shadow, low saturation with vivid teal-green bioluminescent spore-pool glints and faint rusted relic-tech",
+  "rock":  { "lower": "dark loam cave floor covered in a thin mycelium mat with tiny mushroom sprouts, dim olive and umber", "upper": "cave rock mass smothered in overlapping bracket fungi and shelf mushrooms with pale gills, spongy fungal crust, a few faintly glowing caps, dark olive-brown, near-black in shadow" },
+  "water": { "lower": "dark loam cave floor covered in a thin mycelium mat with tiny mushroom sprouts, dim olive and umber", "upper": "glowing bioluminescent spore pool, murky green-teal liquid with drifting luminous spores and a rim of tiny mushrooms" },
+  "variants": ["small mushroom cluster", "bracket-fungus stump", "mycelium web strand", "one glowing mushroom cap", "small puffball"],
+  "stamps": { "hazard": "a bulbous fungal vent erupting with a pale yellow-green spore cloud, fills most of the tile", "bridge_h": "rickety horizontal plank bridge lashed with fungal rope", "bridge_v": "rickety vertical plank bridge lashed with fungal rope", "exit": "root-framed stone archway threshold with a faint arrow scratched into the floor", "torch": "small wall-mounted glowing fungus-cap lamp, pale teal-green light" },
+  "revisionNote": "updated after user review (2026-09-29, \"looks more like a sewer\"): rock/water/variants/hazard rerolled for unmistakable fungal detail (bracket fungi, glowing spore pool, a large bulbous vent); bridge_h/bridge_v/exit/torch unchanged from the original pass. See art/tiles/fungal/chosen.json for full provenance."
 } }
