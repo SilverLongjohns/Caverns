@@ -4,7 +4,8 @@ import { ArenaGrid } from './ArenaGrid.js';
 import { TurnOrderBar } from './TurnOrderBar.js';
 import { ArenaUnitPanel } from './ArenaUnitPanel.js';
 import { ArenaActionBar } from './ArenaActionBar.js';
-import { hasLineOfSight, rangedProfile, type AbilityDefinition } from '@caverns/shared';
+import { hasLineOfSight, rangedProfile, teleportEffectOf, teleportDestinations, type AbilityDefinition } from '@caverns/shared';
+import { TILE_PROPERTIES, type TileType } from '@caverns/roomgrid';
 import { shotTargets, shotRangeTiles } from '../ui/shotTargets.js';
 
 interface ArenaViewProps {
@@ -18,7 +19,7 @@ interface ArenaViewProps {
   onUseAbility: (abilityId: string, targetId?: string, targetX?: number, targetY?: number) => void;
 }
 
-type InteractionMode = 'none' | 'move' | 'attack' | 'target_ability_single' | 'target_ability_area' | 'shoot';
+type InteractionMode = 'none' | 'move' | 'attack' | 'target_ability_single' | 'target_ability_area' | 'target_ability_tile' | 'shoot';
 
 const DIRS = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
 const TILE_COSTS: Record<string, number> = { floor: 1, water: 2, hazard: 1, bridge: 1 };
@@ -77,6 +78,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
   const arenaPositions = useGameStore((s) => s.arenaPositions);
   const arenaMovementRemaining = useGameStore((s) => s.arenaMovementRemaining);
   const arenaActionTaken = useGameStore((s) => s.arenaActionTaken);
+  const arenaFreeActionsUsed = useGameStore((s) => s.arenaFreeActionsUsed);
   const arenaMovePath = useGameStore((s) => s.arenaMovePath);
   const textLog = useGameStore((s) => s.textLog);
   const currentTurnId = useGameStore((s) => s.currentTurnId);
@@ -122,6 +124,18 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
     }
     return set;
   }, [arenaPositions, playerId]);
+
+  const teleportTiles = useMemo(() => {
+    if (interactionMode !== 'target_ability_tile' || !targetingAbility || !arenaGrid || !myPart) return new Set<string>();
+    const effect = teleportEffectOf(targetingAbility);
+    const from = arenaPositions[playerId];
+    if (!effect || !from) return new Set<string>();
+    const tiles = teleportDestinations({
+      grid: arenaGrid, from, effect, initiative: myPart.initiative, occupied,
+      isWalkable: (t) => TILE_PROPERTIES[t as TileType]?.walkable ?? false,
+    });
+    return new Set(tiles.map((t) => `${t.x},${t.y}`));
+  }, [interactionMode, targetingAbility, arenaGrid, myPart, arenaPositions, playerId, occupied]);
 
   // Client-side BFS for movement range — also used for path tracing
   const bfsResult = useMemo(() => {
@@ -246,8 +260,10 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
       }
     }
 
+    for (const key of teleportTiles) highlights.set(key, 'arena-range-highlight');
+
     return highlights;
-  }, [movementRange, interactionMode, hoverPath, targetingAbility, arenaGrid, arenaPositions, playerId, activeCombat, hoverTile, shootable, shootRange]);
+  }, [movementRange, interactionMode, hoverPath, targetingAbility, arenaGrid, arenaPositions, playerId, activeCombat, hoverTile, shootable, shootRange, teleportTiles]);
 
   // When arenaMovePath arrives from server, set animation state.
   // ArenaGrid handles the DOM animation; we just track start/end for the entity exclusion.
@@ -362,6 +378,19 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
       }
     }
 
+    if (interactionMode === 'target_ability_tile' && targetingAbility) {
+      if (!teleportTiles.has(`${x},${y}`)) return;
+      onUseAbility(targetingAbility.id, undefined, x, y);
+      if (targetingAbility.freeAction) {
+        useGameStore.setState((s) => ({ arenaFreeActionsUsed: [...s.arenaFreeActionsUsed, targetingAbility.id] }));
+      } else {
+        useGameStore.setState({ arenaActionTaken: true });
+      }
+      setInteractionMode('none');
+      setTargetingAbility(null);
+      return;
+    }
+
     if (interactionMode === 'target_ability_area' && targetingAbility && arenaGrid) {
       const myPos = arenaPositions[playerId];
       if (!myPos || !targetingAbility.range) return;
@@ -373,7 +402,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
         setTargetingAbility(null);
       }
     }
-  }, [isMyTurn, interactionMode, ghostPos, arenaPositions, adjacentEnemies, onArenaMove, onCombatAction, targetingAbility, arenaGrid, playerId, activeCombat, onUseAbility, shootable]);
+  }, [isMyTurn, interactionMode, ghostPos, arenaPositions, adjacentEnemies, onArenaMove, onCombatAction, targetingAbility, arenaGrid, playerId, activeCombat, onUseAbility, shootable, teleportTiles]);
 
   const handleTileHover = useCallback((x: number, y: number) => {
     setHoverTile((prev) => (prev?.x === x && prev?.y === y) ? prev : { x, y });
@@ -413,6 +442,7 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
       <ArenaActionBar
         isMyTurn={isMyTurn}
         actionTaken={arenaActionTaken}
+        freeActionsUsed={arenaFreeActionsUsed}
         movementRemaining={arenaMovementRemaining}
         canFlee={canFlee}
         mapTargeting={interactionMode !== 'none'}
@@ -434,11 +464,9 @@ export function ArenaView({ onCombatAction, onArenaMove, onArenaEndTurn, onUseAb
           useGameStore.setState({ arenaActionTaken: true });
         }}
         onAbilityMode={(ability) => {
-          if (ability.targetType === 'area_enemy' || ability.targetType === 'area_ally') {
-            setInteractionMode('target_ability_area');
-          } else {
-            setInteractionMode('target_ability_single');
-          }
+          if (ability.targetType === 'tile') setInteractionMode('target_ability_tile');
+          else if (ability.targetType === 'area_enemy' || ability.targetType === 'area_ally') setInteractionMode('target_ability_area');
+          else setInteractionMode('target_ability_single');
           setTargetingAbility(ability);
         }}
         onCancelAbility={() => {

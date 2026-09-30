@@ -24,6 +24,7 @@ import {
   getPlayerEquippedEffects,
   computePlayerStats,
   closeUpForParticipants,
+  teleportEffectOf,
   rangedProfile,
   type CombatActionResultMessage,
   type EquippedEffect,
@@ -2463,9 +2464,14 @@ export class GameSession {
       return;
     }
 
-    // Check if action already taken this turn
+    // Free actions are limited to once per turn; everything else needs the turn's action
     const turnState = combat.getTurnState(playerId);
-    if (turnState?.actionTaken) {
+    if (ability.freeAction) {
+      if (turnState?.freeActionsUsed.has(ability.id)) {
+        this.sendTo(playerId, { type: 'error', message: `${ability.name} already used this turn.` });
+        return;
+      }
+    } else if (turnState?.actionTaken) {
       this.sendTo(playerId, { type: 'error', message: 'Action already taken this turn.' });
       return;
     }
@@ -2473,6 +2479,60 @@ export class GameSession {
     const participants = combat.getParticipantsArray();
     const caster = participants.find((p: { id: string }) => p.id === playerId);
     if (!caster) return;
+
+    // --- Tile ability (teleport) ---
+    if (ability.targetType === 'tile') {
+      const effect = teleportEffectOf(ability);
+      if (!effect || targetX === undefined || targetY === undefined) {
+        this.sendTo(playerId, { type: 'error', message: `${ability.name} needs a destination tile.` });
+        return;
+      }
+      const moved = combat.teleport(playerId, { x: targetX, y: targetY }, effect);
+      if (!moved.ok) {
+        this.sendTo(playerId, { type: 'error', message: `Can't ${ability.name} there.` });
+        return;
+      }
+      this.playerManager.spendEnergy(playerId, ability.energyCost);
+
+      this.broadcastToRoom(player.roomId, {
+        type: 'arena_positions_update',
+        positions: combat.getAllPositions(),
+        movementRemaining: turnState?.movementRemaining ?? 0,
+      } as any);
+      this.broadcastToRoom(player.roomId, {
+        type: 'combat_action_result',
+        actorId: playerId,
+        actorName: player.name,
+        action: 'use_ability',
+        abilityId: ability.id,
+        abilityName: ability.name,
+        teleportFrom: moved.from,
+        teleportTo: { x: targetX, y: targetY },
+        ...(moved.hazardDamage ? { actorHp: moved.hp } : {}),
+        ...(moved.downed ? { actorDowned: true } : {}),
+      } as any);
+      const hazardNote = moved.hazardDamage ? ` and lands in a hazard for ${moved.hazardDamage} damage` : '';
+      this.broadcastToRoom(player.roomId, { type: 'text_log', message: `${player.name} uses ${ability.name}${hazardNote}!`, logType: 'combat' });
+
+      // Keep the player's HP in step with combat (set, not subtract, like the flee path)
+      if (moved.hazardDamage) this.playerManager.getPlayer(playerId)!.hp = moved.hp;
+      if (moved.downed) {
+        this.playerManager.takeDamage(playerId, 999);
+      }
+
+      if (ability.freeAction && !moved.downed) {
+        combat.markFreeActionUsed(playerId, ability.id);
+        this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+        return;
+      }
+
+      combat.markActionTaken(playerId);
+      if (!moved.downed) this.playerManager.regenEnergy(playerId, ENERGY_CONFIG.regenPerTurn);
+      this.broadcast({ type: 'player_update', player: this.playerManager.getPlayer(playerId)! });
+      combat.advanceTurn();
+      this.afterCombatTurn(player.roomId, combat, this.closeUpDelay(combat, { action: 'use_ability', actorId: playerId, abilityId: ability.id }));
+      return;
+    }
 
     // --- Area ability (area_enemy / area_ally) ---
     if (ability.targetType === 'area_enemy' || ability.targetType === 'area_ally') {

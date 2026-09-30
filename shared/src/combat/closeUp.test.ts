@@ -6,14 +6,17 @@ const player = { actorType: 'player' as const, targetType: 'mob' as const, isPas
 const mobHit = { actorType: 'mob' as const, targetType: 'player' as const, isPassiveAbility: false };
 
 describe('closeUpFor', () => {
-  it('every non-passive ability in the data gets an ability close-up; passives never do', () => {
+  it('every non-passive ability in the data gets an ability close-up unless it opts out; passives never do', () => {
     for (const cls of CLASS_DEFINITIONS) {
       for (const a of cls.abilities) {
-        const r = closeUpFor({ action: 'use_ability', abilityId: a.id }, { ...player, isPassiveAbility: a.passive });
-        if (a.passive) expect(r, a.id).toBeNull();
+        const r = closeUpFor({ action: 'use_ability', abilityId: a.id }, { ...player, isPassiveAbility: a.passive, closeUpDisabled: a.closeUp === false });
+        if (a.passive || a.closeUp === false) expect(r, a.id).toBeNull();
         else expect(r, a.id).toEqual({ kind: 'ability', durationMs: CLOSE_UP_CONFIG.abilityMs });
       }
     }
+  });
+  it('an ability with closeUp: false never gets a close-up, even when it kills', () => {
+    expect(closeUpFor({ action: 'use_ability', targetDowned: true }, { ...player, closeUpDisabled: true })).toBeNull();
   });
   it('an ability that kills is still an ability close-up', () => {
     expect(closeUpFor({ action: 'use_ability', targetDowned: true }, player)?.kind).toBe('ability');
@@ -83,8 +86,9 @@ describe('data integrity', () => {
     for (const cls of CLASS_DEFINITIONS) {
       if (cls.color !== undefined) expect(cls.color, cls.id).toMatch(/^#[0-9a-fA-F]{6}$/);
       for (const a of cls.abilities) {
-        if (a.closeUp?.sound !== undefined) expect(CLOSE_UP_SOUNDS, a.id).toContain(a.closeUp.sound);
-        if (a.closeUp?.art !== undefined) expect(a.closeUp.art, a.id).toMatch(/^\/closeups\//);
+        const cu = a.closeUp || undefined;
+        if (cu?.sound !== undefined) expect(CLOSE_UP_SOUNDS, a.id).toContain(cu.sound);
+        if (cu?.art !== undefined) expect(cu.art, a.id).toMatch(/^\/closeups\//);
       }
     }
   });

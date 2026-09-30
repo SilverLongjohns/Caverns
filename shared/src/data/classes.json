@@ -58,6 +58,19 @@
         ]
       },
       {
+        "id": "blink",
+        "name": "Blink",
+        "description": "Phase to an open tile within range. Costs no action or movement; once per turn. Range grows with Speed.",
+        "energyCost": 5,
+        "targetType": "tile",
+        "passive": false,
+        "freeAction": true,
+        "closeUp": false,
+        "effects": [
+          { "type": "teleport", "baseRange": 1, "perSpeed": 0.34, "requiresLineOfSight": false }
+        ]
+      },
+      {
         "id": "pickpocket",
         "name": "Glean",
         "description": "30% chance for extra loot after combat.",

@@ -2,7 +2,7 @@
 import type { TileGrid, MobInstance, CombatState, CombatActionResultMessage } from '@caverns/shared';
 import { CombatManager, type CombatPlayerInfo } from './CombatManager.js';
 import type { EquippedEffect } from '@caverns/shared';
-import { chebyshev, hitChance, hasLineOfSight } from '@caverns/shared';
+import { chebyshev, hitChance, hasLineOfSight, isValidTeleportDestination, type TeleportEffect } from '@caverns/shared';
 import {
   findPath,
   pathCost,
@@ -11,10 +11,19 @@ import {
   getMovementCost,
 } from './arenaMovement.js';
 
+const HAZARD_DAMAGE = 5;
+const isWalkableTile = (tile: string) => getMovementCost(tile) !== Infinity;
+
 interface TurnState {
   movementRemaining: number;
   actionTaken: boolean;
+  /** Free-action ability ids used this turn. */
+  freeActionsUsed: Set<string>;
 }
+
+export type TeleportOutcome =
+  | { ok: false }
+  | { ok: true; from: { x: number; y: number }; hazardDamage: number; hp: number; downed: boolean };
 
 export type ShotCheck = { ok: true; distance: number; hitChance: number } | { ok: false; reason: string };
 type ArenaActionOutcome = { ok: true; result: Partial<CombatActionResultMessage> } | { ok: false; reason: string };
@@ -68,6 +77,7 @@ export class ArenaCombatManager {
     this.turnStates.set(id, {
       movementRemaining: this.getMovementPoints(id),
       actionTaken: false,
+      freeActionsUsed: new Set(),
     });
   }
 
@@ -78,6 +88,30 @@ export class ArenaCombatManager {
   markActionTaken(id: string): void {
     const state = this.turnStates.get(id);
     if (state) state.actionTaken = true;
+  }
+
+  markFreeActionUsed(id: string, abilityId: string): void {
+    this.turnStates.get(id)?.freeActionsUsed.add(abilityId);
+  }
+
+  /** Teleport a unit to `to` if the effect allows it. No movement points are spent; hazards still bite. */
+  teleport(id: string, to: { x: number; y: number }, effect: TeleportEffect): TeleportOutcome {
+    const from = this.positions.get(id);
+    const participant = this.combatManager.getParticipant(id);
+    if (!from || !participant) return { ok: false };
+    const valid = isValidTeleportDestination(
+      { grid: this.grid, from, effect, initiative: participant.initiative, occupied: this.getOccupied(id), isWalkable: isWalkableTile },
+      to,
+    );
+    if (!valid) return { ok: false };
+    this.positions.set(id, { x: to.x, y: to.y });
+    let hazardDamage = 0;
+    let downed = false;
+    if (this.grid.tiles[to.y][to.x] === 'hazard') {
+      hazardDamage = HAZARD_DAMAGE;
+      downed = this.combatManager.applyDamage(id, hazardDamage)?.targetDowned ?? false;
+    }
+    return { ok: true, from: { ...from }, hazardDamage, hp: participant.hp, downed };
   }
 
   private getOccupied(excludeId?: string): Set<string> {
@@ -118,7 +152,7 @@ export class ArenaCombatManager {
     let hazardDamage = 0;
     const destTile = this.grid.tiles[target.y][target.x];
     if (destTile === 'hazard') {
-      hazardDamage = 5;
+      hazardDamage = HAZARD_DAMAGE;
       this.combatManager.applyDamage(id, hazardDamage);
     }
 

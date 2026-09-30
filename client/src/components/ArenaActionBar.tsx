@@ -5,6 +5,7 @@ import type { AbilityDefinition, ItemStats } from '@caverns/shared';
 import { RelicButton } from './relic/index.js';
 import { actionIconSrc } from '../ui/iconPaths.js';
 import { effectiveArenaBarMode, type ArenaActionMode } from '../ui/arenaBarMode.js';
+import { abilityAvailable } from '../ui/abilityAvailability.js';
 
 interface ArenaActionBarProps {
   isMyTurn: boolean;
@@ -32,6 +33,8 @@ interface ArenaActionBarProps {
   onShootMode: () => void;
   onCancelShoot: () => void;
   onReload: () => void;
+  /** Free-action ability ids already used this turn. */
+  freeActionsUsed: string[];
 }
 
 function formatItemStat(stats: ItemStats): string {
@@ -45,7 +48,7 @@ export function ArenaActionBar({
   onMoveMode, onCancelMove, onAttackMode, onCancelAttack,
   onDefend, onFlee, onEndTurn, onUseItem,
   onAbilityMode, onCancelAbility, onUseAbility,
-  onShootMode, onCancelShoot, onReload,
+  onShootMode, onCancelShoot, onReload, freeActionsUsed,
 }: ArenaActionBarProps) {
   const player = useGameStore((s) => s.players[s.playerId]);
   const [mode, setMode] = useState<ArenaActionMode>({ mode: 'idle' });
@@ -148,7 +151,7 @@ export function ArenaActionBar({
             Defend
           </RelicButton>
           <RelicButton className="arena-btn" icon={actionIconSrc('abilities')} onClick={() => setMode({ mode: 'abilities' })}
-            disabled={actionTaken || activeAbilities.length === 0}>
+            disabled={!activeAbilities.some((a) => abilityAvailable(a, actionTaken, freeActionsUsed))}>
             Abilities
           </RelicButton>
           <RelicButton className="arena-btn" icon={actionIconSrc('items')} onClick={() => setMode({ mode: 'items' })}
@@ -193,11 +196,12 @@ export function ArenaActionBar({
           <div className="combat-item-list">
             {activeAbilities.map((ability) => {
               const notEnoughEnergy = !player || player.energy < ability.energyCost;
+              const unavailable = !abilityAvailable(ability, actionTaken, freeActionsUsed);
               return (
                 <button
                   key={ability.id}
                   className={`ability-btn ${notEnoughEnergy ? 'no-energy' : ''}`}
-                  disabled={notEnoughEnergy}
+                  disabled={notEnoughEnergy || unavailable}
                   onClick={() => handleAbilityClick(ability)}
                 >
                   {ability.name} <span className="energy-cost">{ability.energyCost}</span>
@@ -213,10 +217,11 @@ export function ArenaActionBar({
       {effectiveMode.mode === 'target_ability' && (
         <>
           <span className="waiting-text">
-            {effectiveMode.ability.targetType === 'area_enemy' || effectiveMode.ability.targetType === 'area_ally'
-              ? `Click a tile to target ${effectiveMode.ability.name}...`
-              : `Click a target for ${effectiveMode.ability.name}...`
-            }
+            {effectiveMode.ability.targetType === 'tile'
+              ? `Click a highlighted tile to ${effectiveMode.ability.name}...`
+              : effectiveMode.ability.targetType === 'area_enemy' || effectiveMode.ability.targetType === 'area_ally'
+                ? `Click a tile to target ${effectiveMode.ability.name}...`
+                : `Click a target for ${effectiveMode.ability.name}...`}
           </span>
           <RelicButton className="arena-btn" onClick={handleBackToMain}>Back</RelicButton>
         </>

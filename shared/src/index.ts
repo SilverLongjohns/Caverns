@@ -9,6 +9,7 @@ export * from './classTypes.js';
 export * from './classData.js';
 export * from './combat/closeUp.js';
 export * from './combat/ranged.js';
+export * from './combat/teleport.js';
 export * from './interactableData.js';
 export * from './overworld.js';
 export * from './overworldPath.js';
