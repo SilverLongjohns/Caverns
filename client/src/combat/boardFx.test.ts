@@ -137,3 +137,18 @@ describe('boardFx: shots', () => {
     expect(s.fx.some((f) => f.kind === 'lunge')).toBe(true);
   });
 });
+
+describe('blink fx', () => {
+  const ctx = { now: 1000, positions: { p1: { x: 4, y: 2 } }, participants: [{ id: 'p1', type: 'player' as const }] };
+  it('adds a blink from the origin to the landing tile', () => {
+    const s = fxReceive(initialBoardFx(), {
+      type: 'combat_action_result', actorId: 'p1', actorName: 'A', action: 'use_ability',
+      teleportFrom: { x: 1, y: 2 }, teleportTo: { x: 4, y: 2 },
+    } as never, ctx);
+    expect(s.fx).toEqual([{ id: 1, kind: 'blink', from: { x: 1, y: 2 }, to: { x: 4, y: 2 }, delayMs: 0, until: 1000 + FX_TIMING.blinkMs }]);
+  });
+  it('ignores ability results without a teleport', () => {
+    const s = fxReceive(initialBoardFx(), { type: 'combat_action_result', actorId: 'p1', actorName: 'A', action: 'use_ability' } as never, ctx);
+    expect(s.fx).toEqual([]);
+  });
+});

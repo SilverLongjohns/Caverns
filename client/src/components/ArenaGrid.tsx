@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect, useLayoutEffect, useState } from 'react';
+import { Fragment, useMemo, useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore.js';
 import { GlyphViewport } from './grid/GlyphViewport.js';
 import type { EntityOverlay } from './TileGridView.js';
@@ -66,7 +66,7 @@ export function ArenaGrid({
   const unitFx = useMemo(() => {
     const m = new Map<string, { cls: string; style: Record<string, string> }>();
     for (const f of fx) {
-      if (f.kind === 'number' || f.kind === 'projectile' || f.kind === 'tag') continue;
+      if (f.kind === 'number' || f.kind === 'projectile' || f.kind === 'tag' || f.kind === 'blink') continue;
       const cur = m.get(f.unitId) ?? { cls: '', style: {} };
       if (f.kind === 'lunge') { cur.cls += ` fx-lunge fx-lunge-${f.dir}`; cur.style['--fx-lunge-delay'] = `${f.delayMs}ms`; }
       else if (f.kind === 'recoil') { cur.cls += ` fx-recoil fx-recoil-${f.dir}`; cur.style['--fx-recoil-delay'] = `${f.delayMs}ms`; }
@@ -76,7 +76,7 @@ export function ArenaGrid({
     return m;
   }, [fx]);
   const numbers = useMemo(() => fx.filter((f): f is Extract<BoardFx, { kind: 'number' }> => f.kind === 'number'), [fx]);
-  const overlayFx = useMemo(() => fx.filter((f): f is Extract<BoardFx, { kind: 'projectile' | 'tag' }> => f.kind === 'projectile' || f.kind === 'tag'), [fx]);
+  const overlayFx = useMemo(() => fx.filter((f): f is Extract<BoardFx, { kind: 'projectile' | 'tag' | 'blink' }> => f.kind === 'projectile' || f.kind === 'tag' || f.kind === 'blink'), [fx]);
 
   // Entities for inline rendering — exclude the currently-animating entity
   const entities: EntityOverlay[] = useMemo(() => {
@@ -215,7 +215,7 @@ function FxNumbers({ numbers, worldRef }: { numbers: Extract<BoardFx, { kind: 'n
 type CellRect = { left: number; top: number; width: number; height: number };
 
 function FxOverlay({ fx, hitLabels, positions, worldRef }: {
-  fx: Extract<BoardFx, { kind: 'projectile' | 'tag' }>[];
+  fx: Extract<BoardFx, { kind: 'projectile' | 'tag' | 'blink' }>[];
   hitLabels?: Map<string, number>;
   positions: Record<string, { x: number; y: number }>;
   worldRef: RefObject<HTMLDivElement | null>;
@@ -229,7 +229,7 @@ function FxOverlay({ fx, hitLabels, positions, worldRef }: {
     const pr = world.getBoundingClientRect();
     const tiles = new Map<string, { x: number; y: number }>();
     for (const f of fx) {
-      if (f.kind === 'projectile') {
+      if (f.kind === 'projectile' || f.kind === 'blink') {
         tiles.set(`from:${f.id}`, f.from);
         tiles.set(`to:${f.id}`, f.to);
       } else {
@@ -261,6 +261,17 @@ function FxOverlay({ fx, hitLabels, positions, worldRef }: {
               style={{ left: r.left, top: r.top - 14, width: r.width, animationDelay: `${f.delayMs}ms` }}>
               {f.text}
             </span>
+          );
+        }
+        if (f.kind === 'blink') {
+          const a = rects[`from:${f.id}`];
+          const b = rects[`to:${f.id}`];
+          if (!a || !b) return null;
+          return (
+            <Fragment key={f.id}>
+              <span className="fx-blink-out" style={{ left: a.left, top: a.top, width: a.width, height: a.height }} />
+              <span className="fx-blink-in" style={{ left: b.left, top: b.top, width: b.width, height: b.height }} />
+            </Fragment>
           );
         }
         const fromR = rects[`from:${f.id}`];

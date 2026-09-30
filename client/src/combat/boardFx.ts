@@ -3,7 +3,7 @@ import type { ServerMessage } from '@caverns/shared';
 /** On-board juice for damaging hits: attacker lunge, target RGB tear, slam-in number. Pure; see boardFxStore. */
 export const FX_TIMING = {
   lungeMs: 300, hitDelayMs: 100, tearMs: 360, numberMs: 950, walkStepMs: 100, walkTailMs: 50,
-  projectileMsPerTile: 120, projectileMaxMs: 700, recoilMs: 180, tagMs: 900,
+  projectileMsPerTile: 120, projectileMaxMs: 700, recoilMs: 180, tagMs: 900, blinkMs: 450,
 } as const;
 
 export type FxDir = 'up' | 'down' | 'left' | 'right';
@@ -15,7 +15,8 @@ export type BoardFx =
   | { id: number; kind: 'number'; tile: Tile; value: number; tone: FxTone; offset: number; delayMs: number; until: number }
   | { id: number; kind: 'projectile'; from: Tile; to: Tile; hit: boolean; delayMs: number; travelMs: number; until: number }
   | { id: number; kind: 'recoil'; unitId: string; dir: FxDir; delayMs: number; until: number }
-  | { id: number; kind: 'tag'; tile: Tile; text: 'MISS' | 'RELOAD'; delayMs: number; until: number };
+  | { id: number; kind: 'tag'; tile: Tile; text: 'MISS' | 'RELOAD'; delayMs: number; until: number }
+  | { id: number; kind: 'blink'; from: Tile; to: Tile; delayMs: number; until: number };
 export interface BoardFxState { fx: BoardFx[]; walkUntil: Record<string, number>; lastTile: Record<string, Tile>; nextId: number }
 export interface FxCtx { now: number; positions: Record<string, Tile>; participants: { id: string; type: 'player' | 'mob' }[] }
 
@@ -39,6 +40,10 @@ export function fxReceive(s: BoardFxState, msg: ServerMessage, ctx: FxCtx): Boar
     return { ...s, lastTile, walkUntil: { ...s.walkUntil, [m.moverId]: until } };
   }
   if (msg.type !== 'combat_action_result') return { ...s, lastTile };
+  const tp = msg as { teleportFrom?: Tile; teleportTo?: Tile };
+  if (tp.teleportFrom && tp.teleportTo) {
+    return { ...s, lastTile, fx: [...s.fx, { id: s.nextId, kind: 'blink', from: tp.teleportFrom, to: tp.teleportTo, delayMs: 0, until: ctx.now + FX_TIMING.blinkMs }], nextId: s.nextId + 1 };
+  }
   const res = msg as { action?: string; actorId: string; targetId?: string; hit?: boolean; damage?: number };
   const wait0 = Math.max(0, (s.walkUntil[res.actorId] ?? 0) - ctx.now);
   if (res.action === 'reload') {

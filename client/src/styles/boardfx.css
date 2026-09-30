@@ -45,7 +45,15 @@
 .fx-tag--miss { color: #8c7f6c; }
 .fx-tag--reload { color: #9dff6a; text-shadow: 0 0 4px #5aff3c; }
 .fx-hit { position: absolute; z-index: 11; pointer-events: none; text-align: center; font: 700 10px 'Courier New', monospace; color: #9dff6a; text-shadow: 0 0 3px #000; }
+.fx-blink-out, .fx-blink-in { position: absolute; z-index: 12; pointer-events: none; box-sizing: border-box; }
+.fx-blink-out { border: 1px solid #9dff6a; box-shadow: 0 0 10px 2px #5aff3c, inset 0 0 8px #5aff3c;
+  animation: fx-blink-out 450ms steps(6) both; }
+@keyframes fx-blink-out { 0% { opacity: .9; transform: scale(1) } 40% { opacity: .5 } 60% { opacity: .8 } 100% { opacity: 0; transform: scale(.2, 1.4) } }
+.fx-blink-in { background: radial-gradient(circle, rgba(157, 255, 106, .85) 0%, rgba(90, 255, 60, .25) 45%, transparent 70%);
+  animation: fx-blink-in 450ms ease-out both; }
+@keyframes fx-blink-in { 0% { opacity: 1; transform: scale(1.8) } 100% { opacity: 0; transform: scale(.8) } }
 @media (prefers-reduced-motion: reduce) {
+  .fx-blink-out, .fx-blink-in { animation: fx-number-still 450ms both; transform: none; }
   .glyph-grid .fx-recoil .entity-glyph { animation: none; }
   .fx-bolt { animation: fx-bolt-still 160ms steps(1) calc(var(--fx-delay, 0ms) + var(--fx-travel, 0ms)) both; transform: translate(var(--fx-dx), var(--fx-dy)); }
   .fx-tag { animation-name: fx-number-still; }
