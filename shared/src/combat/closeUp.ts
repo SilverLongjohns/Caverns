@@ -12,7 +12,7 @@ export type CloseUpSound = 'crack' | 'boom' | 'shimmer';
 export const CLOSE_UP_SOUNDS: readonly CloseUpSound[] = ['crack', 'boom', 'shimmer'];
 
 type Side = 'player' | 'mob';
-interface Ctx { actorType: Side; targetType?: Side; isPassiveAbility: boolean }
+interface Ctx { actorType: Side; targetType?: Side; isPassiveAbility: boolean; closeUpDisabled?: boolean }
 
 const DURATION_KEY: Record<CloseUpKind, 'abilityMs' | 'critMs' | 'killMs' | 'strikeMs'> = {
   ability: 'abilityMs', crit: 'critMs', kill: 'killMs', strike: 'strikeMs',
@@ -23,7 +23,7 @@ const make = (kind: CloseUpKind): CloseUp => ({ kind, durationMs: CLOSE_UP_CONFI
 export function closeUpFor(r: Partial<CombatActionResultMessage>, ctx: Ctx): CloseUp | null {
   if (r.defendQte) return null; // preview of an incoming hit, not the hit itself
   if (ctx.actorType === 'player') {
-    if (r.action === 'use_ability') return ctx.isPassiveAbility ? null : make('ability');
+    if (r.action === 'use_ability') return ctx.isPassiveAbility || ctx.closeUpDisabled ? null : make('ability');
     if (r.action === 'attack') {
       if (r.targetDowned) return make('kill');
       if ((r.critMultiplier ?? 1) > 1) return make('crit');
@@ -65,5 +65,5 @@ export function closeUpForParticipants(
   const target = r.targetId ? participants.find((p) => p.id === r.targetId) : undefined;
   const targetType: Side | undefined = target ? target.type : r.targetId ? (actor.type === 'player' ? 'mob' : 'player') : undefined;
   const ability = findAbility(r.abilityId, actor.className);
-  return closeUpFor(r, { actorType: actor.type, targetType, isPassiveAbility: ability?.passive ?? false });
+  return closeUpFor(r, { actorType: actor.type, targetType, isPassiveAbility: ability?.passive ?? false, closeUpDisabled: ability?.closeUp === false });
 }

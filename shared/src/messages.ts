@@ -534,6 +534,9 @@ export interface CombatActionResultMessage {
   /** Area abilities: every participant hit, and every participant downed. */
   targetIds?: string[];
   downedIds?: string[];
+  /** Teleport abilities: where the caster left and landed. */
+  teleportFrom?: { x: number; y: number };
+  teleportTo?: { x: number; y: number };
   /** Shots: whether it landed, and the chance it had (0..1). */
   hit?: boolean;
   hitChance?: number;

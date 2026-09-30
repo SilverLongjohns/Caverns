@@ -58,10 +58,11 @@ export function stageFor(active: ActiveCloseUp): Stage {
   const actorIsMob = actor?.type === 'mob';
   const ability = findAbility(r.abilityId, actor?.className);
   const targetType = ability?.targetType ?? 'enemy';
+  const abilityCloseUp = ability?.closeUp || undefined;
 
   const downed = new Set([...(r.downedIds ?? []), ...(r.targetDowned && r.targetId ? [r.targetId] : [])]);
   const toStage = (p: CombatParticipant | undefined, side: 'left' | 'right', isActor: boolean, role: 'attack' | 'hurt' | 'cast' | 'shoot'): StageActor | null =>
-    p ? { id: p.id, name: p.name, side, art: artChainFor(p, role, ability?.closeUp?.art), downed: downed.has(p.id), isActor } : null;
+    p ? { id: p.id, name: p.name, side, art: artChainFor(p, role, abilityCloseUp?.art), downed: downed.has(p.id), isActor } : null;
 
   const targetIds = r.targetIds ?? (r.targetId ? [r.targetId] : []);
   let layout: Stage['layout'] = 'versus';
@@ -97,7 +98,7 @@ export function stageFor(active: ActiveCloseUp): Stage {
   const anyDowned = downed.size > 0;
   const subtitle = strike ? '' : anyDowned ? 'KILLED' : closeUp.kind === 'crit' ? 'CRITICAL' : (r.buffsApplied ?? []).map((b) => b.replace(/_/g, ' ')).join(' · ').toUpperCase();
   const derivedSound: 'crack' | 'boom' | 'shimmer' = anyDowned ? 'boom' : (!damage && (r.healing || (r.buffsApplied ?? []).length)) ? 'shimmer' : 'crack';
-  const sound = strike ? null : ability?.closeUp?.sound ?? derivedSound;
+  const sound = strike ? null : abilityCloseUp?.sound ?? derivedSound;
   const title = strike ? '' : (r.abilityName ?? ability?.name ?? (closeUp.kind === 'kill' ? 'Killing Blow' : 'Critical Strike')).toUpperCase();
 
   const classColor = actor?.className ? getClassDefinition(actor.className)?.color : undefined;
