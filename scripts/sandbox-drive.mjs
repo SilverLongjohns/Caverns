@@ -14,6 +14,8 @@ Steps (run in order):
   --shoot-mode                  click Shoot (enters targeting; use --shot to capture highlights/hit %)
   --shoot-nearest               click Shoot, then the closest highlighted (in-range/LoS) enemy
   --reload                     click Reload
+  --ability <name>             open Abilities and click the ability whose label starts with <name>
+  --tile-near-enemy            click the highlighted tile closest to the nearest enemy (tile-target abilities)
   --settle [ms]                 pause ms (default 400) — lets a server round trip / CSS animation land before a --shot
   --click x,y                  click arena cell x,y — it must be inside the visible camera window;
                                 use --wait my-turn and --pan first
@@ -85,6 +87,8 @@ for (let i = 1; i < argv.length; i++) {
     case '--shoot-mode': steps.push({ kind: 'shoot-mode' }); break;
     case '--shoot-nearest': steps.push({ kind: 'shoot-nearest' }); break;
     case '--reload': steps.push({ kind: 'reload' }); break;
+    case '--ability': steps.push({ kind: 'ability', name: next() }); break;
+    case '--tile-near-enemy': steps.push({ kind: 'tile-near-enemy' }); break;
     case '--click': {
       const v = next();
       const m = /^(\d+),(\d+)$/.exec(v);
@@ -230,6 +234,33 @@ try {
         await waitFor((x) => x.status === 'my_turn', 'my turn', 60000);
         await page.locator('button.arena-btn', { hasText: 'Reload' }).click();
         break;
+      case 'ability':
+        await waitFor((x) => x.status === 'my_turn', 'my turn', 60000);
+        await page.locator('button.arena-btn', { hasText: 'Abilities' }).click();
+        await page.locator('button.ability-btn', { hasText: new RegExp(`^${s.name}`) }).click();
+        break;
+      case 'tile-near-enemy': {
+        const h = await waitFor((x) => x.status === 'my_turn', 'my turn', 60000);
+        const mobs = h.combat.participants.filter((p) => p.type === 'mob' && h.positions[p.id]).map((p) => h.positions[p.id]);
+        if (!mobs.length) throw new Error('No enemy on the board');
+        const highlighted = await page.evaluate(() => {
+          const out = [];
+          document.querySelectorAll('.room-grid > .room-row').forEach((row, y) => {
+            row.querySelectorAll(':scope > span').forEach((cellEl, x) => {
+              if (cellEl.classList.contains('arena-range-highlight')) out.push({ x, y });
+            });
+          });
+          return out;
+        });
+        if (!highlighted.length) throw new Error('No tile is highlighted');
+        const dist = (t) => Math.min(...mobs.map((m) => Math.abs(m.x - t.x) + Math.abs(m.y - t.y)));
+        highlighted.sort((a, b) => dist(a) - dist(b));
+        const pos = highlighted[0];
+        console.log(`tile-near-enemy: clicking ${pos.x},${pos.y} (enemy distance ${dist(pos)})`);
+        await assertCellVisible(pos.x, pos.y);
+        await cell(pos.x, pos.y).click();
+        break;
+      }
       case 'click':
         await assertCellVisible(s.x, s.y);
         await cell(s.x, s.y).click();
