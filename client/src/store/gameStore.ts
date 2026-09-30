@@ -80,6 +80,7 @@ export interface GameStore {
   arenaPositions: Record<string, { x: number; y: number }>;
   arenaMovementRemaining: number;
   arenaActionTaken: boolean;
+  arenaFreeActionsUsed: string[];
   arenaMovePath: { moverId: string; path: { x: number; y: number }[] } | null;
   arenaIntro: { enemyNames: string[] } | null;
   activePuzzle: { roomId: string; puzzleId: string; description: string; options: string[] } | null;
@@ -177,6 +178,7 @@ const initialState = {
   arenaPositions: {},
   arenaMovementRemaining: 0,
   arenaActionTaken: false,
+  arenaFreeActionsUsed: [],
   arenaMovePath: null,
   arenaIntro: null,
   activePuzzle: null,
@@ -538,6 +540,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           arenaPositions: msg.positions,
           arenaMovementRemaining: 0,
           arenaActionTaken: false,
+          arenaFreeActionsUsed: [],
           arenaMovePath: null,
           arenaIntro: { enemyNames },
         });
@@ -555,7 +558,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       case 'combat_turn':
-        set({ currentTurnId: msg.currentTurnId, arenaActionTaken: false });
+        set({ currentTurnId: msg.currentTurnId, arenaActionTaken: false, arenaFreeActionsUsed: [] });
         break;
 
       case 'combat_action_result':
@@ -623,7 +626,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           activeCombat: null, currentTurnId: null,
           pendingDefendQte: null, dyingMobIds: new Set(),
           arenaGrid: null, arenaPositions: {},
-          arenaMovementRemaining: 0, arenaActionTaken: false,
+          arenaMovementRemaining: 0, arenaActionTaken: false, arenaFreeActionsUsed: [],
           arenaMovePath: null, arenaIntro: null,
         });
         break;
@@ -673,7 +676,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           combatAnim: null,
           dyingMobIds: new Set(),
           arenaGrid: null, arenaPositions: {},
-          arenaMovementRemaining: 0, arenaActionTaken: false,
+          arenaMovementRemaining: 0, arenaActionTaken: false, arenaFreeActionsUsed: [],
           arenaMovePath: null, arenaIntro: null,
         });
         break;
