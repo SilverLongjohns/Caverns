@@ -2514,6 +2514,8 @@ export class GameSession {
       const hazardNote = moved.hazardDamage ? ` and lands in a hazard for ${moved.hazardDamage} damage` : '';
       this.broadcastToRoom(player.roomId, { type: 'text_log', message: `${player.name} uses ${ability.name}${hazardNote}!`, logType: 'combat' });
 
+      // Keep the player's HP in step with combat (set, not subtract, like the flee path)
+      if (moved.hazardDamage) this.playerManager.getPlayer(playerId)!.hp = moved.hp;
       if (moved.downed) {
         this.playerManager.takeDamage(playerId, 999);
       }

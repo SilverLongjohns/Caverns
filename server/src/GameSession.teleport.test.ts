@@ -33,7 +33,7 @@ type Internals = { combats: Map<string, { getParticipant(id: string): { hp: numb
 const combatOf = (s: GameSession) => (s as unknown as Internals).combats.get(SANDBOX_ROOM_ID)!;
 const walkable = (t: string) => TILE_PROPERTIES[t as TileType]?.walkable ?? false;
 const playerOf = (s: GameSession) =>
-  (s as unknown as { playerManager: { getPlayer(id: string): { energy: number } } }).playerManager.getPlayer('p1');
+  (s as unknown as { playerManager: { getPlayer(id: string): { energy: number; hp: number; status: string } } }).playerManager.getPlayer('p1');
 
 function destinations(session: GameSession) {
   const snap = session.getArenaSnapshot(SANDBOX_ROOM_ID)!;
@@ -123,8 +123,26 @@ describe('tile teleport abilities', () => {
     session.handleUseAbility('p1', ability!.id, undefined, to.x, to.y);
     const result = sent.slice(before).find((m) => m.type === 'combat_action_result') as { actorDowned?: boolean; actorHp?: number };
     expect(result.actorDowned).toBe(true);
+    expect(playerOf(session).status).toBe('downed');
     vi.advanceTimersByTime(5000);
-    expect(session.getArenaSnapshot(SANDBOX_ROOM_ID)?.currentTurnId ?? null).not.toBe('p1');
+    // Solo duel: downing yourself is a wipe, so the fight must end as one
+    const end = sent.slice(before).find((m) => m.type === 'combat_end') as { result?: string } | undefined;
+    expect(end?.result).toBe('wipe');
+    session.dispose();
+  });
+
+  it('a hazard landing that does not down the caster lowers their player HP to match combat', () => {
+    const { session, sent } = setup();
+    const combat = combatOf(session);
+    const [to] = destinations(session);
+    combat.getGrid().tiles[to.y][to.x] = 'hazard'; // test-only terrain edit
+    const before = sent.length;
+    session.handleUseAbility('p1', ability!.id, undefined, to.x, to.y);
+    const result = sent.slice(before).find((m) => m.type === 'combat_action_result') as { actorHp?: number };
+    expect(result.actorHp).toBe(combat.getParticipant('p1').hp);
+    expect(playerOf(session).hp).toBe(combat.getParticipant('p1').hp);
+    const update = [...sent.slice(before)].reverse().find((m) => m.type === 'player_update') as { player: { hp: number } };
+    expect(update.player.hp).toBe(combat.getParticipant('p1').hp);
     session.dispose();
   });
 });

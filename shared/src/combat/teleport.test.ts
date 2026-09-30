@@ -34,6 +34,11 @@ describe('isValidTeleportDestination', () => {
   it('rejects out of range', () => {
     expect(isValidTeleportDestination(check(), { x: 5, y: 2 })).toBe(false); // distance 3 > 2
   });
+  it('rejects non-integer or missing coordinates instead of throwing', () => {
+    expect(isValidTeleportDestination(check(), { x: 2, y: 1.5 })).toBe(false);
+    expect(isValidTeleportDestination(check(), { x: 2, y: null as unknown as number })).toBe(false);
+    expect(isValidTeleportDestination(check(), { x: Number.NaN, y: 2 })).toBe(false);
+  });
   it('rejects walls and off-grid tiles', () => {
     expect(isValidTeleportDestination(check(), { x: 3, y: 2 })).toBe(false);
     expect(isValidTeleportDestination(check(), { x: -1, y: 2 })).toBe(false);

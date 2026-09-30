@@ -26,11 +26,13 @@ export function teleportRange(effect: TeleportEffect, initiative: number): numbe
 }
 
 export function isValidTeleportDestination(c: TeleportCheck, to: Tile): boolean {
+  if (!Number.isInteger(to.x) || !Number.isInteger(to.y)) return false;
   if (to.x < 0 || to.y < 0 || to.x >= c.grid.width || to.y >= c.grid.height) return false;
   if (to.x === c.from.x && to.y === c.from.y) return false;
   const range = teleportRange(c.effect, c.initiative);
   if (chebyshev(c.from, to) > range) return false;
-  if (!c.isWalkable(c.grid.tiles[to.y][to.x])) return false;
+  const tile = c.grid.tiles[to.y]?.[to.x];
+  if (tile === undefined || !c.isWalkable(tile)) return false;
   if (c.occupied.has(`${to.x},${to.y}`)) return false;
   if (c.effect.requiresLineOfSight && !hasLineOfSight(c.grid, c.from, to, range)) return false;
   return true;
