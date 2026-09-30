@@ -4,7 +4,7 @@ import { ArenaCombatManager } from './ArenaCombatManager.js';
 import type { TileGrid } from '@caverns/shared';
 import type { MobInstance } from '@caverns/shared';
 import type { CombatPlayerInfo } from './CombatManager.js';
-import { hitChance, type RangedProfile } from '@caverns/shared';
+import { hitChance, type RangedProfile, type TeleportEffect } from '@caverns/shared';
 
 function makeGrid(): TileGrid {
   // 8x6 open arena — walls on border, floor inside
@@ -233,6 +233,61 @@ describe('ArenaCombatManager', () => {
         expect(combat?.targetId).toBe('p2');
         expect(arena.getCombatManager().getPlayerHp('p1')).toBe(50);
       }
+    });
+  });
+  describe('teleport', () => {
+    const effect: TeleportEffect = { type: 'teleport', baseRange: 1, perSpeed: 0.34, requiresLineOfSight: false };
+    const setup = (grid = makeGrid()) => {
+      const arena = new ArenaCombatManager('room1', grid, [makePlayer()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 6, y: 2 } });
+      arena.startTurn('p1');
+      return arena;
+    };
+
+    it('moves the unit without spending movement', () => {
+      const arena = setup();
+      const before = arena.getTurnState('p1')!.movementRemaining;
+      const r = arena.teleport('p1', { x: 4, y: 3 }, effect);
+      expect(r).toMatchObject({ ok: true, from: { x: 1, y: 2 }, hazardDamage: 0, downed: false });
+      expect(arena.getPosition('p1')).toEqual({ x: 4, y: 3 });
+      expect(arena.getTurnState('p1')!.movementRemaining).toBe(before);
+    });
+
+    it('refuses an invalid destination and leaves the unit in place', () => {
+      const arena = setup();
+      expect(arena.teleport('p1', { x: 5, y: 2 }, effect)).toEqual({ ok: false }); // distance 4 > 3
+      expect(arena.teleport('p1', { x: 0, y: 2 }, effect)).toEqual({ ok: false }); // wall
+      expect(arena.getPosition('p1')).toEqual({ x: 1, y: 2 });
+    });
+
+    it('refuses a tile held by a living unit', () => {
+      const grid = makeGrid();
+      const arena = new ArenaCombatManager('room1', grid, [makePlayer()], [makeMob()], { p1: { x: 1, y: 2 }, mob1: { x: 3, y: 2 } });
+      arena.startTurn('p1');
+      expect(arena.teleport('p1', { x: 3, y: 2 }, effect)).toEqual({ ok: false });
+    });
+
+    it('applies hazard damage on landing and reports a down', () => {
+      const grid = makeGrid();
+      grid.tiles[2][3] = 'hazard';
+      const arena = setup(grid);
+      const r = arena.teleport('p1', { x: 3, y: 2 }, effect);
+      expect(r).toMatchObject({ ok: true, hazardDamage: 5, hp: 45, downed: false });
+
+      const grid2 = makeGrid();
+      grid2.tiles[2][3] = 'hazard';
+      const arena2 = setup(grid2);
+      arena2.getCombatManager().getParticipant('p1')!.hp = 5;
+      expect(arena2.teleport('p1', { x: 3, y: 2 }, effect)).toMatchObject({ ok: true, hp: 0, downed: true });
+    });
+
+    it('tracks free actions per turn and resets them on the next turn', () => {
+      const arena = setup();
+      expect(arena.getTurnState('p1')!.freeActionsUsed.has('a')).toBe(false);
+      arena.markFreeActionUsed('p1', 'a');
+      expect(arena.getTurnState('p1')!.freeActionsUsed.has('a')).toBe(true);
+      expect(arena.getTurnState('p1')!.actionTaken).toBe(false);
+      arena.startTurn('p1');
+      expect(arena.getTurnState('p1')!.freeActionsUsed.has('a')).toBe(false);
     });
   });
 });
